@@ -1,0 +1,5 @@
+#!name=Remove Pixiv Ads
+#!desc=伪装 Pixiv Premium 来移除 Pixiv 上的广告，并不能使用「按热门度排序」的搜索功能
+
+[Script]
+http-response https://oauth.secure.pixiv.net/auth/token requires-body=1,max-size=0,script-path=https://suka.js.org/Surge/Script/pixiv_premium,script-update-interval=86400
