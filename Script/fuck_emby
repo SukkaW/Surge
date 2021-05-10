@@ -1,9 +1,9 @@
 const url = $request.url;
 const newHeaders = {
     "Crack": "KS", 
-    "Access-Control-Allow-Origin": "*", 
-    "Access-Control-Allow-Headers": "*", 
-    "Access-Control-Allow-Method": "*", 
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Method": "*",
     "Access-Control-Allow-Credentials": "true"
 };
 let obj = {};
@@ -44,6 +44,7 @@ if (url.includes('/admin/service/registration/validateDevice')) {
 const newBody = JSON.stringify(obj);
 
 const myResponse = {
+    status: 200,
     headers: newHeaders, // Optional.
     body: newBody // Optional.
 };
