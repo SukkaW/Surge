@@ -1,5 +1,0 @@
-#!name=Enable DNS-Over-HTTPS
-
-[General]
-dns-server = 119.29.29.29, 182.254.116.116
-doh-server = https://123.57.2.231/dns-query, https://dns.pub/dns-query, https://39.108.74.151/dns-query

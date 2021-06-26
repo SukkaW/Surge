@@ -1,0 +1,84 @@
+#!name=Sukka URL Rewrite
+#!desc=Enable this module to use Sukka URL Rewrite rules
+
+[URL Rewrite]
+# AbeamTV Unlock
+^https?://api\.abema\.io/v\d/ip/check - reject
+# Redirect Google Service
+^https?://(www.)?g\.cn https://www.google.com 302
+^https?://(www.)?google\.cn https://www.google.com 302
+# Redirect HTTP to HTTPS
+^https?://(www.)?taobao\.com/ https://www.taobao.com/ 302
+^https?://(www.)?jd\.com/ https://www.jd.com/ 302
+^https?://(www.)?mi\.com/ https://www.mi.com/ 302
+^https?://you\.163\.com/ https://you.163.com/ 302
+^https?://(www.)?suning\.com/ https://suning.com/ 302
+^https?://(www.)?yhd\.com https://yhd.com/ 302
+# Redirect False to True
+# >> IGN China to IGN Global
+^https?://(www.)?ign\.xn--fiqs8s/ http://cn.ign.com/ccpref/us 302
+# >> Fake Website Made By Makeding
+^https?://(www.)?abbyychina\.com/ http://www.abbyy.cn/ 302
+^https?://(www.)?bartender\.cc/ https://cn.seagullscientific.com 302
+^https?://(www.)?betterzip\.net/ https://macitbetter.com/ 302
+^https?://(www.)?beyondcompare\.cc/ https://www.scootersoftware.com/ 302
+^https?://(www.)?bingdianhuanyuan\.cn/ http://www.faronics.com/zh-hans/ 302
+^https?://(www.)?chemdraw\.com\.cn/ http://www.cambridgesoft.com/ 302
+^https?://(www.)?codesoftchina\.com/ https://www.teklynx.com/ 302
+^https?://(www.)?coreldrawchina\.com/ https://www.coreldraw.com/cn/ 302
+^https?://(www.)?crossoverchina\.com/ https://www.codeweavers.com/ 302
+^https?://(www.)?easyrecoverychina\.com/ https://www.ontrack.com/ 302
+^https?://(www.)?ediuschina\.com/ https://www.grassvalley.com/ 302
+^https?://(www.)?flstudiochina\.com/ https://www.image-line.com/flstudio/ 302
+^https?://(www.)?formysql\.com/ https://www.navicat.com.cn 302
+^https?://(www.)?guitarpro\.cc/ https://www.guitar-pro.com/ 302
+^https?://(www.)?huishenghuiying\.com\.cn/ https://www.corel.com/cn/ 302
+^https?://(www.)?iconworkshop\.cn/ https://www.axialis.com/iconworkshop/ 302
+^https?://(www.)?imindmap\.cc/ https://imindmap.com/zh-cn/ 302
+^https?://(www.)?jihehuaban\.com\.cn/ https://sketch.io/ 302
+^https?://(www.)?keyshot\.cc/ https://www.keyshot.com/ 302
+^https?://(www.)?mathtype\.cn/ http://www.dessci.com/en/products/mathtype/ 302
+^https?://(www.)?mindmanager\.cc/ https://www.mindjet.com/ 302
+^https?://(www.)?mindmapper\.cc/ https://mindmapper.com 302
+^https?://(www.)?mycleanmymac\.com/ https://macpaw.com/cleanmymac 302
+^https?://(www.)?nicelabel\.cc/ https://www.nicelabel.com/ 302
+^https?://(www.)?ntfsformac\.cc/ https://www.tuxera.com/products/tuxera-ntfs-for-mac-cn/ 302
+^https?://(www.)?ntfsformac\.cn/ https://www.paragon-software.com/ufsdhome/zh/ntfs-mac/ 302
+^https?://(www.)?overturechina\.com/ https://sonicscores.com/overture/ 302
+^https?://(www.)?passwordrecovery\.cn/ https://cn.elcomsoft.com/aopr.html 302
+^https?://(www.)?pdfexpert\.cc/ https://pdfexpert.com/zh 302
+^https?://(www.)?ultraiso\.net/ https://cn.ezbsystems.com/ultraiso/ 302
+^https?://(www.)?vegaschina\.cn/ https://www.vegas.com/ 302
+^https?://(www.)?xmindchina\.net/ https://www.xmind.cn/ 302
+^https?://(www.)?xshellcn\.com/ https://www.netsarang.com/products/xsh_overview.html 302
+^https?://(www.)?yuanchengxiezuo\.com/ https://www.teamviewer.com/zhcn/ 302
+^https?://(www.)?zbrushcn\.com/ http://pixologic.com/ 302
+^https://aweme-eagle(.*)\.snssdk\.com/aweme/v2/ https://aweme-eagle$1.snssdk.com/aweme/v1/ 302
+# JD Protection
+^https?://coupon\.m\.jd\.com/ https://coupon.m.jd.com/ 302
+^https?://h5\.m\.jd\.com/ https://h5.m.jd.com/ 302
+^https?://item\.m\.jd\.com/ https://item.m.jd.com/ 302
+^https?://m\.jd\.com/ https://m.jd.com/ 302
+^https?://newcz\.m\.jd\.com/ https://newcz.m.jd.com/ 302
+^https?://p\.m\.jd\.com/ https://p.m.jd.com/ 302
+^https?://so\.m\.jd\.com/ https://so.m.jd.com/ 302
+^https?://union\.click\.jd\.com/jda? http://union.click.jd.com/jda?adblock= header
+^https?://union\.click\.jd\.com/sem.php? http://union.click.jd.com/sem.php?adblock= header
+^https?://www.jd.com/ https://www.jd.com/ 302
+# TikTok Internation
+(?<=(carrier|account|sys|sim)_region=)CN JP 307
+# Resso
+(?<=(carrier|account|sys|sim)_region=)cn in 307
+
+# Special AD Block Section
+
+# >> Kugou
+^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/EcomResourceServer/AdPlayPage/adinfo - reject
+^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/MobileAdServer/ - reject
+# >> eLong
+^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/(adgateway|adv)/ - reject
+# >> Xianyu
+^https?://gw\.alicdn\.com/tfs/.+\d{3,4}-\d{4} - reject
+^https?://gw\.alicdn\.com/tps/.+\d{3,4}-\d{4} - reject
+# >> Speedtest.com
+^https?://speed\.(coe|open)\.ad\.[a-z]{2,6}\.prod\.hosts\.ooklaserver\.net - reject
