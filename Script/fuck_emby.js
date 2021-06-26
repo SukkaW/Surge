@@ -1,6 +1,6 @@
 const url = $request.url;
 const newHeaders = {
-  Crack: 'KS',
+  Crack: 'Sukka',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': '*',
   'Access-Control-Allow-Method': '*',
