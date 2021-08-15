@@ -6,8 +6,6 @@ let table;
 const PRESET_MITM_HOSTNAMES = [
   '*baidu.com',
   '*ydstatic.com',
-  'bdsp-x.jd.com',
-  'dsp-x.jd.com',
   '*snssdk.com',
   '*musical.com',
   '*musical.ly',
@@ -53,9 +51,10 @@ try {
           .replaceAll('^https?://', '')
           .replaceAll('^https://', '')
           .replaceAll('^http://', '')
+          .split('/')[0]
           .replaceAll('\\.', '.')
           .replaceAll('.+', '*')
-          .replace(/(.*)\//, (_, $1) => $1)
+          .replaceAll('(.*)', '*')
       }))
   );
 
@@ -91,6 +90,13 @@ try {
             .replaceAll('^http://', '')
             .replaceAll('\\.', '.')
             .replaceAll('.+', '*')
+            .replaceAll('\\d', '*')
+            .replaceAll('([a-z])', '*')
+            .replaceAll('[a-z]', '*')
+            .replaceAll('([0-9])', '*')
+            .replaceAll('[0-9]', '*')
+            .replaceAll(/{.+?}/g, '')
+            .replaceAll(/\*+/g, '*')
         }))
     );
   }));
@@ -143,7 +149,8 @@ try {
   });
 
   console.log('Mitm Hostnames:');
-  console.log(mitmDomains.join(', '));
+  console.log('hostname = %APPEND% ' + mitmDomains.join(', '));
+  console.log('--------------------');
   console.log('Parsed Sucessed:');
   console.log(table.table(parsedDomainsData, {
     border: table.getBorderCharacters('void'),
