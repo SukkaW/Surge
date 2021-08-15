@@ -1,12 +1,8 @@
 const https = require('https');
 
-let ALEXA_TOP_LIMIT = 10000;
-
-let unzip, csv2, es;
+let es;
 
 try {
-  unzip = require('unzip-stream');
-  csv2 = require('csv2');
   es = require('event-stream');
 } catch (e) {
   console.log('Dependencies not found');
@@ -17,51 +13,12 @@ try {
 }
 
 (async () => {
-  const alexaTopDomains = (await fetchAlexaTopDomains()).sort();
-  const dnsmasqconfDomains = await fetchAndParseDnsmasqDomains(alexaTopDomains);
+  const dnsmasqconfDomains = await fetchAndParseDnsmasqDomains();
 
   console.log(dnsmasqconfDomains.length);
 })();
 
-function fetchAlexaTopDomains() {
-  const data = [];
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(
-      {
-        hostname: 's3.amazonaws.com',
-        path: '/alexa-static/top-1m.csv.zip',
-        method: 'GET',
-      },
-      (res) => {
-        res
-          .pipe(unzip.Parse())
-          .on('entry', (entry) => {
-            entry.pipe(csv2()).on('data', ([top, domain]) => {
-              if (top < ALEXA_TOP_LIMIT) {
-                data.push(domain);
-              }
-            });
-          });
-
-        res.on('end', () => {
-          try {
-            resolve(data);
-          } catch (e) {
-            reject(e);
-          }
-        });
-        req.on('error', (err) => {
-          reject(err);
-        });
-      }
-    );
-
-    req.end();
-  })
-}
-
-function fetchAndParseDnsmasqDomains(alexaTopDomains) {
+function fetchAndParseDnsmasqDomains() {
   const data = [];
 
   return new Promise((resolve, reject) => {
@@ -74,17 +31,14 @@ function fetchAndParseDnsmasqDomains(alexaTopDomains) {
       (res) => {
         const s = res
           .pipe(es.split())
-          .pipe(es.mapSync(line => {
+          .pipe(es.map(line => {
             s.pause();
 
             const domain = line
               .replaceAll('server=/', '')
               .replaceAll('/114.114.114.114', '');
 
-            if (alexaTopDomains.includes(domain)) {
-              console.log(domain);
-              data.push(domain);
-            }
+            data.push(domain);
 
             s.resume();
           }))
