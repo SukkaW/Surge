@@ -8,12 +8,12 @@
 ^https?://(www.)?g\.cn https://www.google.com 302
 ^https?://(www.)?google\.cn https://www.google.com 302
 # Redirect HTTP to HTTPS
-^https?://(www.)?taobao\.com/ https://www.taobao.com/ 302
-^https?://(www.)?jd\.com/ https://www.jd.com/ 302
-^https?://(www.)?mi\.com/ https://www.mi.com/ 302
-^https?://you\.163\.com/ https://you.163.com/ 302
-^https?://(www.)?suning\.com/ https://suning.com/ 302
-^https?://(www.)?yhd\.com https://yhd.com/ 302
+^http://(www.)?taobao\.com/ https://www.taobao.com/ 302
+^http://(www.)?jd\.com/ https://www.jd.com/ 302
+^http://(www.)?mi\.com/ https://www.mi.com/ 302
+^http://you\.163\.com/ https://you.163.com/ 302
+^http://(www.)?suning\.com/ https://suning.com/ 302
+^http://(www.)?yhd\.com https://yhd.com/ 302
 # Redirect False to True
 # >> IGN China to IGN Global
 ^https?://(www.)?ign\.xn--fiqs8s/ http://cn.ign.com/ccpref/us 302
