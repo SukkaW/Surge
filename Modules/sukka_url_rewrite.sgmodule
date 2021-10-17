@@ -16,7 +16,7 @@
 ^http://(www.)?yhd\.com https://yhd.com/ 302
 # Redirect False to True
 # >> IGN China to IGN Global
-^https?://(www.)?ign\.xn--fiqs8s/ http://cn.ign.com/ccpref/us 302
+^https?://(www.)?ign\.xn--fiqs8s/ https://cn.ign.com/ccpref/us 302
 # >> Fake Website Made By Makeding
 ^https?://(www.)?abbyychina\.com/ http://www.abbyy.cn/ 302
 ^https?://(www.)?bartender\.cc/ https://cn.seagullscientific.com 302

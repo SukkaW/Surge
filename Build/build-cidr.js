@@ -13,37 +13,17 @@ try {
 }
 
 (async () => {
-  const cidr = (await get('raw.githubusercontent.com', '/tmplink/IPDB/main/ipv4/cidr/CN.txt')).split('\n');
+  const cidr = (await get('raw.githubusercontent.com', 'misakaio/chnroutes2/master/chnroutes.txt')).split('\n');
 
-  let FILTER_FLAG = false;
-  const filteredCidr = cidr.filter(Boolean).filter((ip, index) => {
-    if (FILTER_FLAG) return false;
-
-    const prev = cidr[index - 1];
-    const next = cidr[index + 1];
-    const prevA = Number(prev?.split('.')[0]);
-    const nextA = Number(next?.split('.')[0]);
-
-    if (
-      prevA >= 223 // MCAST-TEST-NET
-      && nextA < 10
-      && prevA > nextA
-    ) {
-      FILTER_FLAG = true;
-      return false;
+  const filteredCidr = cidr.filter(line => {
+    if (line) {
+      return !line.startsWith('#')
     }
 
-    return true;
-  });
+    return false;
+  })
 
-  const mergedCidr = cidrTools.merge(filteredCidr);
-
-  if (mergedCidr.length < 4500) {
-    console.log(`Merged routes (which is ${mergedCidr.length}) is less than 5000 routes, which can't be right. Aborted`);
-    process.exit(1);
-  }
-
-  return fsPromises.writeFile(pathResolve(__dirname, '../List/ip/china_ip.conf'), makeCidrList(mergedCidr), { encoding: 'utf-8' });
+  return fsPromises.writeFile(pathResolve(__dirname, '../List/ip/china_ip.conf'), makeCidrList(filteredCidr), { encoding: 'utf-8' });
 })();
 
 function makeCidrList(cidr) {
