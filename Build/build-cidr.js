@@ -1,4 +1,4 @@
-const https = require('https');
+const { simpleGet } = require('./util-http-get');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
@@ -13,7 +13,7 @@ try {
 }
 
 (async () => {
-  const cidr = (await get('raw.githubusercontent.com', 'misakaio/chnroutes2/master/chnroutes.txt')).split('\n');
+  const cidr = (await simpleGet.https('raw.githubusercontent.com', 'misakaio/chnroutes2/master/chnroutes.txt')).split('\n');
 
   const filteredCidr = cidr.filter(line => {
     if (line) {
@@ -36,33 +36,3 @@ function makeCidrList(cidr) {
 # Routes: ${cidr.length}
 ############################\n` + cidr.map(i => `IP-CIDR,${i}`).join('\n') + '\n########### END ############\n';
 };
-
-function get(hostname, path) {
-  return new Promise((resolve, reject) => {
-    const req = https.request(
-      {
-        hostname,
-        path,
-        method: 'GET',
-      },
-      (res) => {
-        const body = [];
-        res.on('data', (chunk) => {
-          body.push(chunk);
-        });
-        res.on('end', () => {
-          try {
-            resolve(String(Buffer.concat(body)));
-          } catch (e) {
-            reject(e);
-          }
-        });
-        req.on('error', (err) => {
-          reject(err);
-        });
-      }
-    );
-
-    req.end();
-  });
-}
