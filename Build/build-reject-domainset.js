@@ -142,16 +142,6 @@ async function processFilterRules(filterRulesUrl) {
 
   console.log(`Import ${filterRuleBlacklistDomainSets.size} rules from adguard filters!`);
 
-  // Remove whitelist from the domain sets
-  console.log(`Remove whitelist from the domain sets!`);
-  for (const domain of domainSets) {
-    for (const white of filterRuleWhitelistDomainSets) {
-      if (domain.includes(white) || white.includes(domain)) {
-        domainSets.delete(domain);
-      }
-    }
-  }
-
   // Read DOMAIN Keyword
   const domainKeywordsSet = new Set();
   await fsPromises.readFile(pathResolve(__dirname, '../List/non_ip/reject.conf'), { encoding: 'utf-8' }).then(data => {
@@ -172,20 +162,36 @@ async function processFilterRules(filterRulesUrl) {
 
   bar2.start(len, 0);
   for (const domain of domainSets) {
-    for (const keyword of domainKeywordsSet) {
-      if (domain.includes(keyword)) {
+    let shouldContinue = false;
+
+    for (const white of filterRuleWhitelistDomainSets) {
+      if (domain.includes(white) || white.includes(domain)) {
         domainSets.delete(domain);
-        continue;
+        shouldContinue = true;
+        break;
       }
     }
 
-    if (domain.startsWith('.')) {
-      for (const domain2 of domainSets) {
-        if (domain2 !== domain) {
-          if (domain2.endsWith(domain) || `.${domain2}` === domain) {
-            domainSets.delete(domain2);
-          }
-        }
+    if (shouldContinue) {
+      continue;
+    }
+
+    for (const keyword of domainKeywordsSet) {
+      if (domain.includes(keyword) || keyword.includes(domain)) {
+        domainSets.delete(domain);
+        shouldContinue = true;
+        break;
+      }
+    }
+
+    if (shouldContinue) {
+      continue;
+    }
+
+    for (const domain2 of domainSets) {
+      if (domain2.startsWith('.') && domain2 !== domain && (domain.endsWith(domain2) || `.${domain}` === domain2)) {
+        domainSets.delete(domain);
+        break;
       }
     }
 
@@ -194,5 +200,5 @@ async function processFilterRules(filterRulesUrl) {
 
   bar2.stop();
 
-  return fsPromises.writeFile(pathResolve(__dirname, '../List/domainset/reject.conf'), [...domainSets].join('\n'));
+  return fsPromises.writeFile(pathResolve(__dirname, '../List/domainset/reject.conf'), `${[...domainSets].join('\n')}\n`);
 })();
