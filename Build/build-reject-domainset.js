@@ -3,11 +3,13 @@ const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
 let cliProgress;
+let Piscina;
 try {
+  Piscina = require('piscina');
   cliProgress = require('cli-progress');
 } catch (e) {
   console.log('Dependencies not found');
-  console.log('"npm i cli-progress" then try again!');
+  console.log('"npm i cli-progress piscina" then try again!');
 
   console.error(e);
   process.exit(1);
@@ -54,7 +56,11 @@ async function processFilterRules(filterRulesUrl) {
   }
 
   /** @type Set<string> */
-  const whitelistDomainSets = new Set(['localhost', 'analytics.google.com']);
+  const whitelistDomainSets = new Set([
+    'localhost',
+    'analytics.google.com',
+    'msa.cdn.mediaset.net' // Added manually using DOMAIN-KEYWORDS
+  ]);
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
 
@@ -75,10 +81,28 @@ async function processFilterRules(filterRulesUrl) {
       return;
     }
 
-    if (line.startsWith('@@||') && line.endsWith('^')) {
-      whitelistDomainSets.add(`${line.replaceAll('@@||', '').replaceAll('^', '')}`.trim());
-    } else if (line.startsWith('||') && line.endsWith('^')) {
-      blacklistDomainSets.add(`${line.replaceAll('||', '').replaceAll('^', '')}`.trim());
+    if (line.startsWith('@@||')
+      && (
+        line.endsWith('^')
+        || line.endsWith('^|')
+      )
+    ) {
+      whitelistDomainSets.add(`${line.replaceAll('@@||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim());
+    } else if (
+      line.startsWith('||')
+      && (
+        line.endsWith('^')
+        || line.endsWith('^|')
+      )
+    ) {
+      blacklistDomainSets.add(`.${line.replaceAll('||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim());
+    } else if (line.startsWith('://')
+      && (
+        line.endsWith('^')
+        || line.endsWith('^|')
+      )
+    ) {
+      blacklistDomainSets.add(`${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim());
     }
   });
 
@@ -132,8 +156,6 @@ async function processFilterRules(filterRulesUrl) {
   // Parse from AdGuard Filters
   /** @type Set<string> */
   const filterRuleWhitelistDomainSets = new Set();
-  /** @type Set<string> */
-  const filterRuleBlacklistDomainSets = new Set();
   (await Promise.all([
     processFilterRules('https://easylist.to/easylist/easylist.txt'),
     processFilterRules('https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt'),
@@ -143,15 +165,10 @@ async function processFilterRules(filterRulesUrl) {
     processFilterRules('https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt')
   ])).forEach(({ white, black }) => {
     white.forEach(i => filterRuleWhitelistDomainSets.add(i));
-    black.forEach(i => filterRuleBlacklistDomainSets.add(i));
+    black.forEach(i => domainSets.add(i));
   });
 
-  for (const black of filterRuleBlacklistDomainSets) {
-    domainSets.add(`.${black}`);
-  }
-
-  console.log(`Import ${filterRuleBlacklistDomainSets.size} black rules from adguard filters!`);
-  console.log(`Import ${filterRuleWhitelistDomainSets.size} white rules from adguard filters!`);
+  console.log(`Import rules from adguard filters!`);
 
   // Read DOMAIN Keyword
   const domainKeywordsSet = new Set();
@@ -168,55 +185,29 @@ async function processFilterRules(filterRulesUrl) {
 
   // Dedupe domainSets
   console.log(`Start deduping!`);
-  const bar2 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-  bar2.start(domainSets.size, 0);
+  const piscina = new Piscina({
+    filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js')
+  });
 
-  for (const domain of domainSets) {
-    bar2.increment();
+  const res = await Promise.all([
+    piscina.run({ keywords: domainKeywordsSet, input: domainSets }, { name: 'dedupeKeywords' }),
+    piscina.run({ whiteList: filterRuleWhitelistDomainSets, input: domainSets }, { name: 'whitelisted' }),
+    ...sliceIntoChunks(Array.from(domainSets), 5000).map(chunk => piscina.run({ input: chunk, fullSet: domainSets }, { name: 'dedupe' }))
+  ]);
 
-    let shouldContinue = false;
-
-    for (const white of filterRuleWhitelistDomainSets) {
-      if (domain.includes(white) || white.includes(domain)) {
-        domainSets.delete(domain);
-        shouldContinue = true;
-        break;
-      }
-    }
-
-    if (shouldContinue) {
-      continue;
-    }
-
-    for (const keyword of domainKeywordsSet) {
-      if (domain.includes(keyword) || keyword.includes(domain)) {
-        domainSets.delete(domain);
-        shouldContinue = true;
-        break;
-      }
-    }
-
-    if (shouldContinue) {
-      continue;
-    }
-
-    for (const domain2 of domainSets) {
-      if (
-        domain2.startsWith('.')
-        && domain2 !== domain
-        && (
-          domain.endsWith(domain2)
-          || `.${domain}` === domain2
-        )
-      ) {
-        domainSets.delete(domain);
-        break;
-      }
-    }
-  }
-
-  bar2.stop();
+  res.forEach(set => {
+    set.forEach(i => domainSets.delete(i));
+  });
 
   return fsPromises.writeFile(pathResolve(__dirname, '../List/domainset/reject.conf'), `${[...domainSets].join('\n')}\n`);
 })();
+
+function sliceIntoChunks(arr, chunkSize) {
+  const res = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    const chunk = arr.slice(i, i + chunkSize);
+    res.push(chunk);
+  }
+  return res;
+}
