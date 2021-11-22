@@ -34,7 +34,11 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
       return;
     }
     const [, ...domains] = line.split(' ');
-    domainSets.add(`${includeAllSubDomain ? '.' : ''}${domains.join(' ')}`);
+    if (includeAllSubDomain) {
+      domainSets.add(`.${domains.join(' ')}`.trim());
+    } else {
+      domainSets.add(domains.join(' ').trim());
+    }
   });
 
   return [...domainSets];
@@ -42,7 +46,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
 
 /**
  * @param {string | URL} filterRulesUrl
- * @returns {Promise<{ white: string[], black: string[] }>}
+ * @returns {Promise<{ white: Set<string>, black: Set<string> }>}
  */
 async function processFilterRules(filterRulesUrl) {
   if (typeof filterRulesUrl === 'string') {
@@ -50,31 +54,37 @@ async function processFilterRules(filterRulesUrl) {
   }
 
   /** @type Set<string> */
-  const whitelistDomainSets = new Set();
+  const whitelistDomainSets = new Set(['localhost', 'analytics.google.com']);
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
 
   /** @type string[] */
   const filterRules = (await simpleGet.https(filterRulesUrl.hostname, filterRulesUrl.pathname)).split('\n');
   filterRules.forEach(line => {
-    if (line.startsWith('#') || line.startsWith('!')) {
+    if (
+      line.startsWith('#')
+      || line.startsWith('!')
+      || line.startsWith(' ')
+      || line === ''
+      || line.startsWith('\r')
+      || line.startsWith('\n')
+      || line.includes('*')
+      || line.includes('/')
+      || line.includes('$')
+    ) {
       return;
     }
-    if (line.startsWith(' ') || line === '' || line.startsWith('\r') || line.startsWith('\n')) {
-      return;
-    }
-    if (!line.includes('*') && !line.includes('//')) {
-      if (line.startsWith('@@||') && line.endsWith('^')) {
-        whitelistDomainSets.add(`${line.replaceAll('@@||', '').replaceAll('^', '')}`);
-      } else if (line.startsWith('||') && line.endsWith('^')) {
-        blacklistDomainSets.add(`${line.replaceAll('||', '').replaceAll('^', '')}`);
-      }
+
+    if (line.startsWith('@@||') && line.endsWith('^')) {
+      whitelistDomainSets.add(`${line.replaceAll('@@||', '').replaceAll('^', '')}`.trim());
+    } else if (line.startsWith('||') && line.endsWith('^')) {
+      blacklistDomainSets.add(`${line.replaceAll('||', '').replaceAll('^', '')}`.trim());
     }
   });
 
   return {
-    white: [...whitelistDomainSets],
-    black: [...blacklistDomainSets]
+    white: whitelistDomainSets,
+    black: blacklistDomainSets
   };
 }
 
@@ -91,21 +101,19 @@ async function processFilterRules(filterRulesUrl) {
   ])).forEach(hosts => {
     hosts.forEach(host => {
       if (host) {
-        domainSets.add(host);
+        domainSets.add(host.trim());
       }
     });
   });
 
   console.log(`Import ${domainSets.size} rules from hosts files!`);
 
-  console.log(`Start importing rules from reject_sukka.conf!`);
-
   await fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_sukka.conf'), { encoding: 'utf-8' }).then(data => {
     data.split('\n').forEach(line => {
       if (
         line.startsWith('#')
         || line.startsWith(' ')
-        || line === ''
+        || line === '' || line === ' '
         || line.startsWith('\r')
         || line.startsWith('\n')
       ) {
@@ -115,9 +123,11 @@ async function processFilterRules(filterRulesUrl) {
       /* if (domainSets.has(line) || domainSets.has(`.${line}`)) {
         console.warn(`|${line}| is already in the list!`);
       } */
-      domainSets.add(line);
+      domainSets.add(line.trim());
     });
   });
+
+  console.log(`Import rules from reject_sukka.conf!`);
 
   // Parse from AdGuard Filters
   /** @type Set<string> */
@@ -140,7 +150,8 @@ async function processFilterRules(filterRulesUrl) {
     domainSets.add(`.${black}`);
   }
 
-  console.log(`Import ${filterRuleBlacklistDomainSets.size} rules from adguard filters!`);
+  console.log(`Import ${filterRuleBlacklistDomainSets.size} black rules from adguard filters!`);
+  console.log(`Import ${filterRuleWhitelistDomainSets.size} white rules from adguard filters!`);
 
   // Read DOMAIN Keyword
   const domainKeywordsSet = new Set();
@@ -148,20 +159,22 @@ async function processFilterRules(filterRulesUrl) {
     data.split('\n').forEach(line => {
       if (line.startsWith('DOMAIN-KEYWORD')) {
         const [, ...keywords] = line.split(',');
-        domainKeywordsSet.add(keywords.join(','));
+        domainKeywordsSet.add(keywords.join(',').trim());
       }
     });
   });
+
+  console.log(`Import ${domainKeywordsSet.size} black keywords!`);
 
   // Dedupe domainSets
   console.log(`Start deduping!`);
   const bar2 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-  const domainSetsClone = [...domainSets];
-  const len = domainSetsClone.length;
+  bar2.start(domainSets.size, 0);
 
-  bar2.start(len, 0);
   for (const domain of domainSets) {
+    bar2.increment();
+
     let shouldContinue = false;
 
     for (const white of filterRuleWhitelistDomainSets) {
@@ -189,13 +202,18 @@ async function processFilterRules(filterRulesUrl) {
     }
 
     for (const domain2 of domainSets) {
-      if (domain2.startsWith('.') && domain2 !== domain && (domain.endsWith(domain2) || `.${domain}` === domain2)) {
+      if (
+        domain2.startsWith('.')
+        && domain2 !== domain
+        && (
+          domain.endsWith(domain2)
+          || `.${domain}` === domain2
+        )
+      ) {
         domainSets.delete(domain);
         break;
       }
     }
-
-    bar2.increment();
   }
 
   bar2.stop();
