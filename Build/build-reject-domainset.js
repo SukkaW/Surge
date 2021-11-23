@@ -120,8 +120,7 @@ async function processFilterRules(filterRulesUrl) {
   (await Promise.all([
     processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', true),
     processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'),
-    processHosts('https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/full/hosts'),
-    processHosts('https://adaway.org/hosts.txt')
+    processHosts('https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/full/hosts')
   ])).forEach(hosts => {
     hosts.forEach(host => {
       if (host) {
