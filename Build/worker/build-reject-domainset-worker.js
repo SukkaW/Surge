@@ -1,17 +1,17 @@
 exports.dedupe = ({ fullSet, input }) => {
   const output = new Set();
 
-  for (const domain of input) {
-    for (const domain2 of fullSet) {
+  for (const domainFromInput of input) {
+    for (const domainFromFullSet of fullSet) {
       if (
-        domain2.startsWith('.')
-        && domain2 !== domain
+        domainFromFullSet.startsWith('.')
+        && domainFromFullSet !== domainFromInput
         && (
-          domain.endsWith(domain2)
-          || `.${domain}` === domain2
+          domainFromInput.endsWith(domainFromFullSet)
+          || `.${domainFromInput}` === domainFromFullSet
         )
       ) {
-        output.add(domain);
+        output.add(domainFromInput);
         break;
       }
     }
@@ -35,12 +35,18 @@ exports.whitelisted = ({ whiteList, input }) => {
   return output;
 };
 
-exports.dedupeKeywords = ({ keywords, input }) => {
+exports.dedupeKeywords = ({ keywords, suffixes, input }) => {
   const output = new Set();
 
   for (const domain of input) {
     for (const keyword of keywords) {
       if (domain.includes(keyword) || keyword.includes(domain)) {
+        output.add(domain);
+        break;
+      }
+    }
+    for (const suffix of suffixes) {
+      if (domain.endsWith(suffix)) {
         output.add(domain);
         break;
       }

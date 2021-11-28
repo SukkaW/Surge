@@ -2,17 +2,40 @@ const { simpleGet } = require('./util-http-get');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
-let cliProgress;
 let Piscina;
 try {
   Piscina = require('piscina');
-  cliProgress = require('cli-progress');
 } catch (e) {
   console.log('Dependencies not found');
-  console.log('"npm i cli-progress piscina" then try again!');
+  console.log('"npm i piscina" then try again!');
 
   console.error(e);
   process.exit(1);
+}
+
+/**
+ * @param {string | URL} domainListsUrl
+ */
+async function processDomainLists(domainListsUrl) {
+  if (typeof domainListsUrl === 'string') {
+    domainListsUrl = new URL(domainListsUrl);
+  }
+
+  /** @type Set<string> */
+  const domainSets = new Set();
+  /** @type string[] */
+  const domains = (await simpleGet.https(domainListsUrl)).split('\n');
+  domains.forEach(line => {
+    if (line.startsWith('#')) {
+      return;
+    }
+    if (line.startsWith(' ') || line === '' || line.startsWith('\r') || line.startsWith('\n')) {
+      return;
+    }
+    domainSets.add(line.trim());
+  });
+
+  return [...domainSets];
 }
 
 /**
@@ -29,7 +52,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   /** @type string[] */
   const hosts = (await simpleGet.https(hostsUrl)).split('\n');
   hosts.forEach(line => {
-    if (line.startsWith('#')) {
+    if (line.includes('#')) {
       return;
     }
     if (line.startsWith(' ') || line === '' || line.startsWith('\r') || line.startsWith('\n')) {
@@ -58,8 +81,20 @@ async function processFilterRules(filterRulesUrl) {
   /** @type Set<string> */
   const whitelistDomainSets = new Set([
     'localhost',
+    'broadcasthost',
+    'ip6-loopback',
+    'ip6-localnet',
+    'ip6-mcastprefix',
+    'ip6-allnodes',
+    'ip6-allrouters',
+    'ip6-allhosts',
+    'mcastprefix',
     'analytics.google.com',
-    'msa.cdn.mediaset.net' // Added manually using DOMAIN-KEYWORDS
+    'msa.cdn.mediaset.net', // Added manually using DOMAIN-KEYWORDS
+    'cloud.answerhub.com',
+    'ae01.alicdn.com',
+    'whoami.akamai.net',
+    'whoami.ds.akahelp.net'
   ]);
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
@@ -116,7 +151,7 @@ async function processFilterRules(filterRulesUrl) {
   /** @type Set<string> */
   const domainSets = new Set();
 
-  // Parse from remote hosts
+  // Parse from remote hosts & domain lists
   (await Promise.all([
     processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', true),
     processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'),
@@ -129,7 +164,8 @@ async function processFilterRules(filterRulesUrl) {
     });
   });
 
-  console.log(`Import ${domainSets.size} rules from hosts files!`);
+  const hostsSize = domainSets.size;
+  console.log(`Import ${hostsSize} rules from hosts files!`);
 
   await fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_sukka.conf'), { encoding: 'utf-8' }).then(data => {
     data.split('\n').forEach(line => {
@@ -150,7 +186,8 @@ async function processFilterRules(filterRulesUrl) {
     });
   });
 
-  console.log(`Import rules from reject_sukka.conf!`);
+  const sukkaSize = domainSets.size - hostsSize;
+  console.log(`Import ${sukkaSize} rules from reject_sukka.conf!`);
 
   // Parse from AdGuard Filters
   /** @type Set<string> */
@@ -167,37 +204,53 @@ async function processFilterRules(filterRulesUrl) {
     black.forEach(i => domainSets.add(i));
   });
 
-  console.log(`Import rules from adguard filters!`);
+  const adguardSize = domainSets.size - hostsSize - sukkaSize;
+  console.log(`Import ${adguardSize} rules from adguard filters!`);
 
   // Read DOMAIN Keyword
   const domainKeywordsSet = new Set();
+  const domainSuffixSet = new Set();
   await fsPromises.readFile(pathResolve(__dirname, '../List/non_ip/reject.conf'), { encoding: 'utf-8' }).then(data => {
     data.split('\n').forEach(line => {
       if (line.startsWith('DOMAIN-KEYWORD')) {
         const [, ...keywords] = line.split(',');
         domainKeywordsSet.add(keywords.join(',').trim());
+      } else if (line.startsWith('DOMAIN-SUFFIX')) {
+        const [, ...keywords] = line.split(',');
+        domainSuffixSet.add(keywords.join(',').trim());
       }
     });
   });
 
   console.log(`Import ${domainKeywordsSet.size} black keywords!`);
 
+  const beforeDeduping = domainSets.size;
   // Dedupe domainSets
-  console.log(`Start deduping!`);
+  console.log(`Start deduping! (${beforeDeduping})`);
 
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js')
   });
 
-  const res = await Promise.all([
-    piscina.run({ keywords: domainKeywordsSet, input: domainSets }, { name: 'dedupeKeywords' }),
+  const res2 = await Promise.all([
+    piscina.run({ keywords: domainKeywordsSet, suffixes: domainSuffixSet, input: domainSets }, { name: 'dedupeKeywords' }),
     piscina.run({ whiteList: filterRuleWhitelistDomainSets, input: domainSets }, { name: 'whitelisted' }),
-    ...sliceIntoChunks(Array.from(domainSets), 5000).map(chunk => piscina.run({ input: chunk, fullSet: domainSets }, { name: 'dedupe' }))
-  ]);
 
-  res.forEach(set => {
+    Array.from(domainSets).reduce((result, element, index) => {
+      const chunk = index % 12;
+      result[chunk] = result[chunk] ?? [];
+
+      result[chunk].push(element);
+      return result;
+    }, []).map(chunk => piscina.run({ input: chunk, fullSet: domainSets }, { name: 'dedupe' }))
+  ]);
+  res2.forEach(set => {
     set.forEach(i => domainSets.delete(i));
   });
+
+  const diffDeduping = beforeDeduping - domainSets.size;
+
+  console.log(`Deduped ${diffDeduping} rules!`);
 
   return fsPromises.writeFile(pathResolve(__dirname, '../List/domainset/reject.conf'), `${[...domainSets].join('\n')}\n`);
 })();
