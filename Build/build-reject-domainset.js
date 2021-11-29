@@ -2,6 +2,8 @@ const { simpleGet } = require('./util-http-get');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
+const rIPv4 = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/;
+
 let Piscina;
 try {
   Piscina = require('piscina');
@@ -55,7 +57,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
     if (line.includes('#')) {
       return;
     }
-    if (line.startsWith(' ') || line === '' || line.startsWith('\r') || line.startsWith('\n')) {
+    if (line.startsWith(' ') || line.startsWith('\r') || line.startsWith('\n') || line.trim() === '') {
       return;
     }
     const [, ...domains] = line.split(' ');
@@ -103,15 +105,16 @@ async function processFilterRules(filterRulesUrl) {
   const filterRules = (await simpleGet.https(filterRulesUrl.hostname, filterRulesUrl.pathname)).split('\n');
   filterRules.forEach(line => {
     if (
-      line.startsWith('#')
-      || line.startsWith('!')
+      line.includes('#')
+      || line.includes('!')
       || line.startsWith(' ')
-      || line === ''
       || line.startsWith('\r')
       || line.startsWith('\n')
       || line.includes('*')
       || line.includes('/')
       || line.includes('$')
+      || line.trim() === ''
+      || rIPv4.test(line)
     ) {
       return;
     }
@@ -153,9 +156,8 @@ async function processFilterRules(filterRulesUrl) {
 
   // Parse from remote hosts & domain lists
   (await Promise.all([
-    processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext', true),
-    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'),
-    processHosts('https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/full/hosts')
+    processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true),
+    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt')
   ])).forEach(hosts => {
     hosts.forEach(host => {
       if (host) {
@@ -198,7 +200,12 @@ async function processFilterRules(filterRulesUrl) {
     processFilterRules('https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt'),
     processFilterRules('https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt'),
     processFilterRules('https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_English/filter.txt'),
-    processFilterRules('https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt')
+    processFilterRules('https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt'),
+    processFilterRules('https://filters.adtidy.org/extension/ublock/filters/224.txt'),
+    processFilterRules('https://easylist.to/easylist/easyprivacy.txt'),
+    processFilterRules('https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt'),
+    processFilterRules('https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'),
+    processFilterRules('https://curben.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt')
   ])).forEach(({ white, black }) => {
     white.forEach(i => filterRuleWhitelistDomainSets.add(i));
     black.forEach(i => domainSets.add(i));
@@ -232,34 +239,31 @@ async function processFilterRules(filterRulesUrl) {
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js')
   });
 
-  const res2 = await Promise.all([
+  (await Promise.all([
     piscina.run({ keywords: domainKeywordsSet, suffixes: domainSuffixSet, input: domainSets }, { name: 'dedupeKeywords' }),
-    piscina.run({ whiteList: filterRuleWhitelistDomainSets, input: domainSets }, { name: 'whitelisted' }),
+    piscina.run({ whiteList: filterRuleWhitelistDomainSets, input: domainSets }, { name: 'whitelisted' })
+  ])).forEach(set => {
+    set.forEach(i => domainSets.delete(i));
+  });
 
+  const fullSet = new Set([...domainSets]);
+
+  (await Promise.all(
     Array.from(domainSets).reduce((result, element, index) => {
       const chunk = index % 12;
       result[chunk] = result[chunk] ?? [];
 
       result[chunk].push(element);
       return result;
-    }, []).map(chunk => piscina.run({ input: chunk, fullSet: domainSets }, { name: 'dedupe' }))
-  ]);
-  res2.forEach(set => {
+    }, []).map(chunk => piscina.run({ input: chunk, fullSet }, { name: 'dedupe' }))
+  )).forEach(set => {
     set.forEach(i => domainSets.delete(i));
   });
 
-  const diffDeduping = beforeDeduping - domainSets.size;
+  console.log(`Deduped ${beforeDeduping - domainSets.size} rules!`);
 
-  console.log(`Deduped ${diffDeduping} rules!`);
-
-  return fsPromises.writeFile(pathResolve(__dirname, '../List/domainset/reject.conf'), `${[...domainSets].join('\n')}\n`);
+  return fsPromises.writeFile(
+    pathResolve(__dirname, '../List/domainset/reject.conf'),
+    `${[...domainSets].join('\n')}\n`,
+    { encoding: 'utf-8' });
 })();
-
-function sliceIntoChunks(arr, chunkSize) {
-  const res = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    const chunk = arr.slice(i, i + chunkSize);
-    res.push(chunk);
-  }
-  return res;
-}
