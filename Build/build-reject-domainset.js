@@ -1,19 +1,13 @@
 const { simpleGet } = require('./util-http-get');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
+const { cpus } = require('os');
+
+const threads = Math.max(cpus().length, 12);
 
 const rIPv4 = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/;
 
-let Piscina;
-try {
-  Piscina = require('piscina');
-} catch (e) {
-  console.log('Dependencies not found');
-  console.log('"npm i piscina" then try again!');
-
-  console.error(e);
-  process.exit(1);
-}
+const Piscina = require('piscina');
 
 /**
  * @param {string | URL} domainListsUrl
@@ -250,7 +244,7 @@ async function processFilterRules(filterRulesUrl) {
 
   (await Promise.all(
     Array.from(domainSets).reduce((result, element, index) => {
-      const chunk = index % 12;
+      const chunk = index % threads;
       result[chunk] = result[chunk] ?? [];
 
       result[chunk].push(element);

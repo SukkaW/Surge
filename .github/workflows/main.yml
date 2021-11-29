@@ -1,0 +1,37 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version:
+          - 16.x
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i --production
+    - run: node ./Build/build-reject-domainset.js
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GIT_TOKEN }}
+        user_name: ${{ secrets.GIT_USER }}
+        user_email: ${{ secrets.GIT_EMAIL }}
+        publish_branch: gh-pages
+        publish_dir: ./
+        cname: ruleset.skk.moe

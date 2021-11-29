@@ -2,16 +2,6 @@ const { simpleGet } = require('./util-http-get');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
-let cidrTools;
-
-try {
-  cidrTools = require('cidr-tools');
-} catch (e) {
-  console.log('Dependency "cidr-tools" not found');
-  console.log('"npm i cidr-tools" then try again!');
-  process.exit(1);
-}
-
 (async () => {
   const cidr = (await simpleGet.https('raw.githubusercontent.com', 'misakaio/chnroutes2/master/chnroutes.txt')).split('\n');
 

@@ -1,0 +1,20 @@
+{
+  "name": "ruleset.skk.moe",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SukkaW/Surge.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "piscina": "^3.1.0",
+    "table": "^6.7.3"
+  }
+}

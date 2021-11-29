@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { promises: fsPromises } = fs;
 const pathFn = require('path');
-let table;
+const table = require('table');
 
 const PRESET_MITM_HOSTNAMES = [
   '*baidu.com',
@@ -22,14 +22,6 @@ const PRESET_MITM_HOSTNAMES = [
   '*.music.126.net',
   '*.prod.hosts.ooklaserver.net'
 ];
-
-try {
-  table = require('table');
-} catch (e) {
-  console.log('Dependency "table" not found');
-  console.log('"npm i table" then try again!');
-  process.exit(1);
-}
 
 (async () => {
   const folderListPath = pathFn.resolve(__dirname, '../List/');
