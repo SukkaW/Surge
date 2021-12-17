@@ -80,5 +80,3 @@
 # >> Xianyu
 ^https?://gw\.alicdn\.com/tfs/.+\d{3,4}-\d{4} - reject
 ^https?://gw\.alicdn\.com/tps/.+\d{3,4}-\d{4} - reject
-# >> Speedtest.com
-^https?://speed\.(coe|open)\.ad\.[a-z]{2,6}\.prod\.hosts\.ooklaserver\.net - reject
