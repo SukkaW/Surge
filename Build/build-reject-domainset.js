@@ -245,7 +245,7 @@ async function processFilterRules(filterRulesUrl) {
   (await Promise.all(
     Array.from(domainSets).reduce((result, element, index) => {
       const chunk = index % threads;
-      result[chunk] = result[chunk] ?? [];
+      result[chunk] ??= [];
 
       result[chunk].push(element);
       return result;
