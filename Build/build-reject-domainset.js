@@ -1,4 +1,4 @@
-const { simpleGet } = require('./util-http-get');
+const { default: got } = require('got-cjs');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 const { cpus } = require('os');
@@ -20,12 +20,16 @@ async function processDomainLists(domainListsUrl) {
   /** @type Set<string> */
   const domainSets = new Set();
   /** @type string[] */
-  const domains = (await simpleGet.https(domainListsUrl)).split('\n');
+  const domains = (await got(domainListsUrl).text()).split('\n');
   domains.forEach(line => {
-    if (line.startsWith('#')) {
-      return;
-    }
-    if (line.startsWith(' ') || line === '' || line.startsWith('\r') || line.startsWith('\n')) {
+    if (
+      line.startsWith('#')
+      || line.startsWith('!')
+      || line.startsWith(' ')
+      || line === ''
+      || line.startsWith('\r')
+      || line.startsWith('\n')
+    ) {
       return;
     }
     domainSets.add(line.trim());
@@ -46,7 +50,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   const domainSets = new Set();
 
   /** @type string[] */
-  const hosts = (await simpleGet.https(hostsUrl)).split('\n');
+  const hosts = (await got(hostsUrl).text()).split('\n');
   hosts.forEach(line => {
     if (line.includes('#')) {
       return;
@@ -90,13 +94,18 @@ async function processFilterRules(filterRulesUrl) {
     'cloud.answerhub.com',
     'ae01.alicdn.com',
     'whoami.akamai.net',
-    'whoami.ds.akahelp.net'
+    'whoami.ds.akahelp.net',
+    'pxlk9.net.' // This one is malformed from EasyList, which I will manually add instead
   ]);
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
 
+  /** @type Set<string> */
+  const blackIPSets = new Set();
+
   /** @type string[] */
-  const filterRules = (await simpleGet.https(filterRulesUrl.hostname, filterRulesUrl.pathname)).split('\n');
+  const filterRules = (await got(filterRulesUrl).text()).split('\n');
+
   filterRules.forEach(line => {
     if (
       line.includes('#')
@@ -151,13 +160,11 @@ async function processFilterRules(filterRulesUrl) {
   // Parse from remote hosts & domain lists
   (await Promise.all([
     processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true),
-    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'),
-    processHosts('https://curben.gitlab.io/malware-filter/pup-filter-hosts.txt'),
-    processHosts('https://curben.gitlab.io/malware-filter/phishing-filter-hosts.txt')
+    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt')
   ])).forEach(hosts => {
     hosts.forEach(host => {
       if (host) {
-        domainSets.add(host.trim());
+        domainSets.add(host);
       }
     });
   });
@@ -202,6 +209,8 @@ async function processFilterRules(filterRulesUrl) {
     processFilterRules('https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt'),
     processFilterRules('https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'),
     processFilterRules('https://curben.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt'),
+    processFilterRules('https://curben.gitlab.io/malware-filter/pup-filter-agh.txt'),
+    processFilterRules('https://curben.gitlab.io/malware-filter/phishing-filter-agh.txt'),
     processFilterRules('https://curben.gitlab.io/malware-filter/pup-filter-agh.txt')
   ])).forEach(({ white, black }) => {
     white.forEach(i => filterRuleWhitelistDomainSets.add(i));
@@ -243,7 +252,7 @@ async function processFilterRules(filterRulesUrl) {
     set.forEach(i => domainSets.delete(i));
   });
 
-  const fullSet = new Set([...domainSets]);
+  const originalFullSet = new Set([...domainSets]);
 
   (await Promise.all(
     Array.from(domainSets).reduce((result, element, index) => {
@@ -252,7 +261,7 @@ async function processFilterRules(filterRulesUrl) {
 
       result[chunk].push(element);
       return result;
-    }, []).map(chunk => piscina.run({ input: chunk, fullSet }, { name: 'dedupe' }))
+    }, []).map(chunk => piscina.run({ input: chunk, fullSet: originalFullSet }, { name: 'dedupe' }))
   )).forEach(set => {
     set.forEach(i => domainSets.delete(i));
   });

@@ -1,9 +1,9 @@
-const { simpleGet } = require('./util-http-get');
+const { default: got } = require('got-cjs');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
 (async () => {
-  const cidr = (await simpleGet.https('raw.githubusercontent.com', 'misakaio/chnroutes2/master/chnroutes.txt')).split('\n');
+  const cidr = (await got('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').text()).split('\n');
 
   const filteredCidr = cidr.filter(line => {
     if (line) {
