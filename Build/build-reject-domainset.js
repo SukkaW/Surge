@@ -151,7 +151,9 @@ async function processFilterRules(filterRulesUrl) {
   // Parse from remote hosts & domain lists
   (await Promise.all([
     processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true),
-    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt')
+    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'),
+    processHosts('https://curben.gitlab.io/malware-filter/pup-filter-hosts.txt'),
+    processHosts('https://curben.gitlab.io/malware-filter/phishing-filter-hosts.txt')
   ])).forEach(hosts => {
     hosts.forEach(host => {
       if (host) {
@@ -199,7 +201,8 @@ async function processFilterRules(filterRulesUrl) {
     processFilterRules('https://easylist.to/easylist/easyprivacy.txt'),
     processFilterRules('https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt'),
     processFilterRules('https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'),
-    processFilterRules('https://curben.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt')
+    processFilterRules('https://curben.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt'),
+    processFilterRules('https://curben.gitlab.io/malware-filter/pup-filter-agh.txt')
   ])).forEach(({ white, black }) => {
     white.forEach(i => filterRuleWhitelistDomainSets.add(i));
     black.forEach(i => domainSets.add(i));
