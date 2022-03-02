@@ -7,13 +7,6 @@
 # Redirect Google Service
 ^https?://(www.)?g\.cn https://www.google.com 302
 ^https?://(www.)?google\.cn https://www.google.com 302
-# Redirect HTTP to HTTPS
-^http://(www.)?taobao\.com/ https://www.taobao.com/ 302
-^http://(www.)?jd\.com/ https://www.jd.com/ 302
-^http://(www.)?mi\.com/ https://www.mi.com/ 302
-^http://you\.163\.com/ https://you.163.com/ 302
-^http://(www.)?suning\.com/ https://suning.com/ 302
-^http://(www.)?yhd\.com https://yhd.com/ 302
 # Redirect False to True
 # >> IGN China to IGN Global
 ^https?://(www.)?ign\.xn--fiqs8s/ https://cn.ign.com/ccpref/us 302
@@ -55,16 +48,8 @@
 ^https?://(www.)?zbrushcn\.com/ http://pixologic.com/ 302
 ^https://aweme-eagle(.*)\.snssdk\.com/aweme/v2/ https://aweme-eagle$1.snssdk.com/aweme/v1/ 302
 # JD Protection
-^https?://coupon\.m\.jd\.com/ https://coupon.m.jd.com/ 302
-^https?://h5\.m\.jd\.com/ https://h5.m.jd.com/ 302
-^https?://item\.m\.jd\.com/ https://item.m.jd.com/ 302
-^https?://m\.jd\.com/ https://m.jd.com/ 302
-^https?://newcz\.m\.jd\.com/ https://newcz.m.jd.com/ 302
-^https?://p\.m\.jd\.com/ https://p.m.jd.com/ 302
-^https?://so\.m\.jd\.com/ https://so.m.jd.com/ 302
 ^https?://union\.click\.jd\.com/jda? http://union.click.jd.com/jda?adblock= header
 ^https?://union\.click\.jd\.com/sem.php? http://union.click.jd.com/sem.php?adblock= header
-^https?://www.jd.com/ https://www.jd.com/ 302
 # TikTok Internation
 (?<=(carrier|account|sys|sim)_region=)CN JP 307
 # Resso
