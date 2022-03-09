@@ -1,4 +1,4 @@
-#!name=Sukka Surge Reject MITM
+#!name=[Sukka] Surge Reject MITM
 #!desc=为 URL Regex 规则组启用 MITM
 # Use Build/build.js to generate the list
 

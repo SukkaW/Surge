@@ -1,4 +1,4 @@
-#!name=Sukka MitM All Hostnames
+#!name=[Sukka] MitM All Hostnames
 #!desc=Perform MitM on all hostnames with port 443, except those to Apple and other common sites which can't be inspected.
 
 [MITM]
