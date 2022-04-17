@@ -6,6 +6,7 @@ const { cpus } = require('os');
 const threads = Math.max(cpus().length, 12);
 
 const rIPv4 = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/;
+const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m
 
 const Piscina = require('piscina');
 
@@ -59,10 +60,13 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
       return;
     }
     const [, ...domains] = line.split(' ');
-    if (includeAllSubDomain) {
-      domainSets.add(`.${domains.join(' ')}`.trim());
-    } else {
-      domainSets.add(domains.join(' ').trim());
+    const domain = domains.join(' ').trim();
+    if (rDomain.test(domain)) {
+      if (includeAllSubDomain) {
+        domainSets.add(`.${domain}`);
+      } else {
+        domainSets.add(domain);
+      }
     }
   });
 
@@ -136,7 +140,10 @@ async function processFilterRules(filterRulesUrl) {
         || line.endsWith('^|')
       )
     ) {
-      whitelistDomainSets.add(`${line.replaceAll('@@||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim());
+      const domain = `${line.replaceAll('@@||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
+      if (rDomain.test(domain)) {
+        whitelistDomainSets.add(domain);
+      }
     } else if (
       line.startsWith('||')
       && (
@@ -144,14 +151,20 @@ async function processFilterRules(filterRulesUrl) {
         || line.endsWith('^|')
       )
     ) {
-      blacklistDomainSets.add(`.${line.replaceAll('||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim());
+      const domain = `${line.replaceAll('||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
+      if (rDomain.test(domain)) {
+        blacklistDomainSets.add(`.${domain}`);
+      }
     } else if (line.startsWith('://')
       && (
         line.endsWith('^')
         || line.endsWith('^|')
       )
     ) {
-      blacklistDomainSets.add(`${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim());
+      const domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
+      if (rDomain.test(domain)) {
+        blacklistDomainSets.add(domain);
+      }
     }
   });
 
