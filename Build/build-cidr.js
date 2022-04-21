@@ -21,8 +21,8 @@ function makeCidrList(cidr) {
 
   return `############################
 # Mainland China IPv4 CIDR
-# Data from vx.link (tmplink @ GitHub)
-# Last Updated: ${date.getFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()} ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}
+# Data from misaka.io (misakaio @ GitHub)
+# Last Updated: ${date.toISOString()}
 # Routes: ${cidr.length}
 ############################\n` + cidr.map(i => `IP-CIDR,${i}`).join('\n') + '\n########### END ############\n';
 };

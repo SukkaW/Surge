@@ -14,7 +14,7 @@ async function processDomainLists(domainListsUrl) {
   /** @type Set<string> */
   const domainSets = new Set();
   /** @type string[] */
-  const domains = (await got(domainListsUrl).text()).split('\n');
+  const domains = (await (await fetch(domainListsUrl)).text()).split('\n');
   domains.forEach(line => {
     if (
       line.startsWith('#')
@@ -44,7 +44,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   const domainSets = new Set();
 
   /** @type string[] */
-  const hosts = (await got(hostsUrl).text()).split('\n');
+  const hosts = (await(await fetch(hostsUrl)).text()).split('\n');
   hosts.forEach(line => {
     if (line.includes('#')) {
       return;
