@@ -120,9 +120,15 @@ async function processFilterRules(filterRulesUrl) {
       && (
         line.endsWith('^')
         || line.endsWith('^|')
+        || line.endsWith('^$all')
       )
     ) {
-      const domain = `${line.replaceAll('||', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
+      const domain = line
+        .replaceAll('||', '')
+        .replaceAll('^|', '')
+        .replaceAll('^$all', '')
+        .replaceAll('^', '')
+        .trim();
       if (rDomain.test(domain)) {
         blacklistDomainSets.add(`.${domain}`);
       }
