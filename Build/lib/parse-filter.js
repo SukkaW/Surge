@@ -1,5 +1,5 @@
 const { isIP } = require('net');
-const { default: got } = require('got-cjs');
+const { fetch } = require('undici');
 
 const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m
 
@@ -81,7 +81,7 @@ async function processFilterRules(filterRulesUrl) {
   const blacklistDomainSets = new Set();
 
   /** @type string[] */
-  const filterRules = (await got(filterRulesUrl).text()).split('\n').map(line => line.trim());
+  const filterRules = (await (await fetch(filterRulesUrl)).text()).split('\n').map(line => line.trim());
 
   filterRules.forEach(line => {
     if (

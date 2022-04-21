@@ -1,9 +1,9 @@
-const { default: got } = require('got-cjs');
+const { fetch } = require('undici');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
 (async () => {
-  const cidr = (await got('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').text()).split('\n');
+  const cidr = (await (await fetch('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')).text()).split('\n');
 
   const filteredCidr = cidr.filter(line => {
     if (line) {
