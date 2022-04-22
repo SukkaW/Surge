@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@sukka/listdir": "^0.2.0",
+    "picocolors": "^1.0.0",
     "piscina": "^3.1.0",
     "table": "^6.7.3",
     "undici": "^5.0.0"
