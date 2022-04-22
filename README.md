@@ -75,8 +75,9 @@ RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cdn.conf,[Replace with your policy]
 ```
 
-- 人工维护
-- 规则组仅包含 Apple, Inc. 在中华人民共和国工信部完成 ICP 备案和公安网备、且在中华人民共和国境内提供 HTTP 服务的域名。
+- 自动生成
+- 规则组包含 Apple, Inc. 在中华人民共和国完成工信部 ICP 备案和公安网备、且在中华人民共和国境内提供 HTTP 服务的域名，如果由于某些原因需要代理其中部分域名，请自行针对域名编写规则、并添加到当前规则组之前。
+- 数据来源 [`felixonmars/dnsmasq-china-list`](https://github.com/felixonmars/dnsmasq-china-list/blob/master/apple.china.conf)
 
 #### Apple Service
 
@@ -114,7 +115,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 ```
 
 - 自动生成
-- 原始数据由 Misaka Network, Inc.、DMIT, Inc.、NEROCLOUD Ltd.、Rainbow network Ltd.、MOACK Co., Ltd. 提供，由 Misaka Network, Inc. 整理，以 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) 协议发布
+- [原始数据](https://github.com/misakaio/chnroutes2) 由 Misaka Network, Inc.、DMIT, Inc.、NEROCLOUD Ltd.、Rainbow network Ltd.、MOACK Co., Ltd. 提供，由 Misaka Network, Inc. 整理，以 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) 协议发布
 
 ## Surge 模块列表
 
