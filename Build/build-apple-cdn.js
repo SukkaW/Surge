@@ -16,9 +16,16 @@ const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?(
     })
     .filter(domain => typeof domain === 'string' && rDomain.test(domain));
 
-  await fs.promises.writeFile(
-    path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
-    res.map(domain => `DOMAIN,${domain}`).join('\n') + '\n',
-    'utf-8'
-  );
+  await Promise.all([
+    fs.promises.writeFile(
+      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
+      res.map(domain => `DOMAIN,${domain}`).join('\n') + '\n',
+      'utf-8'
+    ),
+    fs.promises.writeFile(
+      path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
+      res.join('\n') + '\n',
+      'utf-8'
+    )
+  ])
 })();

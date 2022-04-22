@@ -72,7 +72,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy
 #### Apple CDN
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cdn.conf,[Replace with your policy]
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,[Replace with your policy]
 ```
 
 - 自动生成
