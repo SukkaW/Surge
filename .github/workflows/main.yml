@@ -26,6 +26,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm i --production
     - run: node ./Build/build-reject-domainset.js
+    - run: node ./Build/build-cidr.js
+    - run: node ./Build/build-cidr.js
+    - run: node ./Build/build-index.html.js
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
@@ -34,4 +37,4 @@ jobs:
         user_email: ${{ secrets.GIT_EMAIL }}
         publish_branch: gh-pages
         publish_dir: ./
-        cname: ruleset.skk.moe
+        # cname: ruleset.skk.moe
