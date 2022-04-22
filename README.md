@@ -8,7 +8,7 @@
 
 如果你正在使用商业性质的公共代理服务，请务必先仔细阅读相关服务商的 服务条款与条件（ToS）。部分公共代理服务商的服务条款与条件规定，如果用户使用任何第三方规则文件将会被视为自动放弃 SLA 和技术支持服务。
 
-如果你从 Sukka 提供的服务器（[`https://ruleset.skk.moe`](https://ruleset.skk.moe)）获取本项目中的规则组文件，则意味着你已知晓并同意 [隐私政策](https://skk.moe/privacy-policy/) 中的所有条款。如果你不同意，请通过 GitHub 获取本项目中的源码、并自行构建规则组文件。
+如果你从 Sukka 提供的 Surge Ruleset Server（[`https://ruleset.skk.moe`](https://ruleset.skk.moe)）获取本项目中的规则组文件，则意味着你已知晓并同意 [隐私政策](https://skk.moe/privacy-policy/) 中的所有条款。如果你不同意，请通过 GitHub 获取本项目中的源码、并自行构建规则组文件。
 
 ## 规则组列表
 
@@ -22,12 +22,11 @@
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject-drop
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,reject-tinygif
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-
-
 ```
 
 - 自动生成
 - 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.js`](Build/build-reject-domainset.js)
-- 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）
+- 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）以获得更好的性能
 - 不能替代浏览器广告屏蔽扩展（如 uBlock Origin）
 
 ### 搜狗输入法
@@ -137,7 +136,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 
 **有适用于 Clash 的规则组吗？**
 
-没有。未来可能会有。
+没有。如果 [Clash Premium 提供了对 `DOMAIN-SET` 格式的支持](https://github.com/Dreamacro/clash/issues/1838)，未来可能会有。
 
 **有适用于 Shadowrocket、Quantumult X、Loon、V2RayNG 的规则组吗？**
 
@@ -151,7 +150,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 
 不，你不能。
 
-**那我能参与维护项目吗？**
+**那我能参与维护项目、修复问题吗？**
 
 如果你的 Pull Request 出现在了我 GitHub Notification Inbox 中、然后被我看到了的话，我会 Review 的。
 
