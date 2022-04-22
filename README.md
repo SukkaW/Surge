@@ -1,6 +1,6 @@
 # Surge
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、仅适用于 [Surge](https://nssurge.com/) Rule Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、仅适用于 [Surge](https://nssurge.com/) 的 Rule Snippet。
 
 ## 条款和协议
 
@@ -8,7 +8,7 @@
 
 如果你正在使用商业性质的公共代理服务，请务必先仔细阅读相关服务商的 服务条款与条件（ToS）。部分公共代理服务商的服务条款与条件规定，如果用户使用任何第三方规则文件将会被视为自动放弃 SLA 和技术支持服务。
 
-如果你从 Sukka 提供的 Surge Ruleset Server（[`https://ruleset.skk.moe`](https://ruleset.skk.moe)）获取本项目中的规则组文件，则意味着你已知晓并同意 [隐私政策](https://skk.moe/privacy-policy/) 中的所有条款。如果你不同意，请通过 GitHub 获取本项目中的源码、并自行构建规则组文件。
+如果你从 Sukka 提供的 Surge Ruleset Server（[`https://ruleset.skk.moe`](https://ruleset.skk.moe)）获取本项目中的规则组文件，则意味着你已知晓并同意 [隐私政策](https://skk.moe/privacy-policy/) 中的所有条款。如果你不同意，请通过 GitHub 获取本项目中的源码、自行构建规则组文件。
 
 ## 规则组列表
 
@@ -16,12 +16,12 @@
 
 > Surge 和 Clash 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免不必要的 DNS 解析。
 
-### 广告拦截 / 隐私保护
+#### 广告拦截 / 隐私保护
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject-drop
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,reject-tinygif
-RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-
+RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
 ```
 
 - 自动生成
@@ -29,7 +29,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-
 - 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）以获得更好的性能
 - 不能替代浏览器广告屏蔽扩展（如 uBlock Origin）
 
-### 搜狗输入法
+#### 搜狗输入法
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,reject-drop
@@ -39,7 +39,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,reject-drop
 - 该规则组用于避免搜狗输入法将你输入的每一个字符自动收集并通过 `get.sogou.com/q` 等域名回传
 - 影响搜狗输入法账号同步、词库更新、问题反馈
 
-### 常见静态 CDN
+#### 常见静态 CDN
 
 ```ini
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,[Replace with your policy]
@@ -50,7 +50,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,[Replace with your policy]
 - 包含所有常见静态资源 CDN 域名
 - 如果你正在使用商业性质的公共代理服务、且你的服务商提供按低倍率结算流量消耗的节点，可使用上述规则组将流量分配给这部分节点
 
-### 流媒体
+#### 流媒体
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,[Replace with your policy]
@@ -60,7 +60,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,[Replace with your policy]
 - 人工维护
 - 包含 4gtv、AbemaTV、All4、Amazon Prime Video、Apple TV、Apple Music TV、Bahamut、BBC、Bilibili Intl、DAZN、Deezer、Disney+、Discovery+、DMM、encoreTVB、Fox Now、Fox+、HBO GO/Now/Max/Asia、Hulu、HWTV、JOOX、Jwplayer、KKBOX、KKTV、Line TV、Naver TV、myTV Super、Netflix、niconico、Now E、Paramount+、PBS、Peacock、Pandora、PBS、Pornhub、SoundCloud、PBS、Spotify、TaiwanGood、Tiktok Intl、Twitch、ViuTV、ShowTime、iQiYi Global、Himalaya Podcast、Overcast、WeTV 的规则组
 
-### Telegram
+#### Telegram
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,[Replace with your policy]
@@ -69,7 +69,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy
 
 - 人工维护
 
-### Apple CDN
+#### Apple CDN
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cdn.conf,[Replace with your policy]
@@ -78,7 +78,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cdn.conf,[Replace with your p
 - 人工维护
 - 规则组仅包含 Apple, Inc. 在中华人民共和国工信部完成 ICP 备案和公安网备、且在中华人民共和国境内提供 HTTP 服务的域名。
 
-### Apple Service
+#### Apple Service
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,[Replace with your policy]
@@ -95,7 +95,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,[Replace with your po
 
 - 人工维护
 
-### Misc
+#### Misc
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,[Replace with your policy]
@@ -107,7 +107,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy
 
 - 人工维护
 
-### chnroute CIDR
+#### chnroute CIDR
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy]
@@ -144,7 +144,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 
 **这些规则组可被用于 Surfboard 吗？**
 
-如果 Surfboard 能够完整解析 Surge 的所有 Syntax，且在导入 / 处理规则组时、不被支持的 Syntax（如涉及到 MITM 的 `URL-REGEX`、仅适用于 HTTP/HTTPS 请求的 `USER-AGENT`、仅支持 PC 平台的 `PROCESS-NAME`）在处理时仅 Silent Error，则可用于 Surfboard，反之则不适用。
+如果 Surfboard 能够完整解析 Surge 的所有 Syntax，且在导入 / 处理规则组时、不被支持的 Syntax（如涉及到 MITM 的 `URL-REGEX`、仅适用于 HTTP/HTTPS 请求的 `USER-AGENT`、仅支持 PC/Mac 平台的 `PROCESS-NAME`）在处理时仅 Silent Error，则可用于 Surfboard，反之则不适用。
 
 **我使用你的规则组，结果出了问题，我该如何反馈？**
 
