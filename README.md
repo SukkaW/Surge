@@ -87,7 +87,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,[Replace with y
 
 - 人工维护
 
-### 网易云音乐
+#### 网易云音乐
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,[Replace with your policy]
