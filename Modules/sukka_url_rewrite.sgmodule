@@ -65,3 +65,6 @@
 # >> Xianyu
 ^https?://gw\.alicdn\.com/tfs/.+\d{3,4}-\d{4} - reject
 ^https?://gw\.alicdn\.com/tps/.+\d{3,4}-\d{4} - reject
+
+# >> NOMO
+^https?://nomo.dafork.com/api/v3/iap/ios_product_list https://ruleset.skk.moe/Assets/nomo.json 302
