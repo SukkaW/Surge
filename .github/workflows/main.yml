@@ -29,6 +29,7 @@ jobs:
     - run: node ./Build/build-apple-cdn.js
     - run: node ./Build/build-cidr.js
     - run: node ./Build/build-reject-domainset.js
+    - run: node ./Build/build-telegram-cidr.js
     - run: node ./Build/build-index.html.js
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
