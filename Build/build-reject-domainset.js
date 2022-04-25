@@ -68,9 +68,7 @@ const threads = Math.max(require('os').cpus().length, 12);
     'piwik.pro',
     'mixpanel.com',
     'heapanalytics.com',
-    'dataunlocker.com',
     'segment.com',
-    'segment.io',
     'segmentify.com'
   ]);
 
