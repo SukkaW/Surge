@@ -31,6 +31,7 @@ jobs:
     - run: node ./Build/build-reject-domainset.js
     - run: node ./Build/build-telegram-cidr.js
     - run: node ./Build/build-index.html.js
+    - run: node Build/build-cdn-conf.js
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
