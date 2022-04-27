@@ -3,9 +3,51 @@
   "version": "0.0.0",
   "private": true,
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "wireit",
+    "build:anti-bogus-domain": "wireit",
+    "build:apple-cdn": "wireit",
+    "build:cdn-conf": "wireit",
+    "build:index-html": "wireit",
+    "build:reject-domainset": "wireit",
+    "build:telegram-cidr": "wireit"
+  },
+  "wireit": {
+    "build:anti-bogus-domain": {
+      "command": "node ./Build/build-anti-bogus-domain.js"
+    },
+    "build:apple-cdn": {
+      "command": "node ./Build/build-apple-cdn.js"
+    },
+    "build:cdn-conf": {
+      "command": "node ./Build/build-cdn-conf.js"
+    },
+    "build:reject-domainset": {
+      "command": "node ./Build/build-reject-domainset.js"
+    },
+    "build:telegram-cidr": {
+      "command": "node ./Build/build-telegram-cidr.js"
+    },
+    "build:index-html": {
+      "command": "node ./Build/build-index.html.js",
+      "dependencies": [
+        "build:anti-bogus-domain",
+        "build:apple-cdn",
+        "build:cdn-conf",
+        "build:reject-domainset",
+        "build:telegram-cidr"
+      ]
+    },
+    "build": {
+      "dependencies": [
+        "build:anti-bogus-domain",
+        "build:apple-cdn",
+        "build:cdn-conf",
+        "build:reject-domainset",
+        "build:telegram-cidr",
+        "build:index-html"
+      ]
+    }
   },
   "repository": {
     "type": "git",
@@ -19,5 +61,8 @@
     "piscina": "^3.1.0",
     "table": "^6.7.3",
     "undici": "^5.0.0"
+  },
+  "devDependencies": {
+    "wireit": "^0.2.0"
   }
 }
