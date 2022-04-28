@@ -1,6 +1,7 @@
 const { fetch } = require('undici');
 const fs = require('fs');
 const path = require('path');
+const { isIPv4, isIPv6 } = require('net');
 
 (async () => {
   const resp = await fetch('https://core.telegram.org/resources/cidr.txt');
@@ -15,9 +16,14 @@ const path = require('path');
     '# Telegram CIDR (https://core.telegram.org/resources/cidr.txt)' + '\n' +
     '# Last Updated: ' + lastModified.toISOString() + '\n' +
     res.map(ip => {
-      return ip.includes(':')
-        ? `IP-CIDR6,${ip},no-resolve`
-        : `IP-CIDR,${ip},no-resolve`;
+      const [subnet, range] = ip.split('/');
+      if (isIPv4(subnet)) {
+        return `IP-CIDR,${ip},no-resolve`;
+      }
+      if (isIPv6(subnet)) {
+        return `IP-CIDR6,${ip},no-resolve`;
+      }
+      return '';
     }).join('\n') + '\n',
     'utf-8'
   );
