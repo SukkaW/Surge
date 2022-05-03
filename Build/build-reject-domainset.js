@@ -11,7 +11,8 @@ const threads = Math.max(require('os').cpus().length, 12);
   // Parse from remote hosts & domain lists
   (await Promise.all([
     processHosts('https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true),
-    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt')
+    processHosts('https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'),
+    processHosts('https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt')
   ])).forEach(hosts => {
     hosts.forEach(host => {
       if (host) {
