@@ -1,5 +1,4 @@
-const fs = require('fs');
-const { promises: fsPromises } = fs;
+const fsPromises = require('fs').promises;
 const pathFn = require('path');
 const table = require('table');
 const listDir = require('@sukka/listdir');
