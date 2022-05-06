@@ -19,9 +19,9 @@
 #### 广告拦截 / 隐私保护
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject-drop
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,reject-tinygif
-RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT-DROP
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT-TINYGIF
+RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 ```
 
 - 自动生成
@@ -32,7 +32,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
 #### 搜狗输入法
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,reject-drop
+RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,REJECT-DROP
 ```
 
 - 人工维护
