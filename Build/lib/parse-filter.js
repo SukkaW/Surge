@@ -97,7 +97,12 @@ async function processFilterRules(filterRulesUrl) {
       return;
     }
 
-    if (line.startsWith('@@||')
+    if (line.startsWith('||') && line.endsWith('^$badfilter')) {
+      const domain = line.replaceAll('||', '').replaceAll('^$badfilter', '').trim();
+      if (rDomain.test(domain)) {
+        whitelistDomainSets.add(domain);
+      }
+    } else if (line.startsWith('@@||')
       && (
         line.endsWith('^')
         || line.endsWith('^|')
