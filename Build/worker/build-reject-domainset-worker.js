@@ -1,15 +1,16 @@
-exports.dedupe = ({ fullSet, input }) => {
+const { workerData } = require('piscina');
+
+exports.dedupe = ({ chunk }) => {
   const outputToBeRemoved = new Set();
 
-  for (const domainFromInput of input) {
-    for (const domainFromFullSet of fullSet) {
+  for (const domainFromInput of chunk) {
+    for (const domainFromFullSet of workerData) {
+      if (domainFromFullSet === domainFromInput) continue;
+      if (domainFromFullSet.charAt(0) !== '.') continue;
+
       if (
-        domainFromFullSet.startsWith('.')
-        && domainFromFullSet !== domainFromInput
-        && (
-          domainFromInput.endsWith(domainFromFullSet)
-          || `.${domainFromInput}` === domainFromFullSet
-        )
+        `.${domainFromInput}` === domainFromFullSet
+        || domainFromInput.endsWith(domainFromFullSet)
       ) {
         outputToBeRemoved.add(domainFromInput);
         break;
@@ -20,10 +21,10 @@ exports.dedupe = ({ fullSet, input }) => {
   return outputToBeRemoved;
 };
 
-exports.whitelisted = ({ whiteList, input }) => {
+exports.whitelisted = ({ whiteList }) => {
   const outputToBeRemoved = new Set();
 
-  for (const domain of input) {
+  for (const domain of workerData) {
     for (const white of whiteList) {
       if (domain.includes(white) || white.includes(domain)) {
         outputToBeRemoved.add(domain);
@@ -35,10 +36,10 @@ exports.whitelisted = ({ whiteList, input }) => {
   return outputToBeRemoved;
 };
 
-exports.dedupeKeywords = ({ keywords, suffixes, input }) => {
+exports.dedupeKeywords = ({ keywords, suffixes }) => {
   const outputToBeRemoved = new Set();
 
-  for (const domain of input) {
+  for (const domain of workerData) {
     for (const keyword of keywords) {
       if (domain.includes(keyword) || keyword.includes(domain)) {
         outputToBeRemoved.add(domain);

@@ -2,7 +2,7 @@ const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 const Piscina = require('piscina');
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
-const threads = Math.max(require('os').cpus().length, 12);
+const threads = require('os').cpus().length - 1;
 
 (async () => {
   /** @type Set<string> */
@@ -144,23 +144,22 @@ const threads = Math.max(require('os').cpus().length, 12);
   console.log(`Start deduping! (${beforeDeduping})`);
 
   const piscina = new Piscina({
-    filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js')
+    filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
+    workerData: domainSets
   });
 
   (await Promise.all([
     piscina.run(
-      { keywords: domainKeywordsSet, suffixes: domainSuffixSet, input: domainSets },
+      { keywords: domainKeywordsSet, suffixes: domainSuffixSet },
       { name: 'dedupeKeywords' }
     ),
     piscina.run(
-      { whiteList: filterRuleWhitelistDomainSets, input: domainSets },
+      { whiteList: filterRuleWhitelistDomainSets },
       { name: 'whitelisted' }
     )
   ])).forEach(set => {
     set.forEach(i => domainSets.delete(i));
   });
-
-  const originalFullSet = new Set([...domainSets]);
 
   (await Promise.all(
     Array.from(domainSets)
@@ -172,7 +171,7 @@ const threads = Math.max(require('os').cpus().length, 12);
         return result;
       }, [])
       .map(chunk => piscina.run(
-        { input: chunk, fullSet: originalFullSet },
+        { chunk },
         { name: 'dedupe' }
       ))
   )).forEach(set => {

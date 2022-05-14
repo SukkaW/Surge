@@ -16,7 +16,7 @@ const { isIPv4, isIPv6 } = require('net');
     '# Telegram CIDR (https://core.telegram.org/resources/cidr.txt)' + '\n' +
     '# Last Updated: ' + lastModified.toISOString() + '\n' +
     res.map(ip => {
-      const [subnet, range] = ip.split('/');
+      const [subnet] = ip.split('/');
       if (isIPv4(subnet)) {
         return `IP-CIDR,${ip},no-resolve`;
       }
