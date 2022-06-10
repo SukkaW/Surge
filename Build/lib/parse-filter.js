@@ -90,7 +90,7 @@ async function processFilterRules(filterRulesUrl) {
       || line.includes('!')
       || line.includes('*')
       || line.includes('/')
-      || line.includes('$') && !line.startsWith('@@')
+      || line.includes('$') && !line.startsWith('||')
       || line.trim() === ''
       || isIP(line) !== 0
     ) {
@@ -98,7 +98,7 @@ async function processFilterRules(filterRulesUrl) {
     }
 
     if (line.startsWith('||') && line.endsWith('^$badfilter')) {
-      const domain = line.replaceAll('||', '').replaceAll('^$badfilter', '').trim();
+      const domain = line.replace('||', '').replace('^$badfilter', '').trim();
       if (rDomain.test(domain)) {
         whitelistDomainSets.add(domain);
       }
