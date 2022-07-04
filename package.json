@@ -60,9 +60,9 @@
     "picocolors": "^1.0.0",
     "piscina": "^3.2.0",
     "table": "^6.8.0",
-    "undici": "^5.2.0"
+    "undici": "^5.6.0"
   },
   "devDependencies": {
-    "wireit": "^0.4.2"
+    "wireit": "^0.7.1"
   }
 }
