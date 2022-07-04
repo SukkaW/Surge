@@ -21,17 +21,18 @@ const threads = require('os').cpus().length - 1;
     });
   });
 
-  const hostsSize = domainSets.size;
-  console.log(`Import ${hostsSize} rules from hosts files!`);
+  let previousSize = domainSets.size;
+  console.log(`Import ${previousSize} rules from hosts files!`);
 
   await fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_sukka.conf'), { encoding: 'utf-8' }).then(data => {
     data.split('\n').forEach(line => {
+      const trimmed = line.trim();
       if (
         line.startsWith('#')
         || line.startsWith(' ')
         || line.startsWith('\r')
         || line.startsWith('\n')
-        || line.trim() === ''
+        || trimmed === ''
       ) {
         return;
       }
@@ -39,12 +40,12 @@ const threads = require('os').cpus().length - 1;
       /* if (domainSets.has(line) || domainSets.has(`.${line}`)) {
         console.warn(`|${line}| is already in the list!`);
       } */
-      domainSets.add(line.trim());
+      domainSets.add(trimmed);
     });
   });
 
-  const sukkaSize = domainSets.size - hostsSize;
-  console.log(`Import ${sukkaSize} rules from reject_sukka.conf!`);
+  previousSize = domainSets.size - previousSize;
+  console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
   // Parse from AdGuard Filters
   /** @type Set<string> */
@@ -120,8 +121,8 @@ const threads = require('os').cpus().length - 1;
     black.forEach(i => domainSets.add(i));
   });
 
-  const adguardSize = domainSets.size - hostsSize - sukkaSize;
-  console.log(`Import ${adguardSize} rules from adguard filters!`);
+  previousSize = domainSets.size - previousSize;
+  console.log(`Import ${previousSize} rules from adguard filters!`);
 
   // Read DOMAIN Keyword
   const domainKeywordsSet = new Set();
@@ -140,9 +141,9 @@ const threads = require('os').cpus().length - 1;
 
   console.log(`Import ${domainKeywordsSet.size} black keywords and ${domainSuffixSet.size} black suffixes!`);
 
-  const beforeDeduping = domainSets.size;
+  previousSize = domainSets.size;
   // Dedupe domainSets
-  console.log(`Start deduping! (${beforeDeduping})`);
+  console.log(`Start deduping! (${previousSize})`);
 
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
@@ -179,7 +180,7 @@ const threads = require('os').cpus().length - 1;
     set.forEach(i => domainSets.delete(i));
   });
 
-  console.log(`Deduped ${beforeDeduping - domainSets.size} rules!`);
+  console.log(`Deduped ${previousSize - domainSets.size} rules!`);
 
   return fsPromises.writeFile(
     pathResolve(__dirname, '../List/domainset/reject.conf'),

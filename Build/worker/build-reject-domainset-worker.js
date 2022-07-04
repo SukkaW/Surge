@@ -10,8 +10,8 @@ exports.dedupe = ({ chunk }) => {
       if (domainFromFullSet.charAt(0) !== '.') continue;
 
       if (
-        // `.${domainFromInput}` === domainFromFullSet
-        domainFromInput.endsWith(domainFromFullSet)
+        (domainFromInput.charAt(0) !== '.' && `.${domainFromInput}` === domainFromFullSet)
+        || domainFromInput.endsWith(domainFromFullSet)
       ) {
         outputToBeRemoved.add(domainFromInput);
         break;
