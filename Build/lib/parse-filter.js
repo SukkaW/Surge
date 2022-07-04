@@ -84,28 +84,33 @@ async function processFilterRules(filterRulesUrl) {
   const filterRules = (await (await fetch(filterRulesUrl)).text()).split('\n').map(line => line.trim());
 
   filterRules.forEach(line => {
+    const lineStartsWithDoubleVerticalBar = line.startsWith('||');
+
     if (
       line === ''
       || line.includes('#')
       || line.includes('!')
       || line.includes('*')
       || line.includes('/')
-      || line.includes('$') && !line.startsWith('||')
-      || line.trim() === ''
+      || line.includes('$') && !lineStartsWithDoubleVerticalBar
+      || line === ''
       || isIP(line) !== 0
     ) {
       return;
     }
 
-    if (line.startsWith('||') && line.endsWith('^$badfilter')) {
+    const lineEndsWithCaret = line.endsWith('^');
+    const lineEndsWithCaretVerticalBar = line.endsWith('^|');
+
+    if (lineStartsWithDoubleVerticalBar && line.endsWith('^$badfilter')) {
       const domain = line.replace('||', '').replace('^$badfilter', '').trim();
       if (rDomain.test(domain)) {
         whitelistDomainSets.add(domain);
       }
     } else if (line.startsWith('@@||')
       && (
-        line.endsWith('^')
-        || line.endsWith('^|')
+        lineEndsWithCaret
+        || lineEndsWithCaretVerticalBar
         || line.endsWith('^$badfilter')
         || line.endsWith('^$1p')
       )
@@ -121,10 +126,10 @@ async function processFilterRules(filterRulesUrl) {
         whitelistDomainSets.add(domain);
       }
     } else if (
-      line.startsWith('||')
+      lineStartsWithDoubleVerticalBar
       && (
-        line.endsWith('^')
-        || line.endsWith('^|')
+        lineEndsWithCaret
+        || lineEndsWithCaretVerticalBar
         || line.endsWith('^$all')
       )
     ) {
@@ -139,8 +144,8 @@ async function processFilterRules(filterRulesUrl) {
       }
     } else if (line.startsWith('://')
       && (
-        line.endsWith('^')
-        || line.endsWith('^|')
+        lineEndsWithCaret
+        || lineEndsWithCaretVerticalBar
       )
     ) {
       const domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();

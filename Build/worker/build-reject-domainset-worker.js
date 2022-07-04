@@ -3,14 +3,15 @@ const { workerData } = require('piscina');
 exports.dedupe = ({ chunk }) => {
   const outputToBeRemoved = new Set();
 
-  for (const domainFromInput of chunk) {
+  for (let i = 0, l = chunk.length; i < l; i++) {
+    const domainFromInput = chunk[i];
     for (const domainFromFullSet of workerData) {
       if (domainFromFullSet === domainFromInput) continue;
       if (domainFromFullSet.charAt(0) !== '.') continue;
 
       if (
-        `.${domainFromInput}` === domainFromFullSet
-        || domainFromInput.endsWith(domainFromFullSet)
+        // `.${domainFromInput}` === domainFromFullSet
+        domainFromInput.endsWith(domainFromFullSet)
       ) {
         outputToBeRemoved.add(domainFromInput);
         break;

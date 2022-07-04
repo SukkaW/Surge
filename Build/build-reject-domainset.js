@@ -71,7 +71,8 @@ const threads = require('os').cpus().length - 1;
     'heapanalytics.com',
     'segment.com',
     'segmentify.com',
-    't.co' // pgl yoyo add t.co to the blacklist
+    't.co', // pgl yoyo add t.co to the blacklist
+    'survicate.com' // AdGuardDNSFilter
   ]);
 
   (await Promise.all([
