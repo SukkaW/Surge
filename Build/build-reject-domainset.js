@@ -69,6 +69,7 @@ const threads = require('os').cpus().length - 1;
     'instant.page', // No, it doesn't violate anyone's privacy. I will whitelist it
     'piwik.pro',
     'mixpanel.com',
+    'cdn.mxpnl.com',
     'heapanalytics.com',
     'segment.com',
     'segmentify.com',
