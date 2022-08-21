@@ -110,11 +110,11 @@ const threads = require('os').cpus().length - 1;
     // Easy Privacy
     'https://easylist.to/easylist/easyprivacy.txt',
     // Curben's Malware Online UrlHaus
-    'https://curben.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt',
+    'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt',
     // Curben's Phishing Online Filter
-    'https://curben.gitlab.io/malware-filter/phishing-filter-agh.txt',
+    'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt',
     // Curben's PUP List
-    'https://curben.gitlab.io/malware-filter/pup-filter-agh.txt',
+    'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt',
     // GameConsoleAdblockList
     'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
     // PiHoleBlocklist
