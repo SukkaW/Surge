@@ -6,15 +6,33 @@ exports.dedupe = ({ chunk }) => {
   for (let i = 0, l = chunk.length; i < l; i++) {
     const domainFromInput = chunk[i];
     for (const domainFromFullSet of workerData) {
+      if (outputToBeRemoved.has(domainFromFullSet)) continue;
       if (domainFromFullSet === domainFromInput) continue;
       if (domainFromFullSet.charAt(0) !== '.') continue;
+      // domainFromFullSet is now startsWith a "."
 
-      if (
-        (domainFromInput.charAt(0) !== '.' && `.${domainFromInput}` === domainFromFullSet)
-        || domainFromInput.endsWith(domainFromFullSet)
-      ) {
-        outputToBeRemoved.add(domainFromInput);
-        break;
+      if (domainFromInput.charAt(0) !== '.') {
+        let shouldBeRemoved = true;
+
+        for (let j = 0, l2 = domainFromInput.length; j < l2; j++) {
+          if (domainFromFullSet.charAt(j + 1) !== domainFromInput.charAt(j)) {
+            shouldBeRemoved = false;
+            break;
+          }
+        }
+
+        if (shouldBeRemoved) {
+          outputToBeRemoved.add(domainFromInput);
+          break;
+        }
+      }
+      // domainFromInput is now startsWith a "."
+
+      if (domainFromInput.length >= domainFromFullSet.length) {
+        if (domainFromInput.endsWith(domainFromFullSet)) {
+          outputToBeRemoved.add(domainFromInput);
+          break;
+        }
       }
     }
   }
