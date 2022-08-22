@@ -5,7 +5,7 @@ specifiers:
   picocolors: ^1.0.0
   piscina: ^3.2.0
   table: ^6.8.0
-  undici: ^5.6.0
+  undici: ^5.9.1
   wireit: ^0.7.1
 
 dependencies:
@@ -13,7 +13,7 @@ dependencies:
   picocolors: 1.0.0
   piscina: 3.2.0
   table: 6.8.0
-  undici: 5.6.0
+  undici: 5.9.1
 
 devDependencies:
   wireit: 0.7.1
@@ -387,8 +387,8 @@ packages:
       is-number: 7.0.0
     dev: true
 
-  /undici/5.6.0:
-    resolution: {integrity: sha512-mc+8SY1fXubTrdx4CXDkeFFGV8lI3Tq4I/70U1V8Z6g4iscGII0uLO7CPnDt56bXEbvaKwo2T2+VrteWbZiXiQ==}
+  /undici/5.9.1:
+    resolution: {integrity: sha512-6fB3a+SNnWEm4CJbgo0/CWR8RGcOCQP68SF4X0mxtYTq2VNN8T88NYrWVBAeSX+zb7bny2dx2iYhP3XHi00omg==}
     engines: {node: '>=12.18'}
     dev: false
 
