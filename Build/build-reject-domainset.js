@@ -150,7 +150,7 @@ const threads = require('os').cpus().length - 1;
 
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
-    workerData: domainSets
+    workerData: [...domainSets]
   });
 
   (await Promise.all([
