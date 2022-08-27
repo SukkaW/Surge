@@ -3,10 +3,12 @@ const { fetch } = require('undici');
 
 const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m
 
+const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
+
 /**
  * @param {string | URL} domainListsUrl
  */
-async function processDomainLists(domainListsUrl) {
+async function processDomainLists (domainListsUrl) {
   if (typeof domainListsUrl === 'string') {
     domainListsUrl = new URL(domainListsUrl);
   }
@@ -26,7 +28,14 @@ async function processDomainLists(domainListsUrl) {
     ) {
       return;
     }
-    domainSets.add(line.trim());
+
+    const domainToAdd = line.trim();
+
+    if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
+      console.log(DEBUG_DOMAIN_TO_FIND, 'found in domain list:', domainToAdd);
+    }
+
+    domainSets.add(domainToAdd);
   });
 
   return [...domainSets];
@@ -35,7 +44,7 @@ async function processDomainLists(domainListsUrl) {
 /**
  * @param {string | URL} hostsUrl
  */
-async function processHosts(hostsUrl, includeAllSubDomain = false) {
+async function processHosts (hostsUrl, includeAllSubDomain = false) {
   if (typeof hostsUrl === 'string') {
     hostsUrl = new URL(hostsUrl);
   }
@@ -44,7 +53,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   const domainSets = new Set();
 
   /** @type string[] */
-  const hosts = (await(await fetch(hostsUrl)).text()).split('\n');
+  const hosts = (await (await fetch(hostsUrl)).text()).split('\n');
   hosts.forEach(line => {
     if (line.includes('#')) {
       return;
@@ -54,6 +63,11 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
     }
     const [, ...domains] = line.split(' ');
     const domain = domains.join(' ').trim();
+
+    if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+      console.log(DEBUG_DOMAIN_TO_FIND, 'found in hosts:', hostsUrl);
+    }
+
     if (rDomain.test(domain)) {
       if (includeAllSubDomain) {
         domainSets.add(`.${domain}`);
@@ -70,7 +84,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
  * @param {string | URL} filterRulesUrl
  * @returns {Promise<{ white: Set<string>, black: Set<string> }>}
  */
-async function processFilterRules(filterRulesUrl) {
+async function processFilterRules (filterRulesUrl) {
   if (typeof filterRulesUrl === 'string') {
     filterRulesUrl = new URL(filterRulesUrl);
   }
@@ -140,6 +154,11 @@ async function processFilterRules(filterRulesUrl) {
         .replaceAll('^', '')
         .trim();
       if (rDomain.test(domain)) {
+
+        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.log(DEBUG_DOMAIN_TO_FIND, 'found in filter list:', hostsUrl);
+        }
+
         blacklistDomainSets.add(`.${domain}`);
       }
     } else if (line.startsWith('://')
@@ -150,6 +169,11 @@ async function processFilterRules(filterRulesUrl) {
     ) {
       const domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
       if (rDomain.test(domain)) {
+
+        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.log(DEBUG_DOMAIN_TO_FIND, 'found in filter list:', hostsUrl);
+        }
+
         blacklistDomainSets.add(domain);
       }
     }
