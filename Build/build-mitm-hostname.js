@@ -5,12 +5,12 @@ const listDir = require('@sukka/listdir');
 const { green, yellow } = require('picocolors');
 
 const PRESET_MITM_HOSTNAMES = [
-  '*baidu.com',
+  // '*baidu.com',
   '*ydstatic.com',
-  '*snssdk.com',
+  // '*snssdk.com',
   '*musical.com',
-  '*musical.ly',
-  '*snssdk.ly',
+  // '*musical.ly',
+  // '*snssdk.ly',
   'api.chelaile.net.cn',
   'atrace.chelaile.net.cn',
   '*.meituan.net',
@@ -113,7 +113,6 @@ const PRESET_MITM_HOSTNAMES = [
     return i.length > 3
       && !i.includes('.mp4') // Special Case
       && i !== '(www.)' // Special Case
-      && !(i !== '*baidu.com' && i.endsWith('baidu.com')) // Special Case
       && !(i !== '*.meituan.net' && i.endsWith('.meituan.net'))
       && !i.startsWith('.')
       && !i.endsWith('.')
