@@ -5,6 +5,16 @@ const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?(
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
 
+const warnOnceUrl = new Set();
+const warnOnce = (url, isWhite, ...message) => {
+  const key = `${url}${isWhite ? 'white' : 'black'}`;
+  if (warnOnceUrl.has(key)) {
+    return;
+  }
+  warnOnceUrl.add(key);
+  console.warn(url, isWhite ? '(white)' : '(black)', ...message);
+}
+
 /**
  * @param {string | URL} domainListsUrl
  */
@@ -32,7 +42,7 @@ async function processDomainLists (domainListsUrl) {
     const domainToAdd = line.trim();
 
     if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-      console.log(DEBUG_DOMAIN_TO_FIND, 'found in domain list:', domainToAdd);
+      warnOnce(domainListsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
     }
 
     domainSets.add(domainToAdd);
@@ -65,7 +75,7 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
     const domain = domains.join(' ').trim();
 
     if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-      console.log(DEBUG_DOMAIN_TO_FIND, 'found in hosts:', hostsUrl);
+      warnOnce(hostsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
     }
 
     if (rDomain.test(domain)) {
@@ -119,6 +129,10 @@ async function processFilterRules (filterRulesUrl) {
     if (lineStartsWithDoubleVerticalBar && line.endsWith('^$badfilter')) {
       const domain = line.replace('||', '').replace('^$badfilter', '').trim();
       if (rDomain.test(domain)) {
+        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
+        }
+
         whitelistDomainSets.add(domain);
       }
     } else if (line.startsWith('@@||')
@@ -137,6 +151,10 @@ async function processFilterRules (filterRulesUrl) {
         .replaceAll('^', '')
         .trim();
       if (rDomain.test(domain)) {
+        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
+        }
+
         whitelistDomainSets.add(domain);
       }
     } else if (
@@ -156,7 +174,7 @@ async function processFilterRules (filterRulesUrl) {
       if (rDomain.test(domain)) {
 
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.log(DEBUG_DOMAIN_TO_FIND, 'found in filter list:', hostsUrl);
+          warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
         }
 
         blacklistDomainSets.add(`.${domain}`);
@@ -171,7 +189,7 @@ async function processFilterRules (filterRulesUrl) {
       if (rDomain.test(domain)) {
 
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.log(DEBUG_DOMAIN_TO_FIND, 'found in filter list:', hostsUrl);
+          warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
         }
 
         blacklistDomainSets.add(domain);
