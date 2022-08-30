@@ -148,22 +148,54 @@ const threads = require('os').cpus().length - 1;
   // Dedupe domainSets
   console.log(`Start deduping! (${previousSize})`);
 
+  const toBeRemoved = new Set();
+  for (const domain of domainSets) {
+    let isTobeRemoved = false;
+
+    for (const keyword of domainKeywordsSet) {
+      if (domain.includes(keyword) || keyword.includes(domain)) {
+        isTobeRemoved = true;
+        break;
+      }
+    }
+
+    if (!isTobeRemoved) {
+      for (const suffix of domainSuffixSet) {
+        if (domain.endsWith(suffix)) {
+          isTobeRemoved = true;
+          break;
+        }
+      }
+    }
+
+    if (!isTobeRemoved) {
+      for (const white of filterRuleWhitelistDomainSets) {
+        if (domain.includes(white) || white.includes(domain)) {
+          isTobeRemoved = true;
+          break;
+        }
+      }
+    }
+
+    if (isTobeRemoved) {
+      toBeRemoved.add(domain);
+    }
+  }
+
+  toBeRemoved.forEach((removed) => {
+    domainSets.delete(removed)
+  });
+
+  // Dedupe domainSets
+  console.log(`Deduped ${previousSize - domainSets.size} from black keywords and suffixes!`);
+
+  previousSize = domainSets.size;
+  // Dedupe domainSets
+  console.log(`Start deduping! (${previousSize})`);
+
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
     workerData: [...domainSets]
-  });
-
-  (await Promise.all([
-    piscina.run(
-      { keywords: domainKeywordsSet, suffixes: domainSuffixSet },
-      { name: 'dedupeKeywords' }
-    ),
-    piscina.run(
-      { whiteList: filterRuleWhitelistDomainSets },
-      { name: 'whitelisted' }
-    )
-  ])).forEach(set => {
-    set.forEach(i => domainSets.delete(i));
   });
 
   (await Promise.all(
