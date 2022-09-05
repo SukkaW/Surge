@@ -1,11 +1,12 @@
-const { workerData } = require('piscina');
+const { workerData, move } = require('piscina');
 
 const len = workerData.length;
 
-exports.dedupe = ({ chunk }) => {
-  const outputToBeRemoved = new Set();
+module.exports = ({ chunk }) => {
+  const chunkLength = chunk.length;
+  const outputToBeRemoved = new Int32Array(chunkLength);
 
-  for (let i = 0, l = chunk.length; i < l; i++) {
+  for (let i = 0; i < chunkLength; i++) {
     const domainFromInput = chunk[i];
 
     for (let j = 0; j < len; j++) {
@@ -26,7 +27,7 @@ exports.dedupe = ({ chunk }) => {
         }
 
         if (shouldBeRemoved) {
-          outputToBeRemoved.add(domainFromInput);
+          outputToBeRemoved[i] = 1;
           break;
         }
       }
@@ -34,12 +35,12 @@ exports.dedupe = ({ chunk }) => {
 
       if (domainFromInput.length >= domainFromFullSet.length) {
         if (domainFromInput.endsWith(domainFromFullSet)) {
-          outputToBeRemoved.add(domainFromInput);
+          outputToBeRemoved[i] = 1;
           break;
         }
       }
     }
   }
 
-  return outputToBeRemoved;
+  return move(outputToBeRemoved);
 };

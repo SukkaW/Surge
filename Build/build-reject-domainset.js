@@ -198,6 +198,17 @@ const threads = require('os').cpus().length - 1;
     workerData: [...domainSets]
   });
 
+  console.log(`Launching ${threads} threads...`)
+
+  const tasksArray = Array.from(domainSets)
+    .reduce((result, element, index) => {
+      const chunk = index % threads;
+      result[chunk] ??= [];
+
+      result[chunk].push(element);
+      return result;
+    }, []);
+
   (await Promise.all(
     Array.from(domainSets)
       .reduce((result, element, index) => {
@@ -208,11 +219,15 @@ const threads = require('os').cpus().length - 1;
         return result;
       }, [])
       .map(chunk => piscina.run(
-        { chunk },
-        { name: 'dedupe' }
+        { chunk }
       ))
-  )).forEach(set => {
-    set.forEach(i => domainSets.delete(i));
+  )).forEach((result, taskIndex) => {
+    const chunk = tasksArray[taskIndex];
+    result.forEach((value, index) => {
+      if (value === 1) {
+        domainSets.delete(chunk[index])
+      }
+    })
   });
 
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
