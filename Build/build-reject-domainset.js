@@ -2,7 +2,9 @@ const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 const Piscina = require('piscina');
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
-const threads = require('os').cpus().length - 1;
+const cpuCount = require('os').cpus().length;
+const { isCI } = require('ci-info');
+const threads = isCI ? cpuCount : cpuCount / 2;
 
 (async () => {
   /** @type Set<string> */

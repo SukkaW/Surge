@@ -57,10 +57,11 @@
   "license": "ISC",
   "dependencies": {
     "@sukka/listdir": "^0.2.0",
+    "ci-info": "^3.3.2",
     "picocolors": "^1.0.0",
     "piscina": "^3.2.0",
     "table": "^6.8.0",
-    "undici": "^5.9.1"
+    "undici": "5.10.0"
   },
   "devDependencies": {
     "wireit": "^0.7.1"
