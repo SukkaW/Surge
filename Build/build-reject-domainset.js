@@ -78,7 +78,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     't.co', // pgl yoyo add t.co to the blacklist
     'survicate.com', // AdGuardDNSFilter
     'perfops.io', // AdGuardDNSFilter
-    'd2axgrpnciinw7.cloudfront.net' // ADGuardDNSFilter
+    'd2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
+    'tb-lb.sb-cd.com' // AdGuard
   ]);
 
   (await Promise.all([
