@@ -5,9 +5,17 @@ const path = require('path');
 (async () => {
   const domains = (await (await fetch('https://publicsuffix.org/list/public_suffix_list.dat')).text()).split('\n');
 
-  const awsS3 = domains.filter(line => {
+  const S3OSSDomains = domains.filter(line => {
     if (line) {
-      return line.startsWith('s3') && line.endsWith('.amazonaws.com') && !line.includes('cn-')
+      return (
+        line.startsWith('s3-')
+        || line.startsWith('s3.')
+      )
+      && (
+        line.endsWith('.amazonaws.com')
+        || line.endsWith('.scw.cloud')
+      )
+      && !line.includes('cn-')
     }
 
     return false;
@@ -17,7 +25,7 @@ const path = require('path');
   const content = (await fs.promises.readFile(filePath, 'utf-8'))
     .replace(
       '# --- [AWS S3 Replace Me] ---',
-      awsS3.map(domain => `DOMAIN-SUFFIX,${domain}`).join('\n')
+      S3OSSDomains.map(domain => `DOMAIN-SUFFIX,${domain}`).join('\n')
     );
 
   await fs.promises.writeFile(filePath, content, 'utf-8');
