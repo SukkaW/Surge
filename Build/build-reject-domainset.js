@@ -79,7 +79,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     'survicate.com', // AdGuardDNSFilter
     'perfops.io', // AdGuardDNSFilter
     'd2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
-    'tb-lb.sb-cd.com' // AdGuard
+    'tb-lb.sb-cd.com', // AdGuard
+    'storage.yandexcloud.net' // phishing list
   ]);
 
   (await Promise.all([
