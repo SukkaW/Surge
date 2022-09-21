@@ -66,7 +66,7 @@ module.exports = ({ chunk }) => {
 
 // duckdns.org domain will not overlap and doesn't need dedupe
 function canExcludeFromDedupe(domain) {
-  if (domain.endsWith('.duckdns.org')) {
+  if (domain.length === 23 && domain.endsWith('.duckdns.org')) {
     return true;
   }
   return false;
