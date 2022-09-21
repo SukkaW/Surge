@@ -4,7 +4,10 @@ const { workerData, move } = require('piscina');
 // This avoid calling chatCodeAt repeatedly
 
 // workerData is an array of string. Sort it by length, short first:
-const fullsetDomainStartsWithADot = workerData.sort((a, b) => a.length - b.length).filter(domain => domain.charCodeAt(0) === 46);
+const fullsetDomainStartsWithADot = workerData.filter(domain => (
+  domain.charCodeAt(0) === 46
+  && !canExcludeFromDedupe(domain)
+));
 const totalLen = fullsetDomainStartsWithADot.length;
 
 module.exports = ({ chunk }) => {
@@ -13,6 +16,10 @@ module.exports = ({ chunk }) => {
 
   for (let i = 0; i < chunkLength; i++) {
     const domainFromInput = chunk[i];
+
+    if (canExcludeFromDedupe(domainFromInput)) {
+      continue;
+    }
 
     for (let j = 0; j < totalLen; j++) {
       const domainFromFullSet = fullsetDomainStartsWithADot[j];
@@ -56,3 +63,11 @@ module.exports = ({ chunk }) => {
 
   return move(outputToBeRemoved);
 };
+
+// duckdns.org domain will not overlap and doesn't need dedupe
+function canExcludeFromDedupe(domain) {
+  if (domain.endsWith('.duckdns.org')) {
+    return true;
+  }
+  return false;
+}
