@@ -85,7 +85,13 @@ const threads = isCI ? cpuCount : cpuCount / 2;
 
   (await Promise.all([
     // Easy List
-    'https://easylist.to/easylist/easylist.txt',
+    [
+      'https://easylist.to/easylist/easylist.txt',
+      [
+        'https://easylist-downloads.adblockplus.org/easylist.txt',
+        'https://secure.fanboy.co.nz/easylist.txt'
+      ]
+    ],
     // AdGuard DNS Filter
     'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
     // uBlock Origin Filter List
@@ -112,7 +118,13 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
     'https://filters.adtidy.org/extension/ublock/filters/224.txt',
     // Easy Privacy
-    'https://easylist.to/easylist/easyprivacy.txt',
+    [
+      'https://easylist.to/easylist/easyprivacy.txt',
+      [
+        'https://secure.fanboy.co.nz/easyprivacy.txt',
+        'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
+      ]
+    ],
     // Curben's Malware Online UrlHaus
     'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt',
     // Curben's Phishing Online Filter
@@ -123,7 +135,14 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
     // PiHoleBlocklist
     'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt',
-  ].map(processFilterRules))).forEach(({ white, black }) => {
+  ].map(input => {
+    if (typeof input === 'string') {
+      return processFilterRules(input);
+    }
+    if (Array.isArray(input) && input.length === 2) {
+      return processFilterRules(input[0], input[1]);
+    }
+  }))).forEach(({ white, black }) => {
     white.forEach(i => filterRuleWhitelistDomainSets.add(i));
     black.forEach(i => domainSets.add(i));
   });

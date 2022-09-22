@@ -92,9 +92,12 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
 
 /**
  * @param {string | URL} filterRulesUrl
+ * @param {(string | URL)[] | undefined} fallbackUrls
  * @returns {Promise<{ white: Set<string>, black: Set<string> }>}
  */
-async function processFilterRules (filterRulesUrl) {
+async function processFilterRules (filterRulesUrl, fallbackUrls) {
+  console.time(`processFilterRules: ${filterRulesUrl}`);
+
   if (typeof filterRulesUrl === 'string') {
     filterRulesUrl = new URL(filterRulesUrl);
   }
@@ -105,7 +108,13 @@ async function processFilterRules (filterRulesUrl) {
   const blacklistDomainSets = new Set();
 
   /** @type string[] */
-  const filterRules = (await (await fetchWithRetry(filterRulesUrl)).text()).split('\n').map(line => line.trim());
+  const filterRules = (
+    await Promise.any(
+      [filterRulesUrl, ...(fallbackUrls || [])].map(
+        async url => (await fetchWithRetry(url)).text()
+      )
+    )
+  ).split('\n').map(line => line.trim());
 
   filterRules.forEach(line => {
     const lineStartsWithDoubleVerticalBar = line.startsWith('||');
@@ -196,6 +205,8 @@ async function processFilterRules (filterRulesUrl) {
       }
     }
   });
+
+  console.timeEnd(`processFilterRules: ${filterRulesUrl}`);
 
   return {
     white: whitelistDomainSets,
