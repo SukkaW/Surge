@@ -1,9 +1,9 @@
-const { fetch } = require('undici');
+const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
 
 (async () => {
-  const domains = (await (await fetch('https://publicsuffix.org/list/public_suffix_list.dat')).text()).split('\n');
+  const domains = (await (await fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat')).text()).split('\n');
 
   const S3OSSDomains = domains.filter(line => {
     if (line) {

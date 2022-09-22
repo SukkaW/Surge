@@ -1,10 +1,10 @@
-const { fetch } = require('undici');
+const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
 const { isIP } = require('net');
 
 (async () => {
-  const res = (await (await fetch('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')).text())
+  const res = (await (await fetchWithRetry('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')).text())
     .split('\n')
     .map(line => {
       if (line.startsWith('bogus-nxdomain=')) {

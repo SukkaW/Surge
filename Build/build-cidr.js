@@ -1,9 +1,9 @@
-const { fetch } = require('undici');
+const { fetchWithRetry } = require('./lib/fetch-retry');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
 (async () => {
-  const cidr = (await (await fetch('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')).text()).split('\n');
+  const cidr = (await (await fetchWithRetry('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')).text()).split('\n');
 
   const filteredCidr = cidr.filter(line => {
     if (line) {

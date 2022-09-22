@@ -1,5 +1,5 @@
 const { isIP } = require('net');
-const { fetch } = require('undici');
+const { fetchWithRetry } = require('./fetch-retry');
 
 const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m
 
@@ -26,7 +26,7 @@ async function processDomainLists (domainListsUrl) {
   /** @type Set<string> */
   const domainSets = new Set();
   /** @type string[] */
-  const domains = (await (await fetch(domainListsUrl)).text()).split('\n');
+  const domains = (await (await fetchWithRetry(domainListsUrl)).text()).split('\n');
   domains.forEach(line => {
     if (
       line.startsWith('#')
@@ -63,7 +63,7 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
   const domainSets = new Set();
 
   /** @type string[] */
-  const hosts = (await (await fetch(hostsUrl)).text()).split('\n');
+  const hosts = (await (await fetchWithRetry(hostsUrl)).text()).split('\n');
   hosts.forEach(line => {
     if (line.includes('#')) {
       return;
@@ -105,7 +105,7 @@ async function processFilterRules (filterRulesUrl) {
   const blacklistDomainSets = new Set();
 
   /** @type string[] */
-  const filterRules = (await (await fetch(filterRulesUrl)).text()).split('\n').map(line => line.trim());
+  const filterRules = (await (await fetchWithRetry(filterRulesUrl)).text()).split('\n').map(line => line.trim());
 
   filterRules.forEach(line => {
     const lineStartsWithDoubleVerticalBar = line.startsWith('||');

@@ -1,10 +1,10 @@
-const { fetch } = require('undici');
+const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 
 (async () => {
-  const resp = await fetch('https://core.telegram.org/resources/cidr.txt');
+  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt');
   const lastModified = new Date(resp.headers.get('last-modified'));
 
   const res = (await resp.text())
