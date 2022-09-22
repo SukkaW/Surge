@@ -12,6 +12,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
   /** @type Set<string> */
   const domainSets = new Set();
 
+  console.log('Downloading hosts file...');
   console.time('* Download and process Hosts');
 
   // Parse from remote hosts & domain lists
@@ -230,7 +231,10 @@ const threads = isCI ? cpuCount : cpuCount / 2;
 
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
-    workerData: [...domainSets]
+    workerData: [...domainSets],
+    idleTimeout: 50,
+    minThreads: threads,
+    maxThreads: threads
   });
 
   console.log(`Launching ${threads} threads...`)
@@ -244,19 +248,18 @@ const threads = isCI ? cpuCount : cpuCount / 2;
       return result;
     }, []);
 
-  (await Promise.all(
-    Array.from(domainSets)
-      .reduce((result, element, index) => {
-        const chunk = index % threads;
-        result[chunk] ??= [];
-
-        result[chunk].push(element);
-        return result;
-      }, [])
-      .map(chunk => piscina.run(
-        { chunk }
-      ))
-  )).forEach((result, taskIndex) => {
+  (
+    await Promise.all(
+      Array.from(domainSets)
+        .reduce((result, element, index) => {
+          const chunk = index % threads;
+          result[chunk] ??= [];
+          result[chunk].push(element);
+          return result;
+        }, [])
+        .map(chunk => piscina.run({ chunk }, { name: 'dedupe' }))
+    )
+  ).forEach((result, taskIndex) => {
     const chunk = tasksArray[taskIndex];
     result.forEach((value, index) => {
       if (value === 1) {
@@ -268,10 +271,17 @@ const threads = isCI ? cpuCount : cpuCount / 2;
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
 
-  await fsPromises.writeFile(
-    pathResolve(__dirname, '../List/domainset/reject.conf'),
-    `${[...domainSets].join('\n')}\n`,
-    { encoding: 'utf-8' });
+  await Promise.all([
+    fsPromises.writeFile(
+      pathResolve(__dirname, '../List/domainset/reject.conf'),
+      `${[...domainSets].join('\n')}\n`,
+      { encoding: 'utf-8' }
+    ),
+    piscina.destroy()
+  ]);
 
   console.timeEnd('Total Time - build-reject-domain-set');
+  if (piscina.queueSize === 0) {
+    process.exit(0);
+  }
 })();

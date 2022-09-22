@@ -55,6 +55,8 @@ async function processDomainLists (domainListsUrl) {
  * @param {string | URL} hostsUrl
  */
 async function processHosts (hostsUrl, includeAllSubDomain = false) {
+  console.time(`   - processHosts: ${hostsUrl}`);
+
   if (typeof hostsUrl === 'string') {
     hostsUrl = new URL(hostsUrl);
   }
@@ -87,6 +89,8 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
     }
   });
 
+  console.timeEnd(`   - processHosts: ${hostsUrl}`);
+
   return [...domainSets];
 }
 
@@ -97,10 +101,6 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
  */
 async function processFilterRules (filterRulesUrl, fallbackUrls) {
   console.time(`   - processFilterRules: ${filterRulesUrl}`);
-
-  if (typeof filterRulesUrl === 'string') {
-    filterRulesUrl = new URL(filterRulesUrl);
-  }
 
   /** @type Set<string> */
   const whitelistDomainSets = new Set();
