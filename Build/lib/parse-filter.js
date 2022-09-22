@@ -96,7 +96,7 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
  * @returns {Promise<{ white: Set<string>, black: Set<string> }>}
  */
 async function processFilterRules (filterRulesUrl, fallbackUrls) {
-  console.time(`processFilterRules: ${filterRulesUrl}`);
+  console.time(`   - processFilterRules: ${filterRulesUrl}`);
 
   if (typeof filterRulesUrl === 'string') {
     filterRulesUrl = new URL(filterRulesUrl);
@@ -206,7 +206,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
     }
   });
 
-  console.timeEnd(`processFilterRules: ${filterRulesUrl}`);
+  console.timeEnd(`   - processFilterRules: ${filterRulesUrl}`);
 
   return {
     white: whitelistDomainSets,

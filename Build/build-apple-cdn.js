@@ -5,6 +5,8 @@ const path = require('path');
 const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m;
 
 (async () => {
+  console.time('Total Time - build-apple-cdn-conf');
+
   const res = (await (await fetchWithRetry('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf')).text())
     .split('\n')
     .map(line => {
@@ -28,4 +30,6 @@ const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?(
       'utf-8'
     )
   ])
+
+  console.timeEnd('Total Time - build-apple-cdn-conf');
 })();

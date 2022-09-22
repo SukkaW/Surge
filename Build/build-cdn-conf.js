@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 (async () => {
+  console.time('Total Time - build-cdn-conf');
+
   const domains = (await (await fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat')).text()).split('\n');
 
   const S3OSSDomains = domains.filter(line => {
@@ -29,4 +31,6 @@ const path = require('path');
     );
 
   await fs.promises.writeFile(filePath, content, 'utf-8');
+
+  console.timeEnd('Total Time - build-cdn-conf');
 })();

@@ -3,7 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@sukka/listdir': ^0.2.0
   '@vercel/fetch-retry': ^5.1.3
-  ci-info: ^3.3.2
+  ci-info: ^3.4.0
   picocolors: ^1.0.0
   piscina: ^3.2.0
   table: ^6.8.0
@@ -13,7 +13,7 @@ specifiers:
 dependencies:
   '@sukka/listdir': 0.2.0
   '@vercel/fetch-retry': 5.1.3
-  ci-info: 3.3.2
+  ci-info: 3.4.0
   picocolors: 1.0.0
   piscina: 3.2.0
   table: 6.8.0
@@ -135,8 +135,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /ci-info/3.3.2:
-    resolution: {integrity: sha512-xmDt/QIAdeZ9+nfdPsaBCpMvHNLFiLdjj59qjqn+6iPe6YmHGQ35sBnQ8uslRBXFmXkiZQOJRjvQeoGppoTjjg==}
+  /ci-info/3.4.0:
+    resolution: {integrity: sha512-t5QdPT5jq3o262DOQ8zA6E1tlH2upmUc4Hlvrbx1pGYJuiiHl7O7rvVNI+l8HTVhd/q3Qc9vqimkNk5yiXsAug==}
     dev: false
 
   /color-convert/2.0.1:

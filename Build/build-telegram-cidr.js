@@ -4,6 +4,8 @@ const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 
 (async () => {
+  console.time('Total Time - build-telegram-cidr');
+
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt');
   const lastModified = new Date(resp.headers.get('last-modified'));
 
@@ -27,4 +29,6 @@ const { isIPv4, isIPv6 } = require('net');
     }).join('\n') + '\n',
     'utf-8'
   );
+
+  console.timeEnd('Total Time - build-telegram-cidr');
 })();

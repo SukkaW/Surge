@@ -7,8 +7,12 @@ const { isCI } = require('ci-info');
 const threads = isCI ? cpuCount : cpuCount / 2;
 
 (async () => {
+  console.time('Total Time - build-reject-domain-set');
+
   /** @type Set<string> */
   const domainSets = new Set();
+
+  console.time('* Download and process Hosts');
 
   // Parse from remote hosts & domain lists
   (await Promise.all([
@@ -22,6 +26,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
       }
     });
   });
+
+  console.timeEnd('* Download and process Hosts');
 
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from hosts files!`);
@@ -83,6 +89,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     'storage.yandexcloud.net' // phishing list
   ]);
 
+  console.time('* Download and process AdBlock Filter Rules');
   (await Promise.all([
     // Easy List
     [
@@ -147,6 +154,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     black.forEach(i => domainSets.add(i));
   });
 
+  console.timeEnd('* Download and process AdBlock Filter Rules');
+
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from adguard filters!`);
 
@@ -169,7 +178,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
 
   previousSize = domainSets.size;
   // Dedupe domainSets
-  console.log(`Start deduping! (${previousSize})`);
+  console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
+  console.time(`* Dedupe from black keywords/suffixes`);
 
   const toBeRemoved = new Set();
   for (const domain of domainSets) {
@@ -209,12 +219,14 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     domainSets.delete(removed)
   });
 
-  // Dedupe domainSets
-  console.log(`Deduped ${previousSize - domainSets.size} from black keywords and suffixes!`);
+  console.timeEnd(`* Dedupe from black keywords/suffixes`);
+  console.log(`Deduped ${previousSize} - ${domainSets.size} = ${previousSize - domainSets.size} from black keywords and suffixes!`);
 
   previousSize = domainSets.size;
   // Dedupe domainSets
   console.log(`Start deduping! (${previousSize})`);
+
+  const START_TIME = Date.now();
 
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
@@ -253,10 +265,13 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     })
   });
 
+  console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
 
-  return fsPromises.writeFile(
+  await fsPromises.writeFile(
     pathResolve(__dirname, '../List/domainset/reject.conf'),
     `${[...domainSets].join('\n')}\n`,
     { encoding: 'utf-8' });
+
+  console.timeEnd('Total Time - build-reject-domain-set');
 })();
