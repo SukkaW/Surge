@@ -97,6 +97,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
       'https://easylist.to/easylist/easylist.txt',
       [
         'https://easylist-downloads.adblockplus.org/easylist.txt',
+        'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
         'https://secure.fanboy.co.nz/easylist.txt'
       ]
     ],
@@ -130,6 +131,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
       'https://easylist.to/easylist/easyprivacy.txt',
       [
         'https://secure.fanboy.co.nz/easyprivacy.txt',
+        'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
         'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
       ]
     ],
