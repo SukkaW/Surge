@@ -125,6 +125,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
       || line.includes('!')
       || line.includes('*')
       || line.includes('/')
+      || line.includes('[')
       || line.includes('$') && !lineStartsWithDoubleVerticalBar
       || line === ''
       || isIP(line) !== 0
@@ -214,6 +215,28 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
   };
 }
 
+function preprocessFullDomainSetBeforeUsedAsWorkerData (data) {
+  return data.filter(domain => (
+    domain.charCodeAt(0) === 46
+    && !canExcludeFromDedupe(domain)
+  ));
+}
+
+// duckdns.org domain will not overlap and doesn't need dedupe
+function canExcludeFromDedupe (domain) {
+  if (
+    // starts with a dot
+    domain.charCodeAt(0) === 46
+    && domain.length === 23
+    && domain.endsWith('.duckdns.org')
+  ) {
+    return true;
+  }
+  return false;
+}
+
 module.exports.processDomainLists = processDomainLists;
 module.exports.processHosts = processHosts;
 module.exports.processFilterRules = processFilterRules;
+module.exports.preprocessFullDomainSetBeforeUsedAsWorkerData = preprocessFullDomainSetBeforeUsedAsWorkerData;
+module.exports.canExcludeFromDedupe = canExcludeFromDedupe;

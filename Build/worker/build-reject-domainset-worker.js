@@ -1,12 +1,10 @@
 const Piscina = require('piscina');
 // pre check if fullset domain is starts with a "."
 // This avoid calling chatCodeAt repeatedly
+const { canExcludeFromDedupe } = require('../lib/parse-filter')
 
-// workerData is an array of string. Sort it by length, short first:
-const fullsetDomainStartsWithADot = Piscina.workerData.filter(domain => (
-  domain.charCodeAt(0) === 46
-  && !canExcludeFromDedupe(domain)
-));
+// workerData is an array of string, sorted by length, short first
+const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
 
 module.exports.dedupe = ({ chunk }) => {
@@ -60,13 +58,5 @@ module.exports.dedupe = ({ chunk }) => {
     }
   }
 
-  return outputToBeRemoved;
+  return Piscina.move(outputToBeRemoved);
 };
-
-// duckdns.org domain will not overlap and doesn't need dedupe
-function canExcludeFromDedupe (domain) {
-  if (domain.length === 23 && domain.endsWith('.duckdns.org')) {
-    return true;
-  }
-  return false;
-}

@@ -1,7 +1,7 @@
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 const Piscina = require('piscina');
-const { processHosts, processFilterRules } = require('./lib/parse-filter');
+const { processHosts, processFilterRules, preprocessFullDomainSetBeforeUsedAsWorkerData } = require('./lib/parse-filter');
 const cpuCount = require('os').cpus().length;
 const { isCI } = require('ci-info');
 const threads = isCI ? cpuCount : cpuCount / 2;
@@ -68,6 +68,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     'ip6-allrouters',
     'ip6-allhosts',
     'mcastprefix',
+    'skk.moe',
     'analytics.google.com',
     'msa.cdn.mediaset.net', // Added manually using DOMAIN-KEYWORDS
     'cloud.answerhub.com',
@@ -145,6 +146,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
     // PiHoleBlocklist
     'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt',
+    // Spam404
+    'https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt'
   ].map(input => {
     if (typeof input === 'string') {
       return processFilterRules(input);
@@ -233,7 +236,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
 
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
-    workerData: [...domainSets],
+    workerData: preprocessFullDomainSetBeforeUsedAsWorkerData([...domainSets]),
     idleTimeout: 50,
     minThreads: threads,
     maxThreads: threads
