@@ -6,6 +6,7 @@ specifiers:
   ci-info: ^3.5.0
   picocolors: ^1.0.0
   piscina: ^3.2.0
+  psl: ^1.9.0
   table: ^6.8.0
   undici: 5.11.0
   wireit: ^0.7.2
@@ -16,6 +17,7 @@ dependencies:
   ci-info: 3.5.0
   picocolors: 1.0.0
   piscina: 3.2.0
+  psl: 1.9.0
   table: 6.8.0
   undici: 5.11.0
 
@@ -350,6 +352,10 @@ packages:
       retry: 0.12.0
       signal-exit: 3.0.7
     dev: true
+
+  /psl/1.9.0:
+    resolution: {integrity: sha512-E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==}
+    dev: false
 
   /punycode/2.1.1:
     resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}

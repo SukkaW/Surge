@@ -11,7 +11,8 @@
     "build:index-html": "wireit",
     "build:reject-domainset": "wireit",
     "build:telegram-cidr": "wireit",
-    "build:chn-cidr": "wireit"
+    "build:chn-cidr": "wireit",
+    "validate:cdn-conf": "wireit"
   },
   "wireit": {
     "build:anti-bogus-domain": {
@@ -42,6 +43,9 @@
         "build:telegram-cidr"
       ]
     },
+    "validate:cdn-conf": {
+      "command": "node ./Build/validate-cdn-conf.js"
+    },
     "build": {
       "dependencies": [
         "build:anti-bogus-domain",
@@ -50,7 +54,8 @@
         "build:reject-domainset",
         "build:telegram-cidr",
         "build:chn-cidr",
-        "build:index-html"
+        "build:index-html",
+        "validate:cdn-conf"
       ]
     }
   },
@@ -66,6 +71,7 @@
     "ci-info": "^3.5.0",
     "picocolors": "^1.0.0",
     "piscina": "^3.2.0",
+    "psl": "^1.9.0",
     "table": "^6.8.0",
     "undici": "5.11.0"
   },
