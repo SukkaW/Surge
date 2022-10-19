@@ -1,9 +1,6 @@
 const Piscina = require('piscina');
-// pre check if fullset domain is starts with a "."
-// This avoid calling chatCodeAt repeatedly
 const { canExcludeFromDedupe } = require('../lib/parse-filter')
 
-// workerData is an array of string, sorted by length, short first
 const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
 
@@ -45,11 +42,8 @@ module.exports.dedupe = ({ chunk }) => {
             break;
           }
         }
-      }
-
-      // domainFromInput is now startsWith a "."
-
-      if (domainFromInputLen >= domainFromFullSetLen) {
+      } else if (domainFromInputLen > domainFromFullSetLen) {
+        // domainFromInput is now startsWith a "."
         if (domainFromInput.endsWith(domainFromFullSet)) {
           outputToBeRemoved[i] = 1;
           break;
