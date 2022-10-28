@@ -192,7 +192,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     let isTobeRemoved = false;
 
     for (const keyword of domainKeywordsSet) {
-      if (domain.includes(keyword) || keyword.includes(domain)) {
+      if (domain.includes(keyword)) {
         isTobeRemoved = true;
         break;
       }
