@@ -88,7 +88,8 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     'perfops.io', // AdGuardDNSFilter
     'd2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
     'tb-lb.sb-cd.com', // AdGuard
-    'storage.yandexcloud.net' // phishing list
+    'storage.yandexcloud.net', // phishing list
+    'login.microsoftonline.com' // phishing list
   ]);
 
   console.time('* Download and process AdBlock Filter Rules');
@@ -136,12 +137,33 @@ const threads = isCI ? cpuCount : cpuCount / 2;
         'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
       ]
     ],
-    // Curben's Malware Online UrlHaus
-    'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt',
-    // Curben's Phishing Online Filter
-    'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt',
-    // Curben's PUP List
-    'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt',
+    // Curben's UrlHaus Malicious URL Blocklist
+    // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
+    // [
+    //   'https://malware-filter.pages.dev/urlhaus-filter-agh-online.txt',
+    //   [
+    //     'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt'
+    //   ]
+    // ],
+    // Curben's Phishing URL Blocklist
+    // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+    'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
+    // [
+    //   'https://phishing-filter.pages.dev/phishing-filter-agh.txt',
+    //   [
+    //     'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
+    //   ]
+    // ],
+    // Curben's PUP Domains Blocklist
+    'https://curbengh.github.io/pup-filter/pup-filter-agh.txt',
+    // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+    // [
+    //   'https://pup-filter.pages.dev/pup-filter-agh.txt',
+    //   [
+    //     'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt'
+    //   ]
+    // ],
     // GameConsoleAdblockList
     'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
     // PiHoleBlocklist
