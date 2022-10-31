@@ -10,6 +10,7 @@
     "build:cdn-conf": "wireit",
     "build:index-html": "wireit",
     "build:reject-domainset": "wireit",
+    "build:phishing-domainset": "wireit",
     "build:telegram-cidr": "wireit",
     "build:chn-cidr": "wireit",
     "validate:cdn-conf": "wireit"
@@ -24,8 +25,14 @@
     "build:cdn-conf": {
       "command": "node ./Build/build-cdn-conf.js"
     },
+    "build:phishing-domainset": {
+      "command": "node ./Build/build-phishing-domainset.js"
+    },
     "build:reject-domainset": {
-      "command": "node ./Build/build-reject-domainset.js"
+      "command": "node ./Build/build-reject-domainset.js",
+      "dependencies": [
+        "build:phishing-domainset"
+      ]
     },
     "build:telegram-cidr": {
       "command": "node ./Build/build-telegram-cidr.js"

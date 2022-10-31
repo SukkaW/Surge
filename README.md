@@ -16,11 +16,13 @@
 
 > Surge 和 Clash 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免不必要的 DNS 解析。
 
-#### 广告拦截 / 隐私保护
+#### 广告拦截 / 隐私保护 / Malware 拦截 / Phiishing 拦截
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject-drop
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,reject-tinygif
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_sukka.conf,reject-tinygif
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,reject
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
 ```
 

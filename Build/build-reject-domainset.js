@@ -202,6 +202,27 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     });
   });
 
+  // Read Special Phishing Suffix list
+  await fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'), { encoding: 'utf-8' }).then(data => {
+    data.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      if (
+        line.startsWith('#')
+        || line.startsWith(' ')
+        || line.startsWith('\r')
+        || line.startsWith('\n')
+        || trimmed === ''
+      ) {
+        return;
+      }
+
+      /* if (domainSets.has(line) || domainSets.has(`.${line}`)) {
+        console.warn(`|${line}| is already in the list!`);
+      } */
+      domainSuffixSet.add(trimmed);
+    });
+  });
+
   console.log(`Import ${domainKeywordsSet.size} black keywords and ${domainSuffixSet.size} black suffixes!`);
 
   previousSize = domainSets.size;

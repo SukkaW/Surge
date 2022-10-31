@@ -107,14 +107,20 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
 
-  /** @type string[] */
-  const filterRules = (
-    await Promise.any(
-      [filterRulesUrl, ...(fallbackUrls || [])].map(
-        async url => (await fetchWithRetry(url)).text()
+  let filterRules;
+  try {
+    /** @type string[] */
+    filterRules = (
+      await Promise.any(
+        [filterRulesUrl, ...(fallbackUrls || [])].map(
+          async url => (await fetchWithRetry(url)).text()
+        )
       )
-    )
-  ).split('\n').map(line => line.trim());
+    ).split('\n').map(line => line.trim());
+  } catch (e) {
+    console.log('Download Rule for [' + filterRulesUrl + '] failed');
+    throw e;
+  }
 
   filterRules.forEach(line => {
     const lineStartsWithDoubleVerticalBar = line.startsWith('||');
