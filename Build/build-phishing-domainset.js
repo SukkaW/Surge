@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const WHITELIST_DOMAIN = new Set([]);
-const BLACK_TLD = [
+const BLACK_TLD = Array.from(new Set([
   '.xyz',
   '.top',
   '.win',
@@ -18,8 +18,18 @@ const BLACK_TLD = [
   '.cool',
   '.cyou',
   '.id',
-  '.pro'
-];
+  '.pro',
+  '.za.com',
+  '.sa.com',
+  '.ltd',
+  '.group',
+  '.rest',
+  '.tech',
+  '.link',
+  '.ink',
+  '.bar',
+  '.tokyo'
+]));
 
 (async () => {
   const domainSet = Array.from(
