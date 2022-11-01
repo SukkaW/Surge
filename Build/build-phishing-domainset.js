@@ -17,7 +17,8 @@ const BLACK_TLD = [
   '.shop',
   '.cool',
   '.cyou',
-  '.id'
+  '.id',
+  '.pro'
 ];
 
 (async () => {

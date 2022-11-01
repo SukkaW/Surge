@@ -230,7 +230,6 @@ const threads = isCI ? cpuCount : cpuCount / 2;
   console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
   console.time(`* Dedupe from black keywords/suffixes`);
 
-  const toBeRemoved = new Set();
   for (const domain of domainSets) {
     let isTobeRemoved = false;
 
@@ -260,13 +259,9 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     }
 
     if (isTobeRemoved) {
-      toBeRemoved.add(domain);
+      domainSets.delete(domain);
     }
   }
-
-  toBeRemoved.forEach((removed) => {
-    domainSets.delete(removed)
-  });
 
   console.timeEnd(`* Dedupe from black keywords/suffixes`);
   console.log(`Deduped ${previousSize} - ${domainSets.size} = ${previousSize - domainSets.size} from black keywords and suffixes!`);
