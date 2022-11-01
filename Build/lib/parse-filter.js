@@ -122,7 +122,9 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
     throw e;
   }
 
-  filterRules.forEach(line => {
+  for (let i = 0, len = filterRules.length; i < len; i++) {
+    const line = filterRules[i];
+
     const lineStartsWithDoubleVerticalBar = line.startsWith('||');
 
     if (
@@ -136,7 +138,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
       || line === ''
       || isIP(line) !== 0
     ) {
-      return;
+      continue;
     }
 
     const lineEndsWithCaret = line.endsWith('^');
@@ -195,7 +197,8 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
 
         blacklistDomainSets.add(`.${domain}`);
       }
-    } else if (line.startsWith('://')
+    } else if (
+      line.startsWith('://')
       && (
         lineEndsWithCaret
         || lineEndsWithCaretVerticalBar
@@ -211,7 +214,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         blacklistDomainSets.add(domain);
       }
     }
-  });
+  }
 
   console.timeEnd(`   - processFilterRules: ${filterRulesUrl}`);
 

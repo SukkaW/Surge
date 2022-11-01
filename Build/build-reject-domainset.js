@@ -106,18 +106,66 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     // AdGuard DNS Filter
     'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
     // uBlock Origin Filter List
-    'https://ublockorigin.github.io/uAssetsCDN/filters/filters.txt',
-    'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2020.txt',
-    'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2021.txt',
-    'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2022.txt',
+    [
+      'https://ublockorigin.github.io/uAssets/filters/filters.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/filters.txt',
+        'https://ublockorigin.pages.dev/filters/filters.txt'
+      ]
+    ],
+    [
+      'https://ublockorigin.github.io/uAssets/filters/filters-2020.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2020.txt',
+        'https://ublockorigin.pages.dev/filters/filters-2020.txt'
+      ]
+    ],
+    [
+      'https://ublockorigin.github.io/uAssets/filters/filters-2021.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2021.txt',
+        'https://ublockorigin.pages.dev/filters/filters-2021.txt'
+      ]
+    ],
+    [
+      'https://ublockorigin.github.io/uAssets/filters/filters-2022.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2022.txt',
+        'https://ublockorigin.pages.dev/filters/filters-2022.txt'
+      ]
+    ],
     // uBlock Origin Badware Risk List
-    'https://ublockorigin.github.io/uAssets/filters/badware.txt',
+    [
+      'https://ublockorigin.github.io/uAssets/filters/badware.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/badware.txt',
+        'https://ublockorigin.pages.dev/filters/badware.txt'
+      ]
+    ],
     // uBlock Origin Privacy List
-    'https://ublockorigin.github.io/uAssets/filters/privacy.txt',
+    [
+      'https://ublockorigin.github.io/uAssets/filters/privacy.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.txt',
+        'https://ublockorigin.pages.dev/filters/privacy.txt'
+      ]
+    ],
     // uBlock Origin Resource Abuse
-    'https://ublockorigin.github.io/uAssets/filters/resource-abuse.txt',
+    [
+      'https://ublockorigin.github.io/uAssets/filters/resource-abuse.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
+        'https://ublockorigin.pages.dev/filters/resource-abuse.txt'
+      ]
+    ],
     // uBlock Origin Unbreak
-    'https://ublockorigin.github.io/uAssets/filters/unbreak.txt',
+    [
+      'https://ublockorigin.github.io/uAssets/filters/unbreak.txt',
+      [
+        'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.txt',
+        'https://ublockorigin.pages.dev/filters/unbreak.txt'
+      ]
+    ],
     // AdGuard Base Filter
     'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
     // AdGuard Mobile AD
@@ -138,32 +186,32 @@ const threads = isCI ? cpuCount : cpuCount / 2;
       ]
     ],
     // Curben's UrlHaus Malicious URL Blocklist
-    // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
-    // [
-    //   'https://malware-filter.pages.dev/urlhaus-filter-agh-online.txt',
-    //   [
-    //     'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt'
-    //   ]
-    // ],
+    [
+      'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
+      [
+        'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
+        // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+        // 'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt'
+      ]
+    ],
     // Curben's Phishing URL Blocklist
-    // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-    'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
-    // [
-    //   'https://phishing-filter.pages.dev/phishing-filter-agh.txt',
-    //   [
-    //     'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
-    //   ]
-    // ],
+    [
+      'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
+      [
+        'https://phishing-filter.pages.dev/phishing-filter-agh.txt',
+        // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+        // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
+      ]
+    ],
     // Curben's PUP Domains Blocklist
-    'https://curbengh.github.io/pup-filter/pup-filter-agh.txt',
-    // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-    // [
-    //   'https://pup-filter.pages.dev/pup-filter-agh.txt',
-    //   [
-    //     'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt'
-    //   ]
-    // ],
+    [
+      'https://curbengh.github.io/pup-filter/pup-filter-agh.txt',
+      [
+        'https://pup-filter.pages.dev/pup-filter-agh.txt',
+        // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+        // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt'
+      ]
+    ],
     // GameConsoleAdblockList
     'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
     // PiHoleBlocklist
