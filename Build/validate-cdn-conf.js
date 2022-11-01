@@ -1,8 +1,14 @@
-const psl = require('psl');
+const tldts = require('tldts');
 const picocolors = require('picocolors');
 
 const fs = require('fs');
 const path = require('path');
+
+const SPECIAL_SUFFIXES = new Set([
+  'linodeobjects.com', // only *.linodeobjects.com are public suffix
+  'vultrobjects.com', // only *.vultrobjects.com are public suffix
+  'dweb.link' // only *.dweb.link are public suffix
+]);
 
 (async () => {
   const domainSetContent = await fs.promises.readFile(
@@ -22,9 +28,14 @@ const path = require('path');
     }
 
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
-    const parsed = psl.parse(domain);
+    const parsed = tldts.parse(domain, { allowPrivateDomains: true });
 
-    if (parsed.listed && parsed.input === parsed.tld) {
+    if (
+      (
+        parsed.isPrivate
+        || parsed.isIcann
+      ) && domain === parsed.publicSuffix
+    ) {
       console.error('Domain', picocolors.yellow(domain), picocolors.red('is in public suffix list!'));
     }
   }
@@ -47,10 +58,12 @@ const path = require('path');
 
     if (line.startsWith('DOMAIN-SUFFIX')) {
       const domain = line.slice(14);
-      const parsed = psl.parse(domain);
+      const parsed = tldts.parse(domain, { allowPrivateDomains: true });
 
-      if (parsed.input !== parsed.tld) {
-        console.error('Domain', picocolors.yellow(domain), picocolors.green('is not in public suffix list!'));
+      if (domain !== parsed.publicSuffix) {
+        if (!SPECIAL_SUFFIXES.has(domain)) {
+          console.error('Domain', picocolors.yellow(domain), picocolors.green('is not in public suffix list!'));
+        }
       }
     }
   }

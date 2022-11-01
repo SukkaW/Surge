@@ -1,4 +1,4 @@
-const psl = require('psl');
+const tldts = require('tldts');
 const { processFilterRules } = require('./lib/parse-filter.js');
 const fs = require('fs');
 const path = require('path');
@@ -55,19 +55,20 @@ const BLACK_TLD = Array.from(new Set([
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
 
     if (line.length > 25) {
-      const parsed = psl.parse(domain);
+      const parsed = tldts.parse(domain, { allowPrivateDomains: true });
 
-      if (parsed.input === parsed.tld) {
+      if (parsed.isIp || domain === parsed.publicSuffix) {
         continue;
       }
-      const apexDomain = parsed.domain
+      const apexDomain = parsed.domain;
+      if (apexDomain) {
+        if (WHITELIST_DOMAIN.has(apexDomain)) {
+          continue;
+        }
 
-      if (WHITELIST_DOMAIN.has(apexDomain)) {
-        continue;
+        domainCountMap[apexDomain] ||= 0;
+        domainCountMap[apexDomain] += 1;
       }
-
-      domainCountMap[apexDomain] ||= 0;
-      domainCountMap[apexDomain] += 1;
     }
   }
 

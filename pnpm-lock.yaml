@@ -6,8 +6,8 @@ specifiers:
   ci-info: ^3.5.0
   picocolors: ^1.0.0
   piscina: ^3.2.0
-  psl: ^1.9.0
   table: ^6.8.0
+  tldts: ^5.7.97
   undici: 5.11.0
   wireit: ^0.7.2
 
@@ -17,8 +17,8 @@ dependencies:
   ci-info: 3.5.0
   picocolors: 1.0.0
   piscina: 3.2.0
-  psl: 1.9.0
   table: 6.8.0
+  tldts: 5.7.97
   undici: 5.11.0
 
 devDependencies:
@@ -353,10 +353,6 @@ packages:
       signal-exit: 3.0.7
     dev: true
 
-  /psl/1.9.0:
-    resolution: {integrity: sha512-E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==}
-    dev: false
-
   /punycode/2.1.1:
     resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}
     engines: {node: '>=6'}
@@ -442,6 +438,17 @@ packages:
       slice-ansi: 4.0.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
+    dev: false
+
+  /tldts-core/5.7.97:
+    resolution: {integrity: sha512-qxcuOSdlpee8rjH0gxbV26iONL91Foqe5nB/Gv/4Dh14cAX4DDhGGhpJnXbNP/7nxa8Nmvwx8k9/Wvr9IhUJRA==}
+    dev: false
+
+  /tldts/5.7.97:
+    resolution: {integrity: sha512-0A9BMNpg2RyzmOkEQRTRVfHUr1j7e2RxL2SgH/E/rLq//Fl8TNQ6D8NloCV66wOt3NeTzONrCDYFhBlN+SGRGg==}
+    hasBin: true
+    dependencies:
+      tldts-core: 5.7.97
     dev: false
 
   /to-regex-range/5.0.1:
