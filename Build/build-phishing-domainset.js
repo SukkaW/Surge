@@ -3,7 +3,9 @@ const { processFilterRules } = require('./lib/parse-filter.js');
 const fs = require('fs');
 const path = require('path');
 
-const WHITELIST_DOMAIN = new Set([]);
+const WHITELIST_DOMAIN = new Set([
+  'w3s.link'
+]);
 const BLACK_TLD = Array.from(new Set([
   '.xyz',
   '.top',
