@@ -30,11 +30,6 @@ jobs:
         with:
           version: 7
           run_install: false
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
-
       - uses: actions/cache@v3
         name: Setup pnpm cache
         with:
@@ -51,5 +46,6 @@ jobs:
           user_name: ${{ secrets.GIT_USER }}
           user_email: ${{ secrets.GIT_EMAIL }}
           publish_branch: gh-pages
+          exclude_assets: '.github,Build,package.json,pnpm-lock.yaml'
           publish_dir: ./
           cname: ruleset.skk.moe
