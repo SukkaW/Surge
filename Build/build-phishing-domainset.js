@@ -54,13 +54,9 @@ const BLACK_TLD = Array.from(new Set([
 
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
 
-    if (line.length > 25) {
-      const parsed = tldts.parse(domain, { allowPrivateDomains: true });
+    if (domain.length > 25) {
+      const apexDomain = tldts.getDomain(domain, { allowPrivateDomains: true });
 
-      if (parsed.isIp || domain === parsed.publicSuffix) {
-        continue;
-      }
-      const apexDomain = parsed.domain;
       if (apexDomain) {
         if (WHITELIST_DOMAIN.has(apexDomain)) {
           continue;

@@ -28,7 +28,7 @@ const SPECIAL_SUFFIXES = new Set([
     }
 
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
-    const parsed = tldts.parse(domain, { allowPrivateDomains: true });
+    const parsed = tldts.parse(domain, { allowPrivateDomains: true, detectIp: false });
 
     if (
       (
@@ -58,7 +58,7 @@ const SPECIAL_SUFFIXES = new Set([
 
     if (line.startsWith('DOMAIN-SUFFIX')) {
       const domain = line.slice(14);
-      const parsed = tldts.parse(domain, { allowPrivateDomains: true });
+      const parsed = tldts.parse(domain, { allowPrivateDomains: true, detectIp: false });
 
       if (domain !== parsed.publicSuffix) {
         if (!SPECIAL_SUFFIXES.has(domain)) {
