@@ -1,5 +1,4 @@
 const Piscina = require('piscina');
-const { canExcludeFromDedupe } = require('../lib/parse-filter')
 
 const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
@@ -11,13 +10,9 @@ module.exports.dedupe = ({ chunk }) => {
   for (let i = 0; i < chunkLength; i++) {
     const domainFromInput = chunk[i];
 
-    if (canExcludeFromDedupe(domainFromInput)) {
-      continue;
-    }
-
     for (let j = 0; j < totalLen; j++) {
       const domainFromFullSet = fullsetDomainStartsWithADot[j];
-      // domainFromFullSet is now startsWith a "."
+      // domainFromFullSet is always startsWith "."
 
       if (domainFromFullSet === domainFromInput) continue;
 

@@ -352,11 +352,11 @@ const threads = isCI ? cpuCount : cpuCount / 2;
     )
   ).forEach((result, taskIndex) => {
     const chunk = tasksArray[taskIndex];
-    result.forEach((value, index) => {
-      if (value === 1) {
-        domainSets.delete(chunk[index])
+    for (let i = 0, len = result.length; i < len; i++) {
+      if (result[i]) {
+        domainSets.delete(chunk[i]);
       }
-    })
+    }
   });
 
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
