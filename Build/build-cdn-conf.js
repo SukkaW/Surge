@@ -23,14 +23,15 @@ const path = require('path');
     return false;
   })
 
-  const filePath = path.resolve(__dirname, '../List/non_ip/cdn.conf');
+  const filePath = path.resolve(__dirname, '../Source/non_ip/cdn.conf');
+  const resultPath = path.resolve(__dirname, '../List/non_ip/cdn.conf');
   const content = (await fs.promises.readFile(filePath, 'utf-8'))
     .replace(
       '# --- [AWS S3 Replace Me] ---',
       S3OSSDomains.map(domain => `DOMAIN-SUFFIX,${domain}`).join('\n')
     );
 
-  await fs.promises.writeFile(filePath, content, 'utf-8');
+  await fs.promises.writeFile(resultPath, content, 'utf-8');
 
   console.timeEnd('Total Time - build-cdn-conf');
 })();

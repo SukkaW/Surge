@@ -8,7 +8,7 @@
     "build:anti-bogus-domain": "wireit",
     "build:apple-cdn": "wireit",
     "build:cdn-conf": "wireit",
-    "build:index-html": "wireit",
+    "build:public": "wireit",
     "build:reject-domainset": "wireit",
     "build:phishing-domainset": "wireit",
     "build:telegram-cidr": "wireit",
@@ -40,8 +40,8 @@
     "build:chn-cidr": {
       "command": "node ./Build/build-chn-cidr.js"
     },
-    "build:index-html": {
-      "command": "node ./Build/build-index.html.js",
+    "build:public": {
+      "command": "node ./Build/build-public.js",
       "dependencies": [
         "build:anti-bogus-domain",
         "build:apple-cdn",
@@ -51,7 +51,10 @@
       ]
     },
     "validate:cdn-conf": {
-      "command": "node ./Build/validate-cdn-conf.js"
+      "command": "node ./Build/validate-cdn-conf.js",
+      "dependencies": [
+        "build:cdn-conf"
+      ]
     },
     "build": {
       "dependencies": [
@@ -61,7 +64,7 @@
         "build:reject-domainset",
         "build:telegram-cidr",
         "build:chn-cidr",
-        "build:index-html",
+        "build:public",
         "validate:cdn-conf"
       ]
     }
@@ -76,6 +79,7 @@
     "@sukka/listdir": "^0.2.0",
     "@vercel/fetch-retry": "^5.1.3",
     "ci-info": "^3.5.0",
+    "fs-extra": "^10.1.0",
     "picocolors": "^1.0.0",
     "piscina": "^3.2.0",
     "table": "^6.8.0",

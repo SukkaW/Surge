@@ -18,13 +18,14 @@ const { isIP } = require('net');
     .filter(ip => typeof ip === 'string' && isIP(ip) !== 0);
   console.timeEnd('* Download bogus-nxdomain-list')
 
-  const filePath = path.resolve(__dirname, '../List/ip/reject.conf');
+  const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
+  const resultPath = path.resolve(__dirname, '../List/ip/reject.conf');
   const content = (await fs.promises.readFile(filePath, 'utf-8'))
     .replace(
       '# --- [Anti Bogus Domain Replace Me] ---',
       res.map(ip => `IP-CIDR,${ip}/32,no-resolve`).join('\n')
     );
 
-  await fs.promises.writeFile(filePath, content, 'utf-8');
+  await fs.promises.writeFile(resultPath, content, 'utf-8');
   console.timeEnd('Total Time - build-anti-bogus-domain');
 })();

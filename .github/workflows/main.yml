@@ -51,6 +51,5 @@ jobs:
           user_name: ${{ secrets.GIT_USER }}
           user_email: ${{ secrets.GIT_EMAIL }}
           publish_branch: gh-pages
-          exclude_assets: '.github,Build,package.json,pnpm-lock.yaml'
-          publish_dir: ./
+          publish_dir: public
           cname: ruleset.skk.moe

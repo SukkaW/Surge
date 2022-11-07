@@ -1,18 +1,32 @@
 const listDir = require('@sukka/listdir');
 const path = require('path');
 const fs = require('fs');
+const fse = require('fs-extra');
 
 const rootPath = path.resolve(__dirname, '../');
+const publicPath = path.resolve(__dirname, '../public');
+
+const folderAndFilesToBeDeployed = [
+  'Assets',
+  'List',
+  'Modules',
+  'Script',
+  'LICENSE',
+  'README.md'
+];
 
 (async () => {
-  const list = await listDir(rootPath, {
+  await fse.ensureDir(publicPath);
+  await Promise.all(folderAndFilesToBeDeployed.map(dir => fse.copy(path.resolve(rootPath, dir), path.resolve(publicPath, dir))));
+
+  const list = await listDir(publicPath, {
     ignoreHidden: true,
     ignorePattern: /node_modules|Build|.DS_Store|\.(json|html|md|js)|LICENSE/
   });
 
   const html = template(list);
 
-  await fs.promises.writeFile(path.join(rootPath, 'index.html'), html, 'utf-8');
+  await fs.promises.writeFile(path.join(publicPath, 'index.html'), html, 'utf-8');
 })();
 
 /**
@@ -46,7 +60,7 @@ function template(urlList) {
     <main class="container">
       <h1>Sukka Surge Ruleset Server</h1>
       <p>Made by <a href="https://skk.moe">Sukka</a> | <a href="https://github.com/SukkaW/Surge/">Source @ GitHub</a> | Licensed under <a href="https://github.com/SukkaW/Surge/blob/master/LICENSE" target="_blank">AGPL-3.0</a></p>
-      <p>Last Updated: ${new Date().toISOString()}</p>
+      <p>Last Build: ${new Date().toISOString()}</p>
       <hr>
       <br>
       <ul>

@@ -21,7 +21,6 @@
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,reject-tinygif
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_sukka.conf,reject-tinygif
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,reject
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
 ```

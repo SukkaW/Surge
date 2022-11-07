@@ -33,7 +33,7 @@ const threads = isCI ? cpuCount : cpuCount / 2;
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from hosts files!`);
 
-  await fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_sukka.conf'), { encoding: 'utf-8' }).then(data => {
+  await fsPromises.readFile(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), { encoding: 'utf-8' }).then(data => {
     data.split('\n').forEach(line => {
       const trimmed = line.trim();
       if (
