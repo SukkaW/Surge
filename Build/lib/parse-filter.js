@@ -1,8 +1,8 @@
-const { isIP } = require('net');
 const { fetchWithRetry } = require('./fetch-retry');
-const { isDomainLoose } = require('./is-domain-loose');
+const { normalizeDomain } = require('./is-domain-loose');
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
+let foundDebugDomain = false;
 
 const warnOnceUrl = new Set();
 const warnOnce = (url, isWhite, ...message) => {
@@ -42,6 +42,7 @@ async function processDomainLists (domainListsUrl) {
 
     if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
       warnOnce(domainListsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      foundDebugDomain = true;
     }
 
     domainSets.add(domainToAdd);
@@ -73,13 +74,15 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
       return;
     }
     const [, ...domains] = line.split(' ');
-    const domain = domains.join(' ').trim();
+    const _domain = domains.join(' ').trim();
 
-    if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+    if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
       warnOnce(hostsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      foundDebugDomain = true;
     }
 
-    if (isDomainLoose(domain)) {
+    const domain = normalizeDomain(_domain);
+    if (domain) {
       if (includeAllSubDomain) {
         domainSets.add(`.${domain}`);
       } else {
@@ -96,7 +99,7 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
 /**
  * @param {string | URL} filterRulesUrl
  * @param {(string | URL)[] | undefined} fallbackUrls
- * @returns {Promise<{ white: Set<string>, black: Set<string> }>}
+ * @returns {Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }>}
  */
 async function processFilterRules (filterRulesUrl, fallbackUrls) {
   console.time(`   - processFilterRules: ${filterRulesUrl}`);
@@ -135,8 +138,6 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
       || line.includes('[')
       || line.includes('(')
       || line.includes('$') && !lineStartsWithDoubleVerticalBar
-      || line === ''
-      || isIP(line) !== 0
     ) {
       continue;
     }
@@ -145,15 +146,17 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
     const lineEndsWithCaretVerticalBar = line.endsWith('^|');
 
     if (lineStartsWithDoubleVerticalBar && line.endsWith('^$badfilter')) {
-      const domain = line.replace('||', '').replace('^$badfilter', '').trim();
-      if (isDomainLoose(domain)) {
+      const _domain = line.replace('||', '').replace('^$badfilter', '').trim();
+      const domain = normalizeDomain(_domain);
+      if (domain) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
+          foundDebugDomain = true;
         }
 
         whitelistDomainSets.add(domain);
       } else {
-        console.warn('      * [parse-filter white] ' + domain + ' is not a valid domain');
+        console.warn('      * [parse-filter white] ' + _domain + ' is not a valid domain');
       }
     } else if (line.startsWith('@@||')
       && (
@@ -163,21 +166,25 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         || line.endsWith('^$1p')
       )
     ) {
-      const domain = line
+      const _domain = line
         .replaceAll('@@||', '')
         .replaceAll('^$badfilter', '')
         .replaceAll('^$1p', '')
         .replaceAll('^|', '')
         .replaceAll('^', '')
         .trim();
-      if (isDomainLoose(domain)) {
+
+      const domain = normalizeDomain(_domain);
+
+      if (domain) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
+          foundDebugDomain = true;
         }
 
         whitelistDomainSets.add(domain);
       } else {
-        console.warn('      * [parse-filter white] ' + domain + ' is not a valid domain');
+        console.warn('      * [parse-filter white] ' + _domain + ' is not a valid domain');
       }
     } else if (
       lineStartsWithDoubleVerticalBar
@@ -187,16 +194,19 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         || line.endsWith('^$all')
       )
     ) {
-      const domain = line
+      const _domain = line
         .replaceAll('||', '')
         .replaceAll('^|', '')
         .replaceAll('^$all', '')
         .replaceAll('^', '')
         .trim();
 
-      if (isDomainLoose(domain)) {
+      const domain = normalizeDomain(_domain);
+
+      if (domain) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+          foundDebugDomain = true;
         }
 
         blacklistDomainSets.add(`.${domain}`);
@@ -208,10 +218,12 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         || lineEndsWithCaretVerticalBar
       )
     ) {
-      const domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
-      if (isDomainLoose(domain)) {
+      const _domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
+      const domain = normalizeDomain(_domain);
+      if (domain) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+          foundDebugDomain = true;
         }
 
         blacklistDomainSets.add(domain);
@@ -223,7 +235,8 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
 
   return {
     white: whitelistDomainSets,
-    black: blacklistDomainSets
+    black: blacklistDomainSets,
+    foundDebugDomain
   };
 }
 

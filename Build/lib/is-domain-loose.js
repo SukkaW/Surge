@@ -1,3 +1,19 @@
-const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m;
+const { parse } = require('tldts');
 
-module.exports.isDomainLoose = (domain) => rDomain.test(domain);
+module.exports.isDomainLoose = (domain) => {
+  const { isIcann, isPrivate, isIp } = parse(domain, { allowPrivateDomains: true });
+  return !!(!isIp && (isIcann || isPrivate));
+};
+
+module.exports.normalizeDomain = (domain) => {
+  const { isIcann, isPrivate, hostname, isIp } = parse(domain, { allowPrivateDomains: true });
+  if (isIp) {
+    return null;
+  }
+
+  if (isIcann || isPrivate) {
+    return hostname;
+  };
+
+  return null;
+}

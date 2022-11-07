@@ -1,7 +1,7 @@
 const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
-const { isIP } = require('net');
+const { isIPv4, isIPv6 } = require('net');
 
 (async () => {
   console.time('Total Time - build-anti-bogus-domain');
@@ -15,7 +15,8 @@ const { isIP } = require('net');
 
       return null
     })
-    .filter(ip => typeof ip === 'string' && isIP(ip) !== 0);
+    .filter(ip => typeof ip === 'string');
+
   console.timeEnd('* Download bogus-nxdomain-list')
 
   const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
@@ -23,7 +24,15 @@ const { isIP } = require('net');
   const content = (await fs.promises.readFile(filePath, 'utf-8'))
     .replace(
       '# --- [Anti Bogus Domain Replace Me] ---',
-      res.map(ip => `IP-CIDR,${ip}/32,no-resolve`).join('\n')
+      res.map(ip => {
+        if (isIPv4(ip)) {
+          return `IP-CIDR,${ip}/32,no-resolve`
+        }
+        if (isIPv6(ip)) {
+          return `IP-CIDR6,${ip}/128,no-resolve`
+        }
+        return ''
+      }).join('\n')
     );
 
   await fs.promises.writeFile(resultPath, content, 'utf-8');
