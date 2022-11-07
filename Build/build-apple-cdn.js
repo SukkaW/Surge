@@ -2,7 +2,7 @@ const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
 
-const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m;
+const { isDomainLoose } = require('./lib/is-domain-loose');
 
 (async () => {
   console.time('Total Time - build-apple-cdn-conf');
@@ -16,7 +16,7 @@ const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?(
 
       return null
     })
-    .filter(domain => typeof domain === 'string' && rDomain.test(domain));
+    .filter(domain => typeof domain === 'string' && isDomainLoose(domain));
 
   await Promise.all([
     fs.promises.writeFile(

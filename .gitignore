@@ -6,6 +6,7 @@ public
 
 List/domainset/reject.conf
 List/domainset/reject_phishing.conf
+List/domainset/reject_sukka.conf
 List/domainset/apple_cdn.conf
 List/non_ip/cdn.conf
 List/non_ip/apple_cdn.conf

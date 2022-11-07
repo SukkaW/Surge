@@ -1,7 +1,6 @@
 const { isIP } = require('net');
 const { fetchWithRetry } = require('./fetch-retry');
-
-const rDomain = /^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$/m
+const { isDomainLoose } = require('./is-domain-loose');
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
 
@@ -80,7 +79,7 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
       warnOnce(hostsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
     }
 
-    if (rDomain.test(domain)) {
+    if (isDomainLoose(domain)) {
       if (includeAllSubDomain) {
         domainSets.add(`.${domain}`);
       } else {
@@ -146,12 +145,14 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
 
     if (lineStartsWithDoubleVerticalBar && line.endsWith('^$badfilter')) {
       const domain = line.replace('||', '').replace('^$badfilter', '').trim();
-      if (rDomain.test(domain)) {
+      if (isDomainLoose(domain)) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
         }
 
         whitelistDomainSets.add(domain);
+      } else {
+        console.warn('      * [parse-filter white] ' + domain + ' is not a valid domain');
       }
     } else if (line.startsWith('@@||')
       && (
@@ -168,12 +169,14 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         .replaceAll('^|', '')
         .replaceAll('^', '')
         .trim();
-      if (rDomain.test(domain)) {
+      if (isDomainLoose(domain)) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
         }
 
         whitelistDomainSets.add(domain);
+      } else {
+        console.warn('      * [parse-filter white] ' + domain + ' is not a valid domain');
       }
     } else if (
       lineStartsWithDoubleVerticalBar
@@ -189,8 +192,8 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         .replaceAll('^$all', '')
         .replaceAll('^', '')
         .trim();
-      if (rDomain.test(domain)) {
 
+      if (isDomainLoose(domain)) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
         }
@@ -205,8 +208,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
       )
     ) {
       const domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
-      if (rDomain.test(domain)) {
-
+      if (isDomainLoose(domain)) {
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
         }
