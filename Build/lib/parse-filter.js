@@ -133,6 +133,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
       || line.includes('*')
       || line.includes('/')
       || line.includes('[')
+      || line.includes('(')
       || line.includes('$') && !lineStartsWithDoubleVerticalBar
       || line === ''
       || isIP(line) !== 0
