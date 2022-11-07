@@ -1,4 +1,5 @@
 const { promises: fsPromises } = require('fs');
+const fse = require('fs-extra');
 const { resolve: pathResolve } = require('path');
 const Piscina = require('piscina');
 const { processHosts, processFilterRules, preprocessFullDomainSetBeforeUsedAsWorkerData } = require('./lib/parse-filter');
@@ -52,6 +53,9 @@ const threads = isCI ? cpuCount : cpuCount / 2;
       domainSets.add(trimmed);
     });
   });
+
+  // Copy reject_sukka.conf for backward compatibility
+  await fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
 
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
