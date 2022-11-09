@@ -38,20 +38,24 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   // Parse from AdGuard Filters
   console.time('* Download and process AdBlock Filter Rules');
-  (await Promise.all(ADGUARD_FILTERS.map(input => {
-    if (typeof input === 'string') {
-      return processFilterRules(input);
-    }
-    if (Array.isArray(input) && input.length === 2) {
-      return processFilterRules(input[0], input[1]);
-    }
-  }))).forEach(({ white, black, foundDebugDomain }) => {
-    if (foundDebugDomain) {
-      process.exit(1);
-    };
-    white.forEach(i => filterRuleWhitelistDomainSets.add(i));
-    black.forEach(i => domainSets.add(i));
-  });
+  await Promise.all(ADGUARD_FILTERS.map(input => {
+    const promise = Array.isArray(input) && input.length === 2
+      ? processFilterRules(input[0], input[1])
+      : processFilterRules(input);
+
+    return promise.then((i) => {
+      if (i) {
+        const { white, black, foundDebugDomain } = i;
+        if (foundDebugDomain) {
+          process.exit(1);
+        };
+        white.forEach(i => filterRuleWhitelistDomainSets.add(i));
+        black.forEach(i => domainSets.add(i));
+      } else {
+        process.exit(1);
+      }
+    });
+  }));
 
   console.timeEnd('* Download and process AdBlock Filter Rules');
 

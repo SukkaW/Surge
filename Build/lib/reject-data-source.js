@@ -88,6 +88,13 @@ const ADGUARD_FILTERS = [
   'https://filters.adtidy.org/extension/ublock/filters/7.txt',
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
   'https://filters.adtidy.org/extension/ublock/filters/224.txt',
+  // EasyList Germany filter
+  [
+    'https://easylist.to/easylistgermany/easylistgermany.txt',
+    [
+      'https://easylist-downloads.adblockplus.org/easylistgermany.txt'
+    ]
+  ],
   // Easy Privacy
   [
     'https://easylist.to/easylist/easyprivacy.txt',

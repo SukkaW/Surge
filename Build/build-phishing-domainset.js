@@ -71,7 +71,7 @@ const BLACK_TLD = Array.from(new Set([
   const results = [];
   Object.entries(domainCountMap).forEach(([domain, count]) => {
     if (
-      count >= 8
+      count >= 5
       && BLACK_TLD.some(tld => domain.endsWith(tld))
     ) {
       results.push('.' + domain);
@@ -79,5 +79,5 @@ const BLACK_TLD = Array.from(new Set([
   });
 
   const filePath = path.resolve(__dirname, '../List/domainset/reject_phishing.conf');
-  await fs.promises.writeFile(filePath, results.join('\n'), 'utf-8');
+  await fs.promises.writeFile(filePath, results.join('\n') + '\n', 'utf-8');
 })();
