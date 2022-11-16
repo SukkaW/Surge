@@ -5,7 +5,8 @@ const path = require('path');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
-  'dweb.link'
+  'dweb.link',
+  'nftstorage.link'
 ]);
 const BLACK_TLD = Array.from(new Set([
   '.xyz',
