@@ -55,7 +55,7 @@ const BLACK_TLD = Array.from(new Set([
 
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
 
-    if (domain.length > 25) {
+    if (domain.length > 19) {
       const apexDomain = tldts.getDomain(domain, { allowPrivateDomains: true });
 
       if (apexDomain) {
@@ -65,6 +65,11 @@ const BLACK_TLD = Array.from(new Set([
 
         domainCountMap[apexDomain] ||= 0;
         domainCountMap[apexDomain] += 1;
+
+        if (domain.length > 45) {
+          // Add more weight if the domain is long enough
+          domainCountMap[apexDomain] += 1;
+        }
       }
     }
   }
