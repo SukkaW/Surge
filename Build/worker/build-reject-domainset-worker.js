@@ -37,7 +37,8 @@ module.exports.dedupe = ({ chunk }) => {
             break;
           }
         }
-      } else if (domainFromInputLen > domainFromFullSetLen) {
+      }
+      if (domainFromInputLen > domainFromFullSetLen) {
         // domainFromInput is now startsWith a "."
         if (domainFromInput.endsWith(domainFromFullSet)) {
           outputToBeRemoved[i] = 1;
