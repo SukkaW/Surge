@@ -68,8 +68,10 @@ const BLACK_TLD = Array.from(new Set([
 
         // Add more weight if the domain is long enough
         if (domain.length > 45) {
-          domainCountMap[apexDomain] += 1;
+          domainCountMap[apexDomain] += 1.5;
         } else if (domain.length > 35) {
+          domainCountMap[apexDomain] += 1;
+        } else if (domain.length > 30) {
           domainCountMap[apexDomain] += 0.5;
         }
       }
