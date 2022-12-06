@@ -18,6 +18,8 @@ const ADGUARD_FILTERS = [
   ],
   // AdGuard DNS Filter
   'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
+  // AdGuard CNAME Filter Combined
+  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/combined_disguised_trackers.txt',
   // uBlock Origin Filter List
   [
     'https://ublockorigin.github.io/uAssets/filters/filters.txt',

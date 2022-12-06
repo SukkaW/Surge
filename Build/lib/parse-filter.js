@@ -138,6 +138,8 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
       || line.includes('[')
       || line.includes('(')
       || line.includes('$') && !lineStartsWithDoubleVerticalBar
+      || line.includes(']')
+      || line.includes(')')
     ) {
       continue;
     }
