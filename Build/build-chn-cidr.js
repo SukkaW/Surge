@@ -1,19 +1,26 @@
 const { fetchWithRetry } = require('./lib/fetch-retry');
+const { withBanner } = require('./lib/with-banner');
 const { promises: fsPromises } = require('fs');
 const { resolve: pathResolve } = require('path');
 
 (async () => {
   console.time('Total Time - build-chnroutes-cidr');
 
-  const cidr = (await (await fetchWithRetry('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')).text()).split('\n');
+  const [rawCidr, { merge: mergeCidrs }] = await Promise.all([
+    (await fetchWithRetry('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')).text(),
+    import('cidr-tools')
+  ]);
+  const cidr = rawCidr.split('\n');
 
-  const filteredCidr = cidr.filter(line => {
+  console.log('Before Merge:', cidr.length);
+  const filteredCidr = mergeCidrs(cidr.filter(line => {
     if (line) {
       return !line.startsWith('#')
     }
 
     return false;
-  })
+  }));
+  console.log('After Merge:', filteredCidr.length);
 
   await fsPromises.writeFile(pathResolve(__dirname, '../List/ip/china_ip.conf'), makeCidrList(filteredCidr), { encoding: 'utf-8' });
 
@@ -23,10 +30,10 @@ const { resolve: pathResolve } = require('path');
 function makeCidrList(cidr) {
   const date = new Date();
 
-  return `############################
-# Mainland China IPv4 CIDR
-# Data from misaka.io (misakaio @ GitHub)
-# Last Updated: ${date.toISOString()}
-# Routes: ${cidr.length}
-############################\n` + cidr.map(i => `IP-CIDR,${i}`).join('\n') + '\n########### END ############\n';
+  return withBanner(
+    'Mainland China IPv4 CIDR',
+    ['Data from misaka.io (misakaio @ GitHub)', 'License: CC BY-SA 2.0'],
+    date,
+    cidr.map(i => `IP-CIDR,${i}`)
+  );
 };
