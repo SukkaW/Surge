@@ -8,6 +8,7 @@ const { isCI } = require('ci-info');
 const threads = isCI ? cpuCount : cpuCount / 2;
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST } = require('./lib/reject-data-source');
+const { withBanner } = require('./lib/with-banner');
 
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
@@ -210,7 +211,17 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   await Promise.all([
     fsPromises.writeFile(
       pathResolve(__dirname, '../List/domainset/reject.conf'),
-      `${[...domainSets].join('\n')}\n`,
+      withBanner(
+        'Reject Domain Set for Surge',
+        [
+          '(AdBlock, Tracking Protection, Privacy Protection, Anti-Phishing, Anti-Mining)',
+          'Build from:',
+          ...HOSTS.map(host => `- ${host[0]}`),
+          ...ADGUARD_FILTERS.map(filter => `- ${Array.isArray(filter) ? filter[0] : filter}`),
+        ],
+        new Date(),
+        [...domainSets]
+      ),
       { encoding: 'utf-8' }
     ),
     piscina.destroy()

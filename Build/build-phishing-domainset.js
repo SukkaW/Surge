@@ -2,6 +2,7 @@ const tldts = require('tldts');
 const { processFilterRules } = require('./lib/parse-filter.js');
 const fs = require('fs');
 const path = require('path');
+const { withBanner } = require('./lib/with-banner.js');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -89,5 +90,18 @@ const BLACK_TLD = Array.from(new Set([
   });
 
   const filePath = path.resolve(__dirname, '../List/domainset/reject_phishing.conf');
-  await fs.promises.writeFile(filePath, results.join('\n') + '\n', 'utf-8');
+  await fs.promises.writeFile(
+    filePath,
+    withBanner(
+      'Reject Domain Set for Surge',
+      [
+        '(Enhanced Phishing Protection)',
+        'Build from:',
+        '- https://gitlab.com/malware-filter/phishing-filter'
+      ],
+      new Date(),
+      results
+    ),
+    'utf-8'
+  );
 })();
