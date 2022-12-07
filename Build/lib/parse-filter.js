@@ -194,12 +194,16 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
         lineEndsWithCaret
         || lineEndsWithCaretVerticalBar
         || line.endsWith('^$all')
+        || line.endsWith('^$doc')
+        || line.endsWith('^$document')
       )
     ) {
       const _domain = line
         .replaceAll('||', '')
         .replaceAll('^|', '')
         .replaceAll('^$all', '')
+        .replaceAll('^$document', '')
+        .replaceAll('^$doc', '')
         .replaceAll('^', '')
         .trim();
 
