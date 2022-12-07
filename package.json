@@ -13,7 +13,7 @@
     "build:phishing-domainset": "wireit",
     "build:telegram-cidr": "wireit",
     "build:chn-cidr": "wireit",
-    "validate:cdn-conf": "wireit"
+    "validate:domainset": "wireit"
   },
   "wireit": {
     "build:anti-bogus-domain": {
@@ -50,9 +50,12 @@
         "build:telegram-cidr"
       ]
     },
-    "validate:cdn-conf": {
-      "command": "node ./Build/validate-cdn-conf.js",
+    "validate:domainset": {
+      "command": "node ./Build/validate-domainset.js",
       "dependencies": [
+        "build:apple-cdn",
+        "build:phishing-domainset",
+        "build:reject-domainset",
         "build:cdn-conf"
       ]
     },
@@ -65,7 +68,7 @@
         "build:telegram-cidr",
         "build:chn-cidr",
         "build:public",
-        "validate:cdn-conf"
+        "validate:domainset"
       ]
     }
   },
