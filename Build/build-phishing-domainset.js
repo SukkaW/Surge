@@ -74,6 +74,13 @@ const BLACK_TLD = Array.from(new Set([
           domainCountMap[apexDomain] += 1;
         } else if (domain.length > 30) {
           domainCountMap[apexDomain] += 0.5;
+        } else if (domain.length > 25) {
+          domainCountMap[apexDomain] += 0.25;
+        }
+
+        const subdomain = tldts.getSubdomain(domain, { allowPrivateDomains: true });
+        if (subdomain && subdomain.includes('.')) {
+          domainCountMap[apexDomain] += 0.5;
         }
       }
     }
