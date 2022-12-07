@@ -208,6 +208,7 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
 
+  console.time('* Write reject.conf');
   await Promise.all([
     fsPromises.writeFile(
       pathResolve(__dirname, '../List/domainset/reject.conf'),
@@ -220,12 +221,13 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
           ...ADGUARD_FILTERS.map(filter => `- ${Array.isArray(filter) ? filter[0] : filter}`),
         ],
         new Date(),
-        [...domainSets]
+        [...domainSets].sort()
       ),
       { encoding: 'utf-8' }
     ),
     piscina.destroy()
   ]);
+  console.timeEnd('* Write reject.conf');
 
   console.timeEnd('Total Time - build-reject-domain-set');
   if (piscina.queueSize === 0) {
