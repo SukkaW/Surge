@@ -33,7 +33,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
         'Data from https://misaka.io (misakaio @ GitHub)',
       ],
       new Date(),
-      cidr.map(i => `IP-CIDR,${i}`)
+      filteredCidr.map(i => `IP-CIDR,${i}`)
     ),
     pathResolve(__dirname, '../List/ip/china_ip.conf')
   )
