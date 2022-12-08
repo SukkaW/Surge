@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const { isDomainLoose } = require('./lib/is-domain-loose');
+const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { withBannerArray } = require('./lib/with-banner');
 
 (async () => {
   console.time('Total Time - build-apple-cdn-conf');
@@ -19,15 +21,41 @@ const { isDomainLoose } = require('./lib/is-domain-loose');
     .filter(domain => typeof domain === 'string' && isDomainLoose(domain));
 
   await Promise.all([
-    fs.promises.writeFile(
-      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
-      res.map(domain => `DOMAIN-SUFFIX,${domain}`).join('\n') + '\n',
-      'utf-8'
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Surge Rules - Apple CDN',
+        [
+          'License: AGPL 3.0',
+          'Homepage: https://ruleset.skk.moe',
+          'GitHub: https://github.com/SukkaW/Surge',
+          '',
+          'This file contains Apple\'s domains using their China mainland CDN servers.',
+          '',
+          'Data from:',
+          ' - https://github.com/felixonmars/dnsmasq-china-list',
+        ],
+        new Date(),
+        res.map(domain => `DOMAIN-SUFFIX,${domain}`)
+      ),
+      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf')
     ),
-    fs.promises.writeFile(
-      path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
-      res.map(i => `.${i}`).join('\n') + '\n',
-      'utf-8'
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Surge Rules - Apple CDN',
+        [
+          'License: AGPL 3.0',
+          'Homepage: https://ruleset.skk.moe',
+          'GitHub: https://github.com/SukkaW/Surge',
+          '',
+          'This file contains Apple\'s domains using their China mainland CDN servers.',
+          '',
+          'Data from:',
+          ' - https://github.com/felixonmars/dnsmasq-china-list',
+        ],
+        new Date(),
+        res.map(i => `.${i}`)
+      ),
+      path.resolve(__dirname, '../List/domainset/apple_cdn.conf')
     )
   ])
 

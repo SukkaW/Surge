@@ -2,7 +2,8 @@ const tldts = require('tldts');
 const { processFilterRules } = require('./lib/parse-filter.js');
 const fs = require('fs');
 const path = require('path');
-const { withBanner } = require('./lib/with-banner.js');
+const { withBannerArray } = require('./lib/with-banner.js');
+const { stringArrayCompare, compareAndWriteFile } = require('./lib/string-array-compare');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -97,19 +98,23 @@ const BLACK_TLD = Array.from(new Set([
     }
   });
 
-  const filePath = path.resolve(__dirname, '../List/domainset/reject_phishing.conf');
-  await fs.promises.writeFile(
-    filePath,
-    withBanner(
-      'Reject Domain Set for Surge',
+  results.sort();
+
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Surge Rules - Reject Phishing',
       [
-        '(Enhanced Phishing Protection)',
+        'License: AGPL 3.0',
+        'Homepage: https://ruleset.skk.moe',
+        'GitHub: https://github.com/SukkaW/Surge',
+        '',
+        'The domainset supports enhanced phishing protection',
         'Build from:',
-        '- https://gitlab.com/malware-filter/phishing-filter'
+        ' - https://gitlab.com/malware-filter/phishing-filter'
       ],
       new Date(),
       results
     ),
-    'utf-8'
-  );
+    path.resolve(__dirname, '../List/domainset/reject_phishing.conf')
+  )
 })();

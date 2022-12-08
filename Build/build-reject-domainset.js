@@ -8,7 +8,8 @@ const { isCI } = require('ci-info');
 const threads = isCI ? cpuCount : cpuCount / 2;
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST } = require('./lib/reject-data-source');
-const { withBanner } = require('./lib/with-banner');
+const { withBannerArray } = require('./lib/with-banner');
+const { compareAndWriteFile } = require('./lib/string-array-compare');
 
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
@@ -208,25 +209,30 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
 
+  await piscina.destroy();
+
   console.time('* Write reject.conf');
-  await Promise.all([
-    fsPromises.writeFile(
-      pathResolve(__dirname, '../List/domainset/reject.conf'),
-      withBanner(
-        'Reject Domain Set for Surge',
-        [
-          '(AdBlock, Tracking Protection, Privacy Protection, Anti-Phishing, Anti-Mining)',
-          'Build from:',
-          ...HOSTS.map(host => `- ${host[0]}`),
-          ...ADGUARD_FILTERS.map(filter => `- ${Array.isArray(filter) ? filter[0] : filter}`),
-        ],
-        new Date(),
-        [...domainSets].sort()
-      ),
-      { encoding: 'utf-8' }
+
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Surge Rules - Reject Base',
+      [
+        'License: AGPL 3.0',
+        'Homepage: https://ruleset.skk.moe',
+        'GitHub: https://github.com/SukkaW/Surge',
+        '',
+        'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+        '',
+        'Build from:',
+        ...HOSTS.map(host => ` - ${host[0]}`),
+        ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`),
+      ],
+      new Date(),
+      [...domainSets].sort()
     ),
-    piscina.destroy()
-  ]);
+    pathResolve(__dirname, '../List/domainset/reject.conf')
+  );
+
   console.timeEnd('* Write reject.conf');
 
   console.timeEnd('Total Time - build-reject-domain-set');

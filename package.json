@@ -5,6 +5,7 @@
   "description": "",
   "scripts": {
     "build": "wireit",
+    "download-previous-build": "wireit",
     "build:anti-bogus-domain": "wireit",
     "build:apple-cdn": "wireit",
     "build:cdn-conf": "wireit",
@@ -16,21 +17,37 @@
     "validate:domainset": "wireit"
   },
   "wireit": {
+    "download-previous-build": {
+      "command": "node ./Build/download-previous-build.js"
+    },
     "build:anti-bogus-domain": {
-      "command": "node ./Build/build-anti-bogus-domain.js"
+      "command": "node ./Build/build-anti-bogus-domain.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:apple-cdn": {
-      "command": "node ./Build/build-apple-cdn.js"
+      "command": "node ./Build/build-apple-cdn.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:cdn-conf": {
-      "command": "node ./Build/build-cdn-conf.js"
+      "command": "node ./Build/build-cdn-conf.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:phishing-domainset": {
-      "command": "node ./Build/build-phishing-domainset.js"
+      "command": "node ./Build/build-phishing-domainset.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:reject-domainset": {
       "command": "node ./Build/build-reject-domainset.js",
       "dependencies": [
+        "download-previous-build",
         "build:phishing-domainset"
       ]
     },
@@ -38,7 +55,10 @@
       "command": "node ./Build/build-telegram-cidr.js"
     },
     "build:chn-cidr": {
-      "command": "node ./Build/build-chn-cidr.js"
+      "command": "node ./Build/build-chn-cidr.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:public": {
       "command": "node ./Build/build-public.js",
@@ -87,10 +107,14 @@
     "picocolors": "^1.0.0",
     "piscina": "^3.2.0",
     "table": "^6.8.1",
+    "tar": "^6.1.13",
     "tldts": "^5.7.102",
     "undici": "5.13.0"
   },
   "devDependencies": {
     "wireit": "^0.9.1"
+  },
+  "engines": {
+    "node": "> 18.0.0"
   }
 }

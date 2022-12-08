@@ -1,7 +1,7 @@
 const { fetchWithRetry } = require('./lib/fetch-retry');
-const { withBanner } = require('./lib/with-banner');
-const { promises: fsPromises } = require('fs');
+const { withBannerArray } = require('./lib/with-banner');
 const { resolve: pathResolve } = require('path');
+const { compareAndWriteFile } = require('./lib/string-array-compare');
 
 (async () => {
   console.time('Total Time - build-chnroutes-cidr');
@@ -22,18 +22,21 @@ const { resolve: pathResolve } = require('path');
   }));
   console.log('After Merge:', filteredCidr.length);
 
-  await fsPromises.writeFile(pathResolve(__dirname, '../List/ip/china_ip.conf'), makeCidrList(filteredCidr), { encoding: 'utf-8' });
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Surge Rules - Mainland China IPv4 CIDR',
+      [
+        'License: CC BY-SA 2.0',
+        'Homepage: https://ruleset.skk.moe',
+        'GitHub: https://github.com/SukkaW/Surge',
+        '',
+        'Data from https://misaka.io (misakaio @ GitHub)',
+      ],
+      new Date(),
+      cidr.map(i => `IP-CIDR,${i}`)
+    ),
+    pathResolve(__dirname, '../List/ip/china_ip.conf')
+  )
 
   console.timeEnd('Total Time - build-chnroutes-cidr');
 })();
-
-function makeCidrList(cidr) {
-  const date = new Date();
-
-  return withBanner(
-    'Mainland China IPv4 CIDR',
-    ['Data from misaka.io (misakaio @ GitHub)', 'License: CC BY-SA 2.0'],
-    date,
-    cidr.map(i => `IP-CIDR,${i}`)
-  );
-};

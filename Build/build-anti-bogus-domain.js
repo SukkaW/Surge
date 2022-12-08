@@ -2,6 +2,8 @@ const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
+const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { withBannerArray } = require('./lib/with-banner');
 
 (async () => {
   console.time('Total Time - build-anti-bogus-domain');
@@ -35,6 +37,24 @@ const { isIPv4, isIPv6 } = require('net');
       }).join('\n')
     );
 
-  await fs.promises.writeFile(resultPath, content, 'utf-8');
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Surge Rules - Telegram IP CIDR',
+      [
+        'License: AGPL 3.0',
+        'Homepage: https://ruleset.skk.moe',
+        'GitHub: https://github.com/SukkaW/Surge',
+        '',
+        'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers.',
+        '',
+        'Data from:',
+        ' - https://github.com/felixonmars/dnsmasq-china-list'
+      ],
+      new Date(),
+      content.split('\n')
+    ),
+    resultPath
+  )
+
   console.timeEnd('Total Time - build-anti-bogus-domain');
 })();

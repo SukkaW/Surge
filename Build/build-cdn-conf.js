@@ -1,6 +1,8 @@
 const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
+const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { withBannerArray } = require('./lib/with-banner');
 
 (async () => {
   console.time('Total Time - build-cdn-conf');
@@ -31,7 +33,21 @@ const path = require('path');
       S3OSSDomains.map(domain => `DOMAIN-SUFFIX,${domain}`).join('\n')
     );
 
-  await fs.promises.writeFile(resultPath, content, 'utf-8');
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Surge Rules - CDN Domains',
+        [
+          'License: AGPL 3.0',
+          'Homepage: https://ruleset.skk.moe',
+          'GitHub: https://github.com/SukkaW/Surge',
+          '',
+          'This file contains object storage and static assets CDN domains.'
+        ],
+        new Date(),
+        content.split('\n')
+    ),
+    resultPath
+  )
 
   console.timeEnd('Total Time - build-cdn-conf');
 })();
