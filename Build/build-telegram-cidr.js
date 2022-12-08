@@ -2,8 +2,7 @@ const { fetchWithRetry } = require('./lib/fetch-retry');
 const fs = require('fs');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { withBannerArray } = require('./lib/with-banner');
+const { withBanner } = require('./lib/with-banner');
 
 (async () => {
   console.time('Total Time - build-telegram-cidr');
@@ -21,8 +20,9 @@ const { withBannerArray } = require('./lib/with-banner');
     throw new Error('Failed to fetch data!');
   }
 
-  await compareAndWriteFile(
-    withBannerArray(
+  await fs.promises.writeFile(
+    path.resolve(__dirname, '../List/ip/telegram.conf'),
+    withBanner(
       'Sukka\'s Surge Rules - Telegram IP CIDR',
       [
         'License: AGPL 3.0',
@@ -43,8 +43,7 @@ const { withBannerArray } = require('./lib/with-banner');
         }
         return '';
       })
-    ),
-    path.resolve(__dirname, '../List/ip/telegram.conf')
+    )
   )
 
   console.timeEnd('Total Time - build-telegram-cidr');
