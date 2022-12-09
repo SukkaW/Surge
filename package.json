@@ -52,7 +52,10 @@
       ]
     },
     "build:telegram-cidr": {
-      "command": "node ./Build/build-telegram-cidr.js"
+      "command": "node ./Build/build-telegram-cidr.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:chn-cidr": {
       "command": "node ./Build/build-chn-cidr.js",
