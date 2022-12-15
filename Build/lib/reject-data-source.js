@@ -3,7 +3,8 @@ const HOSTS = [
   ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true],
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', false],
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', false],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false]
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
+  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false]
 ]
 
 const ADGUARD_FILTERS = [
@@ -84,13 +85,15 @@ const ADGUARD_FILTERS = [
   // AdGuard Base Filter
   'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
   // AdGuard Mobile AD
-  'https://filters.adtidy.org/extension/ublock/filters/11.txt',
+  'https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt',
   // AdGuard Tracking Protection
-  'https://filters.adtidy.org/extension/ublock/filters/3.txt',
+  'https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt',
   // AdGuard Japanese filter
-  'https://filters.adtidy.org/extension/ublock/filters/7.txt',
+  'https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt',
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
-  'https://filters.adtidy.org/extension/ublock/filters/224.txt',
+  'https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt',
+  // AdGuard Annoyances filter
+  'https://filters.adtidy.org/android/filters/14_optimized.txt',
   // EasyList Germany filter
   [
     'https://easylist.to/easylistgermany/easylistgermany.txt',
@@ -139,7 +142,12 @@ const ADGUARD_FILTERS = [
   // PiHoleBlocklist
   'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt',
   // Spam404
-  'https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt'
+  'https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt',
+  // BarbBlock
+  'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
+  // Brave First Party & First Party CNAME
+  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt',
+  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-cname.txt'
 ];
 
 const PREDEFINED_WHITELIST = [
