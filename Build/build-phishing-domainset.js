@@ -66,18 +66,21 @@ const BLACK_TLD = Array.from(new Set([
           continue;
         }
 
+        const tld = tldts.getPublicSuffix(domain, { allowPrivateDomains: true });
+        if (!tld || !BLACK_TLD.includes(tld)) continue;
+
         domainCountMap[apexDomain] ||= 0;
         domainCountMap[apexDomain] += 1;
 
         // Add more weight if the domain is long enough
         if (domain.length > 45) {
-          domainCountMap[apexDomain] += 1.5;
+          domainCountMap[apexDomain] += 4;
         } else if (domain.length > 35) {
-          domainCountMap[apexDomain] += 1;
+          domainCountMap[apexDomain] += 3;
         } else if (domain.length > 30) {
-          domainCountMap[apexDomain] += 0.5;
+          domainCountMap[apexDomain] += 2;
         } else if (domain.length > 25) {
-          domainCountMap[apexDomain] += 0.25;
+          domainCountMap[apexDomain] += 1;
         }
 
         const subdomain = tldts.getSubdomain(domain, { allowPrivateDomains: true });
@@ -88,11 +91,12 @@ const BLACK_TLD = Array.from(new Set([
     }
   }
 
+  console.log(domainCountMap);
+
   const results = [];
   Object.entries(domainCountMap).forEach(([domain, count]) => {
     if (
       count >= 5
-      && BLACK_TLD.some(tld => domain.endsWith(tld))
     ) {
       results.push('.' + domain);
     }
