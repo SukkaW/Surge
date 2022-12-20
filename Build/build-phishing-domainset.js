@@ -1,41 +1,41 @@
 const tldts = require('tldts');
 const { processFilterRules } = require('./lib/parse-filter.js');
-const fs = require('fs');
 const path = require('path');
 const { withBannerArray } = require('./lib/with-banner.js');
-const { stringArrayCompare, compareAndWriteFile } = require('./lib/string-array-compare');
+const { compareAndWriteFile } = require('./lib/string-array-compare');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
   'dweb.link',
   'nftstorage.link',
-  'square.site'
+  'square.site',
+  'business.site'
 ]);
 const BLACK_TLD = Array.from(new Set([
-  '.xyz',
-  '.top',
-  '.win',
-  '.vip',
-  '.site',
-  '.space',
-  '.online',
-  '.icu',
-  '.fun',
-  '.shop',
-  '.cool',
-  '.cyou',
-  '.id',
-  '.pro',
-  '.za.com',
-  '.sa.com',
-  '.ltd',
-  '.group',
-  '.rest',
-  '.tech',
-  '.link',
-  '.ink',
-  '.bar',
-  '.tokyo'
+  'xyz',
+  'top',
+  'win',
+  'vip',
+  'site',
+  'space',
+  'online',
+  'icu',
+  'fun',
+  'shop',
+  'cool',
+  'cyou',
+  'id',
+  'pro',
+  'za.com',
+  'sa.com',
+  'ltd',
+  'group',
+  'rest',
+  'tech',
+  'link',
+  'ink',
+  'bar',
+  'tokyo'
 ]));
 
 (async () => {
@@ -74,24 +74,26 @@ const BLACK_TLD = Array.from(new Set([
 
         // Add more weight if the domain is long enough
         if (domain.length > 45) {
-          domainCountMap[apexDomain] += 4;
+          domainCountMap[apexDomain] += 3.5;
         } else if (domain.length > 35) {
-          domainCountMap[apexDomain] += 3;
+          domainCountMap[apexDomain] += 2.5;
         } else if (domain.length > 30) {
-          domainCountMap[apexDomain] += 2;
+          domainCountMap[apexDomain] += 1.5;
         } else if (domain.length > 25) {
-          domainCountMap[apexDomain] += 1;
+          domainCountMap[apexDomain] += 0.75;
+        } else if (domain.length > 21) {
+          domainCountMap[apexDomain] += 0.25;
         }
 
-        const subdomain = tldts.getSubdomain(domain, { allowPrivateDomains: true });
-        if (subdomain && subdomain.includes('.')) {
-          domainCountMap[apexDomain] += 0.5;
+        if (domainCountMap[apexDomain] < 5) {
+          const subdomain = tldts.getSubdomain(domain, { allowPrivateDomains: true });
+          if (subdomain && subdomain.includes('.')) {
+            domainCountMap[apexDomain] += 1.5;
+          }
         }
       }
     }
   }
-
-  console.log(domainCountMap);
 
   const results = [];
   Object.entries(domainCountMap).forEach(([domain, count]) => {
