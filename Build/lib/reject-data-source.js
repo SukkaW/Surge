@@ -183,7 +183,8 @@ const PREDEFINED_WHITELIST = [
   'storage.yandexcloud.net', // phishing list
   'login.microsoftonline.com', // phishing list
   'api.xiaomi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
-  'api.io.mi.com' // https://github.com/jerryn70/GoodbyeAds/issues/281
+  'api.io.mi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
+  'cdn.userreport.com', // https://github.com/AdguardTeam/AdGuardSDNSFilter/issues/1158
 ];
 
 module.exports.HOSTS = HOSTS;
