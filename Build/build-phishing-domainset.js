@@ -9,7 +9,8 @@ const WHITELIST_DOMAIN = new Set([
   'dweb.link',
   'nftstorage.link',
   'square.site',
-  'business.site'
+  'business.site',
+  'page.link' // Firebase URL Shortener
 ]);
 const BLACK_TLD = Array.from(new Set([
   'xyz',
