@@ -1,7 +1,10 @@
 const Piscina = require('piscina');
+const { isCI } = require('ci-info');
 
 const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
+
+const log = isCI ? () => { } : console.log.bind(console);
 
 module.exports.dedupe = ({ chunk }) => {
   const chunkLength = chunk.length;
@@ -34,6 +37,7 @@ module.exports.dedupe = ({ chunk }) => {
 
           if (shouldBeRemoved) {
             outputToBeRemoved[i] = 1;
+            log(domainFromInput, domainFromFullSet)
             break;
           }
         }
@@ -42,6 +46,7 @@ module.exports.dedupe = ({ chunk }) => {
         // domainFromInput is now startsWith a "."
         if (domainFromInput.endsWith(domainFromFullSet)) {
           outputToBeRemoved[i] = 1;
+          log(domainFromInput, domainFromFullSet)
           break;
         }
       }

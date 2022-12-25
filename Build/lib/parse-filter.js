@@ -1,4 +1,5 @@
 const { fetchWithRetry } = require('./fetch-retry');
+const { NetworkFilter } = require('@cliqz/adblocker');
 const { normalizeDomain } = require('./is-domain-loose');
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
@@ -99,15 +100,35 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
 /**
  * @param {string | URL} filterRulesUrl
  * @param {(string | URL)[] | undefined} fallbackUrls
- * @returns {Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }>}
+ * @returns {Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean, parseFailed: boolean }>}
  */
-async function processFilterRules (filterRulesUrl, fallbackUrls) {
+async function processFilterRules (filterRulesUrl, fallbackUrls, includeThirdParties = false) {
   console.time(`   - processFilterRules: ${filterRulesUrl}`);
 
   /** @type Set<string> */
   const whitelistDomainSets = new Set();
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
+
+  const addToBlackList = (domainToBeAddedToBlack, isSubDomain) => {
+    if (DEBUG_DOMAIN_TO_FIND && domainToBeAddedToBlack.includes(DEBUG_DOMAIN_TO_FIND)) {
+      warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      foundDebugDomain = true;
+    }
+
+    if (isSubDomain && !domainToBeAddedToBlack.startsWith('.')) {
+      blacklistDomainSets.add(`.${domainToBeAddedToBlack}`);
+    } else {
+      blacklistDomainSets.add(domainToBeAddedToBlack);
+    }
+  };
+  const addToWhiteList = (domainToBeAddedToWhite) => {
+    if (DEBUG_DOMAIN_TO_FIND && domainToBeAddedToWhite.includes(DEBUG_DOMAIN_TO_FIND)) {
+      warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      foundDebugDomain = true;
+    }
+    whitelistDomainSets.add(domainToBeAddedToWhite);
+  }
 
   let filterRules;
   try {
@@ -124,117 +145,236 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
     throw e;
   }
 
-  for (let i = 0, len = filterRules.length; i < len; i++) {
-    const line = filterRules[i];
+  let hasParseFailed = false;
 
-    const lineStartsWithDoubleVerticalBar = line.startsWith('||');
+  for (let i = 0, len = filterRules.length; i < len; i++) {
+    const line = filterRules[i].trim();
 
     if (
       line === ''
+      // doesn't include
+      || !line.includes('.') // rule with out dot can not be a domain
+      // includes
       || line.includes('#')
       || line.includes('!')
+      || line.includes('?')
       || line.includes('*')
-      || line.includes('/')
       || line.includes('=')
       || line.includes('[')
       || line.includes('(')
-      || line.includes('$') && !lineStartsWithDoubleVerticalBar
       || line.includes(']')
       || line.includes(')')
+      || line.includes(',')
+      || line.includes('~')
+      || line.includes('&')
+      || line.includes('%')
+      || ((line.includes('/') || line.includes(':')) && !line.includes('://'))
+      // ends with
+      || line.endsWith('.')
+      || line.endsWith('-')
+      || line.endsWith('_')
+      // special modifier
+      || line.includes('$popup')
+      || line.includes('$removeparam')
+      || line.includes('$popunder')
     ) {
+      continue;
+    }
+
+    const filter = NetworkFilter.parse(line);
+    if (filter) {
+      if (
+        filter.isElemHide()
+        || filter.isGenericHide()
+        || filter.isSpecificHide()
+        || filter.isRedirect()
+        || filter.isRedirectRule()
+        || filter.hasDomains()
+        || filter.isCSP() // must not be csp rule
+        || (!filter.fromAny() && !filter.fromDocument())
+      ) {
+        // not supported type
+        continue;
+      }
+
+      if (
+        filter.hasHostname() // must have
+        && filter.isPlain()
+        && (!filter.isRegex())
+        && (!filter.isFullRegex())
+      ) {
+        const hostname = filter.getHostname();
+        if (hostname) {
+          if (filter.isException() || filter.isBadFilter()) {
+            addToWhiteList(hostname);
+            continue;
+          }
+          if (filter.firstParty() === filter.thirdParty()) {
+            addToBlackList(hostname, true);
+            continue;
+          }
+          if (filter.thirdParty()) {
+            if (includeThirdParties) {
+              addToBlackList(hostname, true);
+            }
+            continue;
+          }
+          if (filter.firstParty()) {
+            continue;
+          }
+        }
+      }
+    }
+
+    if (line.includes('$third-party') || line.includes('$frame')) {
       continue;
     }
 
     const lineEndsWithCaret = line.endsWith('^');
     const lineEndsWithCaretVerticalBar = line.endsWith('^|');
 
-    if (lineStartsWithDoubleVerticalBar && line.endsWith('^$badfilter')) {
-      const _domain = line.replace('||', '').replace('^$badfilter', '').trim();
-      const domain = normalizeDomain(_domain);
-      if (domain) {
-        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
-          foundDebugDomain = true;
+    if (line.startsWith('@@')) {
+      if (line.endsWith('$cname')) {
+        continue;
+      }
+
+      if (
+        (line.startsWith('@@|') || line.startsWith('@@.'))
+        && (
+          lineEndsWithCaret
+          || lineEndsWithCaretVerticalBar
+          || line.endsWith('$genericblock')
+          || line.endsWith('$document')
+        )
+      ) {
+        const _domain = line
+          .replace('@@||', '')
+          .replace('@@|', '')
+          .replace('@@.', '')
+          .replace('^|', '')
+          .replace('^$genericblock', '')
+          .replace('$genericblock', '')
+          .replace('^$document', '')
+          .replace('$document', '')
+          .replaceAll('^', '')
+          .trim();
+
+        const domain = normalizeDomain(_domain);
+        if (domain) {
+          addToWhiteList(domain);
+        } else {
+          console.warn('      * [parse-filter E0001] (black) invalid domain:', _domain);
         }
 
-        whitelistDomainSets.add(domain);
-      } else {
-        console.warn('      * [parse-filter white] ' + _domain + ' is not a valid domain');
+        continue;
       }
-    } else if (line.startsWith('@@||')
+    }
+
+    if (
+      line.startsWith('||')
       && (
         lineEndsWithCaret
         || lineEndsWithCaretVerticalBar
-        || line.endsWith('^$badfilter')
-        || line.endsWith('^$1p')
+        || line.endsWith('$cname')
       )
     ) {
       const _domain = line
-        .replaceAll('@@||', '')
-        .replaceAll('^$badfilter', '')
-        .replaceAll('^$1p', '')
-        .replaceAll('^|', '')
+        .replace('||', '')
+        .replace('^|', '')
+        .replace('$cname', '')
         .replaceAll('^', '')
         .trim();
 
       const domain = normalizeDomain(_domain);
-
       if (domain) {
-        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
-          foundDebugDomain = true;
-        }
-
-        whitelistDomainSets.add(domain);
+        addToBlackList(domain, true);
       } else {
-        console.warn('      * [parse-filter white] ' + _domain + ' is not a valid domain');
+        console.warn('      * [parse-filter E0002] (black) invalid domain:', _domain);
       }
-    } else if (
-      lineStartsWithDoubleVerticalBar
+      continue;
+    }
+
+    const lineStartsWithSingleDot = line.startsWith('.');
+    if (
+      lineStartsWithSingleDot
       && (
         lineEndsWithCaret
         || lineEndsWithCaretVerticalBar
-        || line.endsWith('^$all')
-        || line.endsWith('^$doc')
-        || line.endsWith('^$document')
       )
     ) {
       const _domain = line
-        .replaceAll('||', '')
-        .replaceAll('^|', '')
-        .replaceAll('^$all', '')
-        .replaceAll('^$document', '')
-        .replaceAll('^$doc', '')
+        .replace('^|', '')
+        .replaceAll('^', '')
+        .slice(1)
+        .trim();
+
+      const domain = normalizeDomain(_domain);
+      if (domain) {
+        addToBlackList(domain, true);
+      } else {
+        console.warn('      * [parse-filter E0003] (black) invalid domain:', _domain);
+      }
+      continue;
+    }
+    if (
+      (
+        line.startsWith('://')
+        || line.startsWith('http://')
+        || line.startsWith('https://')
+        || line.startsWith('|http://')
+        || line.startsWith('|https://')
+      )
+      && (
+        lineEndsWithCaret
+        || lineEndsWithCaretVerticalBar
+      )
+    ) {
+      const _domain = line
+        .replace('|https://', '')
+        .replace('https://', '')
+        .replace('|http://', '')
+        .replace('http://', '')
+        .replace('://', '')
+        .replace('^|', '')
         .replaceAll('^', '')
         .trim();
 
       const domain = normalizeDomain(_domain);
-
       if (domain) {
-        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
-          foundDebugDomain = true;
-        }
-
-        blacklistDomainSets.add(`.${domain}`);
+        addToBlackList(domain, false);
+      } else {
+        console.warn('      * [parse-filter E0004] (black) invalid domain:', _domain);
       }
-    } else if (
-      line.startsWith('://')
-      && (
-        lineEndsWithCaret
-        || lineEndsWithCaretVerticalBar
-      )
-    ) {
-      const _domain = `${line.replaceAll('://', '').replaceAll('^|', '').replaceAll('^', '')}`.trim();
+      continue;
+    }
+    if (!line.startsWith('|') && lineEndsWithCaret) {
+      const _domain = line.slice(0, -1);
       const domain = normalizeDomain(_domain);
       if (domain) {
-        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
-          foundDebugDomain = true;
-        }
-
-        blacklistDomainSets.add(domain);
+        addToBlackList(domain, false);
+      } else {
+        console.warn('      * [parse-filter E0005] (black) invalid domain:', _domain);
       }
+      continue;
+    }
+    const tryNormalizeDomain = normalizeDomain(lineStartsWithSingleDot ? line.slice(1) : line);
+    if (
+      tryNormalizeDomain
+      && (
+        lineStartsWithSingleDot
+          ? tryNormalizeDomain.length === line.length - 1
+          : tryNormalizeDomain === line
+      )
+    ) {
+      addToBlackList(line, true);
+      continue;
+    }
+
+    if (
+      !line.endsWith('.js')
+    ) {
+      hasParseFailed = true;
+      console.warn('      * [parse-filter E0010] can not parse:', line);
     }
   }
 
@@ -243,7 +383,8 @@ async function processFilterRules (filterRulesUrl, fallbackUrls) {
   return {
     white: whitelistDomainSets,
     black: blacklistDomainSets,
-    foundDebugDomain
+    foundDebugDomain,
+    parseFailed: hasParseFailed
   };
 }
 

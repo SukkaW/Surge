@@ -40,17 +40,19 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   // Parse from AdGuard Filters
   console.time('* Download and process AdBlock Filter Rules');
+
+  let shouldStop = false;
   await Promise.all(ADGUARD_FILTERS.map(input => {
-    const promise = Array.isArray(input) && input.length === 2
-      ? processFilterRules(input[0], input[1])
-      : processFilterRules(input);
+    const promise = typeof input === 'string'
+      ? processFilterRules(input, undefined, false)
+      : processFilterRules(input[0], input[1] ?? undefined, input[2] ?? false)
 
     return promise.then((i) => {
       if (i) {
         const { white, black, foundDebugDomain } = i;
         if (foundDebugDomain) {
-          process.exit(1);
-        };
+          shouldStop = true;
+        }
         white.forEach(i => filterRuleWhitelistDomainSets.add(i));
         black.forEach(i => domainSets.add(i));
       } else {
@@ -60,6 +62,10 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   }));
 
   console.timeEnd('* Download and process AdBlock Filter Rules');
+
+  if (shouldStop) {
+    process.exit(1);
+  }
 
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from adguard filters!`);
@@ -244,6 +250,11 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 function isInWhiteList (domain) {
   for (const white of filterRuleWhitelistDomainSets) {
     if (domain === white || domain.endsWith(white)) {
+      return true;
+    }
+    if (white.endsWith(domain)) {
+      // If a whole domain is in blacklist but a subdomain is in whitelist
+      // We have no choice but to remove the whole domain from blacklist
       return true;
     }
   }

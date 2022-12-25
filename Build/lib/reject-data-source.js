@@ -15,7 +15,18 @@ const ADGUARD_FILTERS = [
       'https://easylist-downloads.adblockplus.org/easylist.txt',
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
       'https://secure.fanboy.co.nz/easylist.txt'
-    ]
+    ],
+    true
+  ],
+  // Easy Privacy
+  [
+    'https://easylist.to/easylist/easyprivacy.txt',
+    [
+      'https://secure.fanboy.co.nz/easyprivacy.txt',
+      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
+      'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
+    ],
+    true
   ],
   // AdGuard DNS Filter
   'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
@@ -27,28 +38,32 @@ const ADGUARD_FILTERS = [
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/filters.txt',
       'https://ublockorigin.pages.dev/filters/filters.txt'
-    ]
+    ],
+    false
   ],
   [
     'https://ublockorigin.github.io/uAssets/filters/filters-2020.txt',
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2020.txt',
       'https://ublockorigin.pages.dev/filters/filters-2020.txt'
-    ]
+    ],
+    false
   ],
   [
     'https://ublockorigin.github.io/uAssets/filters/filters-2021.txt',
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2021.txt',
       'https://ublockorigin.pages.dev/filters/filters-2021.txt'
-    ]
+    ],
+    false
   ],
   [
     'https://ublockorigin.github.io/uAssets/filters/filters-2022.txt',
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2022.txt',
       'https://ublockorigin.pages.dev/filters/filters-2022.txt'
-    ]
+    ],
+    false
   ],
   // uBlock Origin Badware Risk List
   [
@@ -56,7 +71,8 @@ const ADGUARD_FILTERS = [
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/badware.txt',
       'https://ublockorigin.pages.dev/filters/badware.txt'
-    ]
+    ],
+    false
   ],
   // uBlock Origin Privacy List
   [
@@ -64,7 +80,8 @@ const ADGUARD_FILTERS = [
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.txt',
       'https://ublockorigin.pages.dev/filters/privacy.txt'
-    ]
+    ],
+    false
   ],
   // uBlock Origin Resource Abuse
   [
@@ -72,7 +89,8 @@ const ADGUARD_FILTERS = [
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
       'https://ublockorigin.pages.dev/filters/resource-abuse.txt'
-    ]
+    ],
+    false
   ],
   // uBlock Origin Unbreak
   [
@@ -80,7 +98,8 @@ const ADGUARD_FILTERS = [
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.txt',
       'https://ublockorigin.pages.dev/filters/unbreak.txt'
-    ]
+    ],
+    false
   ],
   // AdGuard Base Filter
   'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
@@ -99,16 +118,8 @@ const ADGUARD_FILTERS = [
     'https://easylist.to/easylistgermany/easylistgermany.txt',
     [
       'https://easylist-downloads.adblockplus.org/easylistgermany.txt'
-    ]
-  ],
-  // Easy Privacy
-  [
-    'https://easylist.to/easylist/easyprivacy.txt',
-    [
-      'https://secure.fanboy.co.nz/easyprivacy.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
-      'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
-    ]
+    ],
+    false
   ],
   // Curben's UrlHaus Malicious URL Blocklist
   [
@@ -117,7 +128,8 @@ const ADGUARD_FILTERS = [
       'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
       // 'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt'
-    ]
+    ],
+    false
   ],
   // Curben's Phishing URL Blocklist
   [
@@ -126,7 +138,8 @@ const ADGUARD_FILTERS = [
       'https://phishing-filter.pages.dev/phishing-filter-agh.txt',
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
       // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
-    ]
+    ],
+    false
   ],
   // Curben's PUP Domains Blocklist
   [
@@ -135,7 +148,8 @@ const ADGUARD_FILTERS = [
       'https://pup-filter.pages.dev/pup-filter-agh.txt',
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
       // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt'
-    ]
+    ],
+    false
   ],
   // GameConsoleAdblockList
   'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
@@ -147,7 +161,8 @@ const ADGUARD_FILTERS = [
   'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
   // Brave First Party & First Party CNAME
   'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt',
-  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-cname.txt'
+  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-cname.txt',
+  'https://raw.githubusercontent.com/brave/adblock-lists/master/coin-miners.txt'
 ];
 
 const PREDEFINED_WHITELIST = [
