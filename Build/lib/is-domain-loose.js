@@ -6,6 +6,10 @@ module.exports.isDomainLoose = (domain) => {
 };
 
 module.exports.normalizeDomain = (domain) => {
+  if (domain == null) {
+    return null;
+  }
+
   const { isIcann, isPrivate, hostname, isIp } = parse(domain, { allowPrivateDomains: true });
   if (isIp) {
     return null;

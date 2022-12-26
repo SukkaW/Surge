@@ -203,7 +203,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls, includeThirdPar
         && (!filter.isRegex())
         && (!filter.isFullRegex())
       ) {
-        const hostname = filter.getHostname();
+        const hostname = normalizeDomain(filter.getHostname());
         if (hostname) {
           if (filter.isException() || filter.isBadFilter()) {
             addToWhiteList(hostname);
@@ -222,6 +222,8 @@ async function processFilterRules (filterRulesUrl, fallbackUrls, includeThirdPar
           if (filter.firstParty()) {
             continue;
           }
+        } else {
+          continue;
         }
       }
     }
