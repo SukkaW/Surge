@@ -200,6 +200,7 @@ const PREDEFINED_WHITELIST = [
   'api.xiaomi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
   'api.io.mi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
   'cdn.userreport.com', // https://github.com/AdguardTeam/AdGuardSDNSFilter/issues/1158
+  'ip-api.com',
 ];
 
 module.exports.HOSTS = HOSTS;
