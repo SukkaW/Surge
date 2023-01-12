@@ -61,6 +61,21 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
     });
   }));
 
+  await Promise.all([
+    'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
+    'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
+  ].map(
+    input => processFilterRules(input).then((i) => {
+      if (i) {
+        const { white, black } = i;
+        white.forEach(i => filterRuleWhitelistDomainSets.add(i));
+        black.forEach(i => filterRuleWhitelistDomainSets.add(i));
+      } else {
+        process.exit(1);
+      }
+    })
+  ));
+
   console.timeEnd('* Download and process AdBlock Filter Rules');
 
   if (shouldStop) {
