@@ -36,7 +36,12 @@ const BLACK_TLD = Array.from(new Set([
   'link',
   'ink',
   'bar',
-  'tokyo'
+  'tokyo',
+  'tk',
+  'cf',
+  'gq',
+  'ga',
+  'ml'
 ]));
 
 (async () => {
