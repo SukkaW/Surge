@@ -124,7 +124,7 @@ async function processFilterRules (filterRulesUrl, fallbackUrls, includeThirdPar
   };
   const addToWhiteList = (domainToBeAddedToWhite) => {
     if (DEBUG_DOMAIN_TO_FIND && domainToBeAddedToWhite.includes(DEBUG_DOMAIN_TO_FIND)) {
-      warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
       foundDebugDomain = true;
     }
     whitelistDomainSets.add(domainToBeAddedToWhite);
