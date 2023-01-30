@@ -65,6 +65,14 @@ const ADGUARD_FILTERS = [
     ],
     false
   ],
+  [
+    'https://ublockorigin.github.io/uAssets/filters/filters-2023.txt',
+    [
+      'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2023.txt',
+      'https://ublockorigin.pages.dev/filters/filters-2023.txt'
+    ],
+    false
+  ],
   // uBlock Origin Badware Risk List
   [
     'https://ublockorigin.github.io/uAssets/filters/badware.txt',
