@@ -7,7 +7,7 @@ const cpuCount = require('os').cpus().length;
 const { isCI } = require('ci-info');
 const threads = isCI ? cpuCount : cpuCount / 2;
 
-const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST } = require('./lib/reject-data-source');
+const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 
@@ -53,7 +53,12 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
         if (foundDebugDomain) {
           shouldStop = true;
         }
-        white.forEach(i => filterRuleWhitelistDomainSets.add(i));
+        white.forEach(i => {
+          if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
+            return;
+          }
+          filterRuleWhitelistDomainSets.add(i);
+        });
         black.forEach(i => domainSets.add(i));
       } else {
         process.exit(1);
@@ -68,8 +73,18 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
     input => processFilterRules(input).then((i) => {
       if (i) {
         const { white, black } = i;
-        white.forEach(i => filterRuleWhitelistDomainSets.add(i));
-        black.forEach(i => filterRuleWhitelistDomainSets.add(i));
+        white.forEach(i => {
+          if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
+            return;
+          }
+          filterRuleWhitelistDomainSets.add(i)
+        });
+        black.forEach(i => {
+          if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
+            return;
+          }
+          filterRuleWhitelistDomainSets.add(i)
+        });
       } else {
         process.exit(1);
       }
@@ -262,7 +277,7 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   }
 })();
 
-function isInWhiteList (domain) {
+function isInWhiteList(domain) {
   for (const white of filterRuleWhitelistDomainSets) {
     if (domain === white || domain.endsWith(white)) {
       return true;

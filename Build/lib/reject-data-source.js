@@ -16,7 +16,7 @@ const ADGUARD_FILTERS = [
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
       'https://secure.fanboy.co.nz/easylist.txt'
     ],
-    true
+    false
   ],
   // Easy Privacy
   [
@@ -26,7 +26,7 @@ const ADGUARD_FILTERS = [
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
       'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
     ],
-    true
+    false
   ],
   // AdGuard DNS Filter
   'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
@@ -212,6 +212,11 @@ const PREDEFINED_WHITELIST = [
   'fastly-analytics.com'
 ];
 
+const PREDEFINED_ENFORCED_BACKLIST = [
+  'telemetry.mozilla.org'
+];
+
 module.exports.HOSTS = HOSTS;
 module.exports.ADGUARD_FILTERS = ADGUARD_FILTERS;
 module.exports.PREDEFINED_WHITELIST = PREDEFINED_WHITELIST;
+module.exports.PREDEFINED_ENFORCED_BACKLIST = PREDEFINED_ENFORCED_BACKLIST;
