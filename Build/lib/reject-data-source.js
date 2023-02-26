@@ -29,7 +29,12 @@ const ADGUARD_FILTERS = [
     false
   ],
   // AdGuard DNS Filter
-  'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
+  [
+    'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
+    [
+      'https://filters.adtidy.org/extension/chromium/filters/15.txt'
+    ]
+  ],
   // AdGuard CNAME Filter Combined
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/combined_disguised_trackers.txt',
   // uBlock Origin Filter List
