@@ -214,7 +214,9 @@ const PREDEFINED_WHITELIST = [
   'api.io.mi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
   'cdn.userreport.com', // https://github.com/AdguardTeam/AdGuardSDNSFilter/issues/1158
   'ip-api.com',
-  'fastly-analytics.com'
+  'fastly-analytics.com',
+  'syd1.digitaloceanspaces.com',
+  's3.nl-ams.scw.cloud'
 ];
 
 const PREDEFINED_ENFORCED_BACKLIST = [
