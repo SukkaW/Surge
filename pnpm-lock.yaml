@@ -1,33 +1,33 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@cliqz/adblocker': ^1.25.1
+  '@cliqz/adblocker': ^1.26.2
   '@sukka/listdir': ^0.2.0
   '@vercel/fetch-retry': ^5.1.3
-  ci-info: ^3.7.0
-  cidr-tools: ^5.1.2
+  ci-info: ^3.8.0
+  cidr-tools: ^5.1.4
   fs-extra: ^11.1.0
   picocolors: ^1.0.0
   piscina: ^3.2.0
   table: ^6.8.1
   tar: ^6.1.13
-  tldts: ^5.7.102
-  undici: 5.13.0
+  tldts: ^5.7.111
+  undici: 5.20.0
   wireit: ^0.9.1
 
 dependencies:
-  '@cliqz/adblocker': 1.25.1
+  '@cliqz/adblocker': 1.26.2
   '@sukka/listdir': 0.2.0
   '@vercel/fetch-retry': 5.1.3
-  ci-info: 3.7.0
-  cidr-tools: 5.1.2
+  ci-info: 3.8.0
+  cidr-tools: 5.1.4
   fs-extra: 11.1.0
   picocolors: 1.0.0
   piscina: 3.2.0
   table: 6.8.1
   tar: 6.1.13
-  tldts: 5.7.102
-  undici: 5.13.0
+  tldts: 5.7.111
+  undici: 5.20.0
 
 devDependencies:
   wireit: 0.9.1
@@ -38,26 +38,26 @@ packages:
     resolution: {integrity: sha512-H71nDOOL8Y7kWRLqf6Sums+01Q5msqBW2KhDUTemh1tvY04eSkSXrK0uj/4mmY0Xr16/3zyZmsrxN7CKuRbNRg==}
     dev: false
 
-  /@cliqz/adblocker-content/1.25.1:
-    resolution: {integrity: sha512-7gl2VdNPBfj7aPoq34B5miwGcnda/7LCr+BqnpcSOjdLV6jjT2FrNSAKGFvcH23q0HM1IFhYDV6ydTgsdWFCnA==}
+  /@cliqz/adblocker-content/1.26.2:
+    resolution: {integrity: sha512-n9/EqGtyqtHFPGLFwAkLqUf52O4UWVJx47+EJ1yIIbcXr2sk4wLtWzjlvBrGUsXo9rx7RbD1vsGPAj7NjiXiMQ==}
     dependencies:
-      '@cliqz/adblocker-extended-selectors': 1.25.1
+      '@cliqz/adblocker-extended-selectors': 1.26.2
     dev: false
 
-  /@cliqz/adblocker-extended-selectors/1.25.1:
-    resolution: {integrity: sha512-4MdMe/YfIok5d8WYVcLR3Ak7vGrmeUV47frgmXEe945luY93vwlzk1NiLYW1JM5Gdm+VePweoS9cJ1/QUTmv+Q==}
+  /@cliqz/adblocker-extended-selectors/1.26.2:
+    resolution: {integrity: sha512-4ZV9uiRzJu+fkBlXd04ITYOHhvnahwL/UEDszbD7RB+yP2YcKBXuRNEZmL9ibccXHBNYXyZesS8Qo7dQ9kvzmQ==}
     dev: false
 
-  /@cliqz/adblocker/1.25.1:
-    resolution: {integrity: sha512-1C1/ELI94/XewdUj/o1+Q4ziOigMvTZQA05UERfDoKqpJ+0cbrEF/UImrzpX7n+kYsR7xTJvmf+iNM3zS0tfsg==}
+  /@cliqz/adblocker/1.26.2:
+    resolution: {integrity: sha512-z6yA6fg5yMF3ooAhXUOwQ3snvxS+bRR0dEdF+VquvjGNM6/Qf1kfV045h/TyQKyrQQHzu+LPCcE45W3dOgK6Vg==}
     dependencies:
-      '@cliqz/adblocker-content': 1.25.1
-      '@cliqz/adblocker-extended-selectors': 1.25.1
+      '@cliqz/adblocker-content': 1.26.2
+      '@cliqz/adblocker-extended-selectors': 1.26.2
       '@remusao/guess-url-type': 1.2.1
       '@remusao/small': 1.2.1
       '@remusao/smaz': 1.9.1
-      '@types/chrome': 0.0.197
-      '@types/firefox-webext-browser': 94.0.1
+      '@types/chrome': 0.0.218
+      '@types/firefox-webext-browser': 109.0.0
       tldts-experimental: 5.7.103
     dev: false
 
@@ -115,8 +115,8 @@ packages:
     resolution: {integrity: sha512-UyVirNhAOXKwjiDehjUaGtpfk0QwNHyiXrlLb/FmWMtI+BGhaEvB9MypSfEAtiiMI3g6QTfG38ayNAorEuz5ow==}
     dev: false
 
-  /@types/chrome/0.0.197:
-    resolution: {integrity: sha512-m1NfS5bOjaypyqQfaX6CxmJodZVcvj5+Mt/K94EBHkflYjPNmXHAzbxfifdLMa0YM3PDyOxohoTS5ug/e6p5jA==}
+  /@types/chrome/0.0.218:
+    resolution: {integrity: sha512-GC/c9B3Eo3h3l+fV5G6A9cRMEZOYo46E21mjHHfkXz+/A5uypXstMVAMk04IeGY2DJ7PxVxbn26oFBPZOa4Dkw==}
     dependencies:
       '@types/filesystem': 0.0.32
       '@types/har-format': 1.2.10
@@ -132,8 +132,8 @@ packages:
     resolution: {integrity: sha512-BsPXH/irW0ht0Ji6iw/jJaK8Lj3FJemon2gvEqHKpCdDCeemHa+rI3WBGq5z7cDMZgoLjY40oninGxqk+8NzNQ==}
     dev: false
 
-  /@types/firefox-webext-browser/94.0.1:
-    resolution: {integrity: sha512-I6iHRQJSTZ+gYt2IxdH2RRAMvcUyK8v5Ig7fHQR0IwUNYP7hz9+cziBVIKxLCO6XI7fiyRsNOWObfl3/4Js2Lg==}
+  /@types/firefox-webext-browser/109.0.0:
+    resolution: {integrity: sha512-tkEjBP/zZxaS5bv8MH/0kUs3WeUm8KU3Ew1B9BtQQdq5PwtG23SXvAbjxjMSQpoIzbxyWG4Yu4mi1uB2S8W7ng==}
     dev: false
 
   /@types/har-format/1.2.10:
@@ -234,8 +234,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /ci-info/3.7.0:
-    resolution: {integrity: sha512-2CpRNYmImPx+RXKLq6jko/L07phmS9I02TyqkcNU20GCF/GgaWvc58hPtjxDX8lPpkdwc9sNh72V9k00S7ezog==}
+  /ci-info/3.8.0:
+    resolution: {integrity: sha512-eXTggHWSooYhq49F2opQhuHWgzucfF2YgODK4e1566GQs5BIfP30B0oenwBJHfWxAs2fyPB1s7Mg949zLf61Yw==}
     engines: {node: '>=8'}
     dev: false
 
@@ -246,12 +246,12 @@ packages:
       ip-regex: 5.0.0
     dev: false
 
-  /cidr-tools/5.1.2:
-    resolution: {integrity: sha512-Ed9OBqB1E3cUWDQ0A81eilNVSAfd9b0vlAOa+oIcU4eGNbwFQuPqvWDq+A3csv+l4NE/IbBCDfTKUpCnvmIBAg==}
+  /cidr-tools/5.1.4:
+    resolution: {integrity: sha512-B/bAEkLqIKjPq24m4htyDClMd+SODEOPEbqiA5mC3HoJsq+QAJfPJCd7ajhecE3fGY26dxj8AxAvNyFFZlPa/Q==}
     engines: {node: '>=14'}
     dependencies:
       cidr-regex: 4.0.2
-      ip-bigint: 5.0.3
+      ip-bigint: 6.0.0
       ip-regex: 5.0.0
       string-natural-compare: 3.0.1
     dev: false
@@ -361,11 +361,9 @@ packages:
     resolution: {integrity: sha512-7kIufnBqdsBGcSZLPJwqHT3yhk1QTsSlFsVD3kx5ixH/AlgBs9yM1q6DPhXZ8f8gtdqgh7N7/5btRLpQsS2gHw==}
     dev: false
 
-  /ip-bigint/5.0.3:
-    resolution: {integrity: sha512-Tvl0inX9ACOQ0eLKg89nz2gS0l/bxvkqSDs43q4KWUaA2ZlDdeCXNtMx/EEoXPSuLEgWn9Zyr3Ze5N0EpYRnFQ==}
+  /ip-bigint/6.0.0:
+    resolution: {integrity: sha512-68+9IteBghKVV49Aqw9Q5qnz4nF4wy1y63iN+DQSeJU75nO/NASEBFEg+mgfEK96p2m8yNWaFod4jP01pHObiw==}
     engines: {node: '>=14'}
-    dependencies:
-      ip-regex: 5.0.0
     dev: false
 
   /ip-regex/5.0.0:
@@ -627,25 +625,21 @@ packages:
       yallist: 4.0.0
     dev: false
 
-  /tldts-core/5.7.102:
-    resolution: {integrity: sha512-EFhrqqb0abo/9KZ4ZxHSF4e8CYKk/SouOLbNUMZUw+5OjC0hUJbFmHXtHNWYGaqnmwjnvdwFQ1a29Tflpz5Ufg==}
-    dev: false
-
-  /tldts-core/5.7.103:
-    resolution: {integrity: sha512-MdSolgnhJwr2SH6a+5KFAYB8znpYdRLoOFTJmrWslsec9Ne/V3DBrw+BbS1YYQJKGTin6U02Y9CSYxnOpg3vwg==}
+  /tldts-core/5.7.111:
+    resolution: {integrity: sha512-BU3OOzGbih8zvLiKgDw+wNS311ItfLt3gXi3qSDvAQiI86l+dyEAGSEs2s72ptPJ3KqXgRt7wiE6jTQ2SgoMqw==}
     dev: false
 
   /tldts-experimental/5.7.103:
     resolution: {integrity: sha512-oo9QI0TjXdrlZnDSJMazRJe+nnd0OwXgzRmHcsnyp4k6UxmmlaWEA1iq3RY3EDSKwYEJ+lDnwQeAaGRleU/LEQ==}
     dependencies:
-      tldts-core: 5.7.103
+      tldts-core: 5.7.111
     dev: false
 
-  /tldts/5.7.102:
-    resolution: {integrity: sha512-FvqzkTsADAntBc4EPmcmIs4GkjBBtDKZKHJJU6i1TzL9d+ijBearWEgGNoE8YO9T8pEe+szYE+KFMmh6ixexYA==}
+  /tldts/5.7.111:
+    resolution: {integrity: sha512-D1iH3Exmw4hNRd9ipv8ZJFtL8V6oCSoE9+8NY7mcEQPMDKHT7kAnOr33cJ1tIATeHNVUejRgqR7I67UecwzSjQ==}
     hasBin: true
     dependencies:
-      tldts-core: 5.7.102
+      tldts-core: 5.7.111
     dev: false
 
   /to-regex-range/5.0.1:
@@ -655,8 +649,8 @@ packages:
       is-number: 7.0.0
     dev: true
 
-  /undici/5.13.0:
-    resolution: {integrity: sha512-UDZKtwb2k7KRsK4SdXWG7ErXiL7yTGgLWvk2AXO1JMjgjh404nFo6tWSCM2xMpJwMPx3J8i/vfqEh1zOqvj82Q==}
+  /undici/5.20.0:
+    resolution: {integrity: sha512-J3j60dYzuo6Eevbawwp1sdg16k5Tf768bxYK4TUJRH7cBM4kFCbf3mOnM/0E3vQYXvpxITbbWmBafaDbxLDz3g==}
     engines: {node: '>=12.18'}
     dependencies:
       busboy: 1.6.0
