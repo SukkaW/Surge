@@ -6,6 +6,7 @@ const { processHosts, processFilterRules, preprocessFullDomainSetBeforeUsedAsWor
 const cpuCount = require('os').cpus().length;
 const { isCI } = require('ci-info');
 const threads = isCI ? cpuCount : cpuCount / 2;
+const { getDomain } = require('tldts');
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
 const { withBannerArray } = require('./lib/with-banner');
@@ -249,6 +250,24 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   console.time('* Write reject.conf');
 
+  const getDomainOpt = { allowPrivateDomains: true };
+  const sortedDomainSets = [...domainSets]
+    .map((v) => {
+      return { v, domain: getDomain(v, getDomainOpt)?.toLowerCase() || v };
+    })
+    .sort((a, b) => {
+      if (a.domain > b.domain) {
+        return 1;
+      }
+      if (a.domain < b.domain) {
+        return -1;
+      }
+      return 0;
+    })
+    .map(({ v }) => {
+      return v;
+    });
+
   await compareAndWriteFile(
     withBannerArray(
       'Sukka\'s Surge Rules - Reject Base',
@@ -264,7 +283,7 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
         ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`),
       ],
       new Date(),
-      [...domainSets].sort()
+      sortedDomainSets
     ),
     pathResolve(__dirname, '../List/domainset/reject.conf')
   );
