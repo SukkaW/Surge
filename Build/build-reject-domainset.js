@@ -250,22 +250,22 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   console.time('* Write reject.conf');
 
-  const getDomainOpt = { allowPrivateDomains: true };
+  const sorter = (a, b) => {
+    if (a.domain > b.domain) {
+      return 1;
+    }
+    if (a.domain < b.domain) {
+      return -1;
+    }
+    return 0;
+  };
   const sortedDomainSets = [...domainSets]
     .map((v) => {
-      return { v, domain: getDomain(v, getDomainOpt)?.toLowerCase() || v };
+      return { v, domain: getDomain(v.charCodeAt(0) === 46 ? v.slice(1) : v)?.toLowerCase() || v };
     })
-    .sort((a, b) => {
-      if (a.domain > b.domain) {
-        return 1;
-      }
-      if (a.domain < b.domain) {
-        return -1;
-      }
-      return 0;
-    })
-    .map(({ v }) => {
-      return v;
+    .sort(sorter)
+    .map((i) => {
+      return i.v;
     });
 
   await compareAndWriteFile(
