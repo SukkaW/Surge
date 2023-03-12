@@ -29,7 +29,7 @@ module.exports.dedupe = ({ chunk }) => {
           let shouldBeRemoved = true;
 
           for (let k = 0; k < domainFromInputLen; k++) {
-            if (domainFromFullSet.charCodeAt(k + 1) !== domainFromInput.charCodeAt(k)) {
+            if (domainFromFullSet[k + 1] !== domainFromInput[k]) {
               shouldBeRemoved = false;
               break;
             }
