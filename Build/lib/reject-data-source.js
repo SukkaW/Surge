@@ -192,6 +192,8 @@ const PREDEFINED_WHITELIST = [
   'analytics.google.com',
   'msa.cdn.mediaset.net', // Added manually using DOMAIN-KEYWORDS
   'cloud.answerhub.com',
+  'acs.m.taobao.com', // Alibaba Cloud Service, be used to TaoBao/HeMa/Tmall/etc. app basic function.
+  'h5api.m.taobao.com', // Alibaba H5 api, be used to TaoBao/HeMa/Tmall/etc. app basic function.
   'ae01.alicdn.com',
   'whoami.akamai.net',
   'whoami.ds.akahelp.net',
