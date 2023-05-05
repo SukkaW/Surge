@@ -216,7 +216,8 @@ const PREDEFINED_WHITELIST = [
   'ip-api.com',
   'fastly-analytics.com',
   'syd1.digitaloceanspaces.com',
-  's3.nl-ams.scw.cloud'
+  's3.nl-ams.scw.cloud',
+  'geolocation-db.com'
 ];
 
 const PREDEFINED_ENFORCED_BACKLIST = [
