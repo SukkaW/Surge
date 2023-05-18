@@ -39,7 +39,7 @@ const { withBannerArray } = require('./lib/with-banner');
 
   await compareAndWriteFile(
     withBannerArray(
-      'Sukka\'s Surge Rules - Telegram IP CIDR',
+      'Sukka\'s Surge Rules - Anti Bogus Domain',
       [
         'License: AGPL 3.0',
         'Homepage: https://ruleset.skk.moe',
