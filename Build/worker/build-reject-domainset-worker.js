@@ -1,51 +1,41 @@
 const Piscina = require('piscina');
-const { isCI } = require('ci-info');
+// const { isCI } = require('ci-info');
 
 const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
 
-const log = isCI ? () => { } : console.log.bind(console);
+// const log = isCI ? () => { } : console.log.bind(console);
 
-module.exports.dedupe = ({ chunk }) => {
+module.exports = ({ chunk }) => {
   const chunkLength = chunk.length;
   const outputToBeRemoved = new Int8Array(chunkLength);
 
   for (let i = 0; i < chunkLength; i++) {
-    const domainFromInput = chunk[i];
+    const domainFromInputChunk = chunk[i];
 
     for (let j = 0; j < totalLen; j++) {
-      const domainFromFullSet = fullsetDomainStartsWithADot[j];
+      const domainStartsWithADotAndFromFullSet = fullsetDomainStartsWithADot[j];
       // domainFromFullSet is always startsWith "."
+      if (domainStartsWithADotAndFromFullSet === domainFromInputChunk) continue;
 
-      if (domainFromFullSet === domainFromInput) continue;
+      const domainFromInputLen = domainFromInputChunk.length;
+      const domainFromFullSetLen = domainStartsWithADotAndFromFullSet.length;
 
-      const domainFromInputLen = domainFromInput.length;
-      const domainFromFullSetLen = domainFromFullSet.length;
-
-      // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
-      if (domainFromInput[0] !== '.' && domainFromInputLen + 1 === domainFromFullSetLen) {
-        let shouldBeRemoved = true;
-
-        for (let k = 0; k < domainFromInputLen; k++) {
-          if (domainFromFullSet[k + 1] !== domainFromInput[k]) {
-            shouldBeRemoved = false;
+      if (domainFromInputLen < domainFromFullSetLen) {
+        if (domainFromInputLen + 1 === domainFromFullSetLen) {
+          // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
+          if (domainFromInputChunk.charCodeAt(0) !== 46 && domainFromInputChunk.endsWith(domainStartsWithADotAndFromFullSet)) {
+            outputToBeRemoved[i] = 1;
+            // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
             break;
           }
-        }
-
-        if (shouldBeRemoved) {
-          outputToBeRemoved[i] = 1;
-          log(domainFromInput, domainFromFullSet)
+        } else {
           break;
         }
-      }
-      if (domainFromInputLen > domainFromFullSetLen) {
-        // domainFromInput is now startsWith a "."
-        if (domainFromInput.endsWith(domainFromFullSet)) {
-          outputToBeRemoved[i] = 1;
-          log(domainFromInput, domainFromFullSet)
-          break;
-        }
+      } else if (domainFromInputChunk.endsWith(domainStartsWithADotAndFromFullSet)) {
+        outputToBeRemoved[i] = 1;
+        // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
+        break;
       }
     }
   }

@@ -18,7 +18,7 @@ const warnOnce = (url, isWhite, ...message) => {
 /**
  * @param {string | URL} domainListsUrl
  */
-async function processDomainLists (domainListsUrl) {
+async function processDomainLists(domainListsUrl) {
   if (typeof domainListsUrl === 'string') {
     domainListsUrl = new URL(domainListsUrl);
   }
@@ -55,7 +55,7 @@ async function processDomainLists (domainListsUrl) {
 /**
  * @param {string | URL} hostsUrl
  */
-async function processHosts (hostsUrl, includeAllSubDomain = false) {
+async function processHosts(hostsUrl, includeAllSubDomain = false) {
   console.time(`   - processHosts: ${hostsUrl}`);
 
   if (typeof hostsUrl === 'string') {
@@ -99,10 +99,10 @@ async function processHosts (hostsUrl, includeAllSubDomain = false) {
 
 /**
  * @param {string | URL} filterRulesUrl
- * @param {(string | URL)[] | undefined} fallbackUrls
+ * @param {readonly (string | URL)[] | undefined} [fallbackUrls]
  * @returns {Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean, parseFailed: boolean }>}
  */
-async function processFilterRules (filterRulesUrl, fallbackUrls, includeThirdParties = false) {
+async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdParties = false) {
   console.time(`   - processFilterRules: ${filterRulesUrl}`);
 
   /** @type Set<string> */
@@ -390,10 +390,13 @@ async function processFilterRules (filterRulesUrl, fallbackUrls, includeThirdPar
   };
 }
 
-function preprocessFullDomainSetBeforeUsedAsWorkerData (data) {
-  return data.filter(domain => (
-    domain.charCodeAt(0) === 46
-  ));
+/**
+ * @param {string[]} data 
+ */
+function preprocessFullDomainSetBeforeUsedAsWorkerData(data) {
+  return data
+    .filter(domain => domain.charCodeAt(0) === 46)
+    .sort((a, b) => a.length - b.length);
 }
 
 

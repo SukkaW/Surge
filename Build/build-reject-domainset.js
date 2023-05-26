@@ -1,3 +1,4 @@
+// @ts-check
 const { promises: fsPromises } = require('fs');
 const fse = require('fs-extra');
 const { resolve: pathResolve } = require('path');
@@ -12,7 +13,12 @@ const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLI
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 
+/** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
+/** @type {Set<string>} Dedupe domains inclued by DOMAIN-KEYWORD */
+const domainKeywordsSet = new Set();
+/** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
+const domainSuffixSet = new Set();
 
 (async () => {
   console.time('Total Time - build-reject-domain-set');
@@ -46,7 +52,7 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   await Promise.all(ADGUARD_FILTERS.map(input => {
     const promise = typeof input === 'string'
       ? processFilterRules(input, undefined, false)
-      : processFilterRules(input[0], input[1] ?? undefined, input[2] ?? false)
+      : processFilterRules(input[0], input[1] || undefined, input[2] ?? false)
 
     return promise.then((i) => {
       if (i) {
@@ -118,45 +124,41 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
     });
   });
 
-  // Copy reject_sukka.conf for backward compatibility
-  await fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
-
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
-  // Read DOMAIN Keyword
-  const domainKeywordsSet = new Set();
-  const domainSuffixSet = new Set();
+  await Promise.all([
+    // Copy reject_sukka.conf for backward compatibility
+    fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf')),
+    fsPromises.readFile(pathResolve(__dirname, '../List/non_ip/reject.conf'), { encoding: 'utf-8' }).then(data => {
+      data.split('\n').forEach(line => {
+        if (line.startsWith('DOMAIN-KEYWORD')) {
+          const [, ...keywords] = line.split(',');
+          domainKeywordsSet.add(keywords.join(',').trim());
+        } else if (line.startsWith('DOMAIN-SUFFIX')) {
+          const [, ...keywords] = line.split(',');
+          domainSuffixSet.add(keywords.join(',').trim());
+        }
+      });
+    }),
+    // Read Special Phishing Suffix list
+    fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'), { encoding: 'utf-8' }).then(data => {
+      data.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (
+          line.startsWith('#')
+          || line.startsWith(' ')
+          || line.startsWith('\r')
+          || line.startsWith('\n')
+          || trimmed === ''
+        ) {
+          return;
+        }
 
-  await fsPromises.readFile(pathResolve(__dirname, '../List/non_ip/reject.conf'), { encoding: 'utf-8' }).then(data => {
-    data.split('\n').forEach(line => {
-      if (line.startsWith('DOMAIN-KEYWORD')) {
-        const [, ...keywords] = line.split(',');
-        domainKeywordsSet.add(keywords.join(',').trim());
-      } else if (line.startsWith('DOMAIN-SUFFIX')) {
-        const [, ...keywords] = line.split(',');
-        domainSuffixSet.add(keywords.join(',').trim());
-      }
-    });
-  });
-
-  // Read Special Phishing Suffix list
-  await fsPromises.readFile(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'), { encoding: 'utf-8' }).then(data => {
-    data.split('\n').forEach(line => {
-      const trimmed = line.trim();
-      if (
-        line.startsWith('#')
-        || line.startsWith(' ')
-        || line.startsWith('\r')
-        || line.startsWith('\n')
-        || trimmed === ''
-      ) {
-        return;
-      }
-
-      domainSuffixSet.add(trimmed);
-    });
-  });
+        domainSuffixSet.add(trimmed);
+      });
+    })
+  ]);
 
   console.log(`Import ${domainKeywordsSet.size} black keywords and ${domainSuffixSet.size} black suffixes!`);
 
@@ -166,31 +168,7 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   console.time(`* Dedupe from black keywords/suffixes`);
 
   for (const domain of domainSets) {
-    let isTobeRemoved = false;
-
-    for (const suffix of domainSuffixSet) {
-      if (domain.endsWith(suffix)) {
-        isTobeRemoved = true;
-        break;
-      }
-    }
-
-    if (!isTobeRemoved) {
-      for (const keyword of domainKeywordsSet) {
-        if (domain.includes(keyword)) {
-          isTobeRemoved = true;
-          break;
-        }
-      }
-    }
-
-    if (!isTobeRemoved) {
-      if (isInWhiteList(domain)) {
-        isTobeRemoved = true;
-      }
-    }
-
-    if (isTobeRemoved) {
+    if (isMatchKeyword(domain) || isMatchSuffix(domain) || isInWhiteList(domain)) {
       domainSets.delete(domain);
     }
   }
@@ -204,44 +182,37 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   const START_TIME = Date.now();
 
+  const domainSetsArray = Array.from(domainSets);
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
-    workerData: preprocessFullDomainSetBeforeUsedAsWorkerData([...domainSets]),
+    workerData: preprocessFullDomainSetBeforeUsedAsWorkerData(Array.from(domainSetsArray)),
     idleTimeout: 50,
     minThreads: threads,
     maxThreads: threads
   });
 
-  console.log(`Launching ${threads} threads...`)
+  console.log(preprocessFullDomainSetBeforeUsedAsWorkerData(Array.from(domainSetsArray)).length);
 
-  const tasksArray = Array.from(domainSets)
-    .reduce((result, element, index) => {
-      const chunk = index % threads;
-      result[chunk] ??= [];
+  console.log(`Launching ${threads} threads...`);
 
-      result[chunk].push(element);
-      return result;
-    }, []);
+  const tasksArray = domainSetsArray.reduce((result, element, index) => {
+    const chunk = index % threads;
+    result[chunk] ??= [];
 
-  (
-    await Promise.all(
-      Array.from(domainSets)
-        .reduce((result, element, index) => {
-          const chunk = index % threads;
-          result[chunk] ??= [];
-          result[chunk].push(element);
-          return result;
-        }, [])
-        .map(chunk => piscina.run({ chunk }, { name: 'dedupe' }))
-    )
-  ).forEach((result, taskIndex) => {
-    const chunk = tasksArray[taskIndex];
-    for (let i = 0, len = result.length; i < len; i++) {
-      if (result[i]) {
-        domainSets.delete(chunk[i]);
+    result[chunk].push(element);
+    return result;
+  }, /** @type {string[][]} */([]));
+
+  (await Promise.all(
+    tasksArray.map(chunk => piscina.run({ chunk }))
+  )).forEach((result, taskIndex) => {
+      const chunk = tasksArray[taskIndex];
+      for (let i = 0, len = result.length; i < len; i++) {
+        if (result[i]) {
+          domainSets.delete(chunk[i]);
+        }
       }
-    }
-  });
+    });
 
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
@@ -259,7 +230,7 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
     }
     return 0;
   };
-  const sortedDomainSets = [...domainSets]
+  const sortedDomainSets = Array.from(domainSets)
     .map((v) => {
       return { v, domain: getDomain(v.charCodeAt(0) === 46 ? v.slice(1) : v)?.toLowerCase() || v };
     })
@@ -296,6 +267,35 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   }
 })();
 
+/**
+ * @param {string} domain
+ */
+function isMatchKeyword(domain) {
+  for (const keyword of domainKeywordsSet) {
+    if (domain.includes(keyword)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * @param {string} domain
+ */
+function isMatchSuffix(domain) {
+  for (const suffix of domainSuffixSet) {
+    if (domain.endsWith(suffix)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * @param {string} domain
+ */
 function isInWhiteList(domain) {
   for (const white of filterRuleWhitelistDomainSets) {
     if (domain === white || domain.endsWith(white)) {
