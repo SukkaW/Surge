@@ -23,23 +23,20 @@ module.exports.dedupe = ({ chunk }) => {
       const domainFromFullSetLen = domainFromFullSet.length;
 
       // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
-      if (domainFromInput.charCodeAt(0) !== 46) {
-        if (domainFromInputLen + 1 === domainFromFullSetLen) {
+      if (domainFromInput[0] !== '.' && domainFromInputLen + 1 === domainFromFullSetLen) {
+        let shouldBeRemoved = true;
 
-          let shouldBeRemoved = true;
-
-          for (let k = 0; k < domainFromInputLen; k++) {
-            if (domainFromFullSet[k + 1] !== domainFromInput[k]) {
-              shouldBeRemoved = false;
-              break;
-            }
-          }
-
-          if (shouldBeRemoved) {
-            outputToBeRemoved[i] = 1;
-            log(domainFromInput, domainFromFullSet)
+        for (let k = 0; k < domainFromInputLen; k++) {
+          if (domainFromFullSet[k + 1] !== domainFromInput[k]) {
+            shouldBeRemoved = false;
             break;
           }
+        }
+
+        if (shouldBeRemoved) {
+          outputToBeRemoved[i] = 1;
+          log(domainFromInput, domainFromFullSet)
+          break;
         }
       }
       if (domainFromInputLen > domainFromFullSetLen) {

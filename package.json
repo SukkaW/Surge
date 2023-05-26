@@ -102,21 +102,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@cliqz/adblocker": "^1.26.2",
+    "@cliqz/adblocker": "^1.26.5",
     "@sukka/listdir": "^0.2.0",
     "@vercel/fetch-retry": "^5.1.3",
     "ci-info": "^3.8.0",
-    "cidr-tools": "^5.1.4",
+    "cidr-tools": "^5.1.5",
     "fs-extra": "^11.1.0",
     "picocolors": "^1.0.0",
     "piscina": "^3.2.0",
     "table": "^6.8.1",
-    "tar": "^6.1.13",
-    "tldts": "^5.7.111",
-    "undici": "5.20.0"
+    "tar": "^6.1.15",
+    "tldts": "^6.0.5",
+    "undici": "5.22.1"
   },
   "devDependencies": {
-    "wireit": "^0.9.1"
+    "wireit": "^0.9.5"
   },
   "engines": {
     "node": "> 18.0.0"
