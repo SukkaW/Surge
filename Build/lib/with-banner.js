@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * @param {string} title
  * @param {string[]} description

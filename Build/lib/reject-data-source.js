@@ -1,3 +1,4 @@
+// @ts-check
 /** @type {[string, boolean][]} */
 const HOSTS = [
   ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true],

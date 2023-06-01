@@ -1,3 +1,4 @@
+// @ts-check
 const { fetchWithRetry } = require('./fetch-retry');
 const { NetworkFilter } = require('@cliqz/adblocker');
 const { normalizeDomain } = require('./is-domain-loose');

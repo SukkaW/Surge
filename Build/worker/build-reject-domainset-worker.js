@@ -1,3 +1,4 @@
+// @ts-check
 const Piscina = require('piscina');
 // const { isCI } = require('ci-info');
 
@@ -5,7 +6,9 @@ const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
 
 // const log = isCI ? () => { } : console.log.bind(console);
-
+/**
+ * @param {{ chunk: string[] }} param0
+ */
 module.exports = ({ chunk }) => {
   const chunkLength = chunk.length;
   const outputToBeRemoved = new Int8Array(chunkLength);
