@@ -1,23 +1,24 @@
-const { fetchWithRetry } = require('./lib/fetch-retry');
+// @ts-check
 const fs = require('fs');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
+const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
 
 (async () => {
   console.time('Total Time - build-anti-bogus-domain');
-  console.time('* Download bogus-nxdomain-list')
-  const res = (await (await fetchWithRetry('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')).text())
-    .split('\n')
-    .map(line => {
-      if (line.startsWith('bogus-nxdomain=')) {
-        return line.replace('bogus-nxdomain=', '');
-      }
+  console.time('* Download bogus-nxdomain-list');
 
-      return null
-    })
-    .filter(ip => typeof ip === 'string');
+  const rl = await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf');
+
+  /** @type {string[]} */
+  const res = [];
+  for await (const line of rl) {
+    if (line.startsWith('bogus-nxdomain=')) {
+      res.push(line.replace('bogus-nxdomain=', ''));
+    }
+  }
 
   console.timeEnd('* Download bogus-nxdomain-list')
 

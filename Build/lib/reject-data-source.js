@@ -8,7 +8,7 @@ const HOSTS = [
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false]
 ]
 
-const ADGUARD_FILTERS = [
+const ADGUARD_FILTERS = /** @type {const} */([
   // Easy List
   [
     'https://easylist.to/easylist/easylist.txt',
@@ -177,7 +177,7 @@ const ADGUARD_FILTERS = [
   'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt',
   'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-cname.txt',
   'https://raw.githubusercontent.com/brave/adblock-lists/master/coin-miners.txt'
-];
+]);
 
 const PREDEFINED_WHITELIST = [
   'localhost',

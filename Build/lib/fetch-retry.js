@@ -1,4 +1,4 @@
 // @ts-check
 const { fetch } = require('undici');
-const fetchWithRetry = require('@vercel/fetch-retry')(fetch);
+const fetchWithRetry = /** @type {fetch} */(require('@vercel/fetch-retry')(fetch));
 module.exports.fetchWithRetry = fetchWithRetry;

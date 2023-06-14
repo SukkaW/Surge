@@ -1,5 +1,6 @@
 // @ts-check
 const { fetchWithRetry } = require('./fetch-retry');
+const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
 const { NetworkFilter } = require('@cliqz/adblocker');
 const { normalizeDomain } = require('./is-domain-loose');
 
@@ -26,9 +27,10 @@ async function processDomainLists(domainListsUrl) {
 
   /** @type Set<string> */
   const domainSets = new Set();
-  /** @type string[] */
-  const domains = (await (await fetchWithRetry(domainListsUrl)).text()).split('\n');
-  domains.forEach(line => {
+
+  const rl = await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl);
+
+  for await (const line of rl) {
     if (
       line.startsWith('#')
       || line.startsWith('!')
@@ -48,7 +50,7 @@ async function processDomainLists(domainListsUrl) {
     }
 
     domainSets.add(domainToAdd);
-  });
+  }
 
   return [...domainSets];
 }
@@ -66,9 +68,8 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   /** @type Set<string> */
   const domainSets = new Set();
 
-  /** @type string[] */
-  const hosts = (await (await fetchWithRetry(hostsUrl)).text()).split('\n');
-  hosts.forEach(line => {
+  const rl = await fetchRemoteTextAndCreateReadlineInterface(hostsUrl);
+  for await (const line of rl) {
     if (line.includes('#')) {
       return;
     }
@@ -91,7 +92,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
         domainSets.add(domain);
       }
     }
-  });
+  }
 
   console.timeEnd(`   - processHosts: ${hostsUrl}`);
 
