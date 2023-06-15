@@ -39,7 +39,7 @@ async function processDomainLists(domainListsUrl) {
       || line.startsWith('\r')
       || line.startsWith('\n')
     ) {
-      return;
+      continue;
     }
 
     const domainToAdd = line.trim();
@@ -52,7 +52,7 @@ async function processDomainLists(domainListsUrl) {
     domainSets.add(domainToAdd);
   }
 
-  return [...domainSets];
+  return domainSets;
 }
 
 /**
@@ -71,10 +71,10 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   const rl = await fetchRemoteTextAndCreateReadlineInterface(hostsUrl);
   for await (const line of rl) {
     if (line.includes('#')) {
-      return;
+      continue;
     }
     if (line.startsWith(' ') || line.startsWith('\r') || line.startsWith('\n') || line.trim() === '') {
-      return;
+      continue;
     }
     const [, ...domains] = line.split(' ');
     const _domain = domains.join(' ').trim();
@@ -96,7 +96,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
 
   console.timeEnd(`   - processHosts: ${hostsUrl}`);
 
-  return [...domainSets];
+  return domainSets;
 }
 
 /**
