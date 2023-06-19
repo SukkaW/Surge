@@ -33,7 +33,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 #### 搜狗输入法
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,reject-drop
+RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,
 ```
 
 - 人工维护
