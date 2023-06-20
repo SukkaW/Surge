@@ -19,10 +19,10 @@
 #### 广告拦截 / 隐私保护 / Malware 拦截 / Phiishing 拦截
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,reject
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,reject-tinygif
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,reject
-RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT-TINYGIF
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,REJECT
+RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 ```
 
 - 自动生成
@@ -33,7 +33,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,reject-drop
 #### 搜狗输入法
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,reject-drop
+RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,
 ```
 
 - 人工维护
