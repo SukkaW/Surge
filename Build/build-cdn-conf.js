@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
+const { minifyRules } = require('./lib/minify-rules');
 
 (async () => {
   console.time('Total Time - build-cdn-conf');
@@ -44,7 +45,7 @@ const { withBannerArray } = require('./lib/with-banner');
           'This file contains object storage and static assets CDN domains.'
         ],
         new Date(),
-        content.split('\n')
+        minifyRules(content.split('\n'))
     ),
     resultPath
   )

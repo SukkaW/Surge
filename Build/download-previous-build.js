@@ -4,9 +4,8 @@ const fs = require('fs');
 const fse = require('fs-extra');
 const { join, resolve } = require('path');
 const { tmpdir } = require('os');
-const { Stream, Readable } = require('stream');
-const { promisify } = require('util');
-const pipeline = promisify(Stream.pipeline);
+const { Readable } = require('stream');
+const { pipeline } = require('stream/promises');
 
 const fileExists = (path) => {
   return fs.promises.access(path, fs.constants.F_OK)

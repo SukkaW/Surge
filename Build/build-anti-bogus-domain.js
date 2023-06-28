@@ -5,6 +5,7 @@ const { isIPv4, isIPv6 } = require('net');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
+const { minifyRules } = require('./lib/minify-rules');
 
 (async () => {
   console.time('Total Time - build-anti-bogus-domain');
@@ -52,7 +53,7 @@ const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remot
         ' - https://github.com/felixonmars/dnsmasq-china-list'
       ],
       new Date(),
-      content.split('\n')
+      minifyRules(content.split('\n'))
     ),
     resultPath
   )
