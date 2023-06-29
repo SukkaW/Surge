@@ -14,6 +14,7 @@
     "build:phishing-domainset": "wireit",
     "build:telegram-cidr": "wireit",
     "build:chn-cidr": "wireit",
+    "build:internal-rules": "wireit",
     "validate:domainset": "wireit"
   },
   "wireit": {
@@ -79,6 +80,12 @@
         "build:apple-cdn",
         "build:phishing-domainset",
         "build:reject-domainset",
+        "build:cdn-conf"
+      ]
+    },
+    "build:internal-rules": {
+      "command": "node ./Build/build-internal-rules.js",
+      "dependencies": [
         "build:cdn-conf"
       ]
     },

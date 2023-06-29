@@ -81,9 +81,7 @@ const validateRuleset = async (filePath) => {
   ]);
   await Promise.all(
     domainsetFiles.map(file => validateDomainSet(file))
+    // rulesetFiles.map(file => validateRuleset(file))
   );
-  // await Promise.all(
-  //   rulesetFiles.map(file => validateRuleset(file))
-  // );
 })();
 

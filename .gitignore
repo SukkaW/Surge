@@ -13,3 +13,4 @@ List/non_ip/apple_cdn.conf
 List/ip/telegram.conf
 List/ip/reject.conf
 List/ip/china_ip.conf
+List/internal/
