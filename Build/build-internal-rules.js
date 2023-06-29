@@ -4,9 +4,21 @@ const fse = require('fs-extra');
 const path = require('path');
 const readline = require('readline');
 const { isDomainLoose } = require('./lib/is-domain-loose');
+const tldts = require('tldts');
+
+
 
 (async () => {
-  const results = [];
+  const set = new Set();
+  /**
+   * @param {string} input
+   */
+  const addApexDomain = (input) => {
+    const d = tldts.getDomain(input, { allowPrivateDomains: true });
+    if (d) {
+      set.add(d);
+    }
+  };
 
   for await (
     const line of readline.createInterface({
@@ -15,9 +27,9 @@ const { isDomainLoose } = require('./lib/is-domain-loose');
     })
   ) {
     if (line.startsWith('DOMAIN-SUFFIX,')) {
-      results.push(line.replace('DOMAIN-SUFFIX,', 'SUFFIX,'));
+      addApexDomain(line.replace('DOMAIN-SUFFIX,', ''))
     } else if (line.startsWith('DOMAIN,')) {
-      results.push(line.replace('DOMAIN,', 'SUFFIX,'));
+      addApexDomain(line.replace('DOMAIN,', ''));
     }
   }
 
@@ -28,9 +40,9 @@ const { isDomainLoose } = require('./lib/is-domain-loose');
     })
   ) {
     if (line[0] === '.') {
-      results.push(`SUFFIX,${line.slice(1)}`);
+      addApexDomain(line.slice(1));
     } else if (isDomainLoose(line)) {
-      results.push(`SUFFIX,${line}`);
+      addApexDomain(line);
     }
   }
 
@@ -41,17 +53,15 @@ const { isDomainLoose } = require('./lib/is-domain-loose');
     })
   ) {
     if (line[0] === '.') {
-      results.push(`SUFFIX,${line.slice(1)}`);
+      addApexDomain(line.slice(1));
     } else if (isDomainLoose(line)) {
-      results.push(`SUFFIX,${line}`);
+      addApexDomain(line);
     }
   }
-
-  results.push('');
 
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
     path.resolve(__dirname, '../List/internal/cdn.csv'),
-    results.join('\n')
+    Array.from(set).map(i => `SUFFIX,${i}`).join('\n') + '\n'
   );
 })();

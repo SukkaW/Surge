@@ -64,12 +64,19 @@
         "download-previous-build"
       ]
     },
+    "build:internal-rules": {
+      "command": "node ./Build/build-internal-rules.js",
+      "dependencies": [
+        "build:cdn-conf"
+      ]
+    },
     "build:public": {
       "command": "node ./Build/build-public.js",
       "dependencies": [
         "build:anti-bogus-domain",
         "build:apple-cdn",
         "build:cdn-conf",
+        "build:internal-rules",
         "build:reject-domainset",
         "build:telegram-cidr"
       ]
@@ -83,12 +90,6 @@
         "build:cdn-conf"
       ]
     },
-    "build:internal-rules": {
-      "command": "node ./Build/build-internal-rules.js",
-      "dependencies": [
-        "build:cdn-conf"
-      ]
-    },
     "build": {
       "dependencies": [
         "build:anti-bogus-domain",
@@ -97,6 +98,7 @@
         "build:reject-domainset",
         "build:telegram-cidr",
         "build:chn-cidr",
+        "build:internal-rules",
         "build:public",
         "validate:domainset"
       ]
