@@ -61,7 +61,7 @@ const tldts = require('tldts');
 
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
-    path.resolve(__dirname, '../List/internal/cdn.csv'),
+    path.resolve(__dirname, '../List/internal/cdn.txt'),
     Array.from(set).map(i => `SUFFIX,${i}`).join('\n') + '\n'
   );
 })();

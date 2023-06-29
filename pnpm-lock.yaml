@@ -2,8 +2,8 @@ lockfileVersion: '6.0'
 
 dependencies:
   '@cliqz/adblocker':
-    specifier: ^1.26.5
-    version: 1.26.5
+    specifier: ^1.26.6
+    version: 1.26.6
   '@sukka/listdir':
     specifier: ^0.2.0
     version: 0.2.0
@@ -14,17 +14,17 @@ dependencies:
     specifier: ^3.8.0
     version: 3.8.0
   cidr-tools:
-    specifier: ^5.1.5
-    version: 5.1.5
+    specifier: ^6.4.1
+    version: 6.4.1
   fs-extra:
-    specifier: ^11.1.0
-    version: 11.1.0
+    specifier: ^11.1.1
+    version: 11.1.1
   picocolors:
     specifier: ^1.0.0
     version: 1.0.0
   piscina:
-    specifier: ^3.2.0
-    version: 3.2.0
+    specifier: ^4.0.0
+    version: 4.0.0
   table:
     specifier: ^6.8.1
     version: 6.8.1
@@ -32,8 +32,8 @@ dependencies:
     specifier: ^6.1.15
     version: 6.1.15
   tldts:
-    specifier: ^6.0.5
-    version: 6.0.5
+    specifier: ^6.0.8
+    version: 6.0.8
   undici:
     specifier: 5.22.1
     version: 5.22.1
@@ -49,27 +49,27 @@ packages:
     resolution: {integrity: sha512-H71nDOOL8Y7kWRLqf6Sums+01Q5msqBW2KhDUTemh1tvY04eSkSXrK0uj/4mmY0Xr16/3zyZmsrxN7CKuRbNRg==}
     dev: false
 
-  /@cliqz/adblocker-content@1.26.5:
-    resolution: {integrity: sha512-pcQ/Lpd0zvkxpOYx+38IQ7ZLWj38oF5tdsjm8Yq+hQ1jBu1Dwnk9LwIlYxpktidRvpMh4dGFOYUBmb4vsieEwQ==}
+  /@cliqz/adblocker-content@1.26.6:
+    resolution: {integrity: sha512-cebc5AjL/quVVdcClJ7dqqvW5SrqATfUhwqn5MzWtponZ3t3fRpgpFgkt2fNa5rd3iz1UfTcAtWrgpshHYurTA==}
     dependencies:
-      '@cliqz/adblocker-extended-selectors': 1.26.5
+      '@cliqz/adblocker-extended-selectors': 1.26.6
     dev: false
 
-  /@cliqz/adblocker-extended-selectors@1.26.5:
-    resolution: {integrity: sha512-+81FOTJtWwk3t58XyXBotkdOp7uP9vNe6hyUQQY173Rt9X9tsErGkPW57hMP0OgVsYNIYg7/TXxHEabxTUQubw==}
+  /@cliqz/adblocker-extended-selectors@1.26.6:
+    resolution: {integrity: sha512-Gpvg6eLO2aHiY7r2y0jueve6YbGkYvWaZ4MiwhQ1wPTwj/MxFqAh9cVHnz3EzoJUtsqoy9bvkhmfkRUatpvvzw==}
     dev: false
 
-  /@cliqz/adblocker@1.26.5:
-    resolution: {integrity: sha512-hbvkcfAQdpcREf+Jim9SXIp/M5p2g2YRB5Bd+g3zlTS+cJXvyk1Hvkj9fxHs37xytWfQMYevWyGko1ZlkOAbNA==}
+  /@cliqz/adblocker@1.26.6:
+    resolution: {integrity: sha512-fSNCvyl0FRgKcc2NmHEhaQqeTT0QCLBT3eVZ15ah6baPdCaQm7N5IN/annv9bRalS8Lwbxymb3TBLzXpFTghrw==}
     dependencies:
-      '@cliqz/adblocker-content': 1.26.5
-      '@cliqz/adblocker-extended-selectors': 1.26.5
+      '@cliqz/adblocker-content': 1.26.6
+      '@cliqz/adblocker-extended-selectors': 1.26.6
       '@remusao/guess-url-type': 1.2.1
       '@remusao/small': 1.2.1
       '@remusao/smaz': 1.9.1
-      '@types/chrome': 0.0.225
+      '@types/chrome': 0.0.228
       '@types/firefox-webext-browser': 111.0.1
-      tldts-experimental: 5.7.103
+      tldts-experimental: 6.0.8
     dev: false
 
   /@nodelib/fs.scandir@2.1.5:
@@ -126,8 +126,8 @@ packages:
     resolution: {integrity: sha512-UyVirNhAOXKwjiDehjUaGtpfk0QwNHyiXrlLb/FmWMtI+BGhaEvB9MypSfEAtiiMI3g6QTfG38ayNAorEuz5ow==}
     dev: false
 
-  /@types/chrome@0.0.225:
-    resolution: {integrity: sha512-acSFQN7X0/fjF6PSP0Ki9TlwWsEeJeh5WclMYilJSHHp+ayLDMD/YeSIUzsodwLKPZQ9h8SyiL13/pPab8M4RA==}
+  /@types/chrome@0.0.228:
+    resolution: {integrity: sha512-rDmyVEF+l9H+6FQYqsEGqQOjBw/uaSx6KJ6o47FwbQmPPcskmt8XlPbKjy5KeQXU3ZLiV2x45Fk4kdtRMSghfQ==}
     dependencies:
       '@types/filesystem': 0.0.32
       '@types/har-format': 1.2.10
@@ -258,12 +258,12 @@ packages:
       ip-regex: 5.0.0
     dev: false
 
-  /cidr-tools@5.1.5:
-    resolution: {integrity: sha512-MIhrjzRFKJIDBlnGNXuNMNYxgLWY32Yx7XV4sA3U2Rt5eT6xYWJhuwPMmWPfvpIOpq9t4fEn5fEMga+A8iL/Sw==}
-    engines: {node: '>=14'}
+  /cidr-tools@6.4.1:
+    resolution: {integrity: sha512-s8JNDwWgc2e0roEF6KDkQfHkZgEnehoap5hK7swPlEQMb9f8msrWqpgVCVKiDm3ARxpesOru9Tu49N8UpJjmDA==}
+    engines: {node: '>=16'}
     dependencies:
       cidr-regex: 4.0.3
-      ip-bigint: 6.0.1
+      ip-bigint: 7.2.1
       ip-regex: 5.0.0
       string-natural-compare: 3.0.1
     dev: false
@@ -327,8 +327,8 @@ packages:
       to-regex-range: 5.0.1
     dev: true
 
-  /fs-extra@11.1.0:
-    resolution: {integrity: sha512-0rcTq621PD5jM/e0a3EJoGC/1TC5ZBCERW82LQuwfGnCa1V8w7dpYH1yNu+SLb6E5dkeCBzKEyLGlFrnr+dUyw==}
+  /fs-extra@11.1.1:
+    resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
     engines: {node: '>=14.14'}
     dependencies:
       graceful-fs: 4.2.10
@@ -373,9 +373,9 @@ packages:
     resolution: {integrity: sha512-7kIufnBqdsBGcSZLPJwqHT3yhk1QTsSlFsVD3kx5ixH/AlgBs9yM1q6DPhXZ8f8gtdqgh7N7/5btRLpQsS2gHw==}
     dev: false
 
-  /ip-bigint@6.0.1:
-    resolution: {integrity: sha512-5rBJa53sUh+3dlQvSXlu6/WQAiii4ZMHV2XLWglsAMYXzlbJ+gWe4Bldn3uXLGWEaJ2Izjx/asiQ+RYWwKymZw==}
-    engines: {node: '>=14'}
+  /ip-bigint@7.2.1:
+    resolution: {integrity: sha512-AftDIrlM5ZQM+qQ31IQ5MsL3tJWleeN3r0VqhmkB9oLvwcaDLeLNPtX4d9hahzExTFtz69eRv6LsGAoH20/8/g==}
+    engines: {node: '>=16'}
     dev: false
 
   /ip-regex@5.0.0:
@@ -526,8 +526,8 @@ packages:
     engines: {node: '>=8.6'}
     dev: true
 
-  /piscina@3.2.0:
-    resolution: {integrity: sha512-yn/jMdHRw+q2ZJhFhyqsmANcbF6V2QwmD84c6xRau+QpQOmtrBCoRGdvTfeuFDYXB5W2m6MfLkjkvQa9lUSmIA==}
+  /piscina@4.0.0:
+    resolution: {integrity: sha512-641nAmJS4k4iqpNUqfggqUBUMmlw0ZoM5VZKdQkV2e970Inn3Tk9kroCc1wpsYLD07vCwpys5iY0d3xI/9WkTg==}
     dependencies:
       eventemitter-asyncresource: 1.0.0
       hdr-histogram-js: 2.0.1
@@ -647,25 +647,21 @@ packages:
       yallist: 4.0.0
     dev: false
 
-  /tldts-core@5.7.111:
-    resolution: {integrity: sha512-BU3OOzGbih8zvLiKgDw+wNS311ItfLt3gXi3qSDvAQiI86l+dyEAGSEs2s72ptPJ3KqXgRt7wiE6jTQ2SgoMqw==}
+  /tldts-core@6.0.8:
+    resolution: {integrity: sha512-9DoeDV0eqDmXKkg43LGxLdJZstcdNfdhAElerrChj78Y3fYcidTKtVSLjXC0w6naMWYejPvJtTpnRPWHJJD4yw==}
     dev: false
 
-  /tldts-core@6.0.5:
-    resolution: {integrity: sha512-DBpylEmOYzU+x8oiJU6pULwr1WPIoW1YYXxf8K88N+mEtIB9QOSCsMj0KdARoJFS/rMDWRguB4dRKL0zqq6LWQ==}
-    dev: false
-
-  /tldts-experimental@5.7.103:
-    resolution: {integrity: sha512-oo9QI0TjXdrlZnDSJMazRJe+nnd0OwXgzRmHcsnyp4k6UxmmlaWEA1iq3RY3EDSKwYEJ+lDnwQeAaGRleU/LEQ==}
+  /tldts-experimental@6.0.8:
+    resolution: {integrity: sha512-EuQv09eSTpwGvzMznDUxBv2DN597yF0hK63Dkzr3R4eVvIi3AcnCBOQOfFC3X8s9YmGA18FPGhBMlwNA7PGxbg==}
     dependencies:
-      tldts-core: 5.7.111
+      tldts-core: 6.0.8
     dev: false
 
-  /tldts@6.0.5:
-    resolution: {integrity: sha512-2JQhXcZbp8eh2Ka81yvu5WzBa7NPKhGhXHy+dz0grD7w3DjgK0CsryEwNjVs6i170VF4sZAkwP8pGb1q53wiiQ==}
+  /tldts@6.0.8:
+    resolution: {integrity: sha512-gc0SFsuvk5IfBMTfDDy7MnH5Ut138HkavoiSiOTbyaPMCFU5eN95Rl9YrovVCkD0eOrwEhxXYbxe2bcKRcc7ag==}
     hasBin: true
     dependencies:
-      tldts-core: 6.0.5
+      tldts-core: 6.0.8
     dev: false
 
   /to-regex-range@5.0.1:
