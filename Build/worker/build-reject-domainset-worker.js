@@ -5,6 +5,8 @@ const Piscina = require('piscina');
 const fullsetDomainStartsWithADot = Piscina.workerData
 const totalLen = fullsetDomainStartsWithADot.length;
 
+const DOT = '.';
+
 // const log = isCI ? () => { } : console.log.bind(console);
 /**
  * @param {{ chunk: string[] }} param0
@@ -25,17 +27,23 @@ module.exports = ({ chunk }) => {
       const domainFromFullSetLen = domainStartsWithADotAndFromFullSet.length;
 
       if (domainFromInputLen < domainFromFullSetLen) {
-        if (domainFromInputLen + 1 === domainFromFullSetLen) {
-          // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
-          if (domainFromInputChunk.charCodeAt(0) !== 46 && domainFromInputChunk.endsWith(domainStartsWithADotAndFromFullSet)) {
-            outputToBeRemoved[i] = 1;
-            // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
-            break;
-          }
-        } else {
+        if (domainFromInputLen + 1 !== domainFromFullSetLen) {
           break;
         }
-      } else if (domainFromInputLen > domainFromFullSetLen && domainFromInputChunk.endsWith(domainStartsWithADotAndFromFullSet)) {
+
+        // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
+        if (
+          domainFromInputChunk[0] !== DOT
+          && domainStartsWithADotAndFromFullSet.endsWith(domainFromInputChunk)
+        ) {
+          outputToBeRemoved[i] = 1;
+          // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
+          break;
+        }
+      } else if (
+        domainFromInputLen > domainFromFullSetLen
+        && domainFromInputChunk.endsWith(domainStartsWithADotAndFromFullSet)
+      ) {
         outputToBeRemoved[i] = 1;
         // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
         break;
