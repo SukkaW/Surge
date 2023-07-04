@@ -40,7 +40,6 @@ const ADGUARD_FILTERS = /** @type {const} */([
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads.txt',
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt',
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs.txt',
-  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt',
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites.txt',
   // uBlock Origin Filter List
   [
@@ -229,7 +228,23 @@ const PREDEFINED_ENFORCED_BACKLIST = [
   'telemetry.mozilla.org'
 ];
 
+const PREDEFINED_ENFORCED_WHITELIST = [
+  'godaddysites.com',
+  'web.app',
+  'firebaseapp.com',
+  'ipfs.nftstorage.link',
+  'ipfs.4everland.io',
+  'ipfs.cf-ipfs.com',
+  'ipfs.dweb.link',
+  'ipfs.infura-ipfs.io',
+  'ipfs.fleek.cool',
+  'repl.co',
+  'w3s.link',
+  'translate.goog'
+]
+
 module.exports.HOSTS = HOSTS;
 module.exports.ADGUARD_FILTERS = ADGUARD_FILTERS;
 module.exports.PREDEFINED_WHITELIST = PREDEFINED_WHITELIST;
 module.exports.PREDEFINED_ENFORCED_BACKLIST = PREDEFINED_ENFORCED_BACKLIST;
+module.exports.PREDEFINED_ENFORCED_WHITELIST = PREDEFINED_ENFORCED_WHITELIST;

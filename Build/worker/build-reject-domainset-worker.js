@@ -28,7 +28,7 @@ module.exports = ({ chunk }) => {
 
       if (domainFromInputLen < domainFromFullSetLen) {
         if (domainFromInputLen + 1 !== domainFromFullSetLen) {
-          break;
+          continue;
         }
 
         // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
