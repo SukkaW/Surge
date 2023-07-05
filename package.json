@@ -121,10 +121,11 @@
     "piscina": "^4.0.0",
     "table": "^6.8.1",
     "tar": "^6.1.15",
-    "tldts": "^6.0.8",
+    "tldts": "^6.0.9",
     "undici": "5.22.1"
   },
   "devDependencies": {
+    "eslint-plugin-import": "npm:eslint-plugin-i@2.27.5-4",
     "wireit": "^0.9.5"
   },
   "engines": {
