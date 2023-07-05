@@ -17,13 +17,13 @@ module.exports = ({ chunk }) => {
 
   for (let i = 0; i < chunkLength; i++) {
     const domainFromInputChunk = chunk[i];
+    const domainFromInputLen = domainFromInputChunk.length;
 
     for (let j = 0; j < totalLen; j++) {
       const domainStartsWithADotAndFromFullSet = fullsetDomainStartsWithADot[j];
       // domainFromFullSet is always startsWith "."
       if (domainStartsWithADotAndFromFullSet === domainFromInputChunk) continue;
 
-      const domainFromInputLen = domainFromInputChunk.length;
       const domainFromFullSetLen = domainStartsWithADotAndFromFullSet.length;
 
       if (domainFromInputLen < domainFromFullSetLen) {
