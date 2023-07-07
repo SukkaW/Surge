@@ -2,12 +2,9 @@
 const { promises: fsPromises } = require('fs');
 const fse = require('fs-extra');
 const { resolve: pathResolve } = require('path');
-const Piscina = require('piscina');
 const { processHosts, processFilterRules, preprocessFullDomainSetBeforeUsedAsWorkerData } = require('./lib/parse-filter');
-const cpuCount = require('os').cpus().length;
-const { isCI } = require('ci-info');
-const threads = isCI ? cpuCount : cpuCount / 2;
 const { getDomain } = require('tldts');
+const Trie = require('./lib/trie');
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
 const { withBannerArray } = require('./lib/with-banner');
@@ -30,15 +27,14 @@ const domainSuffixSet = new Set();
   console.time('* Download and process Hosts');
 
   // Parse from remote hosts & domain lists
-  (await Promise.all(
-    HOSTS.map(entry => processHosts(entry[0], entry[1]))
-  )).forEach(hosts => {
-    hosts.forEach(host => {
-      if (host) {
-        domainSets.add(host);
-      }
+  (await Promise.all(HOSTS.map(entry => processHosts(entry[0], entry[1]))))
+    .forEach(hosts => {
+      hosts.forEach(host => {
+        if (host) {
+          domainSets.add(host);
+        }
+      });
     });
-  });
 
   console.timeEnd('* Download and process Hosts');
 
@@ -167,8 +163,31 @@ const domainSuffixSet = new Set();
   console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
   console.time(`* Dedupe from black keywords/suffixes`);
 
+  const trie1 = Trie.from(Array.from(domainSets));
+  domainSuffixSet.forEach(suffix => {
+    trie1.find(suffix, true).forEach(f => domainSets.delete(f));
+  });
+  filterRuleWhitelistDomainSets.forEach(suffix => {
+    trie1.find(suffix, true).forEach(f => domainSets.delete(f));
+  });
+
+  // Build whitelist trie, to handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
+  const trieWhite = Trie.from(Array.from(filterRuleWhitelistDomainSets));
   for (const domain of domainSets) {
-    if (isMatchKeyword(domain) || isMatchSuffix(domain) || isInWhiteList(domain)) {
+    if (domain[0] !== '.' && trieWhite.has(`.${domain}`)) {
+      domainSets.delete(domain);
+      continue;
+    }
+    if (domain[0] === '.') {
+      const found = trieWhite.find(domain);
+      if (found.length > 0) {
+        domainSets.delete(domain);
+        continue;
+      }
+    }
+
+    // Remove keyword
+    if (isMatchKeyword(domain)) {
       domainSets.delete(domain);
     }
   }
@@ -183,43 +202,27 @@ const domainSuffixSet = new Set();
   const START_TIME = Date.now();
 
   const domainSetsArray = Array.from(domainSets);
-  const workerData = preprocessFullDomainSetBeforeUsedAsWorkerData(domainSetsArray);
+  const trie2 = Trie.from(domainSetsArray);
+  const fullsetDomainStartsWithADot = preprocessFullDomainSetBeforeUsedAsWorkerData(domainSetsArray);
+  console.log(fullsetDomainStartsWithADot.length);
 
-  const piscina = new Piscina({
-    filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
-    workerData,
-    idleTimeout: 50,
-    minThreads: threads,
-    maxThreads: threads
-  });
+  for (let j = 0, len = fullsetDomainStartsWithADot.length; j < len; j++) {
+    const domainStartsWithADotAndFromFullSet = fullsetDomainStartsWithADot[j];
+    const found = trie2.find(domainStartsWithADotAndFromFullSet, false);
+    if (found.length) {
+      found.forEach(f => {
+        domainSets.delete(f);
+      })
+    }
 
-  console.log(workerData.length);
-
-  console.log(`Launching ${threads} threads...`);
-
-  const tasksArray = domainSetsArray.reduce((result, element, index) => {
-    const chunk = index % threads;
-    result[chunk] ??= [];
-
-    result[chunk].push(element);
-    return result;
-  }, /** @type {string[][]} */([]));
-
-  (await Promise.all(
-    tasksArray.map(chunk => piscina.run({ chunk }))
-  )).forEach((result, taskIndex) => {
-      const chunk = tasksArray[taskIndex];
-      for (let i = 0, len = result.length; i < len; i++) {
-        if (result[i]) {
-          domainSets.delete(chunk[i]);
-        }
-      }
-    });
+    const a = domainStartsWithADotAndFromFullSet.slice(1);
+    if (trie2.has(a)) {
+      domainSets.delete(a);
+    }
+  }
 
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - domainSets.size} rules!`);
-
-  await piscina.destroy();
 
   console.time('* Write reject.conf');
 
@@ -264,9 +267,6 @@ const domainSuffixSet = new Set();
   console.timeEnd('* Write reject.conf');
 
   console.timeEnd('Total Time - build-reject-domain-set');
-  if (piscina.queueSize === 0) {
-    process.exit(0);
-  }
 })();
 
 /**
@@ -275,37 +275,6 @@ const domainSuffixSet = new Set();
 function isMatchKeyword(domain) {
   for (const keyword of domainKeywordsSet) {
     if (domain.includes(keyword)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * @param {string} domain
- */
-function isMatchSuffix(domain) {
-  for (const suffix of domainSuffixSet) {
-    if (domain.endsWith(suffix)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * @param {string} domain
- */
-function isInWhiteList(domain) {
-  for (const white of filterRuleWhitelistDomainSets) {
-    if (domain === white || domain.endsWith(white)) {
-      return true;
-    }
-    if (white.endsWith(domain)) {
-      // If a whole domain is in blacklist but a subdomain is in whitelist
-      // We have no choice but to remove the whole domain from blacklist
       return true;
     }
   }

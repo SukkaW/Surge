@@ -397,7 +397,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
  */
 function preprocessFullDomainSetBeforeUsedAsWorkerData(data) {
   return data
-    .filter(domain => domain.charCodeAt(0) === 46)
+    .filter(domain => domain[0] === '.')
     .sort((a, b) => a.length - b.length);
 }
 

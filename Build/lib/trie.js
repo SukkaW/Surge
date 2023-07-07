@@ -129,7 +129,7 @@ class Trie {
   /**
    * Method used to delete a prefix from the trie.
    *
-   * @param  {string|array} suffix - Prefix to delete.
+   * @param  {string} suffix - Prefix to delete.
    * @return {boolean}
    */
   delete(suffix) {
@@ -198,66 +198,45 @@ class Trie {
   }
 
   /**
-   * Method returning an iterator over the trie's prefixes.
-   *
-   * @param  {string|array} [prefix] - Optional starting prefix.
-   * @return {Iterator}
+   * @return {string[]}
    */
-  // prefixes(prefix) {
-  //   let node = this.root;
-  //   const nodeStack = [];
-  //   const prefixStack = [];
-  //   let token;
-  //   let i;
-  //   let l;
+  dump() {
+    let node = this.root;
+    const nodeStack = [];
+    const prefixStack = [];
+    // Resolving initial prefix
+    const prefix = '';
 
-  //   const isString = this.mode === 'string';
+    nodeStack.push(node);
+    prefixStack.push(prefix);
 
-  //   // Resolving initial prefix
-  //   if (prefix) {
-  //     for (i = 0, l = prefix.length; i < l; i++) {
-  //       token = prefix[i];
-  //       node = node[token];
+    /** @type {string[]} */
+    const results = [];
 
-  //       // If the prefix does not exist, we return an empty iterator
-  //       if (typeof node === 'undefined')
-  //         return Iterator.empty();
-  //     }
-  //   }
-  //   else {
-  //     prefix = isString ? '' : [];
-  //   }
+    let currentNode;
+    let currentPrefix;
+    let hasValue = false;
+    let k;
 
-  //   nodeStack.push(node);
-  //   prefixStack.push(prefix);
+    while (nodeStack.length) {
+      currentNode = nodeStack.pop();
+      currentPrefix = prefixStack.pop();
 
-  //   return new Iterator(() => {
-  //     let currentNode;
-  //     let currentPrefix;
-  //     let hasValue = false;
-  //     let k;
+      for (k in currentNode) {
+        if (k === SENTINEL) {
+          hasValue = true;
+          continue;
+        }
 
-  //     while (nodeStack.length) {
-  //       currentNode = nodeStack.pop();
-  //       currentPrefix = prefixStack.pop();
+        nodeStack.push(currentNode[k]);
+        prefixStack.push(k + currentPrefix);
+      }
 
-  //       for (k in currentNode) {
-  //         if (k === SENTINEL) {
-  //           hasValue = true;
-  //           continue;
-  //         }
+      if (hasValue) results.push(currentPrefix);
+    }
 
-  //         nodeStack.push(currentNode[k]);
-  //         prefixStack.push(isString ? currentPrefix + k : currentPrefix.concat(k));
-  //       }
-
-  //       if (hasValue)
-  //         return { done: false, value: currentPrefix };
-  //     }
-
-  //     return { done: true };
-  //   });
-  // }
+    return results;
+  }
 
   /**
    * Convenience known methods.
