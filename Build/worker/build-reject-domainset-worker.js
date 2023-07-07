@@ -1,8 +1,9 @@
 // @ts-check
 const Piscina = require('piscina');
+const Trie = require('../lib/trie');
 // const { isCI } = require('ci-info');
 /** @type {string[]} */
-const fullsetDomainStartsWithADot = Piscina.workerData
+const fullsetDomainStartsWithADot = Piscina.workerData;
 const totalLen = fullsetDomainStartsWithADot.length;
 
 const DOT = '.';
@@ -15,38 +16,27 @@ module.exports = ({ chunk }) => {
   const chunkLength = chunk.length;
   const outputToBeRemoved = new Int8Array(chunkLength);
 
-  for (let i = 0; i < chunkLength; i++) {
-    const domainFromInputChunk = chunk[i];
-    const domainFromInputLen = domainFromInputChunk.length;
+  const trie = Trie.from(chunk);
 
-    for (let j = 0; j < totalLen; j++) {
-      const domainStartsWithADotAndFromFullSet = fullsetDomainStartsWithADot[j];
-      // domainFromFullSet is always startsWith "."
-      if (domainStartsWithADotAndFromFullSet === domainFromInputChunk) continue;
+  for (let j = 0; j < totalLen; j++) {
+    const domainStartsWithADotAndFromFullSet = fullsetDomainStartsWithADot[j];
 
-      const domainFromFullSetLen = domainStartsWithADotAndFromFullSet.length;
+    const found = trie.find(domainStartsWithADotAndFromFullSet, false)
 
-      if (domainFromInputLen < domainFromFullSetLen) {
-        if (domainFromInputLen + 1 !== domainFromFullSetLen) {
-          continue;
+    if (found.length) {
+      found.forEach(f => {
+        const index = chunk.indexOf(f);
+        if (index !== -1) {
+          outputToBeRemoved[index] = 1;
         }
+      })
+    }
 
-        // !domainFromInput.starsWith('.') && `.${domainFromInput}` === domainFromFullSet
-        if (
-          domainFromInputChunk[0] !== DOT
-          && domainStartsWithADotAndFromFullSet.endsWith(domainFromInputChunk)
-        ) {
-          outputToBeRemoved[i] = 1;
-          // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
-          break;
-        }
-      } else if (
-        domainFromInputLen > domainFromFullSetLen
-        && domainFromInputChunk.endsWith(domainStartsWithADotAndFromFullSet)
-      ) {
-        outputToBeRemoved[i] = 1;
-        // log(domainFromInputChunk, domainStartsWithADotAndFromFullSet)
-        break;
+    const a = domainStartsWithADotAndFromFullSet.slice(1);
+    if (trie.has(a)) {
+      const index = chunk.indexOf(a);
+      if (index !== -1) {
+        outputToBeRemoved[index] = 1;
       }
     }
   }

@@ -183,15 +183,17 @@ const domainSuffixSet = new Set();
   const START_TIME = Date.now();
 
   const domainSetsArray = Array.from(domainSets);
+  const workerData = preprocessFullDomainSetBeforeUsedAsWorkerData(domainSetsArray);
+
   const piscina = new Piscina({
     filename: pathResolve(__dirname, 'worker/build-reject-domainset-worker.js'),
-    workerData: preprocessFullDomainSetBeforeUsedAsWorkerData(Array.from(domainSetsArray)),
+    workerData,
     idleTimeout: 50,
     minThreads: threads,
     maxThreads: threads
   });
 
-  console.log(preprocessFullDomainSetBeforeUsedAsWorkerData(Array.from(domainSetsArray)).length);
+  console.log(workerData.length);
 
   console.log(`Launching ${threads} threads...`);
 
