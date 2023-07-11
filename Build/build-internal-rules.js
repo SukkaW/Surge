@@ -6,8 +6,6 @@ const readline = require('readline');
 const { isDomainLoose } = require('./lib/is-domain-loose');
 const tldts = require('tldts');
 
-
-
 (async () => {
   const set = new Set();
   /**
@@ -20,44 +18,55 @@ const tldts = require('tldts');
     }
   };
 
-  for await (
-    const line of readline.createInterface({
-      input: fs.createReadStream(path.resolve(__dirname, '../List/non_ip/cdn.conf')),
-      crlfDelay: Infinity
-    })
-  ) {
-    if (line.startsWith('DOMAIN-SUFFIX,')) {
-      addApexDomain(line.replace('DOMAIN-SUFFIX,', ''))
-    } else if (line.startsWith('DOMAIN,')) {
-      addApexDomain(line.replace('DOMAIN,', ''));
+  /**
+   * @param {string} domainSetPath
+   */
+  const processLocalDomainSet = async (domainSetPath) => {
+    for await (
+      const line of readline.createInterface({
+        input: fs.createReadStream(domainSetPath),
+        crlfDelay: Infinity
+      })
+    ) {
+      if (line[0] === '.') {
+        addApexDomain(line.slice(1));
+      } else if (isDomainLoose(line)) {
+        addApexDomain(line);
+      } else if (!line.startsWith('#') && line.trim() !== '') {
+        console.warn('[drop line from domainset]', line);
+      }
     }
   }
 
-  for await (
-    const line of readline.createInterface({
-      input: fs.createReadStream(path.resolve(__dirname, '../List/domainset/cdn.conf')),
-      crlfDelay: Infinity
-    })
-  ) {
-    if (line[0] === '.') {
-      addApexDomain(line.slice(1));
-    } else if (isDomainLoose(line)) {
-      addApexDomain(line);
+  /**
+   * @param {string} ruleSetPath
+   */
+  const processLocalRuleSet = async (ruleSetPath) => {
+    for await (
+      const line of readline.createInterface({
+        input: fs.createReadStream(ruleSetPath),
+        crlfDelay: Infinity
+      })
+    ) {
+      if (line.startsWith('DOMAIN-SUFFIX,')) {
+        addApexDomain(line.replace('DOMAIN-SUFFIX,', ''))
+      } else if (line.startsWith('DOMAIN,')) {
+        addApexDomain(line.replace('DOMAIN,', ''));
+      } else if (!line.startsWith('#') && line.trim() !== '') {
+        console.warn('[drop line from ruleset]', line);
+      }
     }
   }
 
-  for await (
-    const line of readline.createInterface({
-      input: fs.createReadStream(path.resolve(__dirname, '../List/domainset/download.conf')),
-      crlfDelay: Infinity
-    })
-  ) {
-    if (line[0] === '.') {
-      addApexDomain(line.slice(1));
-    } else if (isDomainLoose(line)) {
-      addApexDomain(line);
-    }
-  }
+  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/cdn.conf'));
+  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global.conf'));
+  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global_plus.conf'));
+  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/my_proxy.conf'));
+  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/stream.conf'));
+  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/telegram.conf'));
+
+  await processLocalDomainSet(path.resolve(__dirname, '../List/domainset/cdn.conf'));
+  await processLocalDomainSet(path.resolve(__dirname, '../List/domainset/download.conf'));
 
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
