@@ -36,8 +36,8 @@ dependencies:
     specifier: ^6.1.15
     version: 6.1.15
   tldts:
-    specifier: ^6.0.9
-    version: 6.0.9
+    specifier: ^6.0.11
+    version: 6.0.11
   undici:
     specifier: 5.22.1
     version: 5.22.1
@@ -62,8 +62,8 @@ devDependencies:
     specifier: ^10.2.0
     version: 10.2.0
   wireit:
-    specifier: ^0.9.5
-    version: 0.9.5
+    specifier: ^0.10.0
+    version: 0.10.0
 
 packages:
 
@@ -1557,12 +1557,12 @@ packages:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
     dev: true
 
-  /tldts-core@6.0.8:
-    resolution: {integrity: sha512-9DoeDV0eqDmXKkg43LGxLdJZstcdNfdhAElerrChj78Y3fYcidTKtVSLjXC0w6naMWYejPvJtTpnRPWHJJD4yw==}
+  /tldts-core@6.0.11:
+    resolution: {integrity: sha512-+RbG0WSUVGNWtA96rAPwjQq8ElqbYwuFPwbe2jxQ9fvoC/3aTwy5zUL0JjE2VPblvORSVykS8suREEjwKy2bEw==}
     dev: false
 
-  /tldts-core@6.0.9:
-    resolution: {integrity: sha512-GYMB8Oh/ivuXHE0NPrcgWyRbmuSYVqt8ouvMhlboQHcR7eys4cTl/uBNPwx+yAAQVpkBo5vkWRR4/pmCcxGRmw==}
+  /tldts-core@6.0.8:
+    resolution: {integrity: sha512-9DoeDV0eqDmXKkg43LGxLdJZstcdNfdhAElerrChj78Y3fYcidTKtVSLjXC0w6naMWYejPvJtTpnRPWHJJD4yw==}
     dev: false
 
   /tldts-experimental@6.0.8:
@@ -1571,11 +1571,11 @@ packages:
       tldts-core: 6.0.8
     dev: false
 
-  /tldts@6.0.9:
-    resolution: {integrity: sha512-l6Y0PDPqMibs4XRiY5CqkhWu1kc8eJS5NdfBpFfKbV5jVmKsUndrIyNV+UG8umnCZaCoQuRhnKH3BeKrG3LqMQ==}
+  /tldts@6.0.11:
+    resolution: {integrity: sha512-wuFhR06KoAoZ8y83VGXEJcIr53hc78FPtpBr/meAU8ZW9DRGEmc1b8InD3o65sE9McXHWnyn8hVI6byHWtguUA==}
     hasBin: true
     dependencies:
-      tldts-core: 6.0.9
+      tldts-core: 6.0.11
     dev: false
 
   /to-regex-range@5.0.1:
@@ -1642,8 +1642,8 @@ packages:
       isexe: 2.0.0
     dev: true
 
-  /wireit@0.9.5:
-    resolution: {integrity: sha512-dKKNAwLxQjbPPMrltPxMUFKvLy2z6hlVjvR/qitvPm8GEQyb/1QYBG7ObvOQLsi95uAXpkWLJXBYkCKeVcMVgA==}
+  /wireit@0.10.0:
+    resolution: {integrity: sha512-4TX6V9D/2iXUBzdqQaUG+cRePle0mDx1Q7x4Ka2cA8lgp1+ZBhrOTiLsXYRl2roQEldEFgQ2Ff1W8YgyNWAa6w==}
     engines: {node: '>=14.14.0'}
     hasBin: true
     dependencies:
