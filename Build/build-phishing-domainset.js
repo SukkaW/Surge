@@ -110,7 +110,7 @@ const BLACK_TLD = Array.from(new Set([
     if (
       count >= 5
     ) {
-      results.push('.' + domain);
+      results.push(`.${domain}`);
     }
   });
 
@@ -132,5 +132,5 @@ const BLACK_TLD = Array.from(new Set([
       results
     ),
     path.resolve(__dirname, '../List/domainset/reject_phishing.conf')
-  )
+  );
 })();

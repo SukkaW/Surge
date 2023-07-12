@@ -13,7 +13,7 @@ async function compareAndWriteFile(linesA, filePath) {
       filePath,
       linesA.join('\n'),
       { encoding: 'utf-8' }
-    )
+    );
   } else {
     console.log(`Same Content, bail out writing: ${filePath}`);
   }
@@ -23,7 +23,7 @@ async function compareAndWriteFile(linesA, filePath) {
  * @param {string[]} linesA
  * @param {string[]} linesB
  */
-function stringArrayCompare (linesA, linesB) {
+function stringArrayCompare(linesA, linesB) {
   if (linesA.length !== linesB.length) return false;
 
   for (let i = 0; i < linesA.length; i++) {

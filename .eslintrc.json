@@ -1,0 +1,11 @@
+{
+  "root": true,
+  "extends": ["sukka/node"],
+  "rules": {
+    "no-console": "off"
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  }
+}

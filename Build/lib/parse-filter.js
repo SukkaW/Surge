@@ -15,7 +15,7 @@ const warnOnce = (url, isWhite, ...message) => {
   }
   warnOnceUrl.add(key);
   console.warn(url, isWhite ? '(white)' : '(black)', ...message);
-}
+};
 
 /**
  * @param {string | URL} domainListsUrl
@@ -99,6 +99,9 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   return domainSets;
 }
 
+const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#&%~=]/;
+const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
+
 /**
  * @param {string | URL} filterRulesUrl
  * @param {readonly (string | URL)[] | undefined} [fallbackUrls]
@@ -130,7 +133,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
       foundDebugDomain = true;
     }
     whitelistDomainSets.add(domainToBeAddedToWhite);
-  }
+  };
 
   let filterRules;
   try {
@@ -143,7 +146,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
       )
     ).split('\n').map(line => line.trim());
   } catch (e) {
-    console.log('Download Rule for [' + filterRulesUrl + '] failed');
+    console.log(`Download Rule for [${filterRulesUrl}] failed`);
     throw e;
   }
 
@@ -154,31 +157,34 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
 
     if (
       line === ''
+      || line.startsWith('/')
+      || R_KNOWN_NOT_NETWORK_FILTER_PATTERN.test(line)
       // doesn't include
       || !line.includes('.') // rule with out dot can not be a domain
       // includes
-      || line.includes('#')
+      // || line.includes('#')
       || line.includes('!')
       || line.includes('?')
       || line.includes('*')
-      || line.includes('=')
+      // || line.includes('=')
       || line.includes('[')
       || line.includes('(')
       || line.includes(']')
       || line.includes(')')
       || line.includes(',')
-      || line.includes('~')
-      || line.includes('&')
-      || line.includes('%')
+      // || line.includes('~')
+      // || line.includes('&')
+      // || line.includes('%')
       || ((line.includes('/') || line.includes(':')) && !line.includes('://'))
       // ends with
       || line.endsWith('.')
       || line.endsWith('-')
       || line.endsWith('_')
       // special modifier
-      || line.includes('$popup')
-      || line.includes('$removeparam')
-      || line.includes('$popunder')
+      || R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2.test(line)
+      // || line.includes('$popup')
+      // || line.includes('$removeparam')
+      // || line.includes('$popunder')
     ) {
       continue;
     }
@@ -393,14 +399,13 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
 }
 
 /**
- * @param {string[]} data 
+ * @param {string[]} data
  */
 function preprocessFullDomainSetBeforeUsedAsWorkerData(data) {
   return data
     .filter(domain => domain[0] === '.')
     .sort((a, b) => a.length - b.length);
 }
-
 
 module.exports.processDomainLists = processDomainLists;
 module.exports.processHosts = processHosts;

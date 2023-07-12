@@ -32,6 +32,24 @@ class Trie {
   }
 
   /**
+   * @param {string} suffix
+   */
+  contains(suffix) {
+    let node = this.root;
+    let token;
+
+    for (let i = suffix.length - 1; i >= 0; i--) {
+      token = suffix[i];
+
+      node = node[token];
+
+      if (node == null) return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Method used to retrieve every item in the trie with the given prefix.
    *
    * @param  {string} suffix - Prefix to query.
@@ -42,8 +60,6 @@ class Trie {
     let node = this.root;
     const matches = [];
     let token;
-    let i;
-    let l;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];

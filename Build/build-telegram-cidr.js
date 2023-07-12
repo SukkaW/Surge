@@ -34,7 +34,7 @@ const { withBanner } = require('./lib/with-banner');
       date,
       res.map(ip => {
         const [subnet] = ip.split('/');
-        console.log('  - ' + ip + ': ' + subnet);
+        console.log(`  - ${ip}: ${subnet}`);
         if (isIPv4(subnet)) {
           return `IP-CIDR,${ip},no-resolve`;
         }
@@ -44,7 +44,7 @@ const { withBanner } = require('./lib/with-banner');
         return '';
       })
     )
-  )
+  );
 
   console.timeEnd('Total Time - build-telegram-cidr');
 })();

@@ -41,7 +41,7 @@ const fileExists = (path) => {
     file: tempFile,
     cwd: extractedPath,
     filter: (p) => {
-      return p.split('/')[1] === 'List'
+      return p.split('/')[1] === 'List';
     }
   });
 
@@ -51,7 +51,7 @@ const fileExists = (path) => {
     {
       overwrite: true
     }
-  )))
+  )));
 
   await fs.promises.unlink(tempFile).catch(() => { });
   await fs.promises.unlink(extractedPath).catch(() => { });

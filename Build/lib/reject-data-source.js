@@ -6,7 +6,7 @@ const HOSTS = [
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', false],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false]
-]
+];
 
 const ADGUARD_FILTERS = /** @type {const} */([
   // Easy List
@@ -142,7 +142,7 @@ const ADGUARD_FILTERS = /** @type {const} */([
   [
     'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
     [
-      'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
+      'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt'
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
       // 'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt'
     ],
@@ -152,7 +152,7 @@ const ADGUARD_FILTERS = /** @type {const} */([
   [
     'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
     [
-      'https://phishing-filter.pages.dev/phishing-filter-agh.txt',
+      'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
       // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
     ],
@@ -162,7 +162,7 @@ const ADGUARD_FILTERS = /** @type {const} */([
   [
     'https://curbengh.github.io/pup-filter/pup-filter-agh.txt',
     [
-      'https://pup-filter.pages.dev/pup-filter-agh.txt',
+      'https://pup-filter.pages.dev/pup-filter-agh.txt'
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
       // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt'
     ],
@@ -241,7 +241,7 @@ const PREDEFINED_ENFORCED_WHITELIST = [
   'repl.co',
   'w3s.link',
   'translate.goog'
-]
+];
 
 module.exports.HOSTS = HOSTS;
 module.exports.ADGUARD_FILTERS = ADGUARD_FILTERS;

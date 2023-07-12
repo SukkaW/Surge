@@ -15,7 +15,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
   console.log('Before Merge:', cidr.length);
   const filteredCidr = mergeCidrs(cidr.filter(line => {
     if (line) {
-      return !line.startsWith('#')
+      return !line.startsWith('#');
     }
 
     return false;
@@ -30,13 +30,13 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
         'Homepage: https://ruleset.skk.moe',
         'GitHub: https://github.com/SukkaW/Surge',
         '',
-        'Data from https://misaka.io (misakaio @ GitHub)',
+        'Data from https://misaka.io (misakaio @ GitHub)'
       ],
       new Date(),
       filteredCidr.map(i => `IP-CIDR,${i}`)
     ),
     pathResolve(__dirname, '../List/ip/china_ip.conf')
-  )
+  );
 
   console.timeEnd('Total Time - build-chnroutes-cidr');
 })();

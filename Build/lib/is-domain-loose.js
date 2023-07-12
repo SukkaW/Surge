@@ -23,7 +23,7 @@ module.exports.normalizeDomain = (domain) => {
 
   if (isIcann || isPrivate) {
     return hostname;
-  };
+  }
 
   return null;
-}
+};

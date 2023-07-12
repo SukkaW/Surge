@@ -72,10 +72,10 @@ const validateRuleset = async (filePath) => {
       }
     }
   }
-}
+};
 
 (async () => {
-  const [domainsetFiles, rulesetFiles] = await Promise.all([
+  const [domainsetFiles, _rulesetFiles] = await Promise.all([
     listDir(path.resolve(__dirname, '../List/domainset')),
     listDir(path.resolve(__dirname, '../List/non_ip'))
   ]);
@@ -84,4 +84,3 @@ const validateRuleset = async (filePath) => {
     // rulesetFiles.map(file => validateRuleset(file))
   );
 })();
-

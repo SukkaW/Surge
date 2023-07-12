@@ -36,7 +36,7 @@ const tldts = require('tldts');
         console.warn('[drop line from domainset]', line);
       }
     }
-  }
+  };
 
   /**
    * @param {string} ruleSetPath
@@ -49,14 +49,14 @@ const tldts = require('tldts');
       })
     ) {
       if (line.startsWith('DOMAIN-SUFFIX,')) {
-        addApexDomain(line.replace('DOMAIN-SUFFIX,', ''))
+        addApexDomain(line.replace('DOMAIN-SUFFIX,', ''));
       } else if (line.startsWith('DOMAIN,')) {
         addApexDomain(line.replace('DOMAIN,', ''));
       } else if (!line.startsWith('#') && line.trim() !== '') {
         console.warn('[drop line from ruleset]', line);
       }
     }
-  }
+  };
 
   await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/cdn.conf'));
   await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global.conf'));
@@ -71,6 +71,6 @@ const tldts = require('tldts');
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
     path.resolve(__dirname, '../List/internal/cdn.txt'),
-    Array.from(set).map(i => `SUFFIX,${i}`).join('\n') + '\n'
+    `${Array.from(set).map(i => `SUFFIX,${i}`).join('\n')}\n`
   );
 })();

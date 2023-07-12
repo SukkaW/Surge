@@ -116,7 +116,7 @@ const PRESET_MITM_HOSTNAMES = [
       && !(i !== '*.meituan.net' && i.endsWith('.meituan.net'))
       && !i.startsWith('.')
       && !i.endsWith('.')
-      && !i.endsWith('*')
+      && !i.endsWith('*');
   });
 
   const mitmDomainsRegExpArray = mitmDomains.map(i => {
@@ -124,7 +124,7 @@ const PRESET_MITM_HOSTNAMES = [
       escapeRegExp(i)
         .replaceAll('{www or not}', '(www.)?')
         .replaceAll('\\*', '(.*)')
-    )
+    );
   });
 
   const parsedDomainsData = [];
@@ -141,7 +141,7 @@ const PRESET_MITM_HOSTNAMES = [
   });
 
   console.log('Mitm Hostnames:');
-  console.log('hostname = %APPEND% ' + mitmDomains.join(', '));
+  console.log(`hostname = %APPEND% ${mitmDomains.join(', ')}`);
   console.log('--------------------');
   console.log('Parsed Sucessed:');
   console.log(table.table(parsedDomainsData, {
@@ -164,11 +164,11 @@ function parseDomain(input) {
     return {
       success: true,
       hostname: url.hostname
-    }
+    };
   } catch {
     return {
       success: false
-    }
+    };
   }
 }
 

@@ -17,4 +17,4 @@ module.exports.fetchRemoteTextAndCreateReadlineInterface = async (url, opt) => {
     input: Readable.fromWeb(resp.body),
     crlfDelay: Infinity
   });
-}
+};

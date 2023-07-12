@@ -69,5 +69,5 @@ function template(urlList) {
     </main>
   </body>
   </html>
-  `
+  `;
 }

@@ -20,11 +20,11 @@ const { minifyRules } = require('./lib/minify-rules');
         line.endsWith('.amazonaws.com')
         || line.endsWith('.scw.cloud')
       )
-      && !line.includes('cn-')
+      && !line.includes('cn-');
     }
 
     return false;
-  })
+  });
 
   const filePath = path.resolve(__dirname, '../Source/non_ip/cdn.conf');
   const resultPath = path.resolve(__dirname, '../List/non_ip/cdn.conf');
@@ -37,18 +37,18 @@ const { minifyRules } = require('./lib/minify-rules');
   await compareAndWriteFile(
     withBannerArray(
       'Sukka\'s Surge Rules - CDN Domains',
-        [
-          'License: AGPL 3.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'This file contains object storage and static assets CDN domains.'
-        ],
-        new Date(),
-        minifyRules(content.split('\n'))
+      [
+        'License: AGPL 3.0',
+        'Homepage: https://ruleset.skk.moe',
+        'GitHub: https://github.com/SukkaW/Surge',
+        '',
+        'This file contains object storage and static assets CDN domains.'
+      ],
+      new Date(),
+      minifyRules(content.split('\n'))
     ),
     resultPath
-  )
+  );
 
   console.timeEnd('Total Time - build-cdn-conf');
 })();

@@ -34,7 +34,7 @@ const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remot
           'This file contains Apple\'s domains using their China mainland CDN servers.',
           '',
           'Data from:',
-          ' - https://github.com/felixonmars/dnsmasq-china-list',
+          ' - https://github.com/felixonmars/dnsmasq-china-list'
         ],
         new Date(),
         res.map(domain => `DOMAIN-SUFFIX,${domain}`)
@@ -52,14 +52,14 @@ const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remot
           'This file contains Apple\'s domains using their China mainland CDN servers.',
           '',
           'Data from:',
-          ' - https://github.com/felixonmars/dnsmasq-china-list',
+          ' - https://github.com/felixonmars/dnsmasq-china-list'
         ],
         new Date(),
         res.map(i => `.${i}`)
       ),
       path.resolve(__dirname, '../List/domainset/apple_cdn.conf')
     )
-  ])
+  ]);
 
   console.timeEnd('Total Time - build-apple-cdn-conf');
 })();
