@@ -10,7 +10,8 @@ const WHITELIST_DOMAIN = new Set([
   'nftstorage.link',
   'square.site',
   'business.site',
-  'page.link' // Firebase URL Shortener
+  'page.link', // Firebase URL Shortener
+  'fleek.cool'
 ]);
 const BLACK_TLD = Array.from(new Set([
   'xyz',
@@ -41,7 +42,10 @@ const BLACK_TLD = Array.from(new Set([
   'cf',
   'gq',
   'ga',
-  'ml'
+  'ml',
+  'cc',
+  'cn',
+  'codes'
 ]));
 
 (async () => {
