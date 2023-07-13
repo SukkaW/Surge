@@ -5,6 +5,7 @@ node_modules
 public
 
 List/domainset/reject.conf
+List/domainset/cdn.conf
 List/domainset/reject_phishing.conf
 List/domainset/reject_sukka.conf
 List/domainset/apple_cdn.conf

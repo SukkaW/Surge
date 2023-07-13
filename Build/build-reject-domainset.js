@@ -11,6 +11,7 @@ const Trie = require('./lib/trie');
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { shouldIgnoreLine } = require('./lib/should-ignore-line');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -109,19 +110,10 @@ const domainSuffixSet = new Set();
   });
 
   for await (const line of rl1) {
-    if (
-      line.startsWith('#')
-      || line.startsWith(' ')
-      || line.startsWith('\r')
-      || line.startsWith('\n')
-    ) {
-      continue;
+    const l = shouldIgnoreLine(line);
+    if (l) {
+      domainSets.add(l);
     }
-
-    const trimmed = line.trim();
-    if (trimmed === '') continue;
-
-    domainSets.add(trimmed);
   }
 
   previousSize = domainSets.size - previousSize;
@@ -146,19 +138,10 @@ const domainSuffixSet = new Set();
     crlfDelay: Infinity
   });
   for await (const line of rl3) {
-    if (
-      line.startsWith('#')
-      || line.startsWith(' ')
-      || line.startsWith('\r')
-      || line.startsWith('\n')
-    ) {
-      continue;
+    const l = shouldIgnoreLine(line);
+    if (l) {
+      domainSets.add(l);
     }
-
-    const trimmed = line.trim();
-    if (trimmed === '') continue;
-
-    domainSuffixSet.add(trimmed);
   }
 
   console.log(`Import ${domainKeywordsSet.size} black keywords and ${domainSuffixSet.size} black suffixes!`);

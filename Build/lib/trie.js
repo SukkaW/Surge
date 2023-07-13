@@ -81,6 +81,7 @@ class Trie {
       $suffix = suffixStack.pop();
       node = nodeStack.pop();
 
+      // eslint-disable-next-line guard-for-in -- plain object
       for (k in node) {
         if (k === SENTINEL) {
           if (includeEqualWithSuffix) {
@@ -88,7 +89,6 @@ class Trie {
           } else if ($suffix !== suffix) {
             matches.push($suffix);
           }
-
 
           continue;
         }
@@ -161,8 +161,9 @@ class Trie {
       node = node[token];
 
       // Prefix does not exist
-      if (typeof node === 'undefined')
+      if (typeof node === 'undefined') {
         return false;
+      }
 
       // Keeping track of a potential branch to prune
       if (toPrune !== null) {
@@ -170,12 +171,9 @@ class Trie {
           toPrune = null;
           tokenToPrune = null;
         }
-      }
-      else {
-        if (Object.keys(node).length < 2) {
-          toPrune = parent;
-          tokenToPrune = token;
-        }
+      } else if (Object.keys(node).length < 2) {
+        toPrune = parent;
+        tokenToPrune = token;
       }
     }
 
@@ -206,8 +204,9 @@ class Trie {
       token = suffix[i];
       node = node[token];
 
-      if (typeof node === 'undefined')
+      if (typeof node === 'undefined') {
         return false;
+      }
     }
 
     return SENTINEL in node;
@@ -217,7 +216,7 @@ class Trie {
    * @return {string[]}
    */
   dump() {
-    let node = this.root;
+    const node = this.root;
     const nodeStack = [];
     const prefixStack = [];
     // Resolving initial prefix
@@ -238,6 +237,7 @@ class Trie {
       currentNode = nodeStack.pop();
       currentPrefix = prefixStack.pop();
 
+      // eslint-disable-next-line guard-for-in -- plain object
       for (k in currentNode) {
         if (k === SENTINEL) {
           hasValue = true;
