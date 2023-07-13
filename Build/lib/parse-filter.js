@@ -133,11 +133,19 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
 
   let filterRules;
   try {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     /** @type string[] */
     filterRules = (
       await Promise.any(
         [filterRulesUrl, ...(fallbackUrls || [])].map(
-          async url => (await fetchWithRetry(url)).text()
+          url => fetchWithRetry(url, { signal })
+            .then(r => r.text())
+            .then(text => {
+              controller.abort();
+              return text;
+            })
         )
       )
     ).split('\n').map(line => line.trim());
