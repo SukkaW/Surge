@@ -5,7 +5,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 const { minifyRules } = require('./lib/minify-rules');
 const { domainDeduper } = require('./lib/domain-deduper');
-const { shouldIgnoreLine } = require('./lib/should-ignore-line');
+const { processLine } = require('./lib/process-line');
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
 
 const readline = require('readline');
@@ -68,7 +68,7 @@ const readline = require('readline');
     input: fs.createReadStream(path.resolve(__dirname, '../Source/domainset/cdn.conf'), 'utf-8'),
     crlfDelay: Infinity
   })) {
-    const l = shouldIgnoreLine(line);
+    const l = processLine(line);
     if (l) {
       cdnDomains.add(l);
     }

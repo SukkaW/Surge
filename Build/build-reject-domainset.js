@@ -11,7 +11,7 @@ const Trie = require('./lib/trie');
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { shouldIgnoreLine } = require('./lib/should-ignore-line');
+const { processLine } = require('./lib/process-line');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -110,7 +110,7 @@ const domainSuffixSet = new Set();
   });
 
   for await (const line of rl1) {
-    const l = shouldIgnoreLine(line);
+    const l = processLine(line);
     if (l) {
       domainSets.add(l);
     }
@@ -138,7 +138,7 @@ const domainSuffixSet = new Set();
     crlfDelay: Infinity
   });
   for await (const line of rl3) {
-    const l = shouldIgnoreLine(line);
+    const l = processLine(line);
     if (l) {
       domainSets.add(l);
     }

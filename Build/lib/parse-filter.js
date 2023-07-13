@@ -3,6 +3,7 @@ const { fetchWithRetry } = require('./fetch-retry');
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
 const { NetworkFilter } = require('@cliqz/adblocker');
 const { normalizeDomain } = require('./is-domain-loose');
+const { processLine } = require('./process-line');
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
 let foundDebugDomain = false;
@@ -31,18 +32,14 @@ async function processDomainLists(domainListsUrl) {
   const rl = await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl);
 
   for await (const line of rl) {
-    if (
-      line.startsWith('#')
-      || line.startsWith('!')
-      || line.startsWith(' ')
-      || line === ''
-      || line.startsWith('\r')
-      || line.startsWith('\n')
-    ) {
+    if (line.startsWith('!')) {
       continue;
     }
 
-    const domainToAdd = line.trim();
+    const domainToAdd = processLine(line);
+    if (!domainToAdd) {
+      continue;
+    }
 
     if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
       warnOnce(domainListsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
@@ -69,13 +66,12 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   const domainSets = new Set();
 
   const rl = await fetchRemoteTextAndCreateReadlineInterface(hostsUrl);
-  for await (const line of rl) {
-    if (line.includes('#')) {
+  for await (const _line of rl) {
+    const line = processLine(_line);
+    if (!line) {
       continue;
     }
-    if (line.startsWith(' ') || line.startsWith('\r') || line.startsWith('\n') || line.trim() === '') {
-      continue;
-    }
+
     const [, ...domains] = line.split(' ');
     const _domain = domains.join(' ').trim();
 

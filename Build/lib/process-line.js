@@ -1,10 +1,13 @@
 /* eslint-disable camelcase -- cache index access */
 
 /**
+ * If line is commented out or empty, return null.
+ * Otherwise, return trimmed line.
+ *
  * @param {string} line
  */
-module.exports.shouldIgnoreLine = (line) => {
-  if (line === '') {
+module.exports.processLine = (line) => {
+  if (!line) {
     return null;
   }
 

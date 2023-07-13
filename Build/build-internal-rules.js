@@ -5,6 +5,7 @@ const path = require('path');
 const readline = require('readline');
 const { isDomainLoose } = require('./lib/is-domain-loose');
 const tldts = require('tldts');
+const { processLine } = require('./lib/process-line');
 
 (async () => {
   const set = new Set();
@@ -32,7 +33,7 @@ const tldts = require('tldts');
         addApexDomain(line.slice(1));
       } else if (isDomainLoose(line)) {
         addApexDomain(line);
-      } else if (!line.startsWith('#') && line.trim() !== '') {
+      } else if (processLine(line)) {
         console.warn('[drop line from domainset]', line);
       }
     }
@@ -52,7 +53,7 @@ const tldts = require('tldts');
         addApexDomain(line.replace('DOMAIN-SUFFIX,', ''));
       } else if (line.startsWith('DOMAIN,')) {
         addApexDomain(line.replace('DOMAIN,', ''));
-      } else if (!line.startsWith('#') && line.trim() !== '') {
+      } else if (processLine(line)) {
         console.warn('[drop line from ruleset]', line);
       }
     }

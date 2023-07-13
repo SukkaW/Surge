@@ -1,25 +1,24 @@
-const { fetchWithRetry } = require('./lib/fetch-retry');
+const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
 const { withBannerArray } = require('./lib/with-banner');
 const { resolve: pathResolve } = require('path');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { processLine } = require('./lib/process-line');
 
 (async () => {
   console.time('Total Time - build-chnroutes-cidr');
+  const { merge: mergeCidrs } = await import('cidr-tools');
 
-  const [rawCidr, { merge: mergeCidrs }] = await Promise.all([
-    (await fetchWithRetry('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')).text(),
-    import('cidr-tools')
-  ]);
-  const cidr = rawCidr.split('\n');
-
-  console.log('Before Merge:', cidr.length);
-  const filteredCidr = mergeCidrs(cidr.filter(line => {
-    if (line) {
-      return !line.startsWith('#');
+  /** @type {Set<string>} */
+  const cidr = new Set();
+  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')) {
+    const l = processLine(line);
+    if (l) {
+      cidr.add(l);
     }
+  }
 
-    return false;
-  }));
+  console.log('Before Merge:', cidr.size);
+  const filteredCidr = mergeCidrs(Array.from(cidr));
   console.log('After Merge:', filteredCidr.length);
 
   await compareAndWriteFile(
