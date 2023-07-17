@@ -22,9 +22,9 @@ dependencies:
   ci-info:
     specifier: ^3.8.0
     version: 3.8.0
-  cidr-tools:
-    specifier: ^6.4.1
-    version: 6.4.1
+  cidr-tools-wasm:
+    specifier: ^0.0.7
+    version: 0.0.7
   fs-extra:
     specifier: ^11.1.1
     version: 11.1.1
@@ -444,21 +444,8 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /cidr-regex@4.0.3:
-    resolution: {integrity: sha512-HOwDIy/rhKeMf6uOzxtv7FAbrz8zPjmVKfSpM+U7/bNBXC5rtOyr758jxcptiSx6ZZn5LOhPJT5WWxPAGDV8dw==}
-    engines: {node: '>=14'}
-    dependencies:
-      ip-regex: 5.0.0
-    dev: false
-
-  /cidr-tools@6.4.1:
-    resolution: {integrity: sha512-s8JNDwWgc2e0roEF6KDkQfHkZgEnehoap5hK7swPlEQMb9f8msrWqpgVCVKiDm3ARxpesOru9Tu49N8UpJjmDA==}
-    engines: {node: '>=16'}
-    dependencies:
-      cidr-regex: 4.0.3
-      ip-bigint: 7.2.1
-      ip-regex: 5.0.0
-      string-natural-compare: 3.0.1
+  /cidr-tools-wasm@0.0.7:
+    resolution: {integrity: sha512-3pxBac4rB6Aoj/CkS0DfQlnNskH1Dq7YNtcxkPjiroLFVJ3TQT680VZ5HRrmigVlwK8ntS3ZNQMQDsI3q7JQ4A==}
     dev: false
 
   /cliui@7.0.4:
@@ -989,16 +976,6 @@ packages:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
     dev: true
 
-  /ip-bigint@7.2.1:
-    resolution: {integrity: sha512-AftDIrlM5ZQM+qQ31IQ5MsL3tJWleeN3r0VqhmkB9oLvwcaDLeLNPtX4d9hahzExTFtz69eRv6LsGAoH20/8/g==}
-    engines: {node: '>=16'}
-    dev: false
-
-  /ip-regex@5.0.0:
-    resolution: {integrity: sha512-fOCG6lhoKKakwv+C6KdsOnGvgXnmgfmp0myi3bcNwj3qfwPAxRKWEuFhvEFF7ceYIz6+1jRZ+yguLFAmUNPEfw==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dev: false
-
   /is-binary-path@2.1.0:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
@@ -1493,10 +1470,6 @@ packages:
   /streamsearch@1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
-    dev: false
-
-  /string-natural-compare@3.0.1:
-    resolution: {integrity: sha512-n3sPwynL1nwKi3WJ6AIsClwBMa0zTi54fn2oLU6ndfTSIO05xaznjSf15PcBZU6FNWbmN5Q6cxT4V5hGvB4taw==}
     dev: false
 
   /string-width@4.2.3:

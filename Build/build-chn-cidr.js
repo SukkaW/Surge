@@ -1,3 +1,4 @@
+// @ts-check
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
 const { withBannerArray } = require('./lib/with-banner');
 const { resolve: pathResolve } = require('path');
@@ -6,7 +7,8 @@ const { processLine } = require('./lib/process-line');
 
 (async () => {
   console.time('Total Time - build-chnroutes-cidr');
-  const { merge: mergeCidrs } = await import('cidr-tools');
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax -- fuck
+  const { merge: mergeCidrs } = await import('cidr-tools-wasm');
 
   /** @type {Set<string>} */
   const cidr = new Set();
@@ -18,7 +20,7 @@ const { processLine } = require('./lib/process-line');
   }
 
   console.log('Before Merge:', cidr.size);
-  const filteredCidr = mergeCidrs(Array.from(cidr));
+  const filteredCidr = mergeCidrs(Array.from(cidr)).sort();
   console.log('After Merge:', filteredCidr.length);
 
   await compareAndWriteFile(
