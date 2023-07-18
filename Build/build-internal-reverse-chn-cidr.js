@@ -42,7 +42,7 @@ const RESERVED_IPV4_CIDR = [
 
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
-    path.resolve(__dirname, '../List/internal/cdn.txt'),
+    path.resolve(__dirname, '../List/internal/reversed-chn-cidr.txt'),
     `${reversedCidr.join('\n')}\n`
   );
 })();
