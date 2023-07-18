@@ -23,8 +23,8 @@ dependencies:
     specifier: ^3.8.0
     version: 3.8.0
   cidr-tools-wasm:
-    specifier: ^0.0.7
-    version: 0.0.7
+    specifier: ^0.0.10
+    version: 0.0.10
   fs-extra:
     specifier: ^11.1.1
     version: 11.1.1
@@ -444,8 +444,8 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /cidr-tools-wasm@0.0.7:
-    resolution: {integrity: sha512-3pxBac4rB6Aoj/CkS0DfQlnNskH1Dq7YNtcxkPjiroLFVJ3TQT680VZ5HRrmigVlwK8ntS3ZNQMQDsI3q7JQ4A==}
+  /cidr-tools-wasm@0.0.10:
+    resolution: {integrity: sha512-P1l8AWtMe7WA01RLao9fTYAtuIwAZJaunuXJ7iFlJ3k/L1oEBsWi82ZzBW3mYwhMiFWZ8CTqv0aWRKKFxUsMJQ==}
     dev: false
 
   /cliui@7.0.4:

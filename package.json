@@ -14,7 +14,8 @@
     "build:phishing-domainset": "wireit",
     "build:telegram-cidr": "wireit",
     "build:chn-cidr": "wireit",
-    "build:internal-rules": "wireit",
+    "build:internal-cdn-rules": "wireit",
+    "build:internal-reverse-chn-cidr": "wireit",
     "validate:domainset": "wireit"
   },
   "wireit": {
@@ -64,11 +65,14 @@
         "download-previous-build"
       ]
     },
-    "build:internal-rules": {
-      "command": "node ./Build/build-internal-rules.js",
+    "build:internal-cdn-rules": {
+      "command": "node ./Build/build-internal-cdn-rules.js",
       "dependencies": [
         "build:cdn-conf"
       ]
+    },
+    "build:internal-reverse-chn-cidr": {
+      "command": "node ./Build/build-internal-reverse-chn-cidr.js"
     },
     "build:public": {
       "command": "node ./Build/build-public.js",
@@ -76,7 +80,8 @@
         "build:anti-bogus-domain",
         "build:apple-cdn",
         "build:cdn-conf",
-        "build:internal-rules",
+        "build:internal-cdn-rules",
+        "build:internal-reverse-chn-cidr",
         "build:reject-domainset",
         "build:telegram-cidr"
       ]
@@ -98,7 +103,8 @@
         "build:reject-domainset",
         "build:telegram-cidr",
         "build:chn-cidr",
-        "build:internal-rules",
+        "build:internal-cdn-rules",
+        "build:internal-reverse-chn-cidr",
         "build:public",
         "validate:domainset"
       ]
@@ -115,7 +121,7 @@
     "@sukka/listdir": "^0.2.0",
     "@vercel/fetch-retry": "^5.1.3",
     "ci-info": "^3.8.0",
-    "cidr-tools-wasm": "^0.0.7",
+    "cidr-tools-wasm": "^0.0.10",
     "fs-extra": "^11.1.1",
     "picocolors": "^1.0.0",
     "piscina": "^4.0.0",
