@@ -37,7 +37,8 @@ const RESERVED_IPV4_CIDR = [
 
   const reversedCidr = exclude(
     ['0.0.0.0/0'],
-    RESERVED_IPV4_CIDR.concat(Array.from(cidr))
+    RESERVED_IPV4_CIDR.concat(Array.from(cidr)),
+    true
   );
 
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
