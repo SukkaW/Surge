@@ -4,7 +4,7 @@ const fse = require('fs-extra');
 const readline = require('readline');
 
 const { resolve: pathResolve } = require('path');
-const { processHosts, processFilterRules, preprocessFullDomainSetBeforeUsedAsWorkerData } = require('./lib/parse-filter');
+const { processHosts, processFilterRules } = require('./lib/parse-filter');
 const { getDomain } = require('tldts');
 const Trie = require('./lib/trie');
 
@@ -12,6 +12,8 @@ const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLI
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { processLine } = require('./lib/process-line');
+const { domainDeduper } = require('./lib/domain-deduper');
+const createKeywordFilter = require('./lib/aho-corasick');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -151,6 +153,8 @@ const domainSuffixSet = new Set();
   console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
   console.time('* Dedupe from black keywords/suffixes');
 
+  const kwfilter = createKeywordFilter(Array.from(domainKeywordsSet));
+
   const trie1 = Trie.from(Array.from(domainSets));
   domainSuffixSet.forEach(suffix => {
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
@@ -173,7 +177,7 @@ const domainSuffixSet = new Set();
     }
 
     // Remove keyword
-    if (isMatchKeyword(domain)) {
+    if (kwfilter.search(domain)) {
       domainSets.delete(domain);
     }
   }
@@ -187,28 +191,10 @@ const domainSuffixSet = new Set();
 
   const START_TIME = Date.now();
 
-  const domainSetsArray = Array.from(domainSets);
-  const trie2 = Trie.from(domainSetsArray);
-  const fullsetDomainStartsWithADot = preprocessFullDomainSetBeforeUsedAsWorkerData(domainSetsArray);
-  console.log(fullsetDomainStartsWithADot.length);
-
-  for (let j = 0, len = fullsetDomainStartsWithADot.length; j < len; j++) {
-    const domainStartsWithADotAndFromFullSet = fullsetDomainStartsWithADot[j];
-    const found = trie2.find(domainStartsWithADotAndFromFullSet, false);
-    if (found.length) {
-      found.forEach(f => {
-        domainSets.delete(f);
-      });
-    }
-
-    const a = domainStartsWithADotAndFromFullSet.slice(1);
-    if (trie2.has(a)) {
-      domainSets.delete(a);
-    }
-  }
+  const dudupedDominArray = domainDeduper(Array.from(domainSets));
 
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
-  console.log(`Deduped ${previousSize - domainSets.size} rules!`);
+  console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
   console.time('* Write reject.conf');
 
@@ -221,7 +207,7 @@ const domainSuffixSet = new Set();
     }
     return 0;
   };
-  const sortedDomainSets = Array.from(domainSets)
+  const sortedDomainSets = dudupedDominArray
     .map((v) => {
       return { v, domain: getDomain(v.charCodeAt(0) === 46 ? v.slice(1) : v) || v };
     })
@@ -255,16 +241,3 @@ const domainSuffixSet = new Set();
 
   console.timeEnd('Total Time - build-reject-domain-set');
 })();
-
-/**
- * @param {string} domain
- */
-function isMatchKeyword(domain) {
-  for (const keyword of domainKeywordsSet) {
-    if (domain.includes(keyword)) {
-      return true;
-    }
-  }
-
-  return false;
-}

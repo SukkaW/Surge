@@ -240,7 +240,8 @@ const PREDEFINED_ENFORCED_WHITELIST = [
   'ipfs.fleek.cool',
   'repl.co',
   'w3s.link',
-  'translate.goog'
+  'translate.goog',
+  'backblazeb2.com'
 ];
 
 module.exports.HOSTS = HOSTS;
