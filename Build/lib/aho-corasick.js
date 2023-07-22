@@ -83,19 +83,9 @@ const createKeywordFilter = (keys) => {
     }
   };
 
-  /**
-   * @param {string} key
-   */
-  const add = (key) => {
-    const len = key.length;
-    put(key, len);
-    build();
-
-    return true;
-  };
-
-  for (let idx = 0; idx < keys.length; idx++) {
-    add(keys[idx], false);
+  for (let idx = 0, len = keys.length; idx < len; idx++) {
+    const key = keys[idx];
+    put(key, key.length);
   }
 
   build();
@@ -106,10 +96,6 @@ const createKeywordFilter = (keys) => {
    */
   const search = (text) => {
     let node = root;
-    /** @type {string[]} */
-    const fText = [];
-    /** @type {string[]} */
-    const oText = [];
 
     for (let i = 0, textLen = text.length; i < textLen; i++) {
       // const key = text.charAt(i);
@@ -119,9 +105,6 @@ const createKeywordFilter = (keys) => {
         node = node?.fail;
       }
       node = node?.children[key] || root;
-
-      fText.push(key);
-      oText.push(key);
 
       if (node.word) {
         return true;

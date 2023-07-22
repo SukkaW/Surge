@@ -141,8 +141,8 @@ const domainSuffixSet = new Set();
   });
   for await (const line of rl3) {
     const l = processLine(line);
-    if (l) {
-      domainSets.add(l);
+    if (l && l[0] === '.') {
+      domainSuffixSet.add(l.slice(1));
     }
   }
 
