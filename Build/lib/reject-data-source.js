@@ -241,7 +241,13 @@ const PREDEFINED_ENFORCED_WHITELIST = [
   'repl.co',
   'w3s.link',
   'translate.goog',
-  'backblazeb2.com'
+  'backblazeb2.com',
+  'workers.dev',
+  'r2.dev',
+  'glitch.me',
+  'netlify.app',
+  'blogspot.com',
+  'appspot.com'
 ];
 
 module.exports.HOSTS = HOSTS;
