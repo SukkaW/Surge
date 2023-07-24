@@ -21,7 +21,7 @@ const { minifyRules } = require('./lib/minify-rules');
     }
   }
 
-  console.timeEnd('* Download bogus-nxdomain-list')
+  console.timeEnd('* Download bogus-nxdomain-list');
 
   const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
   const resultPath = path.resolve(__dirname, '../List/ip/reject.conf');
@@ -30,12 +30,12 @@ const { minifyRules } = require('./lib/minify-rules');
       '# --- [Anti Bogus Domain Replace Me] ---',
       res.map(ip => {
         if (isIPv4(ip)) {
-          return `IP-CIDR,${ip}/32,no-resolve`
+          return `IP-CIDR,${ip}/32,no-resolve`;
         }
         if (isIPv6(ip)) {
-          return `IP-CIDR6,${ip}/128,no-resolve`
+          return `IP-CIDR6,${ip}/128,no-resolve`;
         }
-        return ''
+        return '';
       }).join('\n')
     );
 
@@ -56,7 +56,7 @@ const { minifyRules } = require('./lib/minify-rules');
       minifyRules(content.split('\n'))
     ),
     resultPath
-  )
+  );
 
   console.timeEnd('Total Time - build-anti-bogus-domain');
 })();

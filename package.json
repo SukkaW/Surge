@@ -126,15 +126,15 @@
     "picocolors": "^1.0.0",
     "table": "^6.8.1",
     "tar": "^6.1.15",
-    "tldts": "^6.0.11",
+    "tldts": "^6.0.12",
     "undici": "5.22.1"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
-    "eslint-config-sukka": "^1.8.6",
+    "eslint-config-sukka": "^3.0.0",
     "eslint-plugin-import": "npm:eslint-plugin-i@2.27.5-4",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-n": "^16.0.1",
     "mocha": "^10.2.0",
     "wireit": "^0.10.0"
   },

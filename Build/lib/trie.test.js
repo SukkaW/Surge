@@ -3,8 +3,6 @@ require('chai').should();
 const Trie = require('./trie');
 const assert = require('assert');
 
-var SENTINEL = Trie.SENTINEL;
-
 describe('Trie', () => {
   it('should be possible to add items to a Trie.', () => {
     const trie = new Trie();
@@ -57,7 +55,7 @@ describe('Trie', () => {
     assert.strictEqual(trie.delete(''), false);
     trie.delete('').should.eq(false);
     trie.delete('hello').should.eq(false);
-    
+
     trie.delete('rat').should.eq(true);
     trie.has('rat').should.eq(false);
     trie.has('rate').should.eq(true);
@@ -182,4 +180,4 @@ describe('surge domainset dedupe', () => {
     const trie = Trie.from(['skk.moe', 'sukkaskk.moe']);
     trie.find('.skk.moe').should.eql([]);
   });
-})
+});
