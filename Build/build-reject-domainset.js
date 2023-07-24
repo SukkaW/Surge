@@ -198,6 +198,9 @@ const domainSuffixSet = new Set();
 
   console.time('* Write reject.conf');
 
+  /** @type {Record<string, number>} */
+  const rejectDomainsStats = {};
+
   const sorter = (a, b) => {
     if (a.domain > b.domain) {
       return 1;
@@ -209,7 +212,9 @@ const domainSuffixSet = new Set();
   };
   const sortedDomainSets = dudupedDominArray
     .map((v) => {
-      return { v, domain: getDomain(v.charCodeAt(0) === 46 ? v.slice(1) : v) || v };
+      const domain = getDomain(v.charCodeAt(0) === 46 ? v.slice(1) : v) || v;
+      rejectDomainsStats[domain] = (rejectDomainsStats[domain] || 0) + 1;
+      return { v, domain };
     })
     .sort(sorter)
     .map((i) => i.v);
@@ -232,6 +237,14 @@ const domainSuffixSet = new Set();
       sortedDomainSets
     ),
     pathResolve(__dirname, '../List/domainset/reject.conf')
+  );
+
+  await fs.promises.writeFile(
+    pathResolve(__dirname, '../List/internal/reject-stats.txt'),
+    Object.entries(rejectDomainsStats)
+      .sort((a, b) => b[1] - a[1])
+      .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`)
+      .join('\n')
   );
 
   // Copy reject_sukka.conf for backward compatibility
