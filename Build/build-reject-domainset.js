@@ -208,6 +208,12 @@ const domainSuffixSet = new Set();
     if (a.domain < b.domain) {
       return -1;
     }
+    if (a.v > b.v) {
+      return 1;
+    }
+    if (a.v < b.v) {
+      return -1;
+    }
     return 0;
   };
   const sortedDomainSets = dudupedDominArray
@@ -242,7 +248,13 @@ const domainSuffixSet = new Set();
   await fs.promises.writeFile(
     pathResolve(__dirname, '../List/internal/reject-stats.txt'),
     Object.entries(rejectDomainsStats)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => {
+        const t = b[1] - a[1];
+        if (t === 0) {
+          return a[0].localeCompare(b[0]);
+        }
+        return t;
+      })
       .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`)
       .join('\n')
   );
