@@ -1,7 +1,18 @@
 // @ts-check
+const fs = require('fs');
 const { fetchWithRetry } = require('./fetch-retry');
 const readline = require('readline');
 const { Readable } = require('stream');
+
+/**
+ * @param {string} path
+ */
+module.exports.readFileByLine = (path) => {
+  return readline.createInterface({
+    input: fs.createReadStream(path, { encoding: 'utf-8' }),
+    crlfDelay: Infinity
+  });
+};
 
 /**
  * @param {import('undici').Response} resp

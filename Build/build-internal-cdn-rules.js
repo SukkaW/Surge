@@ -2,10 +2,10 @@
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
-const readline = require('readline');
 const { isDomainLoose } = require('./lib/is-domain-loose');
 const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
+const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 
 /**
  * @param {string} string
@@ -32,12 +32,7 @@ const escapeRegExp = (string) => {
    * @param {string} domainSetPath
    */
   const processLocalDomainSet = async (domainSetPath) => {
-    for await (
-      const line of readline.createInterface({
-        input: fs.createReadStream(domainSetPath),
-        crlfDelay: Infinity
-      })
-    ) {
+    for await (const line of readFileByLine(domainSetPath)) {
       if (line[0] === '.') {
         addApexDomain(line.slice(1));
       } else if (isDomainLoose(line)) {
@@ -52,12 +47,7 @@ const escapeRegExp = (string) => {
    * @param {string} ruleSetPath
    */
   const processLocalRuleSet = async (ruleSetPath) => {
-    for await (
-      const line of readline.createInterface({
-        input: fs.createReadStream(ruleSetPath),
-        crlfDelay: Infinity
-      })
-    ) {
+    for await (const line of readFileByLine(ruleSetPath)) {
       if (line.startsWith('DOMAIN-SUFFIX,')) {
         addApexDomain(line.replace('DOMAIN-SUFFIX,', ''));
       } else if (line.startsWith('DOMAIN,')) {

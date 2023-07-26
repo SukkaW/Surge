@@ -6,6 +6,7 @@ const { join, resolve } = require('path');
 const { tmpdir } = require('os');
 const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
+const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 
 const fileExists = (path) => {
   return fs.promises.access(path, fs.constants.F_OK)
@@ -14,9 +15,13 @@ const fileExists = (path) => {
 };
 
 (async () => {
-  const filesList = (await fs.promises.readFile(resolve(__dirname, '../.gitignore'), { encoding: 'utf-8' }))
-    .split('\n')
-    .filter(p => p.startsWith('List/') && !p.endsWith('/'));
+  const filesList = [];
+
+  for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
+    if (line.startsWith('List/') && !line.endsWith('/')) {
+      filesList.push(line);
+    }
+  }
 
   if (
     !((await Promise.all(
@@ -27,32 +32,25 @@ const fileExists = (path) => {
     return;
   }
 
-  const tempFile = join(tmpdir(), `sukka-surge-last-build-tar-${Date.now()}`);
-  const resp = await fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages');
-  const readableNodeStream = Readable.fromWeb(resp.body);
-  await pipeline(
-    readableNodeStream,
-    fs.createWriteStream(tempFile)
-  );
-
   const extractedPath = join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
   await fse.ensureDir(extractedPath);
-  await tar.x({
-    file: tempFile,
-    cwd: extractedPath,
-    filter: (p) => {
-      return p.split('/')[1] === 'List';
-    }
-  });
+
+  const resp = await fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages');
+  await pipeline(
+    Readable.fromWeb(resp.body),
+    tar.x({
+      cwd: extractedPath,
+      filter(p) {
+        return p.split('/')[1] === 'List';
+      }
+    })
+  );
 
   await Promise.all(filesList.map(p => fse.copy(
     join(extractedPath, 'Surge-gh-pages', p),
     join(__dirname, '..', p),
-    {
-      overwrite: true
-    }
+    { overwrite: true }
   )));
 
-  await fs.promises.unlink(tempFile).catch(() => { });
   await fs.promises.unlink(extractedPath).catch(() => { });
 })();

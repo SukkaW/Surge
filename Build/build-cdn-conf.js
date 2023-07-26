@@ -6,9 +6,7 @@ const { withBannerArray } = require('./lib/with-banner');
 const { minifyRules } = require('./lib/minify-rules');
 const { domainDeduper } = require('./lib/domain-deduper');
 const { processLine } = require('./lib/process-line');
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
-
-const readline = require('readline');
+const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 
 (async () => {
   console.time('Total Time - build-cdn-conf');
@@ -64,10 +62,9 @@ const readline = require('readline');
   /** @type {Set<string>} */
   const cdnDomains = new Set();
 
-  for await (const line of readline.createInterface({
-    input: fs.createReadStream(path.resolve(__dirname, '../Source/domainset/cdn.conf'), 'utf-8'),
-    crlfDelay: Infinity
-  })) {
+  for await (const line of readFileByLine(
+    path.resolve(__dirname, '../Source/domainset/cdn.conf')
+  )) {
     const l = processLine(line);
     if (l) {
       cdnDomains.add(l);

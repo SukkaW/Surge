@@ -7,7 +7,6 @@ const { processLine } = require('./lib/process-line');
 
 (async () => {
   console.time('Total Time - build-chnroutes-cidr');
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax -- fuck
   const { merge: mergeCidrs } = await import('cidr-tools-wasm');
 
   /** @type {Set<string>} */

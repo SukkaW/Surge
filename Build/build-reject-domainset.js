@@ -1,7 +1,6 @@
 // @ts-check
 const fs = require('fs');
 const fse = require('fs-extra');
-const readline = require('readline');
 
 const { resolve: pathResolve } = require('path');
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
@@ -14,6 +13,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { processLine } = require('./lib/process-line');
 const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
+const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -106,10 +106,7 @@ const domainSuffixSet = new Set();
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules!`);
 
-  const rl1 = readline.createInterface({
-    input: fs.createReadStream(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), { encoding: 'utf-8' }),
-    crlfDelay: Infinity
-  });
+  const rl1 = readFileByLine(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'));
 
   for await (const line of rl1) {
     const l = processLine(line);
@@ -121,10 +118,7 @@ const domainSuffixSet = new Set();
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
-  const rl2 = readline.createInterface({
-    input: fs.createReadStream(pathResolve(__dirname, '../List/non_ip/reject.conf'), { encoding: 'utf-8' }),
-    crlfDelay: Infinity
-  });
+  const rl2 = readFileByLine(pathResolve(__dirname, '../List/non_ip/reject.conf'));
   for await (const line of rl2) {
     if (line.startsWith('DOMAIN-KEYWORD')) {
       const [, ...keywords] = line.split(',');
@@ -135,10 +129,7 @@ const domainSuffixSet = new Set();
     }
   }
 
-  const rl3 = readline.createInterface({
-    input: fs.createReadStream(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'), { encoding: 'utf-8' }),
-    crlfDelay: Infinity
-  });
+  const rl3 = readFileByLine(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'));
   for await (const line of rl3) {
     const l = processLine(line);
     if (l && l[0] === '.') {
