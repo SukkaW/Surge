@@ -221,7 +221,8 @@ const PREDEFINED_WHITELIST = [
   'fastly-analytics.com',
   'syd1.digitaloceanspaces.com',
   's3.nl-ams.scw.cloud',
-  'geolocation-db.com'
+  'geolocation-db.com',
+  'uploads.codesandbox.io'
 ];
 
 const PREDEFINED_ENFORCED_BACKLIST = [
