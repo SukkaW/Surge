@@ -1,8 +1,10 @@
 const { fetchWithRetry } = require('./lib/fetch-retry');
+const { createReadlineInterfaceFromResponse } = require('./lib/fetch-remote-text-by-line');
 const fs = require('fs');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 const { withBanner } = require('./lib/with-banner');
+const { processLine } = require('./lib/process-line');
 
 (async () => {
   console.time('Total Time - build-telegram-cidr');
@@ -12,11 +14,23 @@ const { withBanner } = require('./lib/with-banner');
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 
-  const res = (await resp.text())
-    .split('\n')
-    .filter(line => line.trim() !== '');
+  /** @type {string[]} */
+  const results = [];
 
-  if (res.length === 0) {
+  for await (const line of createReadlineInterfaceFromResponse(resp)) {
+    const cidr = processLine(line);
+    if (cidr) {
+      const [subnet] = cidr.split('/');
+      if (isIPv4(subnet)) {
+        results.push(`IP-CIDR,${cidr},no-resolve`);
+      }
+      if (isIPv6(subnet)) {
+        results.push(`IP-CIDR6,${cidr},no-resolve`);
+      }
+    }
+  }
+
+  if (results.length === 0) {
     throw new Error('Failed to fetch data!');
   }
 
@@ -32,17 +46,7 @@ const { withBanner } = require('./lib/with-banner');
         ' - https://core.telegram.org/resources/cidr.txt'
       ],
       date,
-      res.map(ip => {
-        const [subnet] = ip.split('/');
-        console.log(`  - ${ip}: ${subnet}`);
-        if (isIPv4(subnet)) {
-          return `IP-CIDR,${ip},no-resolve`;
-        }
-        if (isIPv6(subnet)) {
-          return `IP-CIDR6,${ip},no-resolve`;
-        }
-        return '';
-      })
+      results
     )
   );
 
