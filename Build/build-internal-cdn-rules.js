@@ -7,8 +7,17 @@ const { isDomainLoose } = require('./lib/is-domain-loose');
 const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 
+/**
+ * @param {string} string
+ */
+const escapeRegExp = (string) => {
+  return string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+};
+
 (async () => {
   const set = new Set();
+  const keywords = new Set();
+
   /**
    * @param {string} input
    */
@@ -53,6 +62,10 @@ const { processLine } = require('./lib/process-line');
         addApexDomain(line.replace('DOMAIN-SUFFIX,', ''));
       } else if (line.startsWith('DOMAIN,')) {
         addApexDomain(line.replace('DOMAIN,', ''));
+      } else if (line.startsWith('DOMAIN-KEYWORD')) {
+        keywords.add(escapeRegExp(line.replace('DOMAIN-KEYWORD,', '')));
+      } else if (line.startsWith('USER-AGENT,') || line.startsWith('PROCESS-NAME,')) {
+        // do nothing
       } else if (processLine(line)) {
         console.warn('[drop line from ruleset]', line);
       }
@@ -72,6 +85,10 @@ const { processLine } = require('./lib/process-line');
   await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
     path.resolve(__dirname, '../List/internal/cdn.txt'),
-    `${Array.from(set).map(i => `SUFFIX,${i}`).join('\n')}\n`
+    [
+      ...Array.from(set).map(i => `SUFFIX,${i}`),
+      ...Array.from(keywords).map(i => `REGEX,${i}`),
+      ''
+    ].join('\n')
   );
 })();
