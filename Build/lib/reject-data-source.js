@@ -222,7 +222,10 @@ const PREDEFINED_WHITELIST = [
   'syd1.digitaloceanspaces.com',
   's3.nl-ams.scw.cloud',
   'geolocation-db.com',
-  'uploads.codesandbox.io'
+  'uploads.codesandbox.io',
+  // Affect Windows ISO download
+  // https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
+  'vlscppe.microsoft.com'
 ];
 
 const PREDEFINED_ENFORCED_BACKLIST = [
