@@ -3,6 +3,7 @@ const { processFilterRules } = require('./lib/parse-filter.js');
 const path = require('path');
 const { withBannerArray } = require('./lib/with-banner.js');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { processLine } = require('./lib/process-line.js');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -13,7 +14,7 @@ const WHITELIST_DOMAIN = new Set([
   'page.link', // Firebase URL Shortener
   'fleek.cool'
 ]);
-const BLACK_TLD = Array.from(new Set([
+const BLACK_TLD = new Set([
   'xyz',
   'top',
   'win',
@@ -45,8 +46,12 @@ const BLACK_TLD = Array.from(new Set([
   'ml',
   'cc',
   'cn',
-  'codes'
-]));
+  'codes',
+  'cloud',
+  'club',
+  'click',
+  'cfd'
+]);
 
 (async () => {
   const domainSet = Array.from(
@@ -57,31 +62,43 @@ const BLACK_TLD = Array.from(new Set([
   const domainCountMap = {};
 
   for (let i = 0, len = domainSet.length; i < len; i++) {
-    const line = domainSet[i];
-    // starts with #
-    if (line.charCodeAt(0) === 35) {
-      continue;
-    }
-    if (line.trim().length === 0) {
-      continue;
-    }
+    const line = processLine(domainSet[i]);
+    if (!line) continue;
 
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
 
-    if (domain.length > 19) {
-      const apexDomain = tldts.getDomain(domain, { allowPrivateDomains: true });
+    const apexDomain = tldts.getDomain(domain, { allowPrivateDomains: true });
 
-      if (apexDomain) {
-        if (WHITELIST_DOMAIN.has(apexDomain)) {
-          continue;
+    if (apexDomain) {
+      if (WHITELIST_DOMAIN.has(apexDomain)) {
+        continue;
+      }
+
+      domainCountMap[apexDomain] ||= 0;
+
+      let isPhishingDomainMockingAmazon = false;
+
+      if (domain.startsWith('amaz')) {
+        domainCountMap[apexDomain] += 0.5;
+
+        isPhishingDomainMockingAmazon = true;
+
+        if (domain.startsWith('amazon-')) {
+          domainCountMap[apexDomain] += 4.5;
         }
+      } else if (domain.startsWith('customer')) {
+        domainCountMap[apexDomain] += 0.25;
+      }
+      if (domain.includes('-co-jp')) {
+        domainCountMap[apexDomain] += (isPhishingDomainMockingAmazon ? 4.5 : 0.5);
+      }
 
-        const tld = tldts.getPublicSuffix(domain, { allowPrivateDomains: true });
-        if (!tld || !BLACK_TLD.includes(tld)) continue;
+      const tld = tldts.getPublicSuffix(domain, { allowPrivateDomains: true });
+      if (!tld || !BLACK_TLD.has(tld)) continue;
 
-        domainCountMap[apexDomain] ||= 0;
-        domainCountMap[apexDomain] += 1;
+      domainCountMap[apexDomain] += 1;
 
+      if (domain.length > 19) {
         // Add more weight if the domain is long enough
         if (domain.length > 44) {
           domainCountMap[apexDomain] += 3.5;
@@ -106,6 +123,8 @@ const BLACK_TLD = Array.from(new Set([
   }
 
   const results = [];
+
+  console.log(domainCountMap['serveusers.com']);
   Object.entries(domainCountMap).forEach(([domain, count]) => {
     if (
       count >= 5
