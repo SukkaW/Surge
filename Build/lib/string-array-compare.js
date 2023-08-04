@@ -1,11 +1,13 @@
 // @ts-check
 const { promises: fsPromises } = require('fs');
+const fse = require('fs-extra');
 
 /**
  * @param {string[]} linesA
  * @param {string} filePath
  */
 async function compareAndWriteFile(linesA, filePath) {
+  await fse.ensureFile(filePath);
   const linesB = (await fsPromises.readFile(filePath, { encoding: 'utf-8' })).split('\n');
 
   if (!stringArrayCompare(linesA, linesB)) {

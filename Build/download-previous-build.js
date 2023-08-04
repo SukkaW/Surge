@@ -46,11 +46,16 @@ const fileExists = (path) => {
     })
   );
 
-  await Promise.all(filesList.map(p => fse.copy(
-    join(extractedPath, 'Surge-gh-pages', p),
-    join(__dirname, '..', p),
-    { overwrite: true }
-  )));
+  await Promise.all(filesList.map(async p => {
+    const src = join(extractedPath, 'Surge-gh-pages', p);
+    if (await fileExists(src)) {
+      return fse.copy(
+        src,
+        join(__dirname, '..', p),
+        { overwrite: true }
+      );
+    }
+  }));
 
   await fs.promises.unlink(extractedPath).catch(() => { });
 })();
