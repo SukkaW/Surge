@@ -1,5 +1,4 @@
 // @ts-check
-const fs = require('fs');
 const path = require('path');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
@@ -34,11 +33,15 @@ const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('.
     }
   }
 
-  const content = (await fs.promises.readFile(path.resolve(__dirname, '../Source/non_ip/cdn.conf'), 'utf-8'))
-    .replace(
-      '# --- [AWS S3 Replace Me] ---',
-      Array.from(S3OSSDomains).map(domain => `DOMAIN-SUFFIX,${domain}`).join('\n')
-    );
+  /** @type {string[]} */
+  const cdnDomainsList = [];
+  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
+    if (line === '# --- [AWS S3 Replace Me] ---') {
+      S3OSSDomains.forEach(domain => cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`));
+    } else {
+      cdnDomainsList.push(line);
+    }
+  }
 
   await compareAndWriteFile(
     withBannerArray(
@@ -51,7 +54,7 @@ const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('.
         'This file contains object storage and static assets CDN domains.'
       ],
       new Date(),
-      minifyRules(content.split('\n'))
+      minifyRules(cdnDomainsList)
     ),
     path.resolve(__dirname, '../List/non_ip/cdn.conf')
   );

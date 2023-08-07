@@ -7,14 +7,15 @@
  * @param {string[]} content
  * @returns {string}
  */
-const withBanner = (title, description, date, content) => {
-  return `########################################
-# ${title}
-# Last Updated: ${date.toISOString()}
-# Size: ${content.length}
-${description.map(line => (line ? `# ${line}` : '#')).join('\n')}
-########################################\n${content.join('\n')}\n################# END ###################\n`;
-};
+// const withBanner = (title, description, date, content) => {
+//   return `########################################
+// # ${title}
+// # Last Updated: ${date.toISOString()}
+// # Size: ${content.length}
+// ${description.map(line => (line ? `# ${line}` : '#')).join('\n')}
+// ########################################\n${content.join('\n')}\n################# END ###################\n`;
+// };
+
 /**
  * @param {string} title
  * @param {string[]} description
@@ -36,5 +37,5 @@ const withBannerArray = (title, description, date, content) => {
   ];
 };
 
-module.exports.withBanner = withBanner;
+// module.exports.withBanner = withBanner;
 module.exports.withBannerArray = withBannerArray;

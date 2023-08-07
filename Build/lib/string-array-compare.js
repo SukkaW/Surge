@@ -1,6 +1,7 @@
 // @ts-check
 const { promises: fsPromises } = require('fs');
 const fse = require('fs-extra');
+const { readFileByLine } = require('./fetch-remote-text-by-line');
 
 /**
  * @param {string[]} linesA
@@ -8,9 +9,26 @@ const fse = require('fs-extra');
  */
 async function compareAndWriteFile(linesA, filePath) {
   await fse.ensureFile(filePath);
-  const linesB = (await fsPromises.readFile(filePath, { encoding: 'utf-8' })).split('\n');
 
-  if (!stringArrayCompare(linesA, linesB)) {
+  const rl = readFileByLine(filePath);
+
+  let isEqual = true;
+  let index = 0;
+
+  for await (const lineB of rl) {
+    const lineA = linesA[index];
+    index++;
+
+    if (lineA[0] === '#' && lineB[0] === '#') {
+      continue;
+    }
+    if (lineA !== lineB) {
+      isEqual = false;
+      break;
+    }
+  }
+
+  if (!isEqual) {
     await fsPromises.writeFile(
       filePath,
       linesA.join('\n'),
@@ -21,26 +39,4 @@ async function compareAndWriteFile(linesA, filePath) {
   }
 }
 
-/**
- * @param {string[]} linesA
- * @param {string[]} linesB
- */
-function stringArrayCompare(linesA, linesB) {
-  if (linesA.length !== linesB.length) return false;
-
-  for (let i = 0; i < linesA.length; i++) {
-    const lineA = linesA[i];
-    const lineB = linesB[i];
-    if (lineA.startsWith('#') && lineB.startsWith('#')) {
-      continue;
-    }
-    if (lineA !== lineB) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-module.exports.stringArrayCompare = stringArrayCompare;
 module.exports.compareAndWriteFile = compareAndWriteFile;

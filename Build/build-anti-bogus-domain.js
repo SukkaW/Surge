@@ -1,10 +1,9 @@
 // @ts-check
-const fs = require('fs');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
+const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { minifyRules } = require('./lib/minify-rules');
 
 (async () => {
@@ -25,19 +24,22 @@ const { minifyRules } = require('./lib/minify-rules');
 
   const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
   const resultPath = path.resolve(__dirname, '../List/ip/reject.conf');
-  const content = (await fs.promises.readFile(filePath, 'utf-8'))
-    .replace(
-      '# --- [Anti Bogus Domain Replace Me] ---',
-      res.map(ip => {
+
+  /** @type {string[]} */
+  const result = [];
+  for await (const line of readFileByLine(filePath)) {
+    if (line === '# --- [Anti Bogus Domain Replace Me] ---') {
+      res.forEach(ip => {
         if (isIPv4(ip)) {
-          return `IP-CIDR,${ip}/32,no-resolve`;
+          result.push(`IP-CIDR,${ip}/32,no-resolve`);
+        } else if (isIPv6(ip)) {
+          result.push(`IP-CIDR6,${ip}/128,no-resolve`);
         }
-        if (isIPv6(ip)) {
-          return `IP-CIDR6,${ip}/128,no-resolve`;
-        }
-        return '';
-      }).join('\n')
-    );
+      });
+    } else {
+      result.push(line);
+    }
+  }
 
   await compareAndWriteFile(
     withBannerArray(
@@ -53,7 +55,7 @@ const { minifyRules } = require('./lib/minify-rules');
         ' - https://github.com/felixonmars/dnsmasq-china-list'
       ],
       new Date(),
-      minifyRules(content.split('\n'))
+      minifyRules(result)
     ),
     resultPath
   );

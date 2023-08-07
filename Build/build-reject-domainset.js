@@ -209,7 +209,7 @@ const domainSuffixSet = new Set();
   };
   const sortedDomainSets = dudupedDominArray
     .map((v) => {
-      const domain = getDomain(v.charCodeAt(0) === 46 ? v.slice(1) : v) || v;
+      const domain = getDomain(v[0] === '.' ? v.slice(1) : v) || v;
       rejectDomainsStats[domain] = (rejectDomainsStats[domain] || 0) + 1;
       return { v, domain };
     })

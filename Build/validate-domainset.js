@@ -2,9 +2,10 @@
 
 const tldts = require('tldts');
 const picocolors = require('picocolors');
-const fs = require('fs');
 const path = require('path');
 const listDir = require('@sukka/listdir');
+const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
+const { processLine } = require('./lib/process-line');
 
 const SPECIAL_SUFFIXES = new Set([
   'linodeobjects.com', // only *.linodeobjects.com are public suffix
@@ -13,21 +14,16 @@ const SPECIAL_SUFFIXES = new Set([
 ]);
 
 const validateDomainSet = async (filePath) => {
-  const domainSetContent = await fs.promises.readFile(
-    path.resolve(__dirname, '../List/domainset', filePath),
-    { encoding: 'utf-8' }
+  const rl = readFileByLine(
+    path.resolve(__dirname, '../List/domainset', filePath)
   );
-  const domainSetLines = domainSetContent.split('\n');
-  for (let i = 0, len = domainSetLines.length; i < len; i++) {
-    const line = domainSetLines[i];
-    // starts with #
-    if (line.charCodeAt(0) === 35) {
-      continue;
-    }
-    if (line.trim().length === 0) {
-      continue;
-    }
 
+  for await (const l of rl) {
+    // starts with #
+    const line = processLine(l);
+    if (!line) {
+      continue;
+    }
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
     const parsed = tldts.parse(domain, { allowPrivateDomains: true, detectIp: false });
 
@@ -43,21 +39,16 @@ const validateDomainSet = async (filePath) => {
 };
 
 const validateRuleset = async (filePath) => {
-  const rulesetContent = await fs.promises.readFile(
-    path.resolve(__dirname, '../List/non_ip', filePath),
-    { encoding: 'utf-8' }
+  const rl = readFileByLine(
+    path.resolve(__dirname, '../List/non_ip', filePath)
   );
-  const rulesetLines = rulesetContent.split('\n');
 
   console.log(`[${filePath}]`);
 
-  for (let i = 0, len = rulesetLines.length; i < len; i++) {
-    const line = rulesetLines[i];
+  for await (const l of rl) {
     // starts with #
-    if (line.charCodeAt(0) === 35) {
-      continue;
-    }
-    if (line.trim().length === 0) {
+    const line = processLine(l);
+    if (!line) {
       continue;
     }
     if (!line.startsWith('DOMAIN-SUFFIX,')) {
