@@ -15,6 +15,7 @@
 // ${description.map(line => (line ? `# ${line}` : '#')).join('\n')}
 // ########################################\n${content.join('\n')}\n################# END ###################\n`;
 // };
+// module.exports.withBanner = withBanner;
 
 /**
  * @param {string} title
@@ -37,5 +38,4 @@ const withBannerArray = (title, description, date, content) => {
   ];
 };
 
-// module.exports.withBanner = withBanner;
 module.exports.withBannerArray = withBannerArray;
