@@ -1,26 +1,14 @@
 const path = require('path');
 
-const { isDomainLoose } = require('./lib/is-domain-loose');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
+const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
 
 (async () => {
   console.time('Total Time - build-apple-cdn-conf');
 
-  const rl = await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
-
-  /** @type {string[]} */
-  const res = [];
-  for await (const line of rl) {
-    if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
-      const domain = line.replace('server=/', '').replace('/114.114.114.114', '');
-      if (isDomainLoose(domain)) {
-        res.push(domain);
-      }
-    }
-  }
+  const res = await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
 
   await Promise.all([
     compareAndWriteFile(

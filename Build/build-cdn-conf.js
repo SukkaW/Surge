@@ -6,9 +6,15 @@ const { minifyRules } = require('./lib/minify-rules');
 const { domainDeduper } = require('./lib/domain-deduper');
 const { processLine } = require('./lib/process-line');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
+const Trie = require('./lib/trie');
 
 (async () => {
   console.time('Total Time - build-cdn-conf');
+
+  const trie = new Trie();
+  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://publicsuffix.org/list/public_suffix_list.dat')) {
+    trie.add(line);
+  }
 
   /**
    * Extract OSS domain from publicsuffix list
@@ -16,22 +22,13 @@ const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('.
    */
   const S3OSSDomains = new Set();
 
-  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://publicsuffix.org/list/public_suffix_list.dat')) {
-    if (
-      line
-      && (
-        line.startsWith('s3-')
-        || line.startsWith('s3.')
-      )
-      && (
-        line.endsWith('.amazonaws.com')
-        || line.endsWith('.scw.cloud')
-      )
-      && !line.includes('cn-')
-    ) {
-      S3OSSDomains.add(line);
-    }
-  }
+  trie.find('.amazonaws.com')
+    .filter(line => (line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-'))
+    .forEach(line => S3OSSDomains.add(line));
+
+  trie.find('.scw.cloud')
+    .filter(line => (line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-'))
+    .forEach(line => S3OSSDomains.add(line));
 
   /** @type {string[]} */
   const cdnDomainsList = [];

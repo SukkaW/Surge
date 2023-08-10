@@ -57,7 +57,8 @@ const querySpeedtestApi = async (keyword) => {
     '.speedtest.gslnetworks.com',
     '.speedtest.jsinfo.net',
     '.speedtest.i3d.net',
-    '.speedtestkorea.com'
+    '.speedtestkorea.com',
+    '.speedtest.telus.com'
   ]);
 
   const hostnameGroups = await Promise.all([
