@@ -51,6 +51,9 @@ devDependencies:
   '@types/mocha':
     specifier: ^10.0.1
     version: 10.0.1
+  '@types/node':
+    specifier: ^20.4.9
+    version: 20.4.9
   chai:
     specifier: ^4.3.7
     version: 4.3.7
@@ -247,6 +250,10 @@ packages:
 
   /@types/mocha@10.0.1:
     resolution: {integrity: sha512-/fvYntiO1GeICvqbQ3doGDIP97vWmvFt83GKguJ6prmQM2iXZfFcq6YE8KteFyRtX2/h5Hf91BYvPodJKFYv5Q==}
+    dev: true
+
+  /@types/node@20.4.9:
+    resolution: {integrity: sha512-8e2HYcg7ohnTUbHk8focoklEQYvemQmu9M/f43DZVx43kHn0tE3BY/6gSDxS7k0SprtS0NHvj+L80cGLnoOUcQ==}
     dev: true
 
   /@vercel/fetch-retry@5.1.3(patch_hash=jczsp2gadg65vd4ekschpibzda)(node-fetch@2.6.11):

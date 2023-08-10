@@ -147,6 +147,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
+    "@types/node": "^20.4.9",
     "chai": "^4.3.7",
     "eslint-config-sukka": "^3.0.0",
     "eslint-plugin-import": "npm:eslint-plugin-i@2.27.5-4",

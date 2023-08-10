@@ -5,9 +5,15 @@ const { resolve: pathResolve } = require('path');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { processLine } = require('./lib/process-line');
 
+// https://github.com/misakaio/chnroutes2/issues/25
+const EXCLUDE_CIDRS = [
+  '223.118.0.0/15',
+  '223.120.0.0/15'
+];
+
 (async () => {
   console.time('Total Time - build-chnroutes-cidr');
-  const { merge: mergeCidrs } = await import('cidr-tools-wasm');
+  const { exclude: excludeCidrs } = await import('cidr-tools-wasm');
 
   /** @type {Set<string>} */
   const cidr = new Set();
@@ -19,7 +25,7 @@ const { processLine } = require('./lib/process-line');
   }
 
   console.log('Before Merge:', cidr.size);
-  const filteredCidr = mergeCidrs(Array.from(cidr)).sort();
+  const filteredCidr = excludeCidrs(Array.from(cidr), EXCLUDE_CIDRS, true);
   console.log('After Merge:', filteredCidr.length);
 
   await compareAndWriteFile(
