@@ -10,12 +10,10 @@ const { readFileByLine } = require('./fetch-remote-text-by-line');
 async function compareAndWriteFile(linesA, filePath) {
   await fse.ensureFile(filePath);
 
-  const rl = readFileByLine(filePath);
-
   let isEqual = true;
   let index = 0;
 
-  for await (const lineB of rl) {
+  for await (const lineB of readFileByLine(filePath)) {
     const lineA = linesA[index];
     index++;
 

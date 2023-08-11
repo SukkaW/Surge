@@ -29,9 +29,7 @@ async function processDomainLists(domainListsUrl) {
   /** @type Set<string> */
   const domainSets = new Set();
 
-  const rl = await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl);
-
-  for await (const line of rl) {
+  for await (const line of await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl)) {
     if (line.startsWith('!')) {
       continue;
     }
@@ -65,9 +63,8 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   /** @type Set<string> */
   const domainSets = new Set();
 
-  const rl = await fetchRemoteTextAndCreateReadlineInterface(hostsUrl);
-  for await (const _line of rl) {
-    const line = processLine(_line);
+  for await (const l of await fetchRemoteTextAndCreateReadlineInterface(hostsUrl)) {
+    const line = processLine(l);
     if (!line) {
       continue;
     }

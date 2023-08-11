@@ -62,17 +62,19 @@ const escapeRegExp = (string) => {
     }
   };
 
-  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/cdn.conf'));
-  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global.conf'));
-  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global_plus.conf'));
-  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/my_proxy.conf'));
-  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/stream.conf'));
-  await processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/telegram.conf'));
+  await Promise.all([
+    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/cdn.conf')),
+    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global.conf')),
+    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global_plus.conf')),
+    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/my_proxy.conf')),
+    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/stream.conf')),
+    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/telegram.conf')),
+    processLocalDomainSet(path.resolve(__dirname, '../List/domainset/cdn.conf')),
+    processLocalDomainSet(path.resolve(__dirname, '../List/domainset/download.conf')),
 
-  await processLocalDomainSet(path.resolve(__dirname, '../List/domainset/cdn.conf'));
-  await processLocalDomainSet(path.resolve(__dirname, '../List/domainset/download.conf'));
+    fse.ensureDir(path.resolve(__dirname, '../List/internal'))
+  ]);
 
-  await fse.ensureDir(path.resolve(__dirname, '../List/internal'));
   await fs.promises.writeFile(
     path.resolve(__dirname, '../List/internal/cdn.txt'),
     [

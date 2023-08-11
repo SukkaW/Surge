@@ -40,22 +40,6 @@ const Trie = require('./lib/trie');
     }
   }
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Surge Rules - CDN Domains',
-      [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
-        '',
-        'This file contains object storage and static assets CDN domains.'
-      ],
-      new Date(),
-      minifyRules(cdnDomainsList)
-    ),
-    path.resolve(__dirname, '../List/non_ip/cdn.conf')
-  );
-
   /**
    * Dedupe cdn.conf
    */
@@ -71,21 +55,38 @@ const Trie = require('./lib/trie');
     }
   }
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Surge Rules - CDN Domains',
-      [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
-        '',
-        'This file contains object storage and static assets CDN domains.'
-      ],
-      new Date(),
-      minifyRules(domainDeduper(Array.from(cdnDomains)))
+  await Promise.all([
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Surge Rules - CDN Domains',
+        [
+          'License: AGPL 3.0',
+          'Homepage: https://ruleset.skk.moe',
+          'GitHub: https://github.com/SukkaW/Surge',
+          '',
+          'This file contains object storage and static assets CDN domains.'
+        ],
+        new Date(),
+        minifyRules(cdnDomainsList)
+      ),
+      path.resolve(__dirname, '../List/non_ip/cdn.conf')
     ),
-    path.resolve(__dirname, '../List/domainset/cdn.conf')
-  );
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Surge Rules - CDN Domains',
+        [
+          'License: AGPL 3.0',
+          'Homepage: https://ruleset.skk.moe',
+          'GitHub: https://github.com/SukkaW/Surge',
+          '',
+          'This file contains object storage and static assets CDN domains.'
+        ],
+        new Date(),
+        minifyRules(domainDeduper(Array.from(cdnDomains)))
+      ),
+      path.resolve(__dirname, '../List/domainset/cdn.conf')
+    )
+  ]);
 
   console.timeEnd('Total Time - build-cdn-conf');
 })();

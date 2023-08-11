@@ -10,11 +10,9 @@ const { minifyRules } = require('./lib/minify-rules');
   console.time('Total Time - build-anti-bogus-domain');
   console.time('* Download bogus-nxdomain-list');
 
-  const rl = await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf');
-
   /** @type {string[]} */
   const res = [];
-  for await (const line of rl) {
+  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
     if (line.startsWith('bogus-nxdomain=')) {
       res.push(line.replace('bogus-nxdomain=', ''));
     }

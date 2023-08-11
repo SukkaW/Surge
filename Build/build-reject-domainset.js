@@ -106,9 +106,7 @@ const domainSuffixSet = new Set();
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules!`);
 
-  const rl1 = readFileByLine(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'));
-
-  for await (const line of rl1) {
+  for await (const line of readFileByLine(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'))) {
     const l = processLine(line);
     if (l) {
       domainSets.add(l);
@@ -118,8 +116,7 @@ const domainSuffixSet = new Set();
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
-  const rl2 = readFileByLine(pathResolve(__dirname, '../List/non_ip/reject.conf'));
-  for await (const line of rl2) {
+  for await (const line of readFileByLine(pathResolve(__dirname, '../List/non_ip/reject.conf'))) {
     if (line.startsWith('DOMAIN-KEYWORD')) {
       const [, ...keywords] = line.split(',');
       domainKeywordsSet.add(keywords.join(',').trim());
@@ -129,8 +126,7 @@ const domainSuffixSet = new Set();
     }
   }
 
-  const rl3 = readFileByLine(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'));
-  for await (const line of rl3) {
+  for await (const line of readFileByLine(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'))) {
     const l = processLine(line);
     if (l && l[0] === '.') {
       domainSuffixSet.add(l.slice(1));
@@ -216,42 +212,42 @@ const domainSuffixSet = new Set();
     .sort(sorter)
     .map((i) => i.v);
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Surge Rules - Reject Base',
-      [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
-        '',
-        'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
-        '',
-        'Build from:',
-        ...HOSTS.map(host => ` - ${host[0]}`),
-        ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
-      ],
-      new Date(),
-      sortedDomainSets
+  await Promise.all([
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Surge Rules - Reject Base',
+        [
+          'License: AGPL 3.0',
+          'Homepage: https://ruleset.skk.moe',
+          'GitHub: https://github.com/SukkaW/Surge',
+          '',
+          'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+          '',
+          'Build from:',
+          ...HOSTS.map(host => ` - ${host[0]}`),
+          ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
+        ],
+        new Date(),
+        sortedDomainSets
+      ),
+      pathResolve(__dirname, '../List/domainset/reject.conf')
     ),
-    pathResolve(__dirname, '../List/domainset/reject.conf')
-  );
-
-  await fs.promises.writeFile(
-    pathResolve(__dirname, '../List/internal/reject-stats.txt'),
-    Object.entries(rejectDomainsStats)
-      .sort((a, b) => {
-        const t = b[1] - a[1];
-        if (t === 0) {
-          return a[0].localeCompare(b[0]);
-        }
-        return t;
-      })
-      .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`)
-      .join('\n')
-  );
-
-  // Copy reject_sukka.conf for backward compatibility
-  await fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'));
+    fs.promises.writeFile(
+      pathResolve(__dirname, '../List/internal/reject-stats.txt'),
+      Object.entries(rejectDomainsStats)
+        .sort((a, b) => {
+          const t = b[1] - a[1];
+          if (t === 0) {
+            return a[0].localeCompare(b[0]);
+          }
+          return t;
+        })
+        .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`)
+        .join('\n')
+    ),
+    // Copy reject_sukka.conf for backward compatibility
+    fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
+  ]);
 
   console.timeEnd('* Write reject.conf');
 

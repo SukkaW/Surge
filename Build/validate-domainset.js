@@ -14,11 +14,7 @@ const SPECIAL_SUFFIXES = new Set([
 ]);
 
 const validateDomainSet = async (filePath) => {
-  const rl = readFileByLine(
-    path.resolve(__dirname, '../List/domainset', filePath)
-  );
-
-  for await (const l of rl) {
+  for await (const l of readFileByLine(path.resolve(__dirname, '../List/domainset', filePath))) {
     // starts with #
     const line = processLine(l);
     if (!line) {
@@ -38,14 +34,10 @@ const validateDomainSet = async (filePath) => {
   }
 };
 
-const validateRuleset = async (filePath) => {
-  const rl = readFileByLine(
-    path.resolve(__dirname, '../List/non_ip', filePath)
-  );
-
+const _validateRuleset = async (filePath) => {
   console.log(`[${filePath}]`);
 
-  for await (const l of rl) {
+  for await (const l of readFileByLine(path.resolve(__dirname, '../List/non_ip', filePath))) {
     // starts with #
     const line = processLine(l);
     if (!line) {

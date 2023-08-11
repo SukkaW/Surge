@@ -33,9 +33,12 @@ const fileExists = (path) => {
   }
 
   const extractedPath = join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
-  await fse.ensureDir(extractedPath);
 
-  const resp = await fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages');
+  const [resp] = await Promise.all([
+    fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages'),
+    fse.ensureDir(extractedPath)
+  ]);
+
   await pipeline(
     Readable.fromWeb(resp.body),
     tar.x({
