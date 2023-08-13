@@ -12,7 +12,8 @@ const WHITELIST_DOMAIN = new Set([
   'square.site',
   'business.site',
   'page.link', // Firebase URL Shortener
-  'fleek.cool'
+  'fleek.cool',
+  'notion.site' 
 ]);
 const BLACK_TLD = new Set([
   'xyz',
