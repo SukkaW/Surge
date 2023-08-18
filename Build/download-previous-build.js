@@ -27,9 +27,10 @@ const fileExists = (path) => {
       ) && !line.endsWith('/')
     ) {
       allFileExists = await fileExists(join(__dirname, '..', line));
+      filesList.push(line);
 
       if (!allFileExists) {
-        break;
+        console.log(`File not exists: ${line}`);
       }
     }
   }
@@ -38,6 +39,8 @@ const fileExists = (path) => {
     console.log('All files exists, skip download.');
     return;
   }
+
+  console.log('Download previous build.');
 
   const extractedPath = join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
 
@@ -51,7 +54,8 @@ const fileExists = (path) => {
     tar.x({
       cwd: extractedPath,
       filter(p) {
-        return p.split('/')[1] === 'List';
+        const dir = p.split('/')[1];
+        return dir === 'List' || dir === 'Modules';
       }
     })
   );
