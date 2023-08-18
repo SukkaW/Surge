@@ -4,6 +4,7 @@ module.exports.DOMESTICS = /** @type {const} */({
     dns: 'https://223.5.5.5/dns-query',
     domains: [
       'uc.cn',
+      'ucweb.com',
       'alibaba.com',
       'alicdn.com',
       'aliyun.com',
@@ -32,7 +33,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'fliggy.com',
       'koubei.com',
       'guoguo-app.com',
-      'mybank.cn'
+      'mybank.cn',
+      'mmstat.com'
     ]
   },
   TENCENT: {
@@ -42,6 +44,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'doh.pub',
       'qcloud.com',
       'gtimg.com',
+      'gdtimg.com',
       'idqqimg.com',
       'igamecj.com',
       'myapp.com',
@@ -107,7 +110,11 @@ module.exports.DOMESTICS = /** @type {const} */({
     domains: [
       'baidu.com',
       'iqiyi.com',
+      'iqiyipic.com',
       'bdstatic.com',
+      'bdimg.com',
+      'bcebos.com',
+      'baidupcs.com',
       'baidubcr.com',
       'yunjiasu-cdn.net'
     ]
