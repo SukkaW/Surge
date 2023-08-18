@@ -11,8 +11,11 @@ List/domainset/reject_sukka.conf
 List/domainset/apple_cdn.conf
 List/domainset/speedtest.conf
 List/non_ip/cdn.conf
+List/non_ip/domestic.conf
 List/non_ip/apple_cdn.conf
 List/ip/telegram.conf
 List/ip/reject.conf
 List/ip/china_ip.conf
 List/internal/
+
+Modules/sukka_local_dns_mapping.sgmodule

@@ -18,6 +18,7 @@
     "build:internal-cdn-rules": "wireit",
     "build:internal-reverse-chn-cidr": "wireit",
     "build:internal-chn-domains": "wireit",
+    "build:domestic-ruleset": "wireit",
     "validate:domainset": "wireit"
   },
   "wireit": {
@@ -85,6 +86,12 @@
     "build:internal-chn-domains": {
       "command": "node ./Build/build-internal-chn-domains.js"
     },
+    "build:domestic-ruleset": {
+      "command": "node ./Build/build-domestic-ruleset.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
+    },
     "build:public": {
       "command": "node ./Build/build-public.js",
       "dependencies": [
@@ -96,7 +103,8 @@
         "build:internal-chn-domains",
         "build:reject-domainset",
         "build:telegram-cidr",
-        "build:speedtest-domainset"
+        "build:speedtest-domainset",
+        "build:domestic-ruleset"
       ]
     },
     "validate:domainset": {
@@ -120,6 +128,7 @@
         "build:internal-reverse-chn-cidr",
         "build:internal-chn-domains",
         "build:speedtest-domainset",
+        "build:domestic-ruleset",
         "build:public",
         "validate:domainset"
       ]
