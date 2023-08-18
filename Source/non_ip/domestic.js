@@ -83,7 +83,6 @@ module.exports.DOMESTICS = /** @type {const} */({
     ]
   },
   BYTEDANCE: {
-    // Currently, bytedance all NS are pointed to AliDNS
     dns: '180.184.2.2',
     domains: [
       'bytecdn.cn',

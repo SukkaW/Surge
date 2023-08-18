@@ -17,17 +17,24 @@ const fileExists = (path) => {
 (async () => {
   const filesList = [];
 
+  let allFileExists = true;
+
   for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
-    if (line.startsWith('List/') && !line.endsWith('/')) {
-      filesList.push(line);
+    if (
+      (
+        line.startsWith('List/')
+        || line.startsWith('Modules/')
+      ) && !line.endsWith('/')
+    ) {
+      allFileExists = await fileExists(join(__dirname, '..', line));
+
+      if (!allFileExists) {
+        break;
+      }
     }
   }
 
-  if (
-    !((await Promise.all(
-      filesList.map(p => fileExists(join(__dirname, '..', p)))
-    )).some(exist => !exist))
-  ) {
+  if (allFileExists) {
     console.log('All files exists, skip download.');
     return;
   }
