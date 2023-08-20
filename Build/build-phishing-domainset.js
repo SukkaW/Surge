@@ -1,9 +1,10 @@
-const tldts = require('tldts');
+const { parse } = require('tldts');
 const { processFilterRules } = require('./lib/parse-filter.js');
 const path = require('path');
 const { withBannerArray } = require('./lib/with-banner.js');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { processLine } = require('./lib/process-line.js');
+const domainSorter = require('./lib/stable-sort-domain');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -13,7 +14,7 @@ const WHITELIST_DOMAIN = new Set([
   'business.site',
   'page.link', // Firebase URL Shortener
   'fleek.cool',
-  'notion.site' 
+  'notion.site'
 ]);
 const BLACK_TLD = new Set([
   'xyz',
@@ -68,7 +69,9 @@ const BLACK_TLD = new Set([
 
     const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
 
-    const apexDomain = tldts.getDomain(domain, { allowPrivateDomains: true });
+    const parsed = parse(domain, { allowPrivateDomains: true });
+
+    const apexDomain = parsed.domain;
 
     if (apexDomain) {
       if (WHITELIST_DOMAIN.has(apexDomain)) {
@@ -94,7 +97,7 @@ const BLACK_TLD = new Set([
         domainCountMap[apexDomain] += (isPhishingDomainMockingAmazon ? 4.5 : 0.5);
       }
 
-      const tld = tldts.getPublicSuffix(domain, { allowPrivateDomains: true });
+      const tld = parsed.publicSuffix;
       if (!tld || !BLACK_TLD.has(tld)) continue;
 
       domainCountMap[apexDomain] += 1;
@@ -114,7 +117,7 @@ const BLACK_TLD = new Set([
         }
 
         if (domainCountMap[apexDomain] < 5) {
-          const subdomain = tldts.getSubdomain(domain, { allowPrivateDomains: true });
+          const subdomain = parsed.subdomain;
           if (subdomain && subdomain.includes('.')) {
             domainCountMap[apexDomain] += 1.5;
           }
@@ -134,7 +137,7 @@ const BLACK_TLD = new Set([
     }
   });
 
-  results.sort();
+  results.sort(domainSorter);
 
   await compareAndWriteFile(
     withBannerArray(

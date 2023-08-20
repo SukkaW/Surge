@@ -5,6 +5,7 @@ const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
+const domainSorter = require('./lib/stable-sort-domain');
 
 (async () => {
   const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
@@ -20,7 +21,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
     ...Object.entries(DOMESTICS)
       .filter(([key]) => key !== 'SYSTEM')
       .flatMap(([, { domains }]) => domains)
-      .sort()
+      .sort(domainSorter)
       .map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );
 

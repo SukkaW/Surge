@@ -4,7 +4,6 @@ const fse = require('fs-extra');
 
 const { resolve: pathResolve } = require('path');
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
-const { getDomain } = require('tldts');
 const Trie = require('./lib/trie');
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
@@ -14,6 +13,7 @@ const { processLine } = require('./lib/process-line');
 const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
+const domainSorter = require('./lib/stable-sort-domain');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -188,29 +188,8 @@ const domainSuffixSet = new Set();
   /** @type {Record<string, number>} */
   const rejectDomainsStats = {};
 
-  const sorter = (a, b) => {
-    if (a.domain > b.domain) {
-      return 1;
-    }
-    if (a.domain < b.domain) {
-      return -1;
-    }
-    if (a.v > b.v) {
-      return 1;
-    }
-    if (a.v < b.v) {
-      return -1;
-    }
-    return 0;
-  };
   const sortedDomainSets = dudupedDominArray
-    .map((v) => {
-      const domain = getDomain(v[0] === '.' ? v.slice(1) : v) || v;
-      rejectDomainsStats[domain] = (rejectDomainsStats[domain] || 0) + 1;
-      return { v, domain };
-    })
-    .sort(sorter)
-    .map((i) => i.v);
+    .sort(domainSorter);
 
   await Promise.all([
     compareAndWriteFile(

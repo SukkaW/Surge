@@ -3,6 +3,7 @@ const { domainDeduper } = require('./lib/domain-deduper');
 const path = require('path');
 const { withBannerArray } = require('./lib/with-banner.js');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
+const domainSorter = require('./lib/stable-sort-domain');
 
 const { Sema } = require('async-sema');
 const s = new Sema(2);
@@ -100,7 +101,7 @@ const querySpeedtestApi = async (keyword) => {
     }
   }
 
-  const reduped = domainDeduper(Array.from(domains)).sort();
+  const reduped = domainDeduper(Array.from(domains)).sort(domainSorter);
 
   await compareAndWriteFile(
     withBannerArray(

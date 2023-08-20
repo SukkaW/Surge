@@ -399,16 +399,6 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
   };
 }
 
-/**
- * @param {string[]} data
- */
-function preprocessFullDomainSetBeforeUsedAsWorkerData(data) {
-  return data
-    .filter(domain => domain[0] === '.')
-    .sort((a, b) => a.length - b.length);
-}
-
 module.exports.processDomainLists = processDomainLists;
 module.exports.processHosts = processHosts;
 module.exports.processFilterRules = processFilterRules;
-module.exports.preprocessFullDomainSetBeforeUsedAsWorkerData = preprocessFullDomainSetBeforeUsedAsWorkerData;
