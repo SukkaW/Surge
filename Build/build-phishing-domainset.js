@@ -52,7 +52,12 @@ const BLACK_TLD = new Set([
   'cloud',
   'club',
   'click',
-  'cfd'
+  'cfd',
+  'fit',
+  'mobi',
+  'buzz',
+  'one',
+  'com.cn'
 ]);
 
 (async () => {
@@ -128,11 +133,8 @@ const BLACK_TLD = new Set([
 
   const results = [];
 
-  console.log(domainCountMap['serveusers.com']);
   Object.entries(domainCountMap).forEach(([domain, count]) => {
-    if (
-      count >= 5
-    ) {
+    if (count >= 5) {
       results.push(`.${domain}`);
     }
   });
