@@ -49,7 +49,10 @@ const domainSorter = require('./lib/stable-sort-domain');
         '[Host]',
         ...Object.entries(DOMESTICS)
           .flatMap(
-            ([, { domains, dns }]) => domains.map((domain) => `${domain} = server:${dns}`)
+            ([, { domains, dns }]) => domains.flatMap((domain) => [
+              `${domain} = server:${dns}`,
+              `*.${domain} = server:${dns}`
+            ])
           ),
         ''
       ],
