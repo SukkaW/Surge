@@ -30,7 +30,7 @@ async function processDomainLists(domainListsUrl) {
   const domainSets = new Set();
 
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl)) {
-    if (line.startsWith('!')) {
+    if (line[0] === '!') {
       continue;
     }
 
@@ -114,7 +114,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
       foundDebugDomain = true;
     }
 
-    if (isSubDomain && !domainToBeAddedToBlack.startsWith('.')) {
+    if (isSubDomain && domainToBeAddedToBlack[0] !== '.') {
       blacklistDomainSets.add(`.${domainToBeAddedToBlack}`);
     } else {
       blacklistDomainSets.add(domainToBeAddedToBlack);
@@ -158,7 +158,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
 
     if (
       line === ''
-      || line.startsWith('/')
+      || line[0] === '/'
       || R_KNOWN_NOT_NETWORK_FILTER_PATTERN.test(line)
       // doesn't include
       || !line.includes('.') // rule with out dot can not be a domain
@@ -176,13 +176,13 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
       // || line.includes('~')
       // || line.includes('&')
       // || line.includes('%')
-      || ((line.includes('/') || line.includes(':')) && !line.includes('://'))
       // ends with
       || line.endsWith('.')
       || line.endsWith('-')
       || line.endsWith('_')
       // special modifier
       || R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2.test(line)
+      || ((line.includes('/') || line.includes(':')) && !line.includes('://'))
       // || line.includes('$popup')
       // || line.includes('$removeparam')
       // || line.includes('$popunder')
@@ -244,13 +244,17 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
     const lineEndsWithCaret = line.endsWith('^');
     const lineEndsWithCaretVerticalBar = line.endsWith('^|');
 
-    if (line.startsWith('@@')) {
+    if (line[0] === '@' && line[1] === '@') {
       if (line.endsWith('$cname')) {
         continue;
       }
 
       if (
-        (line.startsWith('@@|') || line.startsWith('@@.'))
+        // (line.startsWith('@@|') || line.startsWith('@@.'))
+        (
+          line[2] === '|'
+          || line[2] === '.'
+        )
         && (
           lineEndsWithCaret
           || lineEndsWithCaretVerticalBar
@@ -358,7 +362,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
       }
       continue;
     }
-    if (!line.startsWith('|') && lineEndsWithCaret) {
+    if (line[0] !== '|' && lineEndsWithCaret) {
       const _domain = line.slice(0, -1);
       const domain = normalizeDomain(_domain);
       if (domain) {
