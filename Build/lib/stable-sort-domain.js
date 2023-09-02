@@ -10,6 +10,45 @@ const cache1 = Object.create(null);
 const parse = (url) => (cache1[url] ||= tldts.parse(url, { allowPrivateDomains: true }));
 
 /**
+ * @param {string | null} a
+ * @param {string | null} b
+ * @returns {0 | 1 | -1}
+ */
+const compare = (a, b) => {
+  if (a === b) return 0;
+  if (b == null) {
+    return 1;
+  }
+  if (a == null) {
+    return -1;
+  }
+
+  if (a.length !== b.length) {
+    const r = a.length - b.length;
+    if (r > 0) {
+      return 1;
+    }
+    if (r < 0) {
+      return -1;
+    }
+    return 0;
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    if (b[i] == null) {
+      return 1;
+    }
+    if (a[i] < b[i]) {
+      return -1;
+    }
+    if (a[i] > b[i]) {
+      return 1;
+    }
+  }
+  return 0;
+};
+
+/**
  * @param {string} a
  * @param {string} b
  * @returns {0 | 1 | -1}
@@ -17,85 +56,22 @@ const parse = (url) => (cache1[url] ||= tldts.parse(url, { allowPrivateDomains: 
 const domainSorter = (a, b) => {
   if (a === b) return 0;
 
-  const aParsed = parse(a);
-  const bParsed = parse(b);
+  const aParsed = parse(a[0] === '.' ? a.slice(1) : a);
+  const bParsed = parse(b[0] === '.' ? b.slice(1) : b);
 
-  const aSuffix = aParsed.publicSuffix;
-  const bSuffix = bParsed.publicSuffix;
-
-  if (bSuffix !== aSuffix) {
-    if (bSuffix == null) {
-      return 1;
-    }
-    if (aSuffix == null) {
-      return -1;
-    }
-
-    for (let i = 0, l = aSuffix.length; i < l; i++) {
-      if (bSuffix[i] == null) {
-        return 1;
-      }
-
-      if (aSuffix[i] < bSuffix[i]) {
-        return -1;
-      }
-
-      if (aSuffix[i] > bSuffix[i]) {
-        return 1;
-      }
-    }
+  const resultDomainWithoutSuffix = compare(aParsed.domainWithoutSuffix, bParsed.domainWithoutSuffix);
+  if (resultDomainWithoutSuffix !== 0) {
+    return resultDomainWithoutSuffix;
   }
 
-  const aDomainWithoutSuffix = aParsed.domainWithoutSuffix;
-  const bDomainWithoutSuffix = bParsed.domainWithoutSuffix;
-
-  if (aDomainWithoutSuffix !== bDomainWithoutSuffix) {
-    if (bDomainWithoutSuffix == null) {
-      return 1;
-    }
-    if (aDomainWithoutSuffix == null) {
-      return -1;
-    }
-
-    for (let i = 0, l = aDomainWithoutSuffix.length; i < l; i++) {
-      if (bDomainWithoutSuffix[i] == null) {
-        return 1;
-      }
-
-      if (aDomainWithoutSuffix[i] < bDomainWithoutSuffix[i]) {
-        return -1;
-      }
-
-      if (aDomainWithoutSuffix[i] > bDomainWithoutSuffix[i]) {
-        return 1;
-      }
-    }
+  const resultSuffix = compare(aParsed.publicSuffix, bParsed.publicSuffix);
+  if (resultSuffix !== 0) {
+    return resultSuffix;
   }
 
-  const aSubdomain = aParsed.subdomain;
-  const bSubdomain = bParsed.subdomain;
-
-  if (aSubdomain !== bSubdomain) {
-    if (bSubdomain == null) {
-      return 1;
-    }
-    if (aSubdomain == null) {
-      return -1;
-    }
-
-    for (let i = 0, l = aSubdomain.length; i < l; i++) {
-      if (bSubdomain[i] == null) {
-        return 1;
-      }
-
-      if (aSubdomain[i] < bSubdomain[i]) {
-        return -1;
-      }
-
-      if (aSubdomain[i] > bSubdomain[i]) {
-        return 1;
-      }
-    }
+  const resultSubdomain = compare(aParsed.subdomain, bParsed.subdomain);
+  if (resultSubdomain !== 0) {
+    return resultSubdomain;
   }
 
   return 0;

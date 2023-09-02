@@ -6,6 +6,7 @@ const { isDomainLoose } = require('./lib/is-domain-loose');
 const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
+const domainSorter = require('./lib/stable-sort-domain');
 
 /**
  * @param {string} string
@@ -78,8 +79,8 @@ const escapeRegExp = (string) => {
   await fs.promises.writeFile(
     path.resolve(__dirname, '../List/internal/cdn.txt'),
     [
-      ...Array.from(set).map(i => `SUFFIX,${i}`),
-      ...Array.from(keywords).map(i => `REGEX,${i}`),
+      ...Array.from(set).sort(domainSorter).map(i => `SUFFIX,${i}`),
+      ...Array.from(keywords).sort().map(i => `REGEX,${i}`),
       ''
     ].join('\n')
   );

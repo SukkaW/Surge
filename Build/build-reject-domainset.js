@@ -1,8 +1,10 @@
 // @ts-check
 const fs = require('fs');
 const fse = require('fs-extra');
-
 const { resolve: pathResolve } = require('path');
+
+const tldts = require('tldts');
+
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
 const Trie = require('./lib/trie');
 
@@ -186,10 +188,13 @@ const domainSuffixSet = new Set();
   console.time('* Write reject.conf');
 
   /** @type {Record<string, number>} */
-  const rejectDomainsStats = {};
-
-  const sortedDomainSets = dudupedDominArray
-    .sort(domainSorter);
+  const rejectDomainsStats = dudupedDominArray.reduce((acc, cur) => {
+    const suffix = tldts.getDomain(cur, { allowPrivateDomains: false });
+    if (suffix) {
+      acc[suffix] = (acc[suffix] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
 
   await Promise.all([
     compareAndWriteFile(
@@ -207,7 +212,7 @@ const domainSuffixSet = new Set();
           ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
         ],
         new Date(),
-        sortedDomainSets
+        dudupedDominArray.sort(domainSorter)
       ),
       pathResolve(__dirname, '../List/domainset/reject.conf')
     ),
