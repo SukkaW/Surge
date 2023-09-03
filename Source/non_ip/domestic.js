@@ -119,6 +119,29 @@ module.exports.DOMESTICS = /** @type {const} */({
       'yunjiasu-cdn.net'
     ]
   },
+  QIHOO360: {
+    dns: 'https://101.198.198.198/dns-query',
+    domains: [
+      'qhimg.com',
+      'qhimgs0.com',
+      'qhimgs1.com',
+      'qhimgs2.com',
+      'qhimgs3.com',
+      'qhimgs4.com',
+      'qhimgs5.com',
+      'qhimgs6.com',
+      'qhres.com',
+      'qhmsg.com',
+      '360.com',
+      '360.cn',
+      '360.net',
+      '360safe.com',
+      '360tpcdn.com',
+      'qhres2.com',
+      'so.com',
+      'yunpan.cn'
+    ]
+  },
   SYSTEM: {
     dns: 'system',
     domains: [
