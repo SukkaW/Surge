@@ -1,7 +1,7 @@
 // @ts-check
 module.exports.DOMESTICS = /** @type {const} */({
   ALIBABA: {
-    dns: 'https://223.5.5.5/dns-query',
+    dns: 'quic://223.6.6.6:853',
     domains: [
       'uc.cn',
       'ucweb.com',
