@@ -1,6 +1,6 @@
 # Sukka Ruleset
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/) 和 [Clash Premium](https://dreamacro.github.io/clash/) 的 Rule Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/) 和 [Clash Premium](https://dreamacro.github.io/clash/) 的 Ruleset Snippet。
 
 ## 条款和协议
 
@@ -12,7 +12,7 @@
 
 ## 规则组列表
 
-请按照 `non_ip`、`ip`，和 README 中的顺序 将规则组添加到你的配置文件中。
+**请务必按照 `domainset`、`non_ip`、`ip`，和 README 中的顺序 将规则组添加到你的配置文件中，确保所有 `domainset` 或 `non_ip` 规则组 位于所有的 `ip` 规则组之前**。
 
 > Surge 和 Clash 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免不必要的 DNS 解析。
 
@@ -32,9 +32,47 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,REJECT
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 ```
 
-**Clash**
+**Clash Premium**
 
+```yaml
+rule-providers:
+  reject_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/reject.txt
+    path: ./sukkaw_ruleset/reject_non_ip.txt
+  # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
+  reject_domainset:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/reject.txt
+    path: ./sukkaw_ruleset/reject_domainset.txt
+  reject_phishing_domainset:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/reject_phishing.txt
+    path: ./sukkaw_ruleset/reject_phishing_domainset.txt
+  reject_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/reject.txt
+    path: ./sukkaw_ruleset/reject_ip.txt
 
+rules:
+  - RULE-SET,reject_non_ip,REJECT
+  # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
+  - RULE-SET,reject_domainset,REJECT
+  - RULE-SET,reject_phishing_domainset,REJECT
+  - RULE-SET,reject_ip,REJECT-DROP
+```
 
 #### 搜狗输入法
 
@@ -45,7 +83,23 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 **Surge**
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,
+RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,REJECT
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  sogouinput:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/sogouinput.txt
+    path: ./sukkaw_ruleset/sogouinput.txt
+
+rules:
+  - RULE-SET,sogouinput,REJECT
 ```
 
 #### 常见静态 CDN
@@ -61,6 +115,22 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,[Replace with your po
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,[Replace with your policy]
 ```
 
+**Clash Premium**
+
+```yaml
+rule-providers:
+  cdn_domainset:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/cdn.txt
+    path: ./sukkaw_ruleset/cdn_domainset.txt
+
+rules:
+  - RULE-SET,cdn_domainset,[Replace with your policy]
+```
+
 #### 流媒体
 
 - 人工维护
@@ -71,6 +141,30 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,[Replace with your policy]
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  stream_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream.txt
+    path: ./sukkaw_ruleset/stream_non_ip.txt
+  stream_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream.txt
+    path: ./sukkaw_ruleset/stream_ip.txt
+
+rules:
+  - RULE-SET,stream_non_ip,[Replace with your policy]
+  - RULE-SET,stream_ip,[Replace with your policy]
 ```
 
 #### Telegram
@@ -85,6 +179,30 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,[Replace with your po
 RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy]
 ```
 
+**Clash Premium**
+
+```yaml
+rule-providers:
+  telegram_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/telegram.txt
+    path: ./sukkaw_ruleset/telegram_non_ip.txt
+  telegram_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/telegram.txt
+    path: ./sukkaw_ruleset/telegram_ip.txt
+
+rules:
+  - RULE-SET,telegram_non_ip,[Replace with your policy]
+  - RULE-SET,telegram_ip,[Replace with your policy]
+```
+
 #### Apple CDN
 
 - 自动生成
@@ -97,6 +215,22 @@ RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,[Replace with your policy]
 ```
 
+**Clash Premium**
+
+```yaml
+rule-providers:
+  apple_cdn:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt
+    path: ./sukkaw_ruleset/apple_cdn.txt
+
+rules:
+  - RULE-SET,apple_cdn,[Replace with your policy]
+```
+
 #### Apple Service
 
 - 人工维护
@@ -105,6 +239,22 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,[Replace with y
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  apple_services:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/apple_services.txt
+    path: ./sukkaw_ruleset/apple_services.txt
+
+rules:
+  - RULE-SET,apple_services,[Replace with your policy]
 ```
 
 #### 网易云音乐
@@ -116,6 +266,30 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,[Replace with y
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  neteasemusic_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/neteasemusic.txt
+    path: ./sukkaw_ruleset/neteasemusic_non_ip.txt
+  neteasemusic_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/neteasemusic.txt
+    path: ./sukkaw_ruleset/neteasemusic_ip.txt
+
+rules:
+  - RULE-SET,neteasemusic_non_ip,[Replace with your policy]
+  - RULE-SET,neteasemusic_ip,[Replace with your policy]
 ```
 
 #### Misc
@@ -132,6 +306,54 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,PROXY
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy]
 ```
 
+**Clash Premium**
+
+```yaml
+rule-providers:
+  domestic_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/domestic.txt
+    path: ./sukkaw_ruleset/domestic_non_ip.txt
+  direct_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/direct.txt
+    path: ./sukkaw_ruleset/direct_non_ip.txt
+  global_plus_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/global_plus.txt
+    path: ./sukkaw_ruleset/global_plus_non_ip.txt
+  global_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/global.txt
+    path: ./sukkaw_ruleset/global_non_ip.txt
+  domestic_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: domestic_ip
+    path: ./sukkaw_ruleset/domestic_ip.txt
+
+rules:
+  - RULE-SET,domestic_non_ip,[Replace with your policy]
+  - RULE-SET,direct_non_ip,[Replace with your policy]
+  - RULE-SET,global_plus_non_ip,[Replace with your policy]
+  - RULE-SET,global_non_ip,[Replace with your policy]
+  - RULE-SET,domestic_ip,[Replace with your policy]
+```
+
 #### chnroute CIDR
 
 - 自动生成
@@ -141,6 +363,22 @@ RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  china_ip:
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/china_ip.txt
+    path: ./sukkaw_ruleset/china_ip.txt
+
+rules:
+  - RULE-SET,china_ip,[Replace with your policy]
 ```
 
 ## Surge 模块列表
@@ -163,9 +401,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 
 **有适用于 Clash 的规则组吗？**
 
-~~没有。如果 [Clash Premium 提供了对 `DOMAIN-SET` 格式的支持](https://github.com/Dreamacro/clash/issues/1838)，未来可能会有。~~
-
-有。
+规则组仅支持 Clash Premium。「Surge 模块」不适用于任何版本的 Clash。
 
 **有适用于 Shadowrocket、Quantumult X、Loon、V2RayNG 的规则组吗？**
 
