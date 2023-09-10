@@ -5,6 +5,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
+const { processLine } = require('./lib/process-line');
 
 (async () => {
   console.time('Total Time - build-anti-bogus-domain');
@@ -34,7 +35,10 @@ const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
         }
       });
     } else {
-      result.push(line);
+      const l = processLine(line);
+      if (l) {
+        result.push(l);
+      }
     }
   }
 
@@ -48,6 +52,16 @@ const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
     'Data from:',
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
+
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Ruleset - Anti Bogus Domain',
+      description,
+      new Date(),
+      surgeRulesetToClashClassicalTextRuleset(result)
+    ),
+    path.resolve(__dirname, '../Clash/ip/reject.txt')
+  );
 
   await Promise.all([
     compareAndWriteFile(

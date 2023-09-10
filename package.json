@@ -121,7 +121,8 @@
         "build:apple-cdn",
         "build:phishing-domainset",
         "build:reject-domainset",
-        "build:cdn-conf"
+        "build:cdn-conf",
+        "build:common"
       ]
     },
     "build": {
