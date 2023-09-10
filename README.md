@@ -1,6 +1,6 @@
-# Surge
+# Sukka Ruleset
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、仅适用于 [Surge](https://nssurge.com/) 的 Rule Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/) 和 [Clash Premium](https://dreamacro.github.io/clash/) 的 Rule Snippet。
 
 ## 条款和协议
 
@@ -18,6 +18,13 @@
 
 #### 广告拦截 / 隐私保护 / Malware 拦截 / Phiishing 拦截
 
+- 自动生成
+- 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.js`](Build/build-reject-domainset.js)
+- 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）以获得更好的性能
+- 不能替代浏览器广告屏蔽扩展（如 uBlock Origin）
+
+**Surge**
+
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT-TINYGIF
@@ -25,80 +32,97 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,REJECT
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 ```
 
-- 自动生成
-- 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.js`](Build/build-reject-domainset.js)
-- 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）以获得更好的性能
-- 不能替代浏览器广告屏蔽扩展（如 uBlock Origin）
+**Clash**
+
+
 
 #### 搜狗输入法
-
-```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,
-```
 
 - 人工维护
 - 该规则组用于避免搜狗输入法将你输入的每一个字符自动收集并通过 `get.sogou.com/q` 等域名回传
 - 影响搜狗输入法账号同步、词库更新、问题反馈
 
+**Surge**
+
+```ini
+RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,
+```
+
 #### 常见静态 CDN
+
+- 自动生成 + 人工维护
+- 包含所有常见静态资源 CDN 域名、对象存储域名
+- 如果你正在使用商业性质的公共代理服务、且你的服务商提供按低倍率结算流量消耗的节点，可使用上述规则组将流量分配给这部分节点
+
+**Surge**
 
 ```ini
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,[Replace with your policy]
 ```
 
-- 自动生成 + 人工维护
-- 包含所有常见静态资源 CDN 域名、对象存储域名
-- 如果你正在使用商业性质的公共代理服务、且你的服务商提供按低倍率结算流量消耗的节点，可使用上述规则组将流量分配给这部分节点
-
 #### 流媒体
+
+- 人工维护
+- 包含 4gtv、AbemaTV、All4、Amazon Prime Video、Apple TV、Apple Music TV、Bahamut、BBC、Bilibili Intl、DAZN、Deezer、Disney+、Discovery+、DMM、encoreTVB、Fox Now、Fox+、HBO GO/Now/Max/Asia、Hulu、HWTV、JOOX、Jwplayer、KKBOX、KKTV、Line TV、Naver TV、myTV Super、Netflix、niconico、Now E、Paramount+、PBS、Peacock、Pandora、PBS、Pornhub、SoundCloud、PBS、Spotify、TaiwanGood、Tiktok Intl、Twitch、ViuTV、ShowTime、iQiYi Global、Himalaya Podcast、Overcast、WeTV 的规则组
+
+**Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,[Replace with your policy]
 ```
 
-- 人工维护
-- 包含 4gtv、AbemaTV、All4、Amazon Prime Video、Apple TV、Apple Music TV、Bahamut、BBC、Bilibili Intl、DAZN、Deezer、Disney+、Discovery+、DMM、encoreTVB、Fox Now、Fox+、HBO GO/Now/Max/Asia、Hulu、HWTV、JOOX、Jwplayer、KKBOX、KKTV、Line TV、Naver TV、myTV Super、Netflix、niconico、Now E、Paramount+、PBS、Peacock、Pandora、PBS、Pornhub、SoundCloud、PBS、Spotify、TaiwanGood、Tiktok Intl、Twitch、ViuTV、ShowTime、iQiYi Global、Himalaya Podcast、Overcast、WeTV 的规则组
-
 #### Telegram
+
+- 域名规则 人工维护
+- IP CIDR 规则 自动生成（数据来源：[`https://core.telegram.org/resources/cidr.txt`](https://core.telegram.org/resources/cidr.txt)）
+
+**Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy]
 ```
 
-- 域名规则 人工维护
-- IP CIDR 规则 自动生成（数据来源：[`https://core.telegram.org/resources/cidr.txt`](https://core.telegram.org/resources/cidr.txt)）
-
 #### Apple CDN
-
-```ini
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,[Replace with your policy]
-```
 
 - 自动生成
 - 规则组包含 Apple, Inc. 在中华人民共和国完成工信部 ICP 备案和公安网备、且在中华人民共和国境内提供 HTTP 服务的域名，如果由于某些原因需要代理其中部分域名，请自行针对域名编写规则、并添加到当前规则组之前。
 - 数据来源 [`felixonmars/dnsmasq-china-list`](https://github.com/felixonmars/dnsmasq-china-list/blob/master/apple.china.conf)
 
+**Surge**
+
+```ini
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,[Replace with your policy]
+```
+
 #### Apple Service
+
+- 人工维护
+
+**Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,[Replace with your policy]
 ```
 
+#### 网易云音乐
+
 - 人工维护
 
-#### 网易云音乐
+**Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,[Replace with your policy]
 ```
 
+#### Misc
+
 - 人工维护
 
-#### Misc
+**Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,[Replace with your policy]
@@ -108,16 +132,16 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,PROXY
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy]
 ```
 
-- 人工维护
-
 #### chnroute CIDR
+
+- 自动生成
+- [原始数据](https://github.com/misakaio/chnroutes2) 由 Misaka Network, Inc.、DMIT, Inc.、NEROCLOUD Ltd.、Rainbow network Ltd.、MOACK Co., Ltd. 提供，由 Misaka Network, Inc. 整理，以 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) 协议发布
+
+**Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy]
 ```
-
-- 自动生成
-- [原始数据](https://github.com/misakaio/chnroutes2) 由 Misaka Network, Inc.、DMIT, Inc.、NEROCLOUD Ltd.、Rainbow network Ltd.、MOACK Co., Ltd. 提供，由 Misaka Network, Inc. 整理，以 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) 协议发布
 
 ## Surge 模块列表
 
@@ -139,7 +163,9 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 
 **有适用于 Clash 的规则组吗？**
 
-没有。如果 [Clash Premium 提供了对 `DOMAIN-SET` 格式的支持](https://github.com/Dreamacro/clash/issues/1838)，未来可能会有。
+~~没有。如果 [Clash Premium 提供了对 `DOMAIN-SET` 格式的支持](https://github.com/Dreamacro/clash/issues/1838)，未来可能会有。~~
+
+有。
 
 **有适用于 Shadowrocket、Quantumult X、Loon、V2RayNG 的规则组吗？**
 
