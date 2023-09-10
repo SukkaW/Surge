@@ -16,7 +16,7 @@ const fileExists = (path) => {
 };
 
 (async () => {
-  const filesList = [];
+  const filesList = ['Clash', 'List'];
 
   let allFileExists = true;
 
@@ -60,7 +60,7 @@ const fileExists = (path) => {
       cwd: extractedPath,
       filter(p) {
         const dir = p.split('/')[1];
-        return dir === 'List' || dir === 'Modules';
+        return dir === 'List' || dir === 'Modules' || dir === 'Clash';
       }
     })
   );
