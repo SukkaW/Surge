@@ -7,8 +7,7 @@ const { processLine } = require('./lib/process-line');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 const { domainDeduper } = require('./lib/domain-deduper');
-const _Trie = require('mnemonist/trie');
-const Trie = _Trie.default || _Trie;
+const { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashDomainset } = require('./lib/clash');
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -120,25 +119,13 @@ async function transformDomainset(sourcePath, relativePath) {
         title,
         description,
         new Date(),
-        deduped.map(i => (i[0] === '.' ? `+${i}` : i))
+        surgeDomainsetToClashDomainset(deduped)
       ),
       // change path extname to .txt
       path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
     )
   ]);
 }
-
-const CLASH_SUPPORTED_RULE_TYPE = [
-  'DOMAIN-SUFFIX',
-  'DOMAIN-KEYWORD',
-  'DOMAIN',
-  'SRC-IP-CIDR',
-  'GEOIP',
-  'IP-CIDR',
-  'IP-CIDR6',
-  'DST-PORT',
-  'SRC-PORT'
-];
 
 /**
  * Output Surge RULE-SET and Clash classical text format
@@ -163,11 +150,8 @@ async function transformRuleset(sourcePath, relativePath) {
   ];
 
   const lines = Array.from(set);
-  const trie = Trie.from(set);
 
-  const clashSupported = CLASH_SUPPORTED_RULE_TYPE.map(
-    type => trie.find(`${type},`)
-  ).flat();
+  const clashSupported = surgeRulesetToClashClassicalTextRuleset(set);
 
   await Promise.all([
     // Surge RULE-SET

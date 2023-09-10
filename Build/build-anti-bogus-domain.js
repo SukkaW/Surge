@@ -4,7 +4,7 @@ const { isIPv4, isIPv6 } = require('net');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { minifyRules } = require('./lib/minify-rules');
+const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
 
 (async () => {
   console.time('Total Time - build-anti-bogus-domain');
@@ -21,7 +21,6 @@ const { minifyRules } = require('./lib/minify-rules');
   console.timeEnd('* Download bogus-nxdomain-list');
 
   const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
-  const resultPath = path.resolve(__dirname, '../List/ip/reject.conf');
 
   /** @type {string[]} */
   const result = [];
@@ -39,24 +38,37 @@ const { minifyRules } = require('./lib/minify-rules');
     }
   }
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Surge Rules - Anti Bogus Domain',
-      [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
-        '',
-        'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers.',
-        '',
-        'Data from:',
-        ' - https://github.com/felixonmars/dnsmasq-china-list'
-      ],
-      new Date(),
-      minifyRules(result)
+  const description = [
+    'License: AGPL 3.0',
+    'Homepage: https://ruleset.skk.moe',
+    'GitHub: https://github.com/SukkaW/Surge',
+    '',
+    'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers.',
+    '',
+    'Data from:',
+    ' - https://github.com/felixonmars/dnsmasq-china-list'
+  ];
+
+  await Promise.all([
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Anti Bogus Domain',
+        description,
+        new Date(),
+        result
+      ),
+      path.resolve(__dirname, '../List/ip/reject.conf')
     ),
-    resultPath
-  );
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Anti Bogus Domain',
+        description,
+        new Date(),
+        surgeRulesetToClashClassicalTextRuleset(result)
+      ),
+      path.resolve(__dirname, '../Clash/ip/reject.txt')
+    )
+  ]);
 
   console.timeEnd('Total Time - build-anti-bogus-domain');
 })();

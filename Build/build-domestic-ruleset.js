@@ -6,6 +6,7 @@ const { processLine } = require('./lib/process-line');
 const { withBannerArray } = require('./lib/with-banner');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const domainSorter = require('./lib/stable-sort-domain');
+const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
 
 (async () => {
   const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
@@ -25,21 +26,32 @@ const domainSorter = require('./lib/stable-sort-domain');
       .map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );
 
+  const rulesetDescription = [
+    'License: AGPL 3.0',
+    'Homepage: https://ruleset.skk.moe',
+    'GitHub: https://github.com/SukkaW/Surge',
+    '',
+    'This file contains known addresses that are avaliable in the Mainland China.'
+  ];
+
   await Promise.all([
     compareAndWriteFile(
       withBannerArray(
-        'Sukka\'s Surge Rules - Domestic Domains',
-        [
-          'License: AGPL 3.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'This file contains known addresses that are avaliable in the Mainland China.'
-        ],
+        'Sukka\'s Ruleset - Domestic Domains',
+        rulesetDescription,
         new Date(),
         results
       ),
       path.resolve(__dirname, '../List/non_ip/domestic.conf')
+    ),
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Domestic Domains',
+        rulesetDescription,
+        new Date(),
+        surgeRulesetToClashClassicalTextRuleset(results)
+      ),
+      path.resolve(__dirname, '../Clash/non_ip/domestic.txt')
     ),
     compareAndWriteFile(
       [

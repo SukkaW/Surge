@@ -5,6 +5,7 @@
   "description": "",
   "scripts": {
     "build": "wireit",
+    "build:common": "wireit",
     "download-previous-build": "wireit",
     "build:anti-bogus-domain": "wireit",
     "build:apple-cdn": "wireit",
@@ -24,6 +25,12 @@
   "wireit": {
     "download-previous-build": {
       "command": "node ./Build/download-previous-build.js"
+    },
+    "build:common": {
+      "command": "node ./Build/build.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:anti-bogus-domain": {
       "command": "node ./Build/build-anti-bogus-domain.js",
@@ -95,6 +102,7 @@
     "build:public": {
       "command": "node ./Build/build-public.js",
       "dependencies": [
+        "build:common",
         "build:anti-bogus-domain",
         "build:apple-cdn",
         "build:cdn-conf",
@@ -118,6 +126,7 @@
     },
     "build": {
       "dependencies": [
+        "build:common",
         "build:anti-bogus-domain",
         "build:apple-cdn",
         "build:cdn-conf",
