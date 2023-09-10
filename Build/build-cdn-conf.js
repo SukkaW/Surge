@@ -3,8 +3,6 @@ const path = require('path');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
 const { withBannerArray } = require('./lib/with-banner');
 const { minifyRules } = require('./lib/minify-rules');
-const { domainDeduper } = require('./lib/domain-deduper');
-const { processLine } = require('./lib/process-line');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
 
@@ -40,53 +38,21 @@ const Trie = require('./lib/trie');
     }
   }
 
-  /**
-   * Dedupe cdn.conf
-   */
-  /** @type {Set<string>} */
-  const cdnDomains = new Set();
-
-  for await (const line of readFileByLine(
-    path.resolve(__dirname, '../Source/domainset/cdn.conf')
-  )) {
-    const l = processLine(line);
-    if (l) {
-      cdnDomains.add(l);
-    }
-  }
-
-  await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Surge Rules - CDN Domains',
-        [
-          'License: AGPL 3.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'This file contains object storage and static assets CDN domains.'
-        ],
-        new Date(),
-        minifyRules(cdnDomainsList)
-      ),
-      path.resolve(__dirname, '../List/non_ip/cdn.conf')
+  await compareAndWriteFile(
+    withBannerArray(
+      'Sukka\'s Surge Rules - CDN Domains',
+      [
+        'License: AGPL 3.0',
+        'Homepage: https://ruleset.skk.moe',
+        'GitHub: https://github.com/SukkaW/Surge',
+        '',
+        'This file contains object storage and static assets CDN domains.'
+      ],
+      new Date(),
+      minifyRules(cdnDomainsList)
     ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Surge Rules - CDN Domains',
-        [
-          'License: AGPL 3.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'This file contains object storage and static assets CDN domains.'
-        ],
-        new Date(),
-        minifyRules(domainDeduper(Array.from(cdnDomains)))
-      ),
-      path.resolve(__dirname, '../List/domainset/cdn.conf')
-    )
-  ]);
+    path.resolve(__dirname, '../List/non_ip/cdn.conf')
+  );
 
   console.timeEnd('Total Time - build-cdn-conf');
 })();

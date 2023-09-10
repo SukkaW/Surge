@@ -28,7 +28,7 @@ const domainSorter = require('./lib/stable-sort-domain');
   await Promise.all([
     compareAndWriteFile(
       withBannerArray(
-        'Sukka\'s Surge Rules - Domestic Domain',
+        'Sukka\'s Surge Rules - Domestic Domains',
         [
           'License: AGPL 3.0',
           'Homepage: https://ruleset.skk.moe',

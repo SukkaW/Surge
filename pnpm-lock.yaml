@@ -25,12 +25,21 @@ dependencies:
   async-sema:
     specifier: ^3.1.1
     version: 3.1.1
+  ci-info:
+    specifier: ^3.8.0
+    version: 3.8.0
   cidr-tools-wasm:
     specifier: ^0.0.11
     version: 0.0.11
   fs-extra:
     specifier: ^11.1.1
     version: 11.1.1
+  mnemonist:
+    specifier: ^0.39.5
+    version: 0.39.5
+  path-scurry:
+    specifier: ^1.10.1
+    version: 1.10.1
   picocolors:
     specifier: ^1.0.0
     version: 1.0.0
@@ -190,15 +199,15 @@ packages:
       fastq: 1.13.0
     dev: true
 
-  /@nolyfill/has@1.0.11:
-    resolution: {integrity: sha512-Q2QNYUzZxW4/FzI57EGuxQF6PVO+LJajvcsRGTj26FU4z5rmXouaTGMas/2OreYupieIGMeI5dNEJwXS/Wy2kQ==}
+  /@nolyfill/has@1.0.21:
+    resolution: {integrity: sha512-Sf8iFaegjGp29hQVQjIc+nDR0uWqGkHsFC3jsUigFwGjpafgMaBtL++DpTU9jYAKDJEvslR1szl8qJjNGlhgcw==}
     engines: {node: '>=12.4.0'}
     dependencies:
-      '@nolyfill/shared': 1.0.11
+      '@nolyfill/shared': 1.0.21
     dev: true
 
-  /@nolyfill/shared@1.0.11:
-    resolution: {integrity: sha512-MVtVsoUIbg93Bs33Nc7JvOv/ePyUjUMXorrTtTdjPpLn2t8HmbklZvk2ur0np0thyI9OWC5mNQHjR2l0kwJUNQ==}
+  /@nolyfill/shared@1.0.21:
+    resolution: {integrity: sha512-qDc/NoaFU23E0hhiDPeUrvWzTXIPE+RbvRQtRWSeHHNmCIgYI9HS1jKzNYNJxv4jvZ/1VmM3L6rNVxbj+LBMNA==}
     dev: true
 
   /@remusao/guess-url-type@1.2.1:
@@ -457,6 +466,11 @@ packages:
   /chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
+    dev: false
+
+  /ci-info@3.8.0:
+    resolution: {integrity: sha512-eXTggHWSooYhq49F2opQhuHWgzucfF2YgODK4e1566GQs5BIfP30B0oenwBJHfWxAs2fyPB1s7Mg949zLf61Yw==}
+    engines: {node: '>=8'}
     dev: false
 
   /cidr-tools-wasm@0.0.11:
@@ -964,7 +978,7 @@ packages:
   /is-core-module@2.12.1:
     resolution: {integrity: sha512-Q4ZuBAe2FUsKtyQJoQHlvP8OvBERxO3jEmy1I7hcRXcJBGGHFh/aJBswbXuS9sgrDH2QUO8ilkwNPHvHMd8clg==}
     dependencies:
-      has: /@nolyfill/has@1.0.11
+      has: /@nolyfill/has@1.0.21
     dev: true
 
   /is-extglob@2.1.1:
@@ -1075,6 +1089,11 @@ packages:
       get-func-name: 2.0.0
     dev: true
 
+  /lru-cache@10.0.1:
+    resolution: {integrity: sha512-IJ4uwUTi2qCccrioU6g9g/5rvvVl13bsdczUUcqbciD9iLr095yj8DQKdObriEvuNSx325N1rV1O0sJFszx75g==}
+    engines: {node: 14 || >=16.14}
+    dev: false
+
   /lru-cache@6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
@@ -1132,6 +1151,12 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
+    dev: false
+
+  /mnemonist@0.39.5:
+    resolution: {integrity: sha512-FPUtkhtJ0efmEFGpU14x7jGbTB+s18LrzRL2KgoWz9YvcY3cPomz8tih01GbHwnGk/OmkOKfqd/RAQoc8Lm7DQ==}
+    dependencies:
+      obliterator: 2.0.4
     dev: false
 
   /mocha@10.2.0:
@@ -1196,6 +1221,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /obliterator@2.0.4:
+    resolution: {integrity: sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==}
+    dev: false
+
   /once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
     dependencies:
@@ -1253,6 +1282,14 @@ packages:
   /path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
     dev: true
+
+  /path-scurry@1.10.1:
+    resolution: {integrity: sha512-MkhCqzzBEpPvxxQ71Md0b1Kk51W01lrYvlMzSUaIzNsODdd7mqhiimSZlr+VegAz5Z6Vzt9Xg2ttE//XBhH3EQ==}
+    engines: {node: '>=16 || 14 >=14.17'}
+    dependencies:
+      lru-cache: 10.0.1
+      minipass: 5.0.0
+    dev: false
 
   /pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
