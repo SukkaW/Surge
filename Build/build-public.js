@@ -9,6 +9,7 @@ const publicPath = path.resolve(__dirname, '../public');
 const folderAndFilesToBeDeployed = [
   'Assets',
   'List',
+  'Clash',
   'Modules',
   'Script',
   'LICENSE',
