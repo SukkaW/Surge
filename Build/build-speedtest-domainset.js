@@ -6,6 +6,7 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
 const domainSorter = require('./lib/stable-sort-domain');
 
 const { Sema } = require('async-sema');
+const { surgeDomainsetToClashDomainset } = require('./lib/clash');
 const s = new Sema(2);
 
 /**
@@ -107,19 +108,31 @@ const querySpeedtestApi = async (keyword) => {
     }
   }
 
-  const reduped = domainDeduper(Array.from(domains)).sort(domainSorter);
+  const deduped = domainDeduper(Array.from(domains)).sort(domainSorter);
+  const description = [
+    'License: AGPL 3.0',
+    'Homepage: https://ruleset.skk.moe',
+    'GitHub: https://github.com/SukkaW/Surge'
+  ];
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Surge Rules - Speedtest Domains',
-      [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge'
-      ],
-      new Date(),
-      reduped
+  await Promise.all([
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Speedtest Domains',
+        description,
+        new Date(),
+        deduped
+      ),
+      path.resolve(__dirname, '../List/domainset/speedtest.conf')
     ),
-    path.resolve(__dirname, '../List/domainset/speedtest.conf')
-  );
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Speedtest Domains',
+        description,
+        new Date(),
+        surgeDomainsetToClashDomainset(deduped)
+      ),
+      path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
+    )
+  ]);
 })();

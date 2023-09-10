@@ -5,6 +5,7 @@ const { isIPv4, isIPv6 } = require('net');
 const { withBannerArray } = require('./lib/with-banner');
 const { processLine } = require('./lib/process-line');
 const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
 
 (async () => {
   console.time('Total Time - build-telegram-cidr');
@@ -34,21 +35,34 @@ const { compareAndWriteFile } = require('./lib/string-array-compare');
     throw new Error('Failed to fetch data!');
   }
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Surge Rules - Telegram IP CIDR',
-      [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
-        'Data from:',
-        ' - https://core.telegram.org/resources/cidr.txt'
-      ],
-      date,
-      results
+  const description = [
+    'License: AGPL 3.0',
+    'Homepage: https://ruleset.skk.moe',
+    'GitHub: https://github.com/SukkaW/Surge',
+    'Data from:',
+    ' - https://core.telegram.org/resources/cidr.txt'
+  ];
+
+  await Promise.all([
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Telegram IP CIDR',
+        description,
+        date,
+        results
+      ),
+      path.resolve(__dirname, '../List/ip/telegram.conf')
     ),
-    path.resolve(__dirname, '../List/ip/telegram.conf')
-  );
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Telegram IP CIDR',
+        description,
+        date,
+        surgeRulesetToClashClassicalTextRuleset(results)
+      ),
+      path.resolve(__dirname, '../Clash/ip/telegram.txt')
+    )
+  ]);
 
   console.timeEnd('Total Time - build-telegram-cidr');
 })();

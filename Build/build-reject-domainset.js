@@ -16,6 +16,7 @@ const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const domainSorter = require('./lib/stable-sort-domain');
+const { surgeDomainsetToClashDomainset } = require('./lib/clash');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -196,25 +197,37 @@ const domainSuffixSet = new Set();
     return acc;
   }, {});
 
+  const description = [
+    'License: AGPL 3.0',
+    'Homepage: https://ruleset.skk.moe',
+    'GitHub: https://github.com/SukkaW/Surge',
+    '',
+    'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+    '',
+    'Build from:',
+    ...HOSTS.map(host => ` - ${host[0]}`),
+    ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
+  ];
+  const domainset = dudupedDominArray.sort(domainSorter);
+
   await Promise.all([
     compareAndWriteFile(
       withBannerArray(
-        'Sukka\'s Surge Rules - Reject Base',
-        [
-          'License: AGPL 3.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
-          '',
-          'Build from:',
-          ...HOSTS.map(host => ` - ${host[0]}`),
-          ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
-        ],
+        'Sukka\'s Ruleset - Reject Base',
+        description,
         new Date(),
-        dudupedDominArray.sort(domainSorter)
+        domainset
       ),
       pathResolve(__dirname, '../List/domainset/reject.conf')
+    ),
+    compareAndWriteFile(
+      withBannerArray(
+        'Sukka\'s Ruleset - Reject Base',
+        description,
+        new Date(),
+        surgeDomainsetToClashDomainset(domainset)
+      ),
+      pathResolve(__dirname, '../Clash/domainset/reject.txt')
     ),
     fs.promises.writeFile(
       pathResolve(__dirname, '../List/internal/reject-stats.txt'),

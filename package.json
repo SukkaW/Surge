@@ -5,6 +5,7 @@
   "description": "",
   "scripts": {
     "build": "wireit",
+    "build:common": "wireit",
     "download-previous-build": "wireit",
     "build:anti-bogus-domain": "wireit",
     "build:apple-cdn": "wireit",
@@ -24,6 +25,12 @@
   "wireit": {
     "download-previous-build": {
       "command": "node ./Build/download-previous-build.js"
+    },
+    "build:common": {
+      "command": "node ./Build/build.js",
+      "dependencies": [
+        "download-previous-build"
+      ]
     },
     "build:anti-bogus-domain": {
       "command": "node ./Build/build-anti-bogus-domain.js",
@@ -95,6 +102,7 @@
     "build:public": {
       "command": "node ./Build/build-public.js",
       "dependencies": [
+        "build:common",
         "build:anti-bogus-domain",
         "build:apple-cdn",
         "build:cdn-conf",
@@ -118,6 +126,7 @@
     },
     "build": {
       "dependencies": [
+        "build:common",
         "build:anti-bogus-domain",
         "build:apple-cdn",
         "build:cdn-conf",
@@ -145,8 +154,11 @@
     "@sukka/listdir": "^0.2.0",
     "@vercel/fetch-retry": "^5.1.3",
     "async-sema": "^3.1.1",
+    "ci-info": "^3.8.0",
     "cidr-tools-wasm": "^0.0.11",
     "fs-extra": "^11.1.1",
+    "mnemonist": "^0.39.5",
+    "path-scurry": "^1.10.1",
     "picocolors": "^1.0.0",
     "table": "^6.8.1",
     "tar": "^6.1.15",

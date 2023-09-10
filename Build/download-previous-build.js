@@ -7,6 +7,7 @@ const { tmpdir } = require('os');
 const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
+const { isCI } = require('ci-info');
 
 const fileExists = (path) => {
   return fs.promises.access(path, fs.constants.F_OK)
@@ -19,18 +20,22 @@ const fileExists = (path) => {
 
   let allFileExists = true;
 
-  for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
-    if (
-      (
-        line.startsWith('List/')
-        || line.startsWith('Modules/')
-      ) && !line.endsWith('/')
-    ) {
-      allFileExists = await fileExists(join(__dirname, '..', line));
-      filesList.push(line);
+  if (isCI) {
+    allFileExists = false;
+  } else {
+    for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
+      if (
+        (
+        // line.startsWith('List/')
+          line.startsWith('Modules/')
+        ) && !line.endsWith('/')
+      ) {
+        allFileExists = await fileExists(join(__dirname, '..', line));
+        filesList.push(line);
 
-      if (!allFileExists) {
-        console.log(`File not exists: ${line}`);
+        if (!allFileExists) {
+          console.log(`File not exists: ${line}`);
+        }
       }
     }
   }
