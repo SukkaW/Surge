@@ -24,7 +24,6 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 const domainKeywordsSet = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet = new Set();
-
 (async () => {
   console.time('Total Time - build-reject-domain-set');
 
@@ -119,7 +118,7 @@ const domainSuffixSet = new Set();
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
-  for await (const line of readFileByLine(pathResolve(__dirname, '../List/non_ip/reject.conf'))) {
+  for await (const line of readFileByLine(pathResolve(__dirname, '../Source/non_ip/reject.conf'))) {
     if (line.startsWith('DOMAIN-KEYWORD')) {
       const [, ...keywords] = line.split(',');
       domainKeywordsSet.add(keywords.join(',').trim());
@@ -232,6 +231,7 @@ const domainSuffixSet = new Set();
     fs.promises.writeFile(
       pathResolve(__dirname, '../List/internal/reject-stats.txt'),
       Object.entries(rejectDomainsStats)
+        .filter(a => a[1] > 1)
         .sort((a, b) => {
           const t = b[1] - a[1];
           if (t === 0) {
