@@ -1,10 +1,6 @@
 const path = require('path');
-
-const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { withBannerArray } = require('./lib/with-banner');
-
+const { createRuleset } = require('./lib/create-file');
 const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
-const { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashDomainset } = require('./lib/clash');
 
 (async () => {
   console.time('Total Time - build-apple-cdn-conf');
@@ -26,40 +22,22 @@ const { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashDomainset 
   const domainset = res.map(i => `.${i}`);
 
   await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Apple CDN',
-        description,
-        new Date(),
-        ruleset
-      ),
-      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Apple CDN',
-        description,
-        new Date(),
-        surgeRulesetToClashClassicalTextRuleset(ruleset)
-      ),
+    ...createRuleset(
+      'Sukka\'s Ruleset - Apple CDN',
+      description,
+      new Date(),
+      ruleset,
+      'ruleset',
+      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
       path.resolve(__dirname, '../Clash/non_ip/apple_cdn.txt')
     ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Apple CDN',
-        description,
-        new Date(),
-        domainset
-      ),
-      path.resolve(__dirname, '../List/domainset/apple_cdn.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Apple CDN',
-        description,
-        new Date(),
-        surgeDomainsetToClashDomainset(domainset)
-      ),
+    ...createRuleset(
+      'Sukka\'s Ruleset - Apple CDN',
+      description,
+      new Date(),
+      domainset,
+      'domainset',
+      path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
       path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt')
     )
   ]);

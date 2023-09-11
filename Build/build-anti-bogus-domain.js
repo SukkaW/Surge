@@ -1,10 +1,8 @@
 // @ts-check
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { withBannerArray } = require('./lib/with-banner');
+const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
 const { processLine } = require('./lib/process-line');
 
 (async () => {
@@ -53,36 +51,15 @@ const { processLine } = require('./lib/process-line');
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
-  await compareAndWriteFile(
-    withBannerArray(
-      'Sukka\'s Ruleset - Anti Bogus Domain',
-      description,
-      new Date(),
-      surgeRulesetToClashClassicalTextRuleset(result)
-    ),
+  await Promise.all(createRuleset(
+    'Sukka\'s Ruleset - Anti Bogus Domain',
+    description,
+    new Date(),
+    result,
+    'ruleset',
+    path.resolve(__dirname, '../List/ip/reject.conf'),
     path.resolve(__dirname, '../Clash/ip/reject.txt')
-  );
-
-  await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Anti Bogus Domain',
-        description,
-        new Date(),
-        result
-      ),
-      path.resolve(__dirname, '../List/ip/reject.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Anti Bogus Domain',
-        description,
-        new Date(),
-        surgeRulesetToClashClassicalTextRuleset(result)
-      ),
-      path.resolve(__dirname, '../Clash/ip/reject.txt')
-    )
-  ]);
+  ));
 
   console.timeEnd('Total Time - build-anti-bogus-domain');
 })();

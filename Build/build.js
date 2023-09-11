@@ -4,10 +4,8 @@ const path = require('path');
 const { PathScurry } = require('path-scurry');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { withBannerArray } = require('./lib/with-banner');
+const { createRuleset } = require('./lib/create-file');
 const { domainDeduper } = require('./lib/domain-deduper');
-const { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashDomainset } = require('./lib/clash');
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -102,29 +100,15 @@ async function transformDomainset(sourcePath, relativePath) {
     )
   ];
 
-  await Promise.all([
-    // Surge DOMAIN-SET
-    compareAndWriteFile(
-      withBannerArray(
-        title,
-        description,
-        new Date(),
-        deduped
-      ),
-      path.resolve(outputSurgeDir, relativePath)
-    ),
-    // Clash domain text
-    compareAndWriteFile(
-      withBannerArray(
-        title,
-        description,
-        new Date(),
-        surgeDomainsetToClashDomainset(deduped)
-      ),
-      // change path extname to .txt
-      path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-    )
-  ]);
+  await Promise.all(createRuleset(
+    title,
+    description,
+    new Date(),
+    deduped,
+    'domainset',
+    path.resolve(outputSurgeDir, relativePath),
+    path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+  ));
 }
 
 /**
@@ -149,31 +133,13 @@ async function transformRuleset(sourcePath, relativePath) {
     )
   ];
 
-  const lines = Array.from(set);
-
-  const clashSupported = surgeRulesetToClashClassicalTextRuleset(set);
-
-  await Promise.all([
-    // Surge RULE-SET
-    compareAndWriteFile(
-      withBannerArray(
-        title,
-        description,
-        new Date(),
-        lines
-      ),
-      path.resolve(outputSurgeDir, relativePath)
-    ),
-    // Clash domainset
-    compareAndWriteFile(
-      withBannerArray(
-        title,
-        description,
-        new Date(),
-        clashSupported
-      ),
-      // change path extname to .txt
-      path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-    )
-  ]);
+  await Promise.all(createRuleset(
+    title,
+    description,
+    new Date(),
+    Array.from(set),
+    'ruleset',
+    path.resolve(outputSurgeDir, relativePath),
+    path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+  ));
 }

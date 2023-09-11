@@ -9,14 +9,12 @@ const { processHosts, processFilterRules } = require('./lib/parse-filter');
 const Trie = require('./lib/trie');
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
-const { withBannerArray } = require('./lib/with-banner');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { createRuleset } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line');
 const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const domainSorter = require('./lib/stable-sort-domain');
-const { surgeDomainsetToClashDomainset } = require('./lib/clash');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -210,22 +208,13 @@ const domainSuffixSet = new Set();
   const domainset = dudupedDominArray.sort(domainSorter);
 
   await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Reject Base',
-        description,
-        new Date(),
-        domainset
-      ),
-      pathResolve(__dirname, '../List/domainset/reject.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Reject Base',
-        description,
-        new Date(),
-        surgeDomainsetToClashDomainset(domainset)
-      ),
+    ...createRuleset(
+      'Sukka\'s Ruleset - Reject Base',
+      description,
+      new Date(),
+      domainset,
+      'domainset',
+      pathResolve(__dirname, '../List/domainset/reject.conf'),
       pathResolve(__dirname, '../Clash/domainset/reject.txt')
     ),
     fs.promises.writeFile(

@@ -1,11 +1,9 @@
 // @ts-check
 const path = require('path');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { withBannerArray } = require('./lib/with-banner');
+const { createRuleset } = require('./lib/create-file');
 const { minifyRules } = require('./lib/minify-rules');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
-const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
 
 (async () => {
   console.time('Total Time - build-cdn-conf');
@@ -48,26 +46,15 @@ const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
   ];
   const ruleset = minifyRules(cdnDomainsList);
 
-  await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - CDN Domains',
-        description,
-        new Date(),
-        ruleset
-      ),
-      path.resolve(__dirname, '../List/non_ip/cdn.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - CDN Domains',
-        description,
-        new Date(),
-        surgeRulesetToClashClassicalTextRuleset(ruleset)
-      ),
-      path.resolve(__dirname, '../Clash/non_ip/cdn.txt')
-    )
-  ]);
+  await Promise.all(createRuleset(
+    'Sukka\'s Ruleset - CDN Domains',
+    description,
+    new Date(),
+    ruleset,
+    'ruleset',
+    path.resolve(__dirname, '../List/non_ip/cdn.conf'),
+    path.resolve(__dirname, '../Clash/non_ip/cdn.txt')
+  ));
 
   console.timeEnd('Total Time - build-cdn-conf');
 })();

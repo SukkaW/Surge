@@ -1,8 +1,8 @@
 // @ts-check
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
-const { withBannerArray } = require('./lib/with-banner');
 const { resolve: pathResolve } = require('path');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
+// This should not use `createRuleset` API since we are going to generate ipcidr for Clash
+const { compareAndWriteFile, withBannerArray } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line');
 
 // https://github.com/misakaio/chnroutes2/issues/25
@@ -28,17 +28,19 @@ const EXCLUDE_CIDRS = [
   const filteredCidr = excludeCidrs(Array.from(cidr), EXCLUDE_CIDRS, true);
   console.log('After Merge:', filteredCidr.length);
 
+  const description = [
+    'License: CC BY-SA 2.0',
+    'Homepage: https://ruleset.skk.moe',
+    'GitHub: https://github.com/SukkaW/Surge',
+    '',
+    'Data from https://misaka.io (misakaio @ GitHub)'
+  ];
+
   await Promise.all([
     compareAndWriteFile(
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
-        [
-          'License: CC BY-SA 2.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'Data from https://misaka.io (misakaio @ GitHub)'
-        ],
+        description,
         new Date(),
         filteredCidr.map(i => `IP-CIDR,${i}`)
       ),
@@ -47,13 +49,7 @@ const EXCLUDE_CIDRS = [
     compareAndWriteFile(
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
-        [
-          'License: CC BY-SA 2.0',
-          'Homepage: https://ruleset.skk.moe',
-          'GitHub: https://github.com/SukkaW/Surge',
-          '',
-          'Data from https://misaka.io (misakaio @ GitHub)'
-        ],
+        description,
         new Date(),
         filteredCidr
       ),

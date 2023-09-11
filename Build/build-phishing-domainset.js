@@ -1,11 +1,9 @@
 const { parse } = require('tldts');
 const { processFilterRules } = require('./lib/parse-filter.js');
 const path = require('path');
-const { withBannerArray } = require('./lib/with-banner.js');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { createRuleset } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line.js');
 const domainSorter = require('./lib/stable-sort-domain');
-const { surgeDomainsetToClashDomainset } = require('./lib/clash.js');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -152,24 +150,13 @@ const BLACK_TLD = new Set([
     ' - https://gitlab.com/malware-filter/phishing-filter'
   ];
 
-  await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Reject Phishing',
-        description,
-        new Date(),
-        results
-      ),
-      path.resolve(__dirname, '../List/domainset/reject_phishing.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Reject Phishing',
-        description,
-        new Date(),
-        surgeDomainsetToClashDomainset(results)
-      ),
-      path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
-    )
-  ]);
+  await Promise.all(createRuleset(
+    'Sukka\'s Ruleset - Reject Phishing',
+    description,
+    new Date(),
+    results,
+    'domainset',
+    path.resolve(__dirname, '../List/domainset/reject_phishing.conf'),
+    path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
+  ));
 })();

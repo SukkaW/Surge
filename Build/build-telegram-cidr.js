@@ -2,10 +2,8 @@ const { fetchWithRetry } = require('./lib/fetch-retry');
 const { createReadlineInterfaceFromResponse } = require('./lib/fetch-remote-text-by-line');
 const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
-const { withBannerArray } = require('./lib/with-banner');
 const { processLine } = require('./lib/process-line');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
-const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
+const { createRuleset } = require('./lib/create-file');
 
 (async () => {
   console.time('Total Time - build-telegram-cidr');
@@ -43,26 +41,15 @@ const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
     ' - https://core.telegram.org/resources/cidr.txt'
   ];
 
-  await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Telegram IP CIDR',
-        description,
-        date,
-        results
-      ),
-      path.resolve(__dirname, '../List/ip/telegram.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Telegram IP CIDR',
-        description,
-        date,
-        surgeRulesetToClashClassicalTextRuleset(results)
-      ),
-      path.resolve(__dirname, '../Clash/ip/telegram.txt')
-    )
-  ]);
+  await Promise.all(createRuleset(
+    'Sukka\'s Ruleset - Telegram IP CIDR',
+    description,
+    date,
+    results,
+    'ruleset',
+    path.resolve(__dirname, '../List/ip/telegram.conf'),
+    path.resolve(__dirname, '../Clash/ip/telegram.txt')
+  ));
 
   console.timeEnd('Total Time - build-telegram-cidr');
 })();

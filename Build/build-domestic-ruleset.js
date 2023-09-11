@@ -3,10 +3,8 @@ const path = require('path');
 const { DOMESTICS } = require('../Source/non_ip/domestic');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
-const { withBannerArray } = require('./lib/with-banner');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { compareAndWriteFile, createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
-const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
 
 (async () => {
   const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
@@ -35,22 +33,13 @@ const { surgeRulesetToClashClassicalTextRuleset } = require('./lib/clash');
   ];
 
   await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Domestic Domains',
-        rulesetDescription,
-        new Date(),
-        results
-      ),
-      path.resolve(__dirname, '../List/non_ip/domestic.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Domestic Domains',
-        rulesetDescription,
-        new Date(),
-        surgeRulesetToClashClassicalTextRuleset(results)
-      ),
+    ...createRuleset(
+      'Sukka\'s Ruleset - Domestic Domains',
+      rulesetDescription,
+      new Date(),
+      results,
+      'ruleset',
+      path.resolve(__dirname, '../List/non_ip/domestic.conf'),
       path.resolve(__dirname, '../Clash/non_ip/domestic.txt')
     ),
     compareAndWriteFile(

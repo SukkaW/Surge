@@ -1,12 +1,10 @@
 const { fetch } = require('undici');
 const { domainDeduper } = require('./lib/domain-deduper');
 const path = require('path');
-const { withBannerArray } = require('./lib/with-banner.js');
-const { compareAndWriteFile } = require('./lib/string-array-compare');
+const { createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
 
 const { Sema } = require('async-sema');
-const { surgeDomainsetToClashDomainset } = require('./lib/clash');
 const s = new Sema(2);
 
 /**
@@ -115,24 +113,13 @@ const querySpeedtestApi = async (keyword) => {
     'GitHub: https://github.com/SukkaW/Surge'
   ];
 
-  await Promise.all([
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Speedtest Domains',
-        description,
-        new Date(),
-        deduped
-      ),
-      path.resolve(__dirname, '../List/domainset/speedtest.conf')
-    ),
-    compareAndWriteFile(
-      withBannerArray(
-        'Sukka\'s Ruleset - Speedtest Domains',
-        description,
-        new Date(),
-        surgeDomainsetToClashDomainset(deduped)
-      ),
-      path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
-    )
-  ]);
+  await Promise.all(createRuleset(
+    'Sukka\'s Ruleset - Speedtest Domains',
+    description,
+    new Date(),
+    deduped,
+    'domainset',
+    path.resolve(__dirname, '../List/domainset/speedtest.conf'),
+    path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
+  ));
 })();
