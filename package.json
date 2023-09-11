@@ -162,19 +162,19 @@
     "path-scurry": "^1.10.1",
     "picocolors": "^1.0.0",
     "table": "^6.8.1",
-    "tar": "^6.1.15",
-    "tldts": "^6.0.12",
-    "undici": "5.22.1"
+    "tar": "^6.2.0",
+    "tldts": "^6.0.14",
+    "undici": "5.24.0"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.4.9",
-    "chai": "^4.3.7",
-    "eslint-config-sukka": "^3.0.0",
-    "eslint-plugin-import": "npm:eslint-plugin-i@2.27.5-4",
-    "eslint-plugin-n": "^16.0.1",
+    "@types/node": "^20.6.0",
+    "chai": "^4.3.8",
+    "eslint-config-sukka": "^3.0.6",
+    "eslint-plugin-import": "npm:eslint-plugin-i@2.28.1",
+    "eslint-plugin-n": "^16.1.0",
     "mocha": "^10.2.0",
-    "wireit": "^0.10.0"
+    "wireit": "^0.13.0"
   },
   "engines": {
     "node": ">=18.0.0"
