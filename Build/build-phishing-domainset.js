@@ -62,9 +62,7 @@ const BLACK_TLD = new Set([
 
 runner(__filename, async () => {
   const domainSet = Array.from(
-    (
-      await processFilterRules('https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt')
-    ).black
+    (await processFilterRules('https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt')).black
   );
   const domainCountMap = {};
 

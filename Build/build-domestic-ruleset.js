@@ -55,8 +55,7 @@ runner(__filename, async () => {
               `${domain} = server:${dns}`,
               `*.${domain} = server:${dns}`
             ])
-          ),
-        ''
+          )
       ],
       path.resolve(__dirname, '../Modules/sukka_local_dns_mapping.sgmodule')
     )

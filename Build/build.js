@@ -49,8 +49,8 @@ runner(__filename, async () => {
  * @param {string} sourcePath
  */
 const processFile = async (sourcePath) => {
-  /** @type {Set<string>} */
-  const lines = new Set();
+  /** @type {string[]} */
+  const lines = [];
 
   let title = '';
   /** @type {string[]} */
@@ -73,7 +73,7 @@ const processFile = async (sourcePath) => {
 
     const l = processLine(line);
     if (l) {
-      lines.add(l);
+      lines.push(l);
     }
   }
 
@@ -89,7 +89,7 @@ async function transformDomainset(sourcePath, relativePath) {
   if (!res) return;
   const [title, descriptions, lines] = res;
 
-  const deduped = domainDeduper(Array.from(lines));
+  const deduped = domainDeduper(lines);
   const description = [
     'License: AGPL 3.0',
     'Homepage: https://ruleset.skk.moe',
@@ -121,7 +121,7 @@ async function transformDomainset(sourcePath, relativePath) {
 async function transformRuleset(sourcePath, relativePath) {
   const res = await processFile(sourcePath);
   if (!res) return;
-  const [title, descriptions, set] = res;
+  const [title, descriptions, lines] = res;
 
   const description = [
     'License: AGPL 3.0',
@@ -138,7 +138,7 @@ async function transformRuleset(sourcePath, relativePath) {
     title,
     description,
     new Date(),
-    Array.from(set),
+    lines,
     'ruleset',
     path.resolve(outputSurgeDir, relativePath),
     path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)

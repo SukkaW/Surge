@@ -1,5 +1,4 @@
 // @ts-check
-const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 const { isDomainLoose } = require('./lib/is-domain-loose');
@@ -8,6 +7,7 @@ const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const domainSorter = require('./lib/stable-sort-domain');
 const { runner } = require('./lib/trace-runner');
+const { compareAndWriteFile } = require('./lib/create-file');
 
 /**
  * @param {string} string
@@ -77,12 +77,11 @@ runner(__filename, async () => {
     fse.ensureDir(path.resolve(__dirname, '../List/internal'))
   ]);
 
-  await fs.promises.writeFile(
-    path.resolve(__dirname, '../List/internal/cdn.txt'),
+  await compareAndWriteFile(
     [
       ...Array.from(set).sort(domainSorter).map(i => `SUFFIX,${i}`),
-      ...Array.from(keywords).sort().map(i => `REGEX,${i}`),
-      ''
-    ].join('\n')
+      ...Array.from(keywords).sort().map(i => `REGEX,${i}`)
+    ],
+    path.resolve(__dirname, '../List/internal/cdn.txt')
   );
 });

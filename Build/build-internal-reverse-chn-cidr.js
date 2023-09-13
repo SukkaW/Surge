@@ -27,18 +27,18 @@ const RESERVED_IPV4_CIDR = [
 runner(__filename, async () => {
   const { exclude } = await import('cidr-tools-wasm');
 
-  /** @type {Set<string>} */
-  const cidr = new Set();
+  /** @type {string[]} */
+  const cidr = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')) {
     const l = processLine(line);
     if (l) {
-      cidr.add(l);
+      cidr.push(l);
     }
   }
 
   const reversedCidr = exclude(
     ['0.0.0.0/0'],
-    RESERVED_IPV4_CIDR.concat(Array.from(cidr)),
+    RESERVED_IPV4_CIDR.concat(cidr),
     true
   );
 

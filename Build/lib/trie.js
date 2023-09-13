@@ -278,7 +278,7 @@ class Trie {
    * Static .from function taking an arbitrary iterable & converting it into
    * a trie.
    *
-   * @param  {string[]} iterable   - Target iterable.
+   * @param  {string[] | Set<string>} iterable   - Target iterable.
    * @return {Trie}
    */
   static from = iterable => {

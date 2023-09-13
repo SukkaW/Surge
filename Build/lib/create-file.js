@@ -1,5 +1,5 @@
 // @ts-check
-const { promises: fsPromises } = require('fs');
+const fs = require('fs');
 const fse = require('fs-extra');
 const { readFileByLine } = require('./fetch-remote-text-by-line');
 const { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } = require('./clash');
@@ -28,17 +28,34 @@ async function compareAndWriteFile(linesA, filePath) {
     }
   }
 
-  if (!isEqual || index !== linesA.length - 1) {
-    await fsPromises.writeFile(
-      filePath,
-      linesA.join('\n'),
-      { encoding: 'utf-8' }
-    );
+  if (!isEqual || index !== linesA.length) {
+    const stream = fs.createWriteStream(filePath, { encoding: 'utf-8' });
+
+    for (let i = 0, len = linesA.length; i < len; i++) {
+      // eslint-disable-next-line no-await-in-loop -- backpressure
+      await writeToStream(stream, linesA[i]);
+      // eslint-disable-next-line no-await-in-loop -- backpressure
+      await writeToStream(stream, '\n');
+    }
+    stream.end();
   } else {
     console.log(`Same Content, bail out writing: ${filePath}`);
   }
 }
 module.exports.compareAndWriteFile = compareAndWriteFile;
+
+/**
+ * @param {import('fs').WriteStream} stream
+ * @param {string} data
+ */
+async function writeToStream(stream, data) {
+  if (!stream.write(data)) {
+    return /** @type {Promise<void>} */(new Promise((resolve) => {
+      stream.once('drain', () => { resolve(); });
+    }));
+  }
+  return Promise.resolve();
+}
 
 /**
  * @param {string} title
@@ -56,8 +73,7 @@ const withBannerArray = (title, description, date, content) => {
     ...description.map(line => (line ? `# ${line}` : '#')),
     '########################################',
     ...content,
-    '################# END ###################',
-    ''
+    '################# END ###################'
   ];
 };
 module.exports.withBannerArray = withBannerArray;

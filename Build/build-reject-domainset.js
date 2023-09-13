@@ -50,13 +50,9 @@ const domainSuffixSet = new Set();
           const { white, black, foundDebugDomain } = i;
           if (foundDebugDomain) {
             shouldStop = true;
+            // we should not break here, as we want to see full matches from all data source
           }
-          white.forEach(i => {
-            // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
-            //   return;
-            // }
-            filterRuleWhitelistDomainSets.add(i);
-          });
+          white.forEach(i => filterRuleWhitelistDomainSets.add(i));
           black.forEach(i => domainSets.add(i));
         } else {
           process.exitCode = 1;
@@ -71,15 +67,9 @@ const domainSuffixSet = new Set();
       if (i) {
         const { white, black } = i;
         white.forEach(i => {
-          // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
-          //   return;
-          // }
           filterRuleWhitelistDomainSets.add(i);
         });
         black.forEach(i => {
-          // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
-          //   return;
-          // }
           filterRuleWhitelistDomainSets.add(i);
         });
       } else {
@@ -89,7 +79,8 @@ const domainSuffixSet = new Set();
     })))
   ]);
 
-  const trie0 = Trie.from(Array.from(filterRuleWhitelistDomainSets));
+  // remove pre-defined enforced blacklist from whitelist
+  const trie0 = Trie.from(filterRuleWhitelistDomainSets);
   PREDEFINED_ENFORCED_BACKLIST.forEach(enforcedBlack => {
     trie0.find(enforcedBlack).forEach(found => filterRuleWhitelistDomainSets.delete(found));
   });
@@ -140,7 +131,7 @@ const domainSuffixSet = new Set();
 
   const kwfilter = createKeywordFilter(Array.from(domainKeywordsSet));
 
-  const trie1 = Trie.from(Array.from(domainSets));
+  const trie1 = Trie.from(domainSets);
   domainSuffixSet.forEach(suffix => {
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
@@ -149,7 +140,7 @@ const domainSuffixSet = new Set();
   });
 
   // Build whitelist trie, to handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
-  const trieWhite = Trie.from(Array.from(filterRuleWhitelistDomainSets));
+  const trieWhite = Trie.from(filterRuleWhitelistDomainSets);
   for (const domain of domainSets) {
     if (domain[0] === '.') {
       if (trieWhite.contains(domain)) {

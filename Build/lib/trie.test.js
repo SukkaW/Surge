@@ -2,6 +2,7 @@ require('chai').should();
 
 const Trie = require('./trie');
 const assert = require('assert');
+const { describe, it } = require('mocha');
 
 describe('Trie', () => {
   it('should be possible to add items to a Trie.', () => {

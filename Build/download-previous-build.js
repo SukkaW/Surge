@@ -36,6 +36,7 @@ runner(__filename, async () => {
 
         if (!allFileExists) {
           console.log(`File not exists: ${line}`);
+          break;
         }
       }
     }

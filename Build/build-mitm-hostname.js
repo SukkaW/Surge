@@ -95,7 +95,7 @@ const PRESET_MITM_HOSTNAMES = [
   }));
 
   let mitmDomains = new Set(PRESET_MITM_HOSTNAMES); // Special case for parsed failed
-  const parsedFailures = new Set();
+  const parsedFailures = [];
 
   const dedupedUrlRegexPaths = [...new Set(urlRegexPaths)];
 

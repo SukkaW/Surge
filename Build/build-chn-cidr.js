@@ -15,17 +15,17 @@ const EXCLUDE_CIDRS = [
 runner(__filename, async () => {
   const { exclude: excludeCidrs } = await import('cidr-tools-wasm');
 
-  /** @type {Set<string>} */
-  const cidr = new Set();
+  /** @type {string[]} */
+  const cidr = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')) {
     const l = processLine(line);
     if (l) {
-      cidr.add(l);
+      cidr.push(l);
     }
   }
 
-  console.log('Before Merge:', cidr.size);
-  const filteredCidr = excludeCidrs(Array.from(cidr), EXCLUDE_CIDRS, true);
+  console.log('Before Merge:', cidr.length);
+  const filteredCidr = excludeCidrs(cidr, EXCLUDE_CIDRS, true);
   console.log('After Merge:', filteredCidr.length);
 
   const description = [
