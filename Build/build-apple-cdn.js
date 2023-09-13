@@ -1,10 +1,9 @@
 const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
+const { runner } = require('./lib/trace-runner');
 
-(async () => {
-  console.time('Total Time - build-apple-cdn-conf');
-
+runner(__filename, async () => {
   const res = await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
 
   const description = [
@@ -41,6 +40,4 @@ const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
       path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt')
     )
   ]);
-
-  console.timeEnd('Total Time - build-apple-cdn-conf');
-})();
+});

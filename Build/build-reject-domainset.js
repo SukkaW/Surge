@@ -23,8 +23,6 @@ const domainKeywordsSet = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet = new Set();
 (async () => {
-  console.time('Total Time - build-reject-domain-set');
-
   /** @type Set<string> */
   const domainSets = new Set();
 
@@ -35,15 +33,14 @@ const domainSuffixSet = new Set();
 
   await Promise.all([
     // Parse from remote hosts & domain lists
-    Promise.all(HOSTS.map(entry => processHosts(entry[0], entry[1])))
-      .then(r => r.forEach(hosts => {
-        hosts.forEach(host => {
-          if (host) {
-            domainSets.add(host);
-          }
-        });
-      })),
-    Promise.all(ADGUARD_FILTERS.map(input => {
+    ...HOSTS.map(entry => processHosts(entry[0], entry[1]).then(hosts => {
+      hosts.forEach(host => {
+        if (host) {
+          domainSets.add(host);
+        }
+      });
+    })),
+    ...ADGUARD_FILTERS.map(input => {
       const promise = typeof input === 'string'
         ? processFilterRules(input, undefined, false)
         : processFilterRules(input[0], input[1] || undefined, input[2] ?? false);
@@ -62,34 +59,34 @@ const domainSuffixSet = new Set();
           });
           black.forEach(i => domainSets.add(i));
         } else {
-          process.exit(1);
+          process.exitCode = 1;
+          throw new Error('Failed to process AdGuard Filter Rules!');
         }
       });
-    })),
-    Promise.all([
+    }),
+    ...([
       'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
       'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
-    ].map(
-      input => processFilterRules(input).then((i) => {
-        if (i) {
-          const { white, black } = i;
-          white.forEach(i => {
-            // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
-            //   return;
-            // }
-            filterRuleWhitelistDomainSets.add(i);
-          });
-          black.forEach(i => {
-            // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
-            //   return;
-            // }
-            filterRuleWhitelistDomainSets.add(i);
-          });
-        } else {
-          process.exit(1);
-        }
-      })
-    ))
+    ].map(input => processFilterRules(input).then((i) => {
+      if (i) {
+        const { white, black } = i;
+        white.forEach(i => {
+          // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
+          //   return;
+          // }
+          filterRuleWhitelistDomainSets.add(i);
+        });
+        black.forEach(i => {
+          // if (PREDEFINED_ENFORCED_BACKLIST.some(j => i.endsWith(j))) {
+          //   return;
+          // }
+          filterRuleWhitelistDomainSets.add(i);
+        });
+      } else {
+        process.exitCode = 1;
+        throw new Error('Failed to process AdGuard Filter Rules!');
+      }
+    })))
   ]);
 
   const trie0 = Trie.from(Array.from(filterRuleWhitelistDomainSets));
@@ -100,6 +97,7 @@ const domainSuffixSet = new Set();
   console.timeEnd('* Download and process Hosts / AdBlock Filter Rules');
 
   if (shouldStop) {
+    // eslint-disable-next-line n/no-process-exit -- force stop
     process.exit(1);
   }
 
@@ -183,8 +181,6 @@ const domainSuffixSet = new Set();
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
-  console.time('* Write reject.conf');
-
   /** @type {Record<string, number>} */
   const rejectDomainsStats = dudupedDominArray.reduce((acc, cur) => {
     const suffix = tldts.getDomain(cur, { allowPrivateDomains: false });
@@ -234,8 +230,4 @@ const domainSuffixSet = new Set();
     // Copy reject_sukka.conf for backward compatibility
     fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
   ]);
-
-  console.timeEnd('* Write reject.conf');
-
-  console.timeEnd('Total Time - build-reject-domain-set');
 })();

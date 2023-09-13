@@ -4,11 +4,9 @@ const { isIPv4, isIPv6 } = require('net');
 const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
+const { runner } = require('./lib/trace-runner');
 
-(async () => {
-  console.time('Total Time - build-anti-bogus-domain');
-  console.time('* Download bogus-nxdomain-list');
-
+runner(__filename, async () => {
   /** @type {string[]} */
   const res = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
@@ -16,8 +14,6 @@ const { processLine } = require('./lib/process-line');
       res.push(line.replace('bogus-nxdomain=', ''));
     }
   }
-
-  console.timeEnd('* Download bogus-nxdomain-list');
 
   const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
 
@@ -60,6 +56,4 @@ const { processLine } = require('./lib/process-line');
     path.resolve(__dirname, '../List/ip/reject.conf'),
     path.resolve(__dirname, '../Clash/ip/reject.txt')
   ));
-
-  console.timeEnd('Total Time - build-anti-bogus-domain');
-})();
+});

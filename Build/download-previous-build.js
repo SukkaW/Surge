@@ -8,6 +8,7 @@ const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { isCI } = require('ci-info');
+const { runner } = require('./lib/trace-runner');
 
 const fileExists = (path) => {
   return fs.promises.access(path, fs.constants.F_OK)
@@ -15,7 +16,7 @@ const fileExists = (path) => {
     .catch(() => false);
 };
 
-(async () => {
+runner(__filename, async () => {
   const filesList = ['Clash', 'List'];
 
   let allFileExists = true;
@@ -77,4 +78,4 @@ const fileExists = (path) => {
   }));
 
   await fs.promises.unlink(extractedPath).catch(() => { });
-})();
+});

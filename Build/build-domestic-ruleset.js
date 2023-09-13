@@ -5,8 +5,9 @@ const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
 const { compareAndWriteFile, createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
+const { runner } = require('./lib/trace-runner');
 
-(async () => {
+runner(__filename, async () => {
   const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
   const results = [];
   for await (const l of rl) {
@@ -60,4 +61,4 @@ const domainSorter = require('./lib/stable-sort-domain');
       path.resolve(__dirname, '../Modules/sukka_local_dns_mapping.sgmodule')
     )
   ]);
-})();
+});

@@ -6,6 +6,7 @@ const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
 const { createRuleset } = require('./lib/create-file');
 const { domainDeduper } = require('./lib/domain-deduper');
+const { runner } = require('./lib/trace-runner');
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -15,7 +16,7 @@ const sourceDir = path.resolve(__dirname, '../Source');
 const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
 
-(async () => {
+runner(__filename, async () => {
   /** @type {Promise<void>[]} */
   const promises = [];
 
@@ -42,7 +43,7 @@ const outputClashDir = path.resolve(__dirname, '../Clash');
   }
 
   await Promise.all(promises);
-})();
+});
 
 /**
  * @param {string} sourcePath

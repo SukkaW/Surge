@@ -7,6 +7,7 @@ const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const domainSorter = require('./lib/stable-sort-domain');
+const { runner } = require('./lib/trace-runner');
 
 /**
  * @param {string} string
@@ -15,7 +16,7 @@ const escapeRegExp = (string) => {
   return string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 };
 
-(async () => {
+runner(__filename, async () => {
   const set = new Set();
   const keywords = new Set();
 
@@ -84,4 +85,4 @@ const escapeRegExp = (string) => {
       ''
     ].join('\n')
   );
-})();
+});

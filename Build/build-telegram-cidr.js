@@ -4,10 +4,9 @@ const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 const { processLine } = require('./lib/process-line');
 const { createRuleset } = require('./lib/create-file');
+const { runner } = require('./lib/trace-runner');
 
-(async () => {
-  console.time('Total Time - build-telegram-cidr');
-
+runner(__filename, async () => {
   /** @type {Response} */
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt');
   const lastModified = resp.headers.get('last-modified');
@@ -50,6 +49,4 @@ const { createRuleset } = require('./lib/create-file');
     path.resolve(__dirname, '../List/ip/telegram.conf'),
     path.resolve(__dirname, '../Clash/ip/telegram.txt')
   ));
-
-  console.timeEnd('Total Time - build-telegram-cidr');
-})();
+});

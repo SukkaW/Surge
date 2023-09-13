@@ -4,10 +4,9 @@ const { createRuleset } = require('./lib/create-file');
 const { minifyRules } = require('./lib/minify-rules');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
+const { runner } = require('./lib/trace-runner');
 
-(async () => {
-  console.time('Total Time - build-cdn-conf');
-
+runner(__filename, async () => {
   const trie = new Trie();
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://publicsuffix.org/list/public_suffix_list.dat')) {
     trie.add(line);
@@ -55,6 +54,4 @@ const Trie = require('./lib/trie');
     path.resolve(__dirname, '../List/non_ip/cdn.conf'),
     path.resolve(__dirname, '../Clash/non_ip/cdn.txt')
   ));
-
-  console.timeEnd('Total Time - build-cdn-conf');
-})();
+});

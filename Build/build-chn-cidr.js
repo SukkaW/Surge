@@ -4,6 +4,7 @@ const { resolve: pathResolve } = require('path');
 // This should not use `createRuleset` API since we are going to generate ipcidr for Clash
 const { compareAndWriteFile, withBannerArray } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line');
+const { runner } = require('./lib/trace-runner');
 
 // https://github.com/misakaio/chnroutes2/issues/25
 const EXCLUDE_CIDRS = [
@@ -11,8 +12,7 @@ const EXCLUDE_CIDRS = [
   '223.120.0.0/15'
 ];
 
-(async () => {
-  console.time('Total Time - build-chnroutes-cidr');
+runner(__filename, async () => {
   const { exclude: excludeCidrs } = await import('cidr-tools-wasm');
 
   /** @type {Set<string>} */
@@ -56,6 +56,4 @@ const EXCLUDE_CIDRS = [
       pathResolve(__dirname, '../Clash/ip/china_ip.txt')
     )
   ]);
-
-  console.timeEnd('Total Time - build-chnroutes-cidr');
-})();
+});

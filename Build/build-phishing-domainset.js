@@ -4,6 +4,7 @@ const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line.js');
 const domainSorter = require('./lib/stable-sort-domain');
+const { runner } = require('./lib/trace-runner.js');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -59,7 +60,7 @@ const BLACK_TLD = new Set([
   'com.cn'
 ]);
 
-(async () => {
+runner(__filename, async () => {
   const domainSet = Array.from(
     (
       await processFilterRules('https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt')
@@ -159,4 +160,4 @@ const BLACK_TLD = new Set([
     path.resolve(__dirname, '../List/domainset/reject_phishing.conf'),
     path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
   ));
-})();
+});

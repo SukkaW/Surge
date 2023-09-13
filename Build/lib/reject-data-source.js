@@ -172,7 +172,12 @@ const ADGUARD_FILTERS = /** @type {const} */([
   // GameConsoleAdblockList
   'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
   // PiHoleBlocklist
-  'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt',
+  [
+    'https://perflyst.github.io/PiHoleBlocklist/SmartTV-AGH.txt',
+    [
+      'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'
+    ]
+  ],
   // Spam404
   'https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt',
   // BarbBlock
