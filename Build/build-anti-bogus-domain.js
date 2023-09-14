@@ -4,9 +4,9 @@ const { isIPv4, isIPv6 } = require('net');
 const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 
-const buildAntiBogusDomain = async () => {
+const buildAntiBogusDomain = task(__filename, async () => {
   /** @type {string[]} */
   const res = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
@@ -56,7 +56,7 @@ const buildAntiBogusDomain = async () => {
     path.resolve(__dirname, '../List/ip/reject.conf'),
     path.resolve(__dirname, '../Clash/ip/reject.txt')
   ));
-};
+});
 
 module.exports.buildAntiBogusDomain = buildAntiBogusDomain;
 

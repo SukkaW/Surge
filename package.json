@@ -4,145 +4,7 @@
   "private": true,
   "description": "",
   "scripts": {
-    "build": "wireit",
-    "build:common": "wireit",
-    "download-previous-build": "wireit",
-    "build:anti-bogus-domain": "wireit",
-    "build:apple-cdn": "wireit",
-    "build:cdn-conf": "wireit",
-    "build:public": "wireit",
-    "build:reject-domainset": "wireit",
-    "build:phishing-domainset": "wireit",
-    "build:telegram-cidr": "wireit",
-    "build:chn-cidr": "wireit",
-    "build:speedtest-domainset": "wireit",
-    "build:internal-cdn-rules": "wireit",
-    "build:internal-reverse-chn-cidr": "wireit",
-    "build:internal-chn-domains": "wireit",
-    "build:domestic-ruleset": "wireit",
-    "validate:domainset": "wireit"
-  },
-  "wireit": {
-    "download-previous-build": {
-      "command": "node ./Build/download-previous-build.js"
-    },
-    "build:common": {
-      "command": "node ./Build/build-common.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:anti-bogus-domain": {
-      "command": "node ./Build/build-anti-bogus-domain.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:apple-cdn": {
-      "command": "node ./Build/build-apple-cdn.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:cdn-conf": {
-      "command": "node ./Build/build-cdn-conf.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:phishing-domainset": {
-      "command": "node ./Build/build-phishing-domainset.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:reject-domainset": {
-      "command": "node ./Build/build-reject-domainset.js",
-      "dependencies": [
-        "download-previous-build",
-        "build:phishing-domainset"
-      ]
-    },
-    "build:telegram-cidr": {
-      "command": "node ./Build/build-telegram-cidr.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:chn-cidr": {
-      "command": "node ./Build/build-chn-cidr.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:speedtest-domainset": {
-      "command": "node ./Build/build-speedtest-domainset.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:internal-cdn-rules": {
-      "command": "node ./Build/build-internal-cdn-rules.js",
-      "dependencies": [
-        "build:cdn-conf"
-      ]
-    },
-    "build:internal-reverse-chn-cidr": {
-      "command": "node ./Build/build-internal-reverse-chn-cidr.js"
-    },
-    "build:internal-chn-domains": {
-      "command": "node ./Build/build-internal-chn-domains.js"
-    },
-    "build:domestic-ruleset": {
-      "command": "node ./Build/build-domestic-ruleset.js",
-      "dependencies": [
-        "download-previous-build"
-      ]
-    },
-    "build:public": {
-      "command": "node ./Build/build-public.js",
-      "dependencies": [
-        "build:common",
-        "build:anti-bogus-domain",
-        "build:apple-cdn",
-        "build:cdn-conf",
-        "build:internal-cdn-rules",
-        "build:internal-reverse-chn-cidr",
-        "build:internal-chn-domains",
-        "build:reject-domainset",
-        "build:telegram-cidr",
-        "build:speedtest-domainset",
-        "build:domestic-ruleset"
-      ]
-    },
-    "validate:domainset": {
-      "command": "node ./Build/validate-domainset.js",
-      "dependencies": [
-        "build:apple-cdn",
-        "build:phishing-domainset",
-        "build:reject-domainset",
-        "build:cdn-conf",
-        "build:common"
-      ]
-    },
-    "build": {
-      "dependencies": [
-        "build:common",
-        "build:anti-bogus-domain",
-        "build:apple-cdn",
-        "build:cdn-conf",
-        "build:reject-domainset",
-        "build:telegram-cidr",
-        "build:chn-cidr",
-        "build:internal-cdn-rules",
-        "build:internal-reverse-chn-cidr",
-        "build:internal-chn-domains",
-        "build:speedtest-domainset",
-        "build:domestic-ruleset",
-        "build:public",
-        "validate:domainset"
-      ]
-    }
+    "build": "node ./Build/index.js"
   },
   "repository": {
     "type": "git",
@@ -175,8 +37,7 @@
     "eslint-config-sukka": "^3.0.6",
     "eslint-plugin-import": "npm:eslint-plugin-i@2.28.1",
     "eslint-plugin-n": "^16.1.0",
-    "mocha": "^10.2.0",
-    "wireit": "^0.13.0"
+    "mocha": "^10.2.0"
   },
   "engines": {
     "node": ">=18.0.0"

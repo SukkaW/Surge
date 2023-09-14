@@ -2,7 +2,7 @@ const { toASCII } = require('punycode/');
 const fs = require('fs');
 const path = require('path');
 
-const publicSuffixPath = path.resolve(__dirname, '../../node_modules/.cache/public_suffix-list_dat.txt');
+const publicSuffixPath = path.resolve(__dirname, '../../node_modules/.cache/public_suffix_list_dat.txt');
 const getPublicSuffixListDat = () => {
   if (fs.existsSync(publicSuffixPath)) {
     return fs.promises.readFile(publicSuffixPath, 'utf-8');

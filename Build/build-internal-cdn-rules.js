@@ -5,7 +5,7 @@ const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const domainSorter = require('./lib/stable-sort-domain');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 const { compareAndWriteFile } = require('./lib/create-file');
 
 /**
@@ -15,7 +15,7 @@ const escapeRegExp = (string) => {
   return string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 };
 
-const buildInternalCDNDomains = async () => {
+const buildInternalCDNDomains = task(__filename, async () => {
   const set = new Set();
   const keywords = new Set();
 
@@ -87,7 +87,7 @@ const buildInternalCDNDomains = async () => {
     ],
     path.resolve(__dirname, '../List/internal/cdn.txt')
   );
-};
+});
 
 module.exports.buildInternalCDNDomains = buildInternalCDNDomains;
 

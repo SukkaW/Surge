@@ -3,13 +3,13 @@ const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 const fs = require('fs');
 const { processLine } = require('./lib/process-line');
 
-const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix-list_dat.txt');
+const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix_list_dat.txt');
 
-const buildCdnConf = async () => {
+const buildCdnConf = task(__filename, async () => {
   const trie = new Trie();
 
   if (fs.existsSync(publicSuffixPath)) {
@@ -30,12 +30,18 @@ const buildCdnConf = async () => {
   const S3OSSDomains = new Set();
 
   trie.find('.amazonaws.com').forEach(line => {
-    if ((line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-')) {
+    if (
+      (line.startsWith('s3-') || line.startsWith('s3.'))
+      && !line.includes('cn-')
+    ) {
       S3OSSDomains.add(line);
     }
   });
   trie.find('.scw.cloud').forEach(line => {
-    if ((line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-')) {
+    if (
+      (line.startsWith('s3-') || line.startsWith('s3.'))
+      && !line.includes('cn-')
+    ) {
       S3OSSDomains.add(line);
     }
   });
@@ -43,10 +49,14 @@ const buildCdnConf = async () => {
   /** @type {string[]} */
   const cdnDomainsList = [];
   for await (const l of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
+    if (l === '# --- [AWS S3 Replace Me] ---') {
+      console.log(S3OSSDomains);
+      S3OSSDomains.forEach(domain => {
+        cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`);
+      });
+    }
     const line = processLine(l);
-    if (line === '# --- [AWS S3 Replace Me] ---') {
-      S3OSSDomains.forEach(domain => cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`));
-    } else if (line) {
+    if (line) {
       cdnDomainsList.push(line);
     }
   }
@@ -68,7 +78,7 @@ const buildCdnConf = async () => {
     path.resolve(__dirname, '../List/non_ip/cdn.conf'),
     path.resolve(__dirname, '../Clash/non_ip/cdn.txt')
   ));
-};
+});
 
 module.exports.buildCdnConf = buildCdnConf;
 

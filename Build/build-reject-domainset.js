@@ -12,7 +12,7 @@ const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { createDomainSorter } = require('./lib/stable-sort-domain');
-const { traceSync, runner } = require('./lib/trace-runner');
+const { traceSync, runner, task } = require('./lib/trace-runner');
 const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
 const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
@@ -23,7 +23,7 @@ const domainKeywordsSet = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet = new Set();
 
-const buildRejectDomainSet = async () => {
+const buildRejectDomainSet = task(__dirname, async () => {
   /** @type Set<string> */
   const domainSets = new Set();
 
@@ -228,7 +228,7 @@ const buildRejectDomainSet = async () => {
     // Copy reject_sukka.conf for backward compatibility
     fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
   ]);
-};
+});
 
 module.exports.buildRejectDomainSet = buildRejectDomainSet;
 

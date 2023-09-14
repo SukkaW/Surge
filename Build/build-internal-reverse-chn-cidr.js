@@ -4,7 +4,7 @@ const { processLine } = require('./lib/process-line');
 const path = require('path');
 const fse = require('fs-extra');
 const fs = require('fs');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 
 const RESERVED_IPV4_CIDR = [
   '0.0.0.0/8',
@@ -24,7 +24,7 @@ const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
-const buildInternalReverseChnCIDR = async () => {
+const buildInternalReverseChnCIDR = task(__filename, async () => {
   const { exclude } = await import('cidr-tools-wasm');
 
   /** @type {string[]} */
@@ -47,7 +47,7 @@ const buildInternalReverseChnCIDR = async () => {
     path.resolve(__dirname, '../List/internal/reversed-chn-cidr.txt'),
     `${reversedCidr.join('\n')}\n`
   );
-};
+});
 
 module.exports.buildInternalReverseChnCIDR = buildInternalReverseChnCIDR;
 

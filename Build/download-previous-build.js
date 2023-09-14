@@ -8,7 +8,7 @@ const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { isCI } = require('ci-info');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 
 const fileExists = (path) => {
   return fs.promises.access(path, fs.constants.F_OK)
@@ -16,7 +16,7 @@ const fileExists = (path) => {
     .catch(() => false);
 };
 
-const downloadPreviousBuild = async () => {
+const downloadPreviousBuild = task(__filename, async () => {
   const filesList = ['Clash', 'List'];
 
   let allFileExists = true;
@@ -79,11 +79,11 @@ const downloadPreviousBuild = async () => {
   }));
 
   await fs.promises.unlink(extractedPath).catch(() => { });
-};
+});
 
 const downloadPublicSuffixList = async () => {
   const publicSuffixDir = resolve(__dirname, '../node_modules/.cache');
-  const publicSuffixPath = join(publicSuffixDir, 'public_suffix-list_dat.txt');
+  const publicSuffixPath = join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
   console.log('Download public suffix list.');
 
@@ -102,10 +102,8 @@ module.exports.downloadPreviousBuild = downloadPreviousBuild;
 module.exports.downloadPublicSuffixList = downloadPublicSuffixList;
 
 if (require.main === module) {
-  runner(__filename, () => {
-    return Promise.all([
-      downloadPreviousBuild(),
-      downloadPublicSuffixList()
-    ]);
-  });
+  runner(__filename, () => Promise.all([
+    downloadPreviousBuild(),
+    downloadPublicSuffixList()
+  ]));
 }

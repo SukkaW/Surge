@@ -4,7 +4,7 @@ const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line.js');
 const domainSorter = require('./lib/stable-sort-domain');
-const { runner, traceSync } = require('./lib/trace-runner.js');
+const { runner, traceSync, task } = require('./lib/trace-runner.js');
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -60,7 +60,7 @@ const BLACK_TLD = new Set([
   'com.cn'
 ]);
 
-const buildPhishingDomainSet = async () => {
+const buildPhishingDomainSet = task(__filename, async () => {
   const domainSet = Array.from((await processFilterRules('https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt')).black);
   const domainCountMap = {};
 
@@ -151,7 +151,7 @@ const buildPhishingDomainSet = async () => {
     path.resolve(__dirname, '../List/domainset/reject_phishing.conf'),
     path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
   ));
-};
+});
 
 module.exports.buildPhishingDomainSet = buildPhishingDomainSet;
 

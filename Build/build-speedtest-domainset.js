@@ -5,7 +5,7 @@ const { createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
 
 const { Sema } = require('async-sema');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 const s = new Sema(2);
 
 /**
@@ -46,7 +46,7 @@ const querySpeedtestApi = async (keyword) => {
   }
 };
 
-const buildSpeedtestDomainSet = async () => {
+const buildSpeedtestDomainSet = task(__filename, async () => {
   /** @type {Set<string>} */
   const domains = new Set([
     '.speedtest.net',
@@ -123,7 +123,7 @@ const buildSpeedtestDomainSet = async () => {
     path.resolve(__dirname, '../List/domainset/speedtest.conf'),
     path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
   ));
-};
+});
 
 module.exports.buildSpeedtestDomainSet = buildSpeedtestDomainSet;
 

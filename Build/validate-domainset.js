@@ -6,7 +6,7 @@ const path = require('path');
 const listDir = require('@sukka/listdir');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
-const { runner } = require('./lib/trace-runner');
+const { runner, task } = require('./lib/trace-runner');
 
 const SPECIAL_SUFFIXES = new Set([
   'linodeobjects.com', // only *.linodeobjects.com are public suffix
@@ -58,7 +58,7 @@ const _validateRuleset = async (filePath) => {
   }
 };
 
-const validate = async () => {
+const validate = task(__filename, async () => {
   const [domainsetFiles, _rulesetFiles] = await Promise.all([
     listDir(path.resolve(__dirname, '../List/domainset')),
     listDir(path.resolve(__dirname, '../List/non_ip'))
@@ -67,7 +67,7 @@ const validate = async () => {
     domainsetFiles.map(file => validateDomainSet(file))
     // rulesetFiles.map(file => validateRuleset(file))
   );
-};
+});
 module.exports.validate = validate;
 
 if (require.main === module) {

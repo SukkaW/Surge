@@ -13,11 +13,12 @@ module.exports.parse = (domain) => {
   return cache.sync(domain, () => tldts.parse(domain, sharedConfig));
 };
 
-const gothillGetDomainCache = createCache('cached-gorhill-get-domain', true);
+let gothillGetDomainCache = null;
 /**
  * @param {import('gorhill-publicsuffixlist').default | null} gorhill
  */
 module.exports.createCachedGorhillGetDomain = (gorhill) => {
+  gothillGetDomainCache ||= createCache('cached-gorhill-get-domain', true);
   /**
    * @param {string} domain
    */
