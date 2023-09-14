@@ -27,7 +27,7 @@
       "command": "node ./Build/download-previous-build.js"
     },
     "build:common": {
-      "command": "node ./Build/build.js",
+      "command": "node ./Build/build-common.js",
       "dependencies": [
         "download-previous-build"
       ]

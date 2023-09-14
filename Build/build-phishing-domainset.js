@@ -60,7 +60,7 @@ const BLACK_TLD = new Set([
   'com.cn'
 ]);
 
-runner(__filename, async () => {
+const buildPhishingDomainSet = async () => {
   const domainSet = Array.from((await processFilterRules('https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt')).black);
   const domainCountMap = {};
 
@@ -151,4 +151,10 @@ runner(__filename, async () => {
     path.resolve(__dirname, '../List/domainset/reject_phishing.conf'),
     path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
   ));
-});
+};
+
+module.exports.buildPhishingDomainSet = buildPhishingDomainSet;
+
+if (require.main === module) {
+  runner(__filename, buildPhishingDomainSet);
+}

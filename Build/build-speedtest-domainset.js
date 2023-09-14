@@ -46,7 +46,7 @@ const querySpeedtestApi = async (keyword) => {
   }
 };
 
-runner(__filename, async () => {
+const buildSpeedtestDomainSet = async () => {
   /** @type {Set<string>} */
   const domains = new Set([
     '.speedtest.net',
@@ -123,4 +123,10 @@ runner(__filename, async () => {
     path.resolve(__dirname, '../List/domainset/speedtest.conf'),
     path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
   ));
-});
+};
+
+module.exports.buildSpeedtestDomainSet = buildSpeedtestDomainSet;
+
+if (require.main === module) {
+  runner(__filename, buildSpeedtestDomainSet);
+}

@@ -7,7 +7,7 @@ const { compareAndWriteFile, createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
 const { runner } = require('./lib/trace-runner');
 
-runner(__filename, async () => {
+const buildDomesticRuleset = async () => {
   const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
   const results = [];
   for await (const l of rl) {
@@ -67,4 +67,10 @@ runner(__filename, async () => {
       path.resolve(__dirname, '../Modules/sukka_local_dns_mapping.sgmodule')
     )
   ]);
-});
+};
+
+module.exports.buildDomesticRuleset = buildDomesticRuleset;
+
+if (require.main === module) {
+  runner(__filename, buildDomesticRuleset);
+}

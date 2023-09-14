@@ -15,7 +15,7 @@ const escapeRegExp = (string) => {
   return string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 };
 
-runner(__filename, async () => {
+const buildInternalCDNDomains = async () => {
   const set = new Set();
   const keywords = new Set();
 
@@ -87,4 +87,10 @@ runner(__filename, async () => {
     ],
     path.resolve(__dirname, '../List/internal/cdn.txt')
   );
-});
+};
+
+module.exports.buildInternalCDNDomains = buildInternalCDNDomains;
+
+if (require.main === module) {
+  runner(__filename, buildInternalCDNDomains);
+}

@@ -1,15 +1,15 @@
 // @ts-check
 const path = require('path');
 const { createRuleset } = require('./lib/create-file');
-const { minifyRules } = require('./lib/minify-rules');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
 const { runner } = require('./lib/trace-runner');
 const fs = require('fs');
+const { processLine } = require('./lib/process-line');
 
 const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix-list_dat.txt');
 
-runner(__filename, async () => {
+const buildCdnConf = async () => {
   const trie = new Trie();
 
   if (fs.existsSync(publicSuffixPath)) {
@@ -42,10 +42,11 @@ runner(__filename, async () => {
 
   /** @type {string[]} */
   const cdnDomainsList = [];
-  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
+  for await (const l of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
+    const line = processLine(l);
     if (line === '# --- [AWS S3 Replace Me] ---') {
       S3OSSDomains.forEach(domain => cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`));
-    } else {
+    } else if (line) {
       cdnDomainsList.push(line);
     }
   }
@@ -57,15 +58,20 @@ runner(__filename, async () => {
     '',
     'This file contains object storage and static assets CDN domains.'
   ];
-  const ruleset = minifyRules(cdnDomainsList);
 
   return Promise.all(createRuleset(
     'Sukka\'s Ruleset - CDN Domains',
     description,
     new Date(),
-    ruleset,
+    cdnDomainsList,
     'ruleset',
     path.resolve(__dirname, '../List/non_ip/cdn.conf'),
     path.resolve(__dirname, '../Clash/non_ip/cdn.txt')
   ));
-});
+};
+
+module.exports.buildCdnConf = buildCdnConf;
+
+if (require.main === module) {
+  runner(__filename, buildCdnConf);
+}

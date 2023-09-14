@@ -98,9 +98,14 @@ const downloadPublicSuffixList = async () => {
   );
 };
 
-runner(__filename, () => {
-  return Promise.all([
-    downloadPreviousBuild(),
-    downloadPublicSuffixList()
-  ]);
-});
+module.exports.downloadPreviousBuild = downloadPreviousBuild;
+module.exports.downloadPublicSuffixList = downloadPublicSuffixList;
+
+if (require.main === module) {
+  runner(__filename, () => {
+    return Promise.all([
+      downloadPreviousBuild(),
+      downloadPublicSuffixList()
+    ]);
+  });
+}

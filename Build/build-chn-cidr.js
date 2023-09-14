@@ -12,7 +12,7 @@ const EXCLUDE_CIDRS = [
   '223.120.0.0/15'
 ];
 
-runner(__filename, async () => {
+const buildChnCidr = async () => {
   const { exclude: excludeCidrs } = await import('cidr-tools-wasm');
 
   /** @type {string[]} */
@@ -56,4 +56,10 @@ runner(__filename, async () => {
       pathResolve(__dirname, '../Clash/ip/china_ip.txt')
     )
   ]);
-});
+};
+
+module.exports.buildChnCidr = buildChnCidr;
+
+if (require.main === module) {
+  runner(__filename, buildChnCidr);
+}

@@ -6,7 +6,7 @@ const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('.
 const { processLine } = require('./lib/process-line');
 const { runner } = require('./lib/trace-runner');
 
-runner(__filename, async () => {
+const buildAntiBogusDomain = async () => {
   /** @type {string[]} */
   const res = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
@@ -56,4 +56,10 @@ runner(__filename, async () => {
     path.resolve(__dirname, '../List/ip/reject.conf'),
     path.resolve(__dirname, '../Clash/ip/reject.txt')
   ));
-});
+};
+
+module.exports.buildAntiBogusDomain = buildAntiBogusDomain;
+
+if (require.main === module) {
+  runner(__filename, buildAntiBogusDomain);
+}

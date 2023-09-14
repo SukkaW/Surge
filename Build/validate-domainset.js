@@ -58,7 +58,7 @@ const _validateRuleset = async (filePath) => {
   }
 };
 
-runner(__filename, async () => {
+const validate = async () => {
   const [domainsetFiles, _rulesetFiles] = await Promise.all([
     listDir(path.resolve(__dirname, '../List/domainset')),
     listDir(path.resolve(__dirname, '../List/non_ip'))
@@ -67,4 +67,9 @@ runner(__filename, async () => {
     domainsetFiles.map(file => validateDomainSet(file))
     // rulesetFiles.map(file => validateRuleset(file))
   );
-});
+};
+module.exports.validate = validate;
+
+if (require.main === module) {
+  runner(__filename, validate);
+}

@@ -23,7 +23,7 @@ const domainKeywordsSet = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet = new Set();
 
-runner(__filename, async () => {
+const buildRejectDomainSet = async () => {
   /** @type Set<string> */
   const domainSets = new Set();
 
@@ -228,4 +228,10 @@ runner(__filename, async () => {
     // Copy reject_sukka.conf for backward compatibility
     fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
   ]);
-});
+};
+
+module.exports.buildRejectDomainSet = buildRejectDomainSet;
+
+if (require.main === module) {
+  runner(__filename, buildRejectDomainSet);
+}

@@ -24,7 +24,7 @@ const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
-runner(__filename, async () => {
+const buildInternalReverseChnCIDR = async () => {
   const { exclude } = await import('cidr-tools-wasm');
 
   /** @type {string[]} */
@@ -47,4 +47,10 @@ runner(__filename, async () => {
     path.resolve(__dirname, '../List/internal/reversed-chn-cidr.txt'),
     `${reversedCidr.join('\n')}\n`
   );
-});
+};
+
+module.exports.buildInternalReverseChnCIDR = buildInternalReverseChnCIDR;
+
+if (require.main === module) {
+  runner(__filename, buildInternalReverseChnCIDR);
+}

@@ -6,7 +6,7 @@ const { processLine } = require('./lib/process-line');
 const { createRuleset } = require('./lib/create-file');
 const { runner } = require('./lib/trace-runner');
 
-runner(__filename, async () => {
+const buildTelegramCIDR = async () => {
   /** @type {Response} */
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt');
   const lastModified = resp.headers.get('last-modified');
@@ -49,4 +49,10 @@ runner(__filename, async () => {
     path.resolve(__dirname, '../List/ip/telegram.conf'),
     path.resolve(__dirname, '../Clash/ip/telegram.txt')
   ));
-});
+};
+
+module.exports.buildTelegramCIDR = buildTelegramCIDR;
+
+if (require.main === module) {
+  runner(__filename, buildTelegramCIDR);
+}

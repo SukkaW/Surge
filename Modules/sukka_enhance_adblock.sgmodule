@@ -1,6 +1,5 @@
 #!name=[Sukka] Enhance Better ADBlock for Surge
 #!desc=增强 ADBlock 效果、恢复网站正常功能
-# Use Build/build.js to generate the list
 
 [MITM]
 hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesyndication.com, *.googletagservices.com, *.doubleclick.net, cdn.ampproject.org, *.addthis.com

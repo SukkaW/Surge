@@ -2,6 +2,7 @@ const listDir = require('@sukka/listdir');
 const path = require('path');
 const fs = require('fs');
 const fse = require('fs-extra');
+const { runner } = require('./lib/trace-runner');
 
 const rootPath = path.resolve(__dirname, '../');
 const publicPath = path.resolve(__dirname, '../public');
@@ -16,7 +17,7 @@ const folderAndFilesToBeDeployed = [
   'README.md'
 ];
 
-(async () => {
+const buildPublicHtml = async () => {
   await fse.ensureDir(publicPath);
   await Promise.all(folderAndFilesToBeDeployed.map(dir => fse.copy(path.resolve(rootPath, dir), path.resolve(publicPath, dir))));
 
@@ -28,7 +29,13 @@ const folderAndFilesToBeDeployed = [
   const html = template(list);
 
   await fs.promises.writeFile(path.join(publicPath, 'index.html'), html, 'utf-8');
-})();
+};
+
+module.exports.buildPublicHtml = buildPublicHtml;
+
+if (require.main === module) {
+  runner(__filename, buildPublicHtml);
+}
 
 /**
  * @param {string[]} urlList
