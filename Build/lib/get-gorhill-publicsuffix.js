@@ -30,5 +30,9 @@ const getGorhillPublicSuffix = async () => {
   return gorhill;
 };
 
-const getGorhillPublicSuffixPromise = getGorhillPublicSuffix();
-module.exports.getGorhillPublicSuffixPromise = getGorhillPublicSuffixPromise;
+/** @type {Promise<import('gorhill-publicsuffixlist').default | null>} */
+let gorhillPublicSuffixPromise = null;
+module.exports.getGorhillPublicSuffixPromise = () => {
+  gorhillPublicSuffixPromise ||= getGorhillPublicSuffix();
+  return gorhillPublicSuffixPromise;
+};

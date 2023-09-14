@@ -9,14 +9,54 @@ const { buildTelegramCIDR } = require('./build-telegram-cidr');
 const { buildChnCidr } = require('./build-chn-cidr');
 const { buildSpeedtestDomainSet } = require('./build-speedtest-domainset');
 const { buildInternalCDNDomains } = require('./build-internal-cdn-rules');
-const { buildInternalReverseChnCIDR } = require('./build-internal-reverse-chn-cidr');
 const { buildInternalChnDomains } = require('./build-internal-chn-domains');
 const { buildDomesticRuleset } = require('./build-domestic-ruleset');
 const { validate } = require('./validate-domainset');
 
 const { buildPublicHtml } = require('./build-public');
 
+const { Worker } = require('jest-worker');
+
+/**
+ * @template T
+ * @typedef {import('jest-worker').Worker & { __sukka_worker_name: string } & T} WithWorker
+ */
+
+/**
+ * @template T
+ * @param {string} path
+ * @returns {WithWorker<T>}
+ */
+const requireWorker = (path) => {
+  const _worker = /** @type {WithWorker<T>} */ (new Worker(
+    require.resolve(path),
+    {
+      numWorkers: 1,
+      maxRetries: 0,
+      enableWorkerThreads: true
+    }
+  ));
+  _worker.getStderr().pipe(process.stderr);
+  _worker.getStdout().pipe(process.stdout);
+  _worker.__sukka_worker_name = path;
+  return _worker;
+};
+
+/**
+ * @template T
+ * @param {WithWorker<T>} worker
+ */
+const endWorker = async (worker) => {
+  const { forceExited } = worker.end();
+  if (forceExited && worker.__sukka_worker_name) {
+    console.log(worker.__sukka_worker_name, 'forceExited');
+  }
+};
+
 (async () => {
+  const buildInternalReverseChnCIDRWorker = /** @type {WithWorker<import('./build-internal-reverse-chn-cidr')>} */ (requireWorker('./build-internal-reverse-chn-cidr'));
+  const { buildInternalReverseChnCIDR } = buildInternalReverseChnCIDRWorker;
+
   // download-previous-build
   const downloadPreviousBuildPromise = downloadPreviousBuild();
   const downloadPublicSuffixListPromise = downloadPublicSuffixList();
@@ -77,6 +117,7 @@ const { buildPublicHtml } = require('./build-public');
 
   await Promise.all([
     buildPublicHtml(),
-    validate()
+    validate(),
+    endWorker(buildInternalReverseChnCIDRWorker)
   ]);
 })();

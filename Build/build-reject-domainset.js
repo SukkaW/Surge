@@ -33,7 +33,7 @@ const buildRejectDomainSet = task(__dirname, async () => {
   let shouldStop = false;
 
   const [gorhill] = await Promise.all([
-    getGorhillPublicSuffixPromise,
+    getGorhillPublicSuffixPromise(),
     // Parse from remote hosts & domain lists
     ...HOSTS.map(entry => processHosts(entry[0], entry[1]).then(hosts => {
       hosts.forEach(host => {

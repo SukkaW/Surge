@@ -10,10 +10,10 @@ module.exports.isDomainLoose = (domain) => {
 };
 
 /**
- * @param {string} domain
+ * @param {string | null | undefined} domain
  */
 module.exports.normalizeDomain = (domain) => {
-  if (domain == null) {
+  if (!domain) {
     return null;
   }
 
