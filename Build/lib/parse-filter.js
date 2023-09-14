@@ -179,19 +179,15 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
     const downloadStart = performance.now();
     try {
       const controller = new AbortController();
-      const signal = controller.signal;
 
       /** @type string[] */
       filterRules = (
         await Promise.any(
-          [filterRulesUrl, ...(fallbackUrls || [])].map(
-            url => fetchWithRetry(url, { signal })
-              .then(r => r.text())
-              .then(text => {
-                controller.abort();
-                return text;
-              })
-          )
+          [filterRulesUrl, ...(fallbackUrls || [])].map(async url => {
+            const text = await fetchWithRetry(url, { signal: controller.signal }).then(r => r.text());
+            controller.abort();
+            return text;
+          })
         )
       ).split('\n').map(line => line.trim());
     } catch (e) {
@@ -317,10 +313,7 @@ function parse($line, includeThirdParties) {
 
     if (
       // (line.startsWith('@@|') || line.startsWith('@@.'))
-      (
-        line[2] === '|'
-        || line[2] === '.'
-      )
+      (line[2] === '|' || line[2] === '.')
       && (
         lineEndsWithCaret
         || lineEndsWithCaretVerticalBar
@@ -374,7 +367,7 @@ function parse($line, includeThirdParties) {
     return null;
   }
 
-  const lineStartsWithSingleDot = line.startsWith('.');
+  const lineStartsWithSingleDot = line[0] === '.';
   if (
     lineStartsWithSingleDot
     && (
@@ -437,7 +430,7 @@ function parse($line, includeThirdParties) {
 
     return null;
   }
-  const tryNormalizeDomain = normalizeDomain(lineStartsWithSingleDot ? line.slice(1) : line);
+  const tryNormalizeDomain = normalizeDomain(line);
   if (
     tryNormalizeDomain
     && (

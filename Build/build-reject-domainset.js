@@ -1,20 +1,20 @@
 // @ts-check
-const fs = require('fs');
 const fse = require('fs-extra');
 const { resolve: pathResolve } = require('path');
-
-const tldts = require('tldts');
 
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
 const Trie = require('./lib/trie');
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
-const { createRuleset } = require('./lib/create-file');
+const { createRuleset, compareAndWriteFile } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line');
 const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const domainSorter = require('./lib/stable-sort-domain');
+const { createDomainSorter } = require('./lib/stable-sort-domain');
+const { traceSync, runner } = require('./lib/trace-runner');
+const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
+const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -22,7 +22,8 @@ const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 const domainKeywordsSet = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet = new Set();
-(async () => {
+
+runner(__filename, async () => {
   /** @type Set<string> */
   const domainSets = new Set();
 
@@ -31,7 +32,8 @@ const domainSuffixSet = new Set();
 
   let shouldStop = false;
 
-  await Promise.all([
+  const [gorhill] = await Promise.all([
+    getGorhillPublicSuffixPromise,
     // Parse from remote hosts & domain lists
     ...HOSTS.map(entry => processHosts(entry[0], entry[1]).then(hosts => {
       hosts.forEach(host => {
@@ -129,7 +131,7 @@ const domainSuffixSet = new Set();
   console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
   console.time('* Dedupe from black keywords/suffixes');
 
-  const kwfilter = createKeywordFilter(Array.from(domainKeywordsSet));
+  const kwfilter = createKeywordFilter(domainKeywordsSet);
 
   const trie1 = Trie.from(domainSets);
   domainSuffixSet.forEach(suffix => {
@@ -167,19 +169,35 @@ const domainSuffixSet = new Set();
 
   const START_TIME = Date.now();
 
-  const dudupedDominArray = domainDeduper(Array.from(domainSets));
+  const dudupedDominArray = traceSync('* Dedupe from covered subdomain', () => domainDeduper(Array.from(domainSets)));
 
   console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
-  /** @type {Record<string, number>} */
-  const rejectDomainsStats = dudupedDominArray.reduce((acc, cur) => {
-    const suffix = tldts.getDomain(cur, { allowPrivateDomains: false });
-    if (suffix) {
-      acc[suffix] = (acc[suffix] ?? 0) + 1;
-    }
-    return acc;
-  }, {});
+  // Create reject stats
+  const getDomain = createCachedGorhillGetDomain(gorhill);
+  /** @type {[string, number][]} */
+  const rejectDomainsStats = traceSync(
+    '* Collect reject domain stats',
+    () => Object.entries(
+      dudupedDominArray.reduce((acc, cur) => {
+        const suffix = getDomain(cur);
+        if (suffix) {
+          acc[suffix] = (acc[suffix] ?? 0) + 1;
+        }
+        return acc;
+      }, {})
+    ).filter(a => a[1] > 2).sort((a, b) => {
+      const t = b[1] - a[1];
+      if (t === 0) {
+        return a[0].localeCompare(b[0]);
+      }
+      return t;
+    })
+  );
+
+  const domainSorter = createDomainSorter(gorhill);
+  const domainset = traceSync('* Sort reject domainset', () => dudupedDominArray.sort(domainSorter));
 
   const description = [
     'License: AGPL 3.0',
@@ -192,7 +210,6 @@ const domainSuffixSet = new Set();
     ...HOSTS.map(host => ` - ${host[0]}`),
     ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
   ];
-  const domainset = dudupedDominArray.sort(domainSorter);
 
   await Promise.all([
     ...createRuleset(
@@ -204,21 +221,11 @@ const domainSuffixSet = new Set();
       pathResolve(__dirname, '../List/domainset/reject.conf'),
       pathResolve(__dirname, '../Clash/domainset/reject.txt')
     ),
-    fs.promises.writeFile(
-      pathResolve(__dirname, '../List/internal/reject-stats.txt'),
-      Object.entries(rejectDomainsStats)
-        .filter(a => a[1] > 1)
-        .sort((a, b) => {
-          const t = b[1] - a[1];
-          if (t === 0) {
-            return a[0].localeCompare(b[0]);
-          }
-          return t;
-        })
-        .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`)
-        .join('\n')
+    compareAndWriteFile(
+      rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
+      pathResolve(__dirname, '../List/internal/reject-stats.txt')
     ),
     // Copy reject_sukka.conf for backward compatibility
     fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
   ]);
-})();
+});

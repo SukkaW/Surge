@@ -1,14 +1,4 @@
 // @ts-check
-const tldts = require('tldts');
-
-const cache1 = Object.create(null);
-/**
- * @param {string} url
- * @returns {ReturnType<typeof tldts.parse>}
- */
-// eslint-disable-next-line no-return-assign -- cache
-const parse = (url) => (cache1[url] ||= tldts.parse(url, { allowPrivateDomains: true }));
-
 /**
  * @param {string | null} a
  * @param {string | null} b
@@ -49,32 +39,49 @@ const compare = (a, b) => {
 };
 
 /**
- * @param {string} a
- * @param {string} b
- * @returns {0 | 1 | -1}
+ * @param {import('gorhill-publicsuffixlist').default | null} [gorhill]
  */
-const domainSorter = (a, b) => {
-  if (a === b) return 0;
+const createDomainSorter = (gorhill = null) => {
+  const cached = require('./cached-tld-parse');
 
-  const aParsed = parse(a[0] === '.' ? a.slice(1) : a);
-  const bParsed = parse(b[0] === '.' ? b.slice(1) : b);
+  if (gorhill) {
+    /**
+     * @param {string} input
+     */
+    const getDomain = cached.createCachedGorhillGetDomain(gorhill);
 
-  const resultDomainWithoutSuffix = compare(aParsed.domainWithoutSuffix, bParsed.domainWithoutSuffix);
-  if (resultDomainWithoutSuffix !== 0) {
-    return resultDomainWithoutSuffix;
+    /**
+   * @param {string} a
+   * @param {string} b
+   * @returns {0 | 1 | -1}
+   */
+    return (a, b) => {
+      if (a === b) return 0;
+
+      const aDomain = getDomain(a);
+      const bDomain = getDomain(b);
+
+      const resultDomain = compare(aDomain, bDomain);
+      return resultDomain !== 0 ? resultDomain : compare(a, b);
+    };
   }
 
-  const resultSuffix = compare(aParsed.publicSuffix, bParsed.publicSuffix);
-  if (resultSuffix !== 0) {
-    return resultSuffix;
-  }
+  const tldts = cached;
+  /**
+   * @param {string} a
+   * @param {string} b
+   * @returns {0 | 1 | -1}
+   */
+  return (a, b) => {
+    if (a === b) return 0;
 
-  const resultSubdomain = compare(aParsed.subdomain, bParsed.subdomain);
-  if (resultSubdomain !== 0) {
-    return resultSubdomain;
-  }
+    const aDomain = tldts.parse(a).domain;
+    const bDomain = tldts.parse(b).domain;
 
-  return 0;
+    const resultDomain = compare(aDomain, bDomain);
+    return resultDomain !== 0 ? resultDomain : compare(a, b);
+  };
 };
 
-module.exports = domainSorter;
+module.exports = createDomainSorter();
+module.exports.createDomainSorter = createDomainSorter;

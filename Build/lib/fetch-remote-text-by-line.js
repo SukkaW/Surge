@@ -34,7 +34,7 @@ module.exports.createReadlineInterfaceFromResponse = createReadlineInterfaceFrom
 
 /**
  * @param {import('undici').RequestInfo} url
- * @param {import('undici').RequestInit | undefined} [opt]
+ * @param {import('undici').RequestInit} [opt]
  */
 module.exports.fetchRemoteTextAndCreateReadlineInterface = async (url, opt) => {
   const resp = await fetchWithRetry(url, opt);

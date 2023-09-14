@@ -23,7 +23,7 @@ const createNode = (key, depth = 0) => ({
 });
 
 /**
- * @param {string[]} keys
+ * @param {string[] | Set<string>} keys
  */
 const createKeywordFilter = (keys) => {
   const root = createNode('root');
@@ -39,16 +39,18 @@ const createKeywordFilter = (keys) => {
       const map = beginNode.children;
       // eslint-disable-next-line guard-for-in -- plain object
       for (const key in beginNode.children) {
-        const node = map[key];
+        const node = map?.[key];
         let failNode = beginNode.fail;
 
-        while (failNode && !failNode.children[key]) {
+        while (failNode && !failNode.children?.[key]) {
           failNode = failNode.fail;
         }
 
-        node.fail = failNode?.children[key] || root;
+        if (node) {
+          node.fail = failNode?.children?.[key] || root;
 
-        queue.push(node);
+          queue.push(node);
+        }
       }
 
       idx++;
@@ -83,10 +85,9 @@ const createKeywordFilter = (keys) => {
     }
   };
 
-  for (let idx = 0, len = keys.length; idx < len; idx++) {
-    const key = keys[idx];
-    put(key, key.length);
-  }
+  keys.forEach(k => {
+    put(k, k.length);
+  });
 
   build();
 

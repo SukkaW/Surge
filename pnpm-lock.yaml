@@ -34,6 +34,9 @@ dependencies:
   fs-extra:
     specifier: ^11.1.1
     version: 11.1.1
+  gorhill-publicsuffixlist:
+    specifier: github:gorhill/publicsuffixlist.js
+    version: github.com/gorhill/publicsuffixlist.js/3a1bc623073079184ff76933b88b7bf4f5d48978
   mnemonist:
     specifier: ^0.39.5
     version: 0.39.5
@@ -43,6 +46,9 @@ dependencies:
   picocolors:
     specifier: ^1.0.0
     version: 1.0.0
+  punycode:
+    specifier: ^2.3.0
+    version: 2.3.0
   table:
     specifier: ^6.8.1
     version: 6.8.1
@@ -1318,8 +1324,8 @@ packages:
       signal-exit: 3.0.7
     dev: true
 
-  /punycode@2.1.1:
-    resolution: {integrity: sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==}
+  /punycode@2.3.0:
+    resolution: {integrity: sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==}
     engines: {node: '>=6'}
 
   /queue-microtask@1.2.3:
@@ -1571,7 +1577,7 @@ packages:
   /uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
-      punycode: 2.1.1
+      punycode: 2.3.0
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -1661,3 +1667,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  github.com/gorhill/publicsuffixlist.js/3a1bc623073079184ff76933b88b7bf4f5d48978:
+    resolution: {tarball: https://codeload.github.com/gorhill/publicsuffixlist.js/tar.gz/3a1bc623073079184ff76933b88b7bf4f5d48978}
+    name: '@gorhill/publicsuffixlist'
+    version: 3.0.1
+    engines: {node: '>=14.0.0', npm: '>=6.14.4'}
+    dev: false

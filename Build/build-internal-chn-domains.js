@@ -1,9 +1,9 @@
 // @ts-check
 const path = require('path');
 const fse = require('fs-extra');
-const fs = require('fs');
 const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
 const { runner } = require('./lib/trace-runner');
+const { compareAndWriteFile } = require('./lib/create-file');
 
 runner(__filename, async () => {
   const [result] = await Promise.all([
@@ -11,8 +11,8 @@ runner(__filename, async () => {
     fse.ensureDir(path.resolve(__dirname, '../List/internal'))
   ]);
 
-  await fs.promises.writeFile(
-    path.resolve(__dirname, '../List/internal/accelerated-china-domains.txt'),
-    `${result.map(line => `SUFFIX,${line}`).join('\n')}\n`
+  await compareAndWriteFile(
+    result.map(line => `SUFFIX,${line}`),
+    path.resolve(__dirname, '../List/internal/accelerated-china-domains.txt')
   );
 });

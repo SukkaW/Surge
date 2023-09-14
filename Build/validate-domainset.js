@@ -1,6 +1,6 @@
 // Surge Domain Set can not include root domain from public suffix list.
 
-const tldts = require('tldts');
+const tldts = require('tldts'); // hit ratio way too low, dont cache
 const picocolors = require('picocolors');
 const path = require('path');
 const listDir = require('@sukka/listdir');
@@ -21,7 +21,7 @@ const validateDomainSet = async (filePath) => {
     if (!line) {
       continue;
     }
-    const domain = line.charCodeAt(0) === 46 ? line.slice(1) : line;
+    const domain = line[0] === '.' ? line.slice(1) : line;
     const parsed = tldts.parse(domain, { allowPrivateDomains: true, detectIp: false });
 
     if (

@@ -1,11 +1,21 @@
 {
   "root": true,
   "extends": ["sukka/node"],
-  "rules": {
-    "no-console": "off"
-  },
-  "parserOptions": {
-    "ecmaVersion": "latest",
-    "sourceType": "module"
-  }
+  "ignorePatterns": [
+    "node_modules/",
+    // disable for now
+    "**/*.d.ts"
+  ],
+  "overrides": [
+    {
+      "files": ["**/*.js"],
+      "rules": {
+        "no-console": "off"
+      },
+      "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+      }
+    }
+  ]
 }

@@ -5,11 +5,22 @@ const { minifyRules } = require('./lib/minify-rules');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
 const { runner } = require('./lib/trace-runner');
+const fs = require('fs');
+
+const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix-list_dat.txt');
 
 runner(__filename, async () => {
   const trie = new Trie();
-  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://publicsuffix.org/list/public_suffix_list.dat')) {
-    trie.add(line);
+
+  if (fs.existsSync(publicSuffixPath)) {
+    for await (const line of readFileByLine(publicSuffixPath)) {
+      trie.add(line);
+    }
+  } else {
+    console.log('public_suffix_list.dat not found, fetch directly from remote.');
+    for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://publicsuffix.org/list/public_suffix_list.dat')) {
+      trie.add(line);
+    }
   }
 
   /**
@@ -18,13 +29,16 @@ runner(__filename, async () => {
    */
   const S3OSSDomains = new Set();
 
-  trie.find('.amazonaws.com')
-    .filter(line => (line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-'))
-    .forEach(line => S3OSSDomains.add(line));
-
-  trie.find('.scw.cloud')
-    .filter(line => (line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-'))
-    .forEach(line => S3OSSDomains.add(line));
+  trie.find('.amazonaws.com').forEach(line => {
+    if ((line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-')) {
+      S3OSSDomains.add(line);
+    }
+  });
+  trie.find('.scw.cloud').forEach(line => {
+    if ((line.startsWith('s3-') || line.startsWith('s3.')) && !line.includes('cn-')) {
+      S3OSSDomains.add(line);
+    }
+  });
 
   /** @type {string[]} */
   const cdnDomainsList = [];
@@ -45,7 +59,7 @@ runner(__filename, async () => {
   ];
   const ruleset = minifyRules(cdnDomainsList);
 
-  await Promise.all(createRuleset(
+  return Promise.all(createRuleset(
     'Sukka\'s Ruleset - CDN Domains',
     description,
     new Date(),

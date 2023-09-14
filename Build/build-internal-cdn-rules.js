@@ -1,7 +1,6 @@
 // @ts-check
 const fse = require('fs-extra');
 const path = require('path');
-const { isDomainLoose } = require('./lib/is-domain-loose');
 const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
@@ -35,11 +34,15 @@ runner(__filename, async () => {
    */
   const processLocalDomainSet = async (domainSetPath) => {
     for await (const line of readFileByLine(domainSetPath)) {
-      if (line[0] === '.') {
-        addApexDomain(line.slice(1));
-      } else if (isDomainLoose(line)) {
-        addApexDomain(line);
-      } else if (processLine(line)) {
+      const parsed = tldts.parse(line, { allowPrivateDomains: true });
+      if (!parsed.isIp && (parsed.isIcann || parsed.isPrivate)) {
+        if (parsed.domain) {
+          set.add(parsed.domain);
+        }
+        continue;
+      }
+
+      if (processLine(line)) {
         console.warn('[drop line from domainset]', line);
       }
     }

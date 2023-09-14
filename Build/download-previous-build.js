@@ -16,7 +16,7 @@ const fileExists = (path) => {
     .catch(() => false);
 };
 
-runner(__filename, async () => {
+const downloadPreviousBuild = async () => {
   const filesList = ['Clash', 'List'];
 
   let allFileExists = true;
@@ -79,4 +79,28 @@ runner(__filename, async () => {
   }));
 
   await fs.promises.unlink(extractedPath).catch(() => { });
+};
+
+const downloadPublicSuffixList = async () => {
+  const publicSuffixDir = resolve(__dirname, '../node_modules/.cache');
+  const publicSuffixPath = join(publicSuffixDir, 'public_suffix-list_dat.txt');
+
+  console.log('Download public suffix list.');
+
+  const [resp] = await Promise.all([
+    fetch('https://publicsuffix.org/list/public_suffix_list.dat'),
+    fse.ensureDir(publicSuffixDir)
+  ]);
+
+  await pipeline(
+    Readable.fromWeb(resp.body),
+    fs.createWriteStream(publicSuffixPath)
+  );
+};
+
+runner(__filename, () => {
+  return Promise.all([
+    downloadPreviousBuild(),
+    downloadPublicSuffixList()
+  ]);
 });

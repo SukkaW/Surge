@@ -1,3 +1,4 @@
+// @ts-check
 const Trie = require('./trie');
 
 /**
@@ -13,8 +14,10 @@ const domainDeduper = (inputDomains) => {
       continue;
     }
 
+    // delete all included subdomains (ends with `.example.com`)
     trie.find(d, false).forEach(f => sets.delete(f));
 
+    // if `.example.com` exists, then `example.com` should also be removed
     const a = d.slice(1);
     if (trie.has(a)) {
       sets.delete(a);

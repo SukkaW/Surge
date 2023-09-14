@@ -19,8 +19,15 @@ runner(__filename, async () => {
 
   results.push(
     ...Object.entries(DOMESTICS)
-      .filter(([key]) => key !== 'SYSTEM')
-      .flatMap(([, { domains }]) => domains)
+      .reduce(
+        (acc, [key, { domains }]) => {
+          if (key === 'SYSTEM') {
+            return acc;
+          }
+          return [...acc, ...domains];
+        },
+        /** @type {string[]} */([])
+      )
       .sort(domainSorter)
       .map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );

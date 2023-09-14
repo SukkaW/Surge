@@ -42,7 +42,7 @@ runner(__filename, async () => {
     }
   }
 
-  await Promise.all(promises);
+  return Promise.all(promises);
 });
 
 /**
