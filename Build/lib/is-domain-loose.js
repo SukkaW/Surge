@@ -1,14 +1,5 @@
 // @ts-check
 const tldts = require('./cached-tld-parse');
-
-/**
- * @param {string} domain
- */
-module.exports.isDomainLoose = (domain) => {
-  const { isIcann, isPrivate, isIp } = tldts.parse(domain);
-  return !!(!isIp && (isIcann || isPrivate));
-};
-
 /**
  * @param {string | null | undefined} domain
  */

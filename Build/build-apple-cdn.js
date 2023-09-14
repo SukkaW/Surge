@@ -1,7 +1,7 @@
 const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const buildAppleCdn = task(__filename, async () => {
   const res = await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
@@ -45,5 +45,5 @@ const buildAppleCdn = task(__filename, async () => {
 module.exports.buildAppleCdn = buildAppleCdn;
 
 if (require.main === module) {
-  runner(__filename, buildAppleCdn);
+  buildAppleCdn();
 }

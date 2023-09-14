@@ -5,7 +5,7 @@ const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
 const { compareAndWriteFile, createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const buildDomesticRuleset = task(__filename, async () => {
   const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
@@ -72,5 +72,5 @@ const buildDomesticRuleset = task(__filename, async () => {
 module.exports.buildDomesticRuleset = buildDomesticRuleset;
 
 if (require.main === module) {
-  runner(__filename, buildDomesticRuleset);
+  buildDomesticRuleset();
 }

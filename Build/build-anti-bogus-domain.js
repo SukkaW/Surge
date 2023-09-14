@@ -4,7 +4,7 @@ const { isIPv4, isIPv6 } = require('net');
 const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const buildAntiBogusDomain = task(__filename, async () => {
   /** @type {string[]} */
@@ -61,5 +61,5 @@ const buildAntiBogusDomain = task(__filename, async () => {
 module.exports.buildAntiBogusDomain = buildAntiBogusDomain;
 
 if (require.main === module) {
-  runner(__filename, buildAntiBogusDomain);
+  buildAntiBogusDomain();
 }

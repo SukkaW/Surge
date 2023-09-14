@@ -5,7 +5,7 @@ const { createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
 
 const { Sema } = require('async-sema');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 const s = new Sema(2);
 
 /**
@@ -128,5 +128,5 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
 module.exports.buildSpeedtestDomainSet = buildSpeedtestDomainSet;
 
 if (require.main === module) {
-  runner(__filename, buildSpeedtestDomainSet);
+  buildSpeedtestDomainSet();
 }

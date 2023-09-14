@@ -6,7 +6,7 @@ const path = require('path');
 const listDir = require('@sukka/listdir');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const SPECIAL_SUFFIXES = new Set([
   'linodeobjects.com', // only *.linodeobjects.com are public suffix
@@ -71,5 +71,5 @@ const validate = task(__filename, async () => {
 module.exports.validate = validate;
 
 if (require.main === module) {
-  runner(__filename, validate);
+  validate();
 }

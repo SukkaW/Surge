@@ -2,7 +2,7 @@ const listDir = require('@sukka/listdir');
 const path = require('path');
 const fs = require('fs');
 const fse = require('fs-extra');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const rootPath = path.resolve(__dirname, '../');
 const publicPath = path.resolve(__dirname, '../public');
@@ -34,7 +34,7 @@ const buildPublicHtml = task(__filename, async () => {
 module.exports.buildPublicHtml = buildPublicHtml;
 
 if (require.main === module) {
-  runner(__filename, buildPublicHtml);
+  buildPublicHtml();
 }
 
 /**

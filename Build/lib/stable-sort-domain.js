@@ -42,13 +42,11 @@ const compare = (a, b) => {
  * @param {import('gorhill-publicsuffixlist').default | null} [gorhill]
  */
 const createDomainSorter = (gorhill = null) => {
-  const cached = require('./cached-tld-parse');
-
   if (gorhill) {
     /**
      * @param {string} input
      */
-    const getDomain = cached.createCachedGorhillGetDomain(gorhill);
+    const getDomain = require('./cached-tld-parse').createCachedGorhillGetDomain(gorhill);
 
     /**
    * @param {string} a
@@ -66,7 +64,7 @@ const createDomainSorter = (gorhill = null) => {
     };
   }
 
-  const tldts = cached;
+  const tldts = require('./cached-tld-parse');
   /**
    * @param {string} a
    * @param {string} b

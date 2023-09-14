@@ -2,7 +2,7 @@
 const path = require('path');
 const fse = require('fs-extra');
 const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 const { compareAndWriteFile } = require('./lib/create-file');
 
 const buildInternalChnDomains = task(__filename, async () => {
@@ -20,5 +20,5 @@ const buildInternalChnDomains = task(__filename, async () => {
 module.exports.buildInternalChnDomains = buildInternalChnDomains;
 
 if (require.main === module) {
-  runner(__filename, buildInternalChnDomains);
+  buildInternalChnDomains();
 }

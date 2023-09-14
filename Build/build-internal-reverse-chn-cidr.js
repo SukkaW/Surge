@@ -4,7 +4,7 @@ const { processLine } = require('./lib/process-line');
 const path = require('path');
 const fse = require('fs-extra');
 const fs = require('fs');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const RESERVED_IPV4_CIDR = [
   '0.0.0.0/8',
@@ -52,5 +52,5 @@ const buildInternalReverseChnCIDR = task(__filename, async () => {
 module.exports.buildInternalReverseChnCIDR = buildInternalReverseChnCIDR;
 
 if (require.main === module) {
-  runner(__filename, buildInternalReverseChnCIDR);
+  buildInternalReverseChnCIDR();
 }

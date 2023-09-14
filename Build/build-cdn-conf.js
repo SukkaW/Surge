@@ -3,7 +3,7 @@ const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const Trie = require('./lib/trie');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 const fs = require('fs');
 const { processLine } = require('./lib/process-line');
 
@@ -50,7 +50,6 @@ const buildCdnConf = task(__filename, async () => {
   const cdnDomainsList = [];
   for await (const l of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
     if (l === '# --- [AWS S3 Replace Me] ---') {
-      console.log(S3OSSDomains);
       S3OSSDomains.forEach(domain => {
         cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`);
       });
@@ -83,5 +82,5 @@ const buildCdnConf = task(__filename, async () => {
 module.exports.buildCdnConf = buildCdnConf;
 
 if (require.main === module) {
-  runner(__filename, buildCdnConf);
+  buildCdnConf();
 }

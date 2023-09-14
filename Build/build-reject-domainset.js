@@ -12,7 +12,7 @@ const { domainDeduper } = require('./lib/domain-deduper');
 const createKeywordFilter = require('./lib/aho-corasick');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { createDomainSorter } = require('./lib/stable-sort-domain');
-const { traceSync, runner, task } = require('./lib/trace-runner');
+const { traceSync, task } = require('./lib/trace-runner');
 const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
 const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
@@ -23,7 +23,7 @@ const domainKeywordsSet = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet = new Set();
 
-const buildRejectDomainSet = task(__dirname, async () => {
+const buildRejectDomainSet = task(__filename, async () => {
   /** @type Set<string> */
   const domainSets = new Set();
 
@@ -167,11 +167,7 @@ const buildRejectDomainSet = task(__dirname, async () => {
   // Dedupe domainSets
   console.log(`Start deduping! (${previousSize})`);
 
-  const START_TIME = Date.now();
-
   const dudupedDominArray = traceSync('* Dedupe from covered subdomain', () => domainDeduper(Array.from(domainSets)));
-
-  console.log(`* Dedupe from covered subdomain - ${(Date.now() - START_TIME) / 1000}s`);
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
   // Create reject stats
@@ -189,10 +185,11 @@ const buildRejectDomainSet = task(__dirname, async () => {
       }, {})
     ).filter(a => a[1] > 2).sort((a, b) => {
       const t = b[1] - a[1];
-      if (t === 0) {
-        return a[0].localeCompare(b[0]);
+      if (t !== 0) {
+        return t;
       }
-      return t;
+
+      return a[0].localeCompare(b[0]);
     })
   );
 
@@ -233,5 +230,5 @@ const buildRejectDomainSet = task(__dirname, async () => {
 module.exports.buildRejectDomainSet = buildRejectDomainSet;
 
 if (require.main === module) {
-  runner(__filename, buildRejectDomainSet);
+  buildRejectDomainSet();
 }

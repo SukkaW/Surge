@@ -1,5 +1,10 @@
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
-const { isDomainLoose } = require('./is-domain-loose');
+const tldts = require('tldts');
+
+const isDomainLoose = (domain) => {
+  const { isIcann, isPrivate, isIp } = tldts.parse(domain);
+  return !!(!isIp && (isIcann || isPrivate));
+};
 
 /**
  * @param {string | URL} url

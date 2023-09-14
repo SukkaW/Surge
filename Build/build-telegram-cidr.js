@@ -4,7 +4,7 @@ const path = require('path');
 const { isIPv4, isIPv6 } = require('net');
 const { processLine } = require('./lib/process-line');
 const { createRuleset } = require('./lib/create-file');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const buildTelegramCIDR = task(__filename, async () => {
   /** @type {Response} */
@@ -54,5 +54,5 @@ const buildTelegramCIDR = task(__filename, async () => {
 module.exports.buildTelegramCIDR = buildTelegramCIDR;
 
 if (require.main === module) {
-  runner(__filename, buildTelegramCIDR);
+  buildTelegramCIDR();
 }

@@ -1,6 +1,5 @@
 // @ts-check
 const fs = require('fs');
-const fse = require('fs-extra');
 const { readFileByLine } = require('./fetch-remote-text-by-line');
 const { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } = require('./clash');
 
@@ -9,26 +8,33 @@ const { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset 
  * @param {string} filePath
  */
 async function compareAndWriteFile(linesA, filePath) {
-  await fse.ensureFile(filePath);
-
   let isEqual = true;
-  let index = 0;
+  if (!fs.existsSync(filePath)) {
+    console.log(`${filePath} does not exists, writing...`);
+    isEqual = false;
+  } else {
+    let index = 0;
 
-  for await (const lineB of readFileByLine(filePath)) {
-    const lineA = linesA[index];
-    index++;
+    for await (const lineB of readFileByLine(filePath)) {
+      const lineA = linesA[index];
+      index++;
 
-    if (lineA[0] === '#' && lineB[0] === '#') {
-      continue;
+      if (lineA[0] === '#' && lineB[0] === '#') {
+        continue;
+      }
+
+      if (lineA !== lineB) {
+        isEqual = false;
+        break;
+      }
     }
 
-    if (lineA !== lineB) {
+    if (index !== linesA.length) {
       isEqual = false;
-      break;
     }
   }
 
-  if (!isEqual || index !== linesA.length) {
+  if (!isEqual) {
     const stream = fs.createWriteStream(filePath, { encoding: 'utf-8' });
 
     for (let i = 0, len = linesA.length; i < len; i++) {

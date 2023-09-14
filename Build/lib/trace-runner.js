@@ -36,19 +36,10 @@ module.exports.traceAsync = traceAsync;
  * @template T
  * @param {string} __filename
  * @param {() => Promise<T>} fn
- * @returns {Promise<T>}
+ * @param {string | null} [customname]
  */
-module.exports.runner = async (__filename, fn) => {
-  return traceAsync(`⌛ [${path.basename(__filename, path.extname(__filename))}]`, fn);
-};
-
-/**
- * @template T
- * @param {string} __filename
- * @param {() => Promise<T>} fn
- */
-module.exports.task = (__filename, fn) => {
-  const taskName = path.basename(__filename, path.extname(__filename));
+module.exports.task = (__filename, fn, customname = null) => {
+  const taskName = customname ?? path.basename(__filename, path.extname(__filename));
   return () => {
     console.log(`🏃 [${taskName}] Start executing`);
     return traceAsync(`✅ [${taskName}] Executed successfully`, fn);

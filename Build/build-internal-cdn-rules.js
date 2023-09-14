@@ -5,7 +5,7 @@ const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const domainSorter = require('./lib/stable-sort-domain');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 const { compareAndWriteFile } = require('./lib/create-file');
 
 /**
@@ -92,5 +92,5 @@ const buildInternalCDNDomains = task(__filename, async () => {
 module.exports.buildInternalCDNDomains = buildInternalCDNDomains;
 
 if (require.main === module) {
-  runner(__filename, buildInternalCDNDomains);
+  buildInternalCDNDomains();
 }

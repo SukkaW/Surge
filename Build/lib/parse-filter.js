@@ -93,9 +93,6 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   return domainSets;
 }
 
-const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#&%~=]/;
-const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
-
 /**
  * @param {string | URL} filterRulesUrl
  * @param {readonly (string | URL)[] | undefined} [fallbackUrls]
@@ -197,8 +194,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
     downloadTime = performance.now() - downloadStart;
 
     for (let i = 0, len = filterRules.length; i < len; i++) {
-      const line = filterRules[i].trim();
-      lineCb(line);
+      lineCb(filterRules[i].trim());
     }
   }
 
@@ -211,6 +207,9 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
     foundDebugDomain
   };
 }
+
+const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#&%~=]/;
+const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
 
 /**
  * @param {string} $line

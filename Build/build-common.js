@@ -6,7 +6,7 @@ const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { processLine } = require('./lib/process-line');
 const { createRuleset } = require('./lib/create-file');
 const { domainDeduper } = require('./lib/domain-deduper');
-const { runner, task } = require('./lib/trace-runner');
+const { task } = require('./lib/trace-runner');
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -48,7 +48,7 @@ const buildCommon = task(__filename, async () => {
 module.exports.buildCommon = buildCommon;
 
 if (require.main === module) {
-  runner(__filename, buildCommon);
+  buildCommon();
 }
 
 /**
