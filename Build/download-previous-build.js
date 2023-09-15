@@ -8,7 +8,7 @@ const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { isCI } = require('ci-info');
-const { task } = require('./lib/trace-runner');
+const { task, traceAsync } = require('./lib/trace-runner');
 
 const fileExists = (path) => {
   return fs.promises.access(path, fs.constants.F_OK)
@@ -31,7 +31,7 @@ const downloadPreviousBuild = task(__filename, async () => {
           line.startsWith('Modules/')
         ) && !line.endsWith('/')
       ) {
-        allFileExists = await fileExists(join(__dirname, '..', line));
+        allFileExists = fs.existsSync(join(__dirname, '..', line));
         filesList.push(line);
 
         if (!allFileExists) {
@@ -47,35 +47,40 @@ const downloadPreviousBuild = task(__filename, async () => {
     return;
   }
 
-  console.log('Download previous build.');
-
   const extractedPath = join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
 
-  const [resp] = await Promise.all([
-    fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages'),
-    fse.ensureDir(extractedPath)
-  ]);
-
-  await pipeline(
-    Readable.fromWeb(resp.body),
-    tar.x({
-      cwd: extractedPath,
-      filter(p) {
-        const dir = p.split('/')[1];
-        return dir === 'List' || dir === 'Modules' || dir === 'Clash';
-      }
-    })
+  await traceAsync(
+    'Download and extract previous build',
+    () => Promise.all([
+      fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages'),
+      fse.ensureDir(extractedPath)
+    ]).then(([resp]) => pipeline(
+      Readable.fromWeb(resp.body),
+      tar.x({
+        cwd: extractedPath,
+        filter(p) {
+          const dir = p.split('/')[1];
+          return dir === 'List' || dir === 'Modules' || dir === 'Clash';
+        }
+      })
+    ))
   );
+
+  console.log('Files list:', filesList);
 
   await Promise.all(filesList.map(async p => {
     const src = join(extractedPath, 'Surge-gh-pages', p);
     if (await fileExists(src)) {
+      const dst = join(__dirname, '..', p);
+      console.log('Copy', { src, dst });
       return fse.copy(
         src,
         join(__dirname, '..', p),
         { overwrite: true }
       );
     }
+
+    console.log('File not exists:', src);
   }));
 
   await fs.promises.unlink(extractedPath).catch(() => { });
