@@ -71,7 +71,7 @@ rules:
   # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
   - RULE-SET,reject_domainset,REJECT
   - RULE-SET,reject_phishing_domainset,REJECT
-  - RULE-SET,reject_ip,REJECT-DROP
+  - RULE-SET,reject_ip,REJECT
 ```
 
 #### 搜狗输入法
@@ -343,7 +343,7 @@ rule-providers:
     behavior: classical
     format: text
     interval: 43200
-    url: domestic_ip
+    url: https://ruleset.skk.moe/Clash/ip/domestic.txt
     path: ./sukkaw_ruleset/domestic_ip.txt
 
 rules:

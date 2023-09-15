@@ -21,25 +21,27 @@ const downloadPreviousBuild = task(__filename, async () => {
 
   let allFileExists = true;
 
-  if (isCI) {
-    allFileExists = false;
-  } else {
-    for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
-      if (
-        (
+  for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
+    if (
+      (
         // line.startsWith('List/')
-          line.startsWith('Modules/')
-        ) && !line.endsWith('/')
-      ) {
-        allFileExists = fs.existsSync(join(__dirname, '..', line));
-        filesList.push(line);
+        line.startsWith('Modules/')
+      ) && !line.endsWith('/')
+    ) {
+      filesList.push(line);
 
+      if (!isCI) {
+        allFileExists = fs.existsSync(join(__dirname, '..', line));
         if (!allFileExists) {
           console.log(`File not exists: ${line}`);
           break;
         }
       }
     }
+  }
+
+  if (isCI) {
+    allFileExists = false;
   }
 
   if (allFileExists) {
