@@ -3,7 +3,7 @@ const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remot
 const { resolve: pathResolve } = require('path');
 // This should not use `createRuleset` API since we are going to generate ipcidr for Clash
 const { compareAndWriteFile, withBannerArray } = require('./lib/create-file');
-const { processLine } = require('./lib/process-line');
+const { processLineFromReadline } = require('./lib/process-line');
 const { task } = require('./lib/trace-runner');
 
 // https://github.com/misakaio/chnroutes2/issues/25
@@ -13,20 +13,12 @@ const EXCLUDE_CIDRS = [
 ];
 
 const buildChnCidr = task(__filename, async () => {
-  const { exclude: excludeCidrs } = await import('cidr-tools-wasm');
+  const [{ exclude: excludeCidrs }, cidr] = await Promise.all([
+    import('cidr-tools-wasm'),
+    processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'))
+  ]);
 
-  /** @type {string[]} */
-  const cidr = [];
-  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')) {
-    const l = processLine(line);
-    if (l) {
-      cidr.push(l);
-    }
-  }
-
-  console.log('Before Merge:', cidr.length);
   const filteredCidr = excludeCidrs(cidr, EXCLUDE_CIDRS, true);
-  console.log('After Merge:', filteredCidr.length);
 
   const description = [
     'License: CC BY-SA 2.0',
@@ -36,7 +28,7 @@ const buildChnCidr = task(__filename, async () => {
     'Data from https://misaka.io (misakaio @ GitHub)'
   ];
 
-  await Promise.all([
+  return Promise.all([
     compareAndWriteFile(
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',

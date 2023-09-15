@@ -1,3 +1,5 @@
+// @ts-check
+
 const { downloadPreviousBuild, downloadPublicSuffixList } = require('./download-previous-build');
 const { buildCommon } = require('./build-common');
 const { buildAntiBogusDomain } = require('./build-anti-bogus-domain');
@@ -47,7 +49,7 @@ const requireWorker = (path) => {
  * @param {WithWorker<T>} worker
  */
 const endWorker = async (worker) => {
-  const { forceExited } = worker.end();
+  const { forceExited } = await worker.end();
   if (forceExited && worker.__sukka_worker_name) {
     console.log(worker.__sukka_worker_name, 'forceExited');
   }
@@ -72,7 +74,10 @@ const endWorker = async (worker) => {
     downloadPublicSuffixListPromise
   ]).then(() => buildCdnConf());
   // build:phishing-domainset
-  const buildPhilishingDomainsetPromise = downloadPreviousBuildPromise.then(() => buildPhishingDomainSet());
+  const buildPhilishingDomainsetPromise = Promise.all([
+    downloadPreviousBuildPromise,
+    downloadPublicSuffixListPromise
+  ]).then(() => buildPhishingDomainSet());
   // build:reject-domainset
   const buildRejectDomainSetPromise = Promise.all([
     downloadPreviousBuildPromise,
@@ -87,6 +92,7 @@ const endWorker = async (worker) => {
   const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet());
   // build:internal-cdn-rules
   const buildInternalCDNDomainsPromise = Promise.all([
+    downloadPublicSuffixListPromise,
     buildCommonPromise,
     buildCdnConfPromise
   ]).then(() => buildInternalCDNDomains());
@@ -97,7 +103,7 @@ const endWorker = async (worker) => {
   // build:domestic-ruleset
   const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
 
-  await Promise.all([
+  const stats = await Promise.all([
     downloadPreviousBuildPromise,
     downloadPublicSuffixListPromise,
     buildCommonPromise,
@@ -120,4 +126,30 @@ const endWorker = async (worker) => {
     validate(),
     endWorker(buildInternalReverseChnCIDRWorker)
   ]);
+
+  printStats(stats);
 })();
+
+/**
+ * @param {Array<{ start: number, end: number, taskName: string }>} stats
+ */
+function printStats(stats) {
+  // sort stats by start time
+  stats.sort((a, b) => a.start - b.start);
+
+  const longestTaskName = Math.max(...stats.map(i => i.taskName.length));
+  const realStart = Math.min(...stats.map(i => i.start));
+  const realEnd = Math.max(...stats.map(i => i.end));
+
+  const totalMs = realEnd - realStart;
+
+  const statsStep = (totalMs / 160) | 0;
+
+  stats.forEach(stat => {
+    console.log(
+      `[${stat.taskName}]${' '.repeat(longestTaskName - stat.taskName.length)}`,
+      ' '.repeat(((stat.start - realStart) / statsStep) | 0),
+      '='.repeat(Math.max(((stat.end - stat.start) / statsStep) | 0, 1))
+    );
+  });
+}

@@ -9,7 +9,7 @@ const { processLine } = require('./lib/process-line');
 
 const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix_list_dat.txt');
 
-const buildCdnConf = task(__filename, async () => {
+const getS3OSSDomains = async () => {
   const trie = new Trie();
 
   if (fs.existsSync(publicSuffixPath)) {
@@ -46,13 +46,19 @@ const buildCdnConf = task(__filename, async () => {
     }
   });
 
+  return S3OSSDomains;
+};
+
+const buildCdnConf = task(__filename, async () => {
   /** @type {string[]} */
   const cdnDomainsList = [];
+
+  const getS3OSSDomainsPromise = getS3OSSDomains();
+
   for await (const l of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
     if (l === '# --- [AWS S3 Replace Me] ---') {
-      S3OSSDomains.forEach(domain => {
-        cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`);
-      });
+      (await getS3OSSDomainsPromise).forEach(domain => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
+      continue;
     }
     const line = processLine(l);
     if (line) {

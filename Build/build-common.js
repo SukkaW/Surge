@@ -17,7 +17,7 @@ const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
 
 const buildCommon = task(__filename, async () => {
-  /** @type {Promise<void>[]} */
+  /** @type {Promise<unknown>[]} */
   const promises = [];
 
   const pw = new PathScurry(sourceDir);
@@ -107,7 +107,7 @@ async function transformDomainset(sourcePath, relativePath) {
     )
   ];
 
-  await Promise.all(createRuleset(
+  return Promise.all(createRuleset(
     title,
     description,
     new Date(),
@@ -140,7 +140,7 @@ async function transformRuleset(sourcePath, relativePath) {
     )
   ];
 
-  await Promise.all(createRuleset(
+  return Promise.all(createRuleset(
     title,
     description,
     new Date(),

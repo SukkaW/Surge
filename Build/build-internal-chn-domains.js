@@ -11,7 +11,7 @@ const buildInternalChnDomains = task(__filename, async () => {
     fse.ensureDir(path.resolve(__dirname, '../List/internal'))
   ]);
 
-  await compareAndWriteFile(
+  return compareAndWriteFile(
     result.map(line => `SUFFIX,${line}`),
     path.resolve(__dirname, '../List/internal/accelerated-china-domains.txt')
   );

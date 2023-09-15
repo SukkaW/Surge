@@ -6,7 +6,7 @@ const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('.
 const { processLine } = require('./lib/process-line');
 const { task } = require('./lib/trace-runner');
 
-const buildAntiBogusDomain = task(__filename, async () => {
+const getBogusNxDomainIPs = async () => {
   /** @type {string[]} */
   const res = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
@@ -14,20 +14,27 @@ const buildAntiBogusDomain = task(__filename, async () => {
       res.push(line.replace('bogus-nxdomain=', ''));
     }
   }
+  return res;
+};
 
+const buildAntiBogusDomain = task(__filename, async () => {
   const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
+
+  const bogusIpPromise = getBogusNxDomainIPs();
 
   /** @type {string[]} */
   const result = [];
   for await (const line of readFileByLine(filePath)) {
     if (line === '# --- [Anti Bogus Domain Replace Me] ---') {
-      res.forEach(ip => {
+      (await bogusIpPromise).forEach(ip => {
         if (isIPv4(ip)) {
           result.push(`IP-CIDR,${ip}/32,no-resolve`);
         } else if (isIPv6(ip)) {
           result.push(`IP-CIDR6,${ip}/128,no-resolve`);
         }
       });
+
+      continue;
     } else {
       const l = processLine(line);
       if (l) {
@@ -47,7 +54,7 @@ const buildAntiBogusDomain = task(__filename, async () => {
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
-  await Promise.all(createRuleset(
+  return Promise.all(createRuleset(
     'Sukka\'s Ruleset - Anti Bogus Domain',
     description,
     new Date(),

@@ -3,13 +3,6 @@ const fs = require('fs');
 const path = require('path');
 
 const publicSuffixPath = path.resolve(__dirname, '../../node_modules/.cache/public_suffix_list_dat.txt');
-const getPublicSuffixListDat = () => {
-  if (fs.existsSync(publicSuffixPath)) {
-    return fs.promises.readFile(publicSuffixPath, 'utf-8');
-  }
-  console.log('public_suffix_list.dat not found, fetch directly from remote.');
-  return fetch('https://publicsuffix.org/list/public_suffix_list.dat').then(r => r.text());
-};
 
 const getGorhillPublicSuffix = async () => {
   const customFetch = async (url) => {
@@ -20,7 +13,12 @@ const getGorhillPublicSuffix = async () => {
   };
 
   const [publicSuffixListDat, { default: gorhill }] = await Promise.all([
-    getPublicSuffixListDat(),
+    fs.existsSync(publicSuffixPath)
+      ? fs.promises.readFile(publicSuffixPath, 'utf-8')
+      : fetch('https://publicsuffix.org/list/public_suffix_list.dat').then(r => {
+        console.log('public_suffix_list.dat not found, fetch directly from remote.');
+        return r.text();
+      }),
     import('gorhill-publicsuffixlist')
   ]);
 
@@ -30,7 +28,7 @@ const getGorhillPublicSuffix = async () => {
   return gorhill;
 };
 
-/** @type {Promise<import('gorhill-publicsuffixlist').default | null>} */
+/** @type {Promise<import('gorhill-publicsuffixlist').default> | null} */
 let gorhillPublicSuffixPromise = null;
 module.exports.getGorhillPublicSuffixPromise = () => {
   gorhillPublicSuffixPromise ||= getGorhillPublicSuffix();

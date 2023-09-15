@@ -59,14 +59,15 @@ const _validateRuleset = async (filePath) => {
 };
 
 const validate = task(__filename, async () => {
-  const [domainsetFiles, _rulesetFiles] = await Promise.all([
-    listDir(path.resolve(__dirname, '../List/domainset')),
-    listDir(path.resolve(__dirname, '../List/non_ip'))
-  ]);
-  await Promise.all(
-    domainsetFiles.map(file => validateDomainSet(file))
+  // const [domainsetFiles, _rulesetFiles] = await Promise.all([
+  //   listDir(path.resolve(__dirname, '../List/domainset')),
+  //   listDir(path.resolve(__dirname, '../List/non_ip'))
+  // ]);
+  return Promise.all([
+    listDir(path.resolve(__dirname, '../List/domainset'))
+      .then(domainsetFiles => Promise.all(domainsetFiles.map(file => validateDomainSet(file))))
     // rulesetFiles.map(file => validateRuleset(file))
-  );
+  ]);
 });
 module.exports.validate = validate;
 

@@ -20,7 +20,7 @@ const buildAppleCdn = task(__filename, async () => {
   const ruleset = res.map(domain => `DOMAIN-SUFFIX,${domain}`);
   const domainset = res.map(i => `.${i}`);
 
-  await Promise.all([
+  return Promise.all([
     ...createRuleset(
       'Sukka\'s Ruleset - Apple CDN',
       description,

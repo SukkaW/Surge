@@ -4,9 +4,11 @@ const path = require('path');
 const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const domainSorter = require('./lib/stable-sort-domain');
+const { createDomainSorter } = require('./lib/stable-sort-domain');
 const { task } = require('./lib/trace-runner');
 const { compareAndWriteFile } = require('./lib/create-file');
+const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
+const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
 /**
  * @param {string} string
@@ -19,11 +21,15 @@ const buildInternalCDNDomains = task(__filename, async () => {
   const set = new Set();
   const keywords = new Set();
 
+  const gorhill = await getGorhillPublicSuffixPromise();
+  const getDomain = createCachedGorhillGetDomain(gorhill);
+  const domainSorter = createDomainSorter(gorhill);
+
   /**
    * @param {string} input
    */
   const addApexDomain = (input) => {
-    const d = tldts.getDomain(input, { allowPrivateDomains: true });
+    const d = getDomain(input);
     if (d) {
       set.add(d);
     }
@@ -35,7 +41,8 @@ const buildInternalCDNDomains = task(__filename, async () => {
   const processLocalDomainSet = async (domainSetPath) => {
     for await (const line of readFileByLine(domainSetPath)) {
       const parsed = tldts.parse(line, { allowPrivateDomains: true });
-      if (!parsed.isIp && (parsed.isIcann || parsed.isPrivate)) {
+      if (parsed.isIp) continue;
+      if (parsed.isIcann || parsed.isPrivate) {
         if (parsed.domain) {
           set.add(parsed.domain);
         }
@@ -80,7 +87,7 @@ const buildInternalCDNDomains = task(__filename, async () => {
     fse.ensureDir(path.resolve(__dirname, '../List/internal'))
   ]);
 
-  await compareAndWriteFile(
+  return compareAndWriteFile(
     [
       ...Array.from(set).sort(domainSorter).map(i => `SUFFIX,${i}`),
       ...Array.from(keywords).sort().map(i => `REGEX,${i}`)

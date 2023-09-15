@@ -1,8 +1,8 @@
 // @ts-check
 const { fetchWithRetry } = require('./fetch-retry');
+const tldts = require('tldts');
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
 const { NetworkFilter } = require('@cliqz/adblocker');
-const { normalizeDomain } = require('./is-domain-loose');
 const { processLine } = require('./process-line');
 const { performance } = require('perf_hooks');
 
@@ -17,6 +17,22 @@ const warnOnce = (url, isWhite, ...message) => {
   }
   warnOnceUrl.add(key);
   console.warn(url, isWhite ? '(white)' : '(black)', ...message);
+};
+
+const normalizeDomain = (domain) => {
+  if (!domain) return null;
+
+  const { isIcann, isPrivate, hostname, isIp } = tldts.parse(domain);
+  if (isIp) return null;
+
+  if (isIcann || isPrivate) {
+    if (hostname?.[0] === '.') {
+      return hostname.slice(1);
+    }
+    return hostname;
+  }
+
+  return null;
 };
 
 /**

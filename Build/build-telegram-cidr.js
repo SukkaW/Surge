@@ -17,14 +17,14 @@ const buildTelegramCIDR = task(__filename, async () => {
 
   for await (const line of createReadlineInterfaceFromResponse(resp)) {
     const cidr = processLine(line);
-    if (cidr) {
-      const [subnet] = cidr.split('/');
-      if (isIPv4(subnet)) {
-        results.push(`IP-CIDR,${cidr},no-resolve`);
-      }
-      if (isIPv6(subnet)) {
-        results.push(`IP-CIDR6,${cidr},no-resolve`);
-      }
+    if (!cidr) continue;
+
+    const [subnet] = cidr.split('/');
+    if (isIPv4(subnet)) {
+      results.push(`IP-CIDR,${cidr},no-resolve`);
+    }
+    if (isIPv6(subnet)) {
+      results.push(`IP-CIDR6,${cidr},no-resolve`);
     }
   }
 
@@ -40,7 +40,7 @@ const buildTelegramCIDR = task(__filename, async () => {
     ' - https://core.telegram.org/resources/cidr.txt'
   ];
 
-  await Promise.all(createRuleset(
+  return Promise.all(createRuleset(
     'Sukka\'s Ruleset - Telegram IP CIDR',
     description,
     date,

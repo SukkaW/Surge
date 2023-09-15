@@ -33,7 +33,6 @@ const downloadPreviousBuild = task(__filename, async () => {
       if (!isCI) {
         allFileExists = fs.existsSync(join(__dirname, '..', line));
         if (!allFileExists) {
-          console.log(`File not exists: ${line}`);
           break;
         }
       }
@@ -73,33 +72,27 @@ const downloadPreviousBuild = task(__filename, async () => {
   await Promise.all(filesList.map(async p => {
     const src = join(extractedPath, 'Surge-gh-pages', p);
     if (await fileExists(src)) {
-      const dst = join(__dirname, '..', p);
-      console.log('Copy', { src, dst });
       return fse.copy(
         src,
         join(__dirname, '..', p),
         { overwrite: true }
       );
     }
-
-    console.log('File not exists:', src);
   }));
 
-  await fs.promises.unlink(extractedPath).catch(() => { });
+  return fs.promises.unlink(extractedPath).catch(() => { });
 });
 
 const downloadPublicSuffixList = task(__filename, async () => {
   const publicSuffixDir = resolve(__dirname, '../node_modules/.cache');
   const publicSuffixPath = join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
-  console.log('Download public suffix list.');
-
   const [resp] = await Promise.all([
     fetch('https://publicsuffix.org/list/public_suffix_list.dat'),
     fse.ensureDir(publicSuffixDir)
   ]);
 
-  await pipeline(
+  return pipeline(
     Readable.fromWeb(resp.body),
     fs.createWriteStream(publicSuffixPath)
   );

@@ -28,7 +28,7 @@ const buildPublicHtml = task(__filename, async () => {
 
   const html = template(list);
 
-  await fs.promises.writeFile(path.join(publicPath, 'index.html'), html, 'utf-8');
+  return fs.promises.writeFile(path.join(publicPath, 'index.html'), html, 'utf-8');
 });
 
 module.exports.buildPublicHtml = buildPublicHtml;

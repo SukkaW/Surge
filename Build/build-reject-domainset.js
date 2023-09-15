@@ -208,7 +208,7 @@ const buildRejectDomainSet = task(__filename, async () => {
     ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
   ];
 
-  await Promise.all([
+  return Promise.all([
     ...createRuleset(
       'Sukka\'s Ruleset - Reject Base',
       description,

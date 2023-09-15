@@ -65,7 +65,13 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
     '.speedtest.idv.tw',
     '.speedtest.frontier.com',
     '.speedtest.orange.fr',
-    '.speedtest.centurylink.net'
+    '.speedtest.centurylink.net',
+    '.srvr.bell.ca',
+    '.speedtest.contabo.net',
+    'speedtest.hk.chinamobile.com',
+    'speedtestbb.hk.chinamobile.com',
+    '.hizinitestet.com',
+    '.linknetspeedtest.net.br'
   ]);
 
   const hostnameGroups = await Promise.all([
@@ -114,7 +120,7 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
     'GitHub: https://github.com/SukkaW/Surge'
   ];
 
-  await Promise.all(createRuleset(
+  return Promise.all(createRuleset(
     'Sukka\'s Ruleset - Speedtest Domains',
     description,
     new Date(),

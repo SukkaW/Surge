@@ -2,33 +2,22 @@
 const path = require('path');
 const { DOMESTICS } = require('../Source/non_ip/domestic');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { processLine } = require('./lib/process-line');
+const { processLineFromReadline } = require('./lib/process-line');
 const { compareAndWriteFile, createRuleset } = require('./lib/create-file');
-const domainSorter = require('./lib/stable-sort-domain');
 const { task } = require('./lib/trace-runner');
 
 const buildDomesticRuleset = task(__filename, async () => {
-  const rl = readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
-  const results = [];
-  for await (const l of rl) {
-    const line = processLine(l);
-    if (line) {
-      results.push(line);
-    }
-  }
+  const results = await processLineFromReadline(readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf')));
 
   results.push(
     ...Object.entries(DOMESTICS)
       .reduce(
         (acc, [key, { domains }]) => {
-          if (key === 'SYSTEM') {
-            return acc;
-          }
+          if (key === 'SYSTEM') return acc;
           return [...acc, ...domains];
         },
         /** @type {string[]} */([])
       )
-      .sort(domainSorter)
       .map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );
 
@@ -40,7 +29,7 @@ const buildDomesticRuleset = task(__filename, async () => {
     'This file contains known addresses that are avaliable in the Mainland China.'
   ];
 
-  await Promise.all([
+  return Promise.all([
     ...createRuleset(
       'Sukka\'s Ruleset - Domestic Domains',
       rulesetDescription,

@@ -9,9 +9,7 @@ const sharedConfig = { allowPrivateDomains: true };
  * @param {string} domain
  * @returns {ReturnType<import('tldts').parse>}
  */
-module.exports.parse = (domain) => {
-  return cache.sync(domain, () => tldts.parse(domain, sharedConfig));
-};
+module.exports.parse = (domain) => cache.sync(domain, () => tldts.parse(domain, sharedConfig));
 
 let gothillGetDomainCache = null;
 /**
@@ -22,5 +20,5 @@ module.exports.createCachedGorhillGetDomain = (gorhill) => {
   /**
    * @param {string} domain
    */
-  return (domain) => gothillGetDomainCache.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
+  return (domain) => (/** @type {ReturnType<typeof createCache>} */ (gothillGetDomainCache)).sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
 };

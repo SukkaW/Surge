@@ -6,7 +6,7 @@
  *
  * @param {string} line
  */
-module.exports.processLine = (line) => {
+const processLine = (line) => {
   if (!line) {
     return null;
   }
@@ -29,4 +29,20 @@ module.exports.processLine = (line) => {
   }
 
   return trimmed;
+};
+module.exports.processLine = processLine;
+
+/**
+ * @param {import('readline').ReadLine} rl
+ */
+module.exports.processLineFromReadline = async (rl) => {
+  /** @type {string[]} */
+  const res = [];
+  for await (const line of rl) {
+    const l = processLine(line);
+    if (l) {
+      res.push(l);
+    }
+  }
+  return res;
 };
