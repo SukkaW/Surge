@@ -14,7 +14,7 @@ const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { createDomainSorter } = require('./lib/stable-sort-domain');
 const { traceSync, task } = require('./lib/trace-runner');
 const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
-const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
+const tldts = require('tldts');
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -131,8 +131,6 @@ const buildRejectDomainSet = task(__filename, async () => {
   console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
   console.time('* Dedupe from black keywords/suffixes');
 
-  const kwfilter = createKeywordFilter(domainKeywordsSet);
-
   const trie1 = Trie.from(domainSets);
   domainSuffixSet.forEach(suffix => {
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
@@ -140,6 +138,9 @@ const buildRejectDomainSet = task(__filename, async () => {
   filterRuleWhitelistDomainSets.forEach(suffix => {
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
+
+  // remove pre-defined enforced blacklist from whitelist
+  const kwfilter = createKeywordFilter(domainKeywordsSet);
 
   // Build whitelist trie, to handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
   const trieWhite = Trie.from(filterRuleWhitelistDomainSets);
@@ -171,19 +172,18 @@ const buildRejectDomainSet = task(__filename, async () => {
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
   // Create reject stats
-  const getDomain = createCachedGorhillGetDomain(gorhill);
   /** @type {[string, number][]} */
   const rejectDomainsStats = traceSync(
     '* Collect reject domain stats',
     () => Object.entries(
       dudupedDominArray.reduce((acc, cur) => {
-        const suffix = getDomain(cur);
+        const suffix = tldts.getDomain(cur, { allowPrivateDomains: false });
         if (suffix) {
           acc[suffix] = (acc[suffix] ?? 0) + 1;
         }
         return acc;
       }, {})
-    ).filter(a => a[1] > 2).sort((a, b) => {
+    ).filter(a => a[1] > 10).sort((a, b) => {
       const t = b[1] - a[1];
       if (t !== 0) {
         return t;

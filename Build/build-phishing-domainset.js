@@ -69,10 +69,11 @@ const buildPhishingDomainSet = task(__filename, async () => {
     processFilterRules(
       'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
       [
-        'https://malware-filter.gitlab.io/phishing-filter/phishing-filter-agh.txt',
-        'https://malware-filter.pages.dev/phishing-filter-agh.txt',
         'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
-      ]
+        // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+        // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
+      ],
+      false
     ),
     getGorhillPublicSuffixPromise()
   ]);

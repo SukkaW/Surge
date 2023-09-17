@@ -5,6 +5,7 @@ const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-te
 const { NetworkFilter } = require('@cliqz/adblocker');
 const { processLine } = require('./process-line');
 const { performance } = require('perf_hooks');
+const { getGorhillPublicSuffixPromise } = require('./get-gorhill-publicsuffix');
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
 let foundDebugDomain = false;
@@ -22,14 +23,12 @@ const warnOnce = (url, isWhite, ...message) => {
 const normalizeDomain = (domain) => {
   if (!domain) return null;
 
-  const { isIcann, isPrivate, hostname, isIp } = tldts.parse(domain);
-  if (isIp) return null;
+  const parsed = tldts.parse(domain);
+  if (parsed.isIp) return null;
 
-  if (isIcann || isPrivate) {
-    if (hostname?.[0] === '.') {
-      return hostname.slice(1);
-    }
-    return hostname;
+  if (parsed.isIcann || parsed.isPrivate) {
+    const h = parsed.hostname;
+    return h?.[0] === '.' ? h.slice(1) : h;
   }
 
   return null;
@@ -122,51 +121,51 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
   /** @type Set<string> */
   const blacklistDomainSets = new Set();
 
-  const __addToBlackList = (domainToBeAddedToBlack, isSubDomain) => {
-    if (DEBUG_DOMAIN_TO_FIND && domainToBeAddedToBlack.includes(DEBUG_DOMAIN_TO_FIND)) {
-      warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
-      foundDebugDomain = true;
-    }
-
+  /**
+   * @param {string} domainToBeAddedToBlack
+   * @param {boolean} isSubDomain
+   */
+  const addToBlackList = (domainToBeAddedToBlack, isSubDomain) => {
     if (isSubDomain && domainToBeAddedToBlack[0] !== '.') {
       blacklistDomainSets.add(`.${domainToBeAddedToBlack}`);
     } else {
       blacklistDomainSets.add(domainToBeAddedToBlack);
     }
   };
-  const addToBlackList = DEBUG_DOMAIN_TO_FIND == null
-    ? __addToBlackList
-    : (domainToBeAddedToBlack, isSubDomain) => {
-      if (DEBUG_DOMAIN_TO_FIND && domainToBeAddedToBlack.includes(DEBUG_DOMAIN_TO_FIND)) {
-        warnOnce(filterRulesUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
-        foundDebugDomain = true;
-      }
-      __addToBlackList(domainToBeAddedToBlack, isSubDomain);
-    };
-
-  const __addToWhiteList = (domainToBeAddedToWhite) => {
-    whitelistDomainSets.add(domainToBeAddedToWhite);
+  /**
+   * @param {string} domainToBeAddedToWhite
+   * @param {boolean} [isSubDomain]
+   */
+  const addToWhiteList = (domainToBeAddedToWhite, isSubDomain = true) => {
+    if (isSubDomain && domainToBeAddedToWhite[0] !== '.') {
+      blacklistDomainSets.add(`.${domainToBeAddedToWhite}`);
+    } else {
+      blacklistDomainSets.add(domainToBeAddedToWhite);
+    }
   };
-  const addToWhiteList = DEBUG_DOMAIN_TO_FIND == null
-    ? __addToWhiteList
-    : (domainToBeAddedToWhite) => {
-      if (DEBUG_DOMAIN_TO_FIND && domainToBeAddedToWhite.includes(DEBUG_DOMAIN_TO_FIND)) {
-        warnOnce(filterRulesUrl.toString(), true, DEBUG_DOMAIN_TO_FIND);
-        foundDebugDomain = true;
-      }
-      __addToWhiteList(domainToBeAddedToWhite);
-    };
 
   let downloadTime = 0;
+  const gorhill = await getGorhillPublicSuffixPromise();
 
   const lineCb = (line) => {
-    const result = parse(line, includeThirdParties);
+    const result = parse(line, includeThirdParties, gorhill);
     if (result) {
       const flag = result[1];
       const hostname = result[0];
+
+      if (DEBUG_DOMAIN_TO_FIND) {
+        if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
+          warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
+          foundDebugDomain = true;
+        }
+      }
+
       switch (flag) {
         case 0:
-          addToWhiteList(hostname);
+          addToWhiteList(hostname, true);
+          break;
+        case -1:
+          addToWhiteList(hostname, false);
           break;
         case 1:
           addToBlackList(hostname, false);
@@ -183,7 +182,8 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
   if (!fallbackUrls || fallbackUrls.length === 0) {
     const downloadStart = performance.now();
     for await (const line of await fetchRemoteTextAndCreateReadlineInterface(filterRulesUrl)) {
-      lineCb(line.trim());
+      // don't trim here
+      lineCb(line);
     }
     downloadTime = performance.now() - downloadStart;
   } else {
@@ -202,7 +202,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
             return text;
           })
         )
-      ).split('\n').map(line => line.trim());
+      ).split('\n');
     } catch (e) {
       console.log(`Download Rule for [${filterRulesUrl}] failed`);
       throw e;
@@ -210,7 +210,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
     downloadTime = performance.now() - downloadStart;
 
     for (let i = 0, len = filterRules.length; i < len; i++) {
-      lineCb(filterRules[i].trim());
+      lineCb(filterRules[i]);
     }
   }
 
@@ -230,35 +230,44 @@ const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)
 /**
  * @param {string} $line
  * @param {boolean} includeThirdParties
- * @returns {null | [string, 0 | 1 | 2]} - 0 white, 1 black abosulte, 2 black include subdomain
+ * @param {import('gorhill-publicsuffixlist').default} gorhill
+ * @returns {null | [string, 0 | 1 | 2 | -1]} - 0 white include subdomain, 1 black abosulte, 2 black include subdomain, -1 white
  */
-function parse($line, includeThirdParties) {
+function parse($line, includeThirdParties, gorhill) {
+  if (
+    // doesn't include
+    !$line.includes('.') // rule with out dot can not be a domain
+    // includes
+    || $line.includes('!')
+    || $line.includes('?')
+    || $line.includes('*')
+    || $line.includes('[')
+    || $line.includes('(')
+    || $line.includes(']')
+    || $line.includes(')')
+    || $line.includes(',')
+    || R_KNOWN_NOT_NETWORK_FILTER_PATTERN.test($line)
+  ) {
+    return null;
+  }
+
   const line = $line.trim();
 
+  const len = line.length;
+  if (len === 0) {
+    return null;
+  }
+
+  const firstChar = line[0];
+  const lastChar = line[len - 1];
+
   if (
-    line === ''
-    || line[0] === '/'
-    || R_KNOWN_NOT_NETWORK_FILTER_PATTERN.test(line)
-    // doesn't include
-    || !line.includes('.') // rule with out dot can not be a domain
-    // includes
-    // || line.includes('#')
-    || line.includes('!')
-    || line.includes('?')
-    || line.includes('*')
-    // || line.includes('=')
-    || line.includes('[')
-    || line.includes('(')
-    || line.includes(']')
-    || line.includes(')')
-    || line.includes(',')
-    // || line.includes('~')
-    // || line.includes('&')
-    // || line.includes('%')
+    len === 0
+    || firstChar === '/'
     // ends with
-    || line.endsWith('.')
-    || line.endsWith('-')
-    || line.endsWith('_')
+    || lastChar === '.' // || line.endsWith('.')
+    || lastChar === '-' // || line.endsWith('-')
+    || lastChar === '_' // || line.endsWith('_')
     // special modifier
     || R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2.test(line)
     || ((line.includes('/') || line.includes(':')) && !line.includes('://'))
@@ -286,52 +295,82 @@ function parse($line, includeThirdParties) {
     }
 
     if (
-      filter.hasHostname() // must have
+      filter.hostname // filter.hasHostname() // must have
       && filter.isPlain()
       && (!filter.isRegex())
       && (!filter.isFullRegex())
     ) {
-      const hostname = normalizeDomain(filter.getHostname());
-      if (hostname) {
-        if (filter.isException() || filter.isBadFilter()) {
-          return [hostname, 0];
-        }
-        if (filter.firstParty() === filter.thirdParty()) {
+      if (!gorhill.getDomain(filter.hostname)) {
+        return null;
+      }
+      const hostname = normalizeDomain(filter.hostname);
+      if (!hostname) {
+        return null;
+      }
+      if (filter.isException() || filter.isBadFilter()) {
+        return [hostname, 0];
+      }
+
+      const _1p = filter.firstParty();
+      const _3p = filter.thirdParty();
+      if (_1p === _3p) {
+        return [hostname, 2];
+      }
+      if (_3p) {
+        if (includeThirdParties) {
           return [hostname, 2];
         }
-        if (filter.thirdParty()) {
-          if (includeThirdParties) {
-            return [hostname, 2];
-          }
-          return null;
-        }
-        if (filter.firstParty()) {
-          return null;
-        }
-      } else {
+        return null;
+      }
+      if (_1p) {
         return null;
       }
     }
   }
 
+  /**
+   * abnormal filter that can not be parsed by NetworkFilter
+   */
+
   if (line.includes('$third-party') || line.includes('$frame')) {
+    /*
+     * `.bbelements.com^$third-party`
+     * `://o0e.ru^$third-party`
+     */
     return null;
   }
 
-  const lineEndsWithCaret = line.endsWith('^');
-  const lineEndsWithCaretVerticalBar = line.endsWith('^|');
+  const lineEndsWithCaretOrCaretVerticalBar = (
+    lastChar === '^'
+    || (lastChar === '|' && line[len - 2] === '^')
+  );
 
-  if (line[0] === '@' && line[1] === '@') {
+  // whitelist (exception)
+  if (firstChar === '@' && line[1] === '@') {
+    /**
+     * cname exceptional filter can not be parsed by NetworkFilter
+     *
+     * `@@||m.faz.net^$cname`
+     *
+     * Surge / Clash can't handle CNAME either, so we just ignore them
+     */
     if (line.endsWith('$cname')) {
       return null;
     }
 
+    /**
+     * Some "malformed" regex-based filters can not be parsed by NetworkFilter
+     * "$genericblock`" is also not supported by NetworkFilter
+     *
+     * `@@||cmechina.net^$genericblock`
+     * `@@|ftp.bmp.ovh^|`
+     * `@@|adsterra.com^|`
+     */
     if (
       // (line.startsWith('@@|') || line.startsWith('@@.'))
       (line[2] === '|' || line[2] === '.')
       && (
-        lineEndsWithCaret
-        || lineEndsWithCaretVerticalBar
+        lineEndsWithCaretOrCaretVerticalBar
         || line.endsWith('$genericblock')
         || line.endsWith('$document')
       )
@@ -352,22 +391,29 @@ function parse($line, includeThirdParties) {
       if (domain) {
         return [domain, 0];
       }
-      console.warn('      * [parse-filter E0001] (black) invalid domain:', _domain);
 
+      console.warn('      * [parse-filter E0001] (black) invalid domain:', _domain);
       return null;
     }
   }
 
   if (
-    line.startsWith('||')
+    firstChar === '|' && line[1] === '|'
     && (
-      lineEndsWithCaret
-      || lineEndsWithCaretVerticalBar
+      lineEndsWithCaretOrCaretVerticalBar
       || line.endsWith('$cname')
     )
   ) {
+    /**
+     * Some malformed filters can not be parsed by NetworkFilter:
+     *
+     * `||smetrics.teambeachbody.com^.com^`
+     * `||solutions.|pages.indigovision.com^`
+     * `||vystar..0rg@client.iebetanialaargentina.edu.co^`
+     */
     const _domain = line
-      .replace('||', '')
+      // .replace('||', '')
+      .slice(2) // we already make sure line startsWith ||
       .replace('^|', '')
       .replace('$cname', '')
       .replaceAll('^', '')
@@ -382,19 +428,27 @@ function parse($line, includeThirdParties) {
     return null;
   }
 
-  const lineStartsWithSingleDot = line[0] === '.';
+  const lineStartsWithSingleDot = firstChar === '.';
   if (
     lineStartsWithSingleDot
-    && (
-      lineEndsWithCaret
-      || lineEndsWithCaretVerticalBar
-    )
+    && lineEndsWithCaretOrCaretVerticalBar
   ) {
+    /**
+     * `.ay.delivery^`
+     * `.m.bookben.com^`
+     * `.wap.x4399.com^`
+     */
     const _domain = line
+      .slice(1) // remove prefix dot
       .replace('^|', '')
       .replaceAll('^', '')
-      .slice(1)
       .trim();
+
+    const suffix = gorhill.getPublicSuffix(_domain);
+    if (!gorhill.suffixInPSL(suffix)) {
+      // This exclude domain-like resource like `1.1.4.514.js`
+      return null;
+    }
 
     const domain = normalizeDomain(_domain);
     if (domain) {
@@ -404,6 +458,12 @@ function parse($line, includeThirdParties) {
 
     return null;
   }
+
+  /**
+   * `|http://x.o2.pl^`
+   * `://mine.torrent.pw^`
+   * `://say.ac^`
+   */
   if (
     (
       line.startsWith('://')
@@ -412,10 +472,7 @@ function parse($line, includeThirdParties) {
       || line.startsWith('|http://')
       || line.startsWith('|https://')
     )
-    && (
-      lineEndsWithCaret
-      || lineEndsWithCaretVerticalBar
-    )
+    && lineEndsWithCaretOrCaretVerticalBar
   ) {
     const _domain = line
       .replace('|https://', '')
@@ -431,33 +488,54 @@ function parse($line, includeThirdParties) {
     if (domain) {
       return [domain, 1];
     }
-    console.warn('      * [parse-filter E0004] (black) invalid domain:', _domain);
 
+    console.warn('      * [parse-filter E0004] (black) invalid domain:', _domain);
     return null;
   }
-  if (line[0] !== '|' && lineEndsWithCaret) {
+
+  /**
+   * `_vmind.qqvideo.tc.qq.com^`
+   * `arketing.indianadunes.com^`
+   * `charlestownwyllie.oaklawnnonantum.com^`
+   * `-telemetry.officeapps.live.com^`
+   * `-tracker.biliapi.net`
+   * `_social_tracking.js^`
+   */
+  if (firstChar !== '|' && lastChar === '^') {
     const _domain = line.slice(0, -1);
     const domain = normalizeDomain(_domain);
     if (domain) {
       return [domain, 1];
     }
-    console.warn('      * [parse-filter E0005] (black) invalid domain:', _domain);
 
+    console.warn('      * [parse-filter E0005] (black) invalid domain:', _domain);
     return null;
   }
+
+  /**
+   * `.3.n.2.2.l30.js`
+   * `_prebid.js`
+   * `t.yesware.com`
+   * `ubmcmm.baidustatic.com`
+   * `portal.librus.pl$$advertisement-module`
+   * `@@-ds.metric.gstatic.com^|`
+   * `://gom.ge/cookie.js`
+   * `://accout-update-smba.jp.$document`
+   * `@@://googleadservices.com^|`
+   */
   const tryNormalizeDomain = normalizeDomain(line);
-  if (
-    tryNormalizeDomain
-    && (
-      lineStartsWithSingleDot
-        ? tryNormalizeDomain.length === line.length - 1
-        : tryNormalizeDomain === line
-    )
-  ) {
-    return [line, 2];
+  if (tryNormalizeDomain) {
+    if (tryNormalizeDomain === line) {
+      // the entire rule is domain
+      return [line, 2];
+    }
+    if (lineStartsWithSingleDot && tryNormalizeDomain === line.slice(1)) {
+      // dot prefixed line has stripped
+      return [line, 2];
+    }
   }
 
-  if (!line.endsWith('.js')) {
+  if (!line.endsWith('.js') && !line.endsWith('.css')) {
     console.warn('      * [parse-filter E0010] can not parse:', line);
   }
 
