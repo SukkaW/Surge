@@ -5,7 +5,7 @@ const { createRuleset } = require('./lib/create-file');
 const { processLine } = require('./lib/process-line.js');
 const { createDomainSorter } = require('./lib/stable-sort-domain');
 const { traceSync, task } = require('./lib/trace-runner.js');
-const Trie = require('./lib/trie.js');
+const createTrie = require('./lib/trie.js');
 const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix.js');
 const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse.js');
 const tldts = require('tldts');
@@ -79,7 +79,7 @@ const buildPhishingDomainSet = task(__filename, async () => {
   ]);
 
   traceSync('* whitelist', () => {
-    const trieForRemovingWhiteListed = Trie.from(domainSet);
+    const trieForRemovingWhiteListed = createTrie(domainSet);
     WHITELIST_DOMAIN.forEach(white => {
       trieForRemovingWhiteListed.find(`.${white}`, false).forEach(f => domainSet.delete(f));
       if (trieForRemovingWhiteListed.has(white)) {

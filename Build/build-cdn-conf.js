@@ -2,7 +2,7 @@
 const path = require('path');
 const { createRuleset } = require('./lib/create-file');
 const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const Trie = require('./lib/trie');
+const createTrie = require('./lib/trie');
 const { task } = require('./lib/trace-runner');
 const fs = require('fs');
 const { processLine } = require('./lib/process-line');
@@ -10,7 +10,7 @@ const { processLine } = require('./lib/process-line');
 const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix_list_dat.txt');
 
 const getS3OSSDomains = async () => {
-  const trie = new Trie();
+  const trie = createTrie();
 
   if (fs.existsSync(publicSuffixPath)) {
     for await (const line of readFileByLine(publicSuffixPath)) {

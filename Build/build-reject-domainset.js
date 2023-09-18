@@ -3,7 +3,7 @@ const fse = require('fs-extra');
 const { resolve: pathResolve } = require('path');
 
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
-const Trie = require('./lib/trie');
+const createTrie = require('./lib/trie');
 
 const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
 const { createRuleset, compareAndWriteFile } = require('./lib/create-file');
@@ -44,8 +44,8 @@ const buildRejectDomainSet = task(__filename, async () => {
     })),
     ...ADGUARD_FILTERS.map(input => {
       const promise = typeof input === 'string'
-        ? processFilterRules(input, undefined, false)
-        : processFilterRules(input[0], input[1] || undefined, input[2] ?? false);
+        ? processFilterRules(input, undefined)
+        : processFilterRules(input[0], input[1] || undefined);
 
       return promise.then((i) => {
         if (i) {
@@ -82,7 +82,7 @@ const buildRejectDomainSet = task(__filename, async () => {
   ]);
 
   // remove pre-defined enforced blacklist from whitelist
-  const trie0 = Trie.from(filterRuleWhitelistDomainSets);
+  const trie0 = createTrie(filterRuleWhitelistDomainSets);
   PREDEFINED_ENFORCED_BACKLIST.forEach(enforcedBlack => {
     trie0.find(enforcedBlack).forEach(found => filterRuleWhitelistDomainSets.delete(found));
   });
@@ -131,7 +131,7 @@ const buildRejectDomainSet = task(__filename, async () => {
   console.log(`Start deduping from black keywords/suffixes! (${previousSize})`);
   console.time('* Dedupe from black keywords/suffixes');
 
-  const trie1 = Trie.from(domainSets);
+  const trie1 = createTrie(domainSets);
   domainSuffixSet.forEach(suffix => {
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
@@ -143,7 +143,7 @@ const buildRejectDomainSet = task(__filename, async () => {
   const kwfilter = createKeywordFilter(domainKeywordsSet);
 
   // Build whitelist trie, to handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
-  const trieWhite = Trie.from(filterRuleWhitelistDomainSets);
+  const trieWhite = createTrie(filterRuleWhitelistDomainSets);
   for (const domain of domainSets) {
     if (domain[0] === '.') {
       if (trieWhite.contains(domain)) {

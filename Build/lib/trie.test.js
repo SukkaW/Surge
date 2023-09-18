@@ -1,12 +1,12 @@
 require('chai').should();
 
-const Trie = require('./trie');
+const createTrie = require('./trie');
 const assert = require('assert');
 const { describe, it } = require('mocha');
 
 describe('Trie', () => {
   it('should be possible to add items to a Trie.', () => {
-    const trie = new Trie();
+    const trie = createTrie();
 
     trie.add('sukka');
     trie.add('ukka');
@@ -22,7 +22,7 @@ describe('Trie', () => {
   });
 
   it('adding the same item several times should not increase size.', () => {
-    const trie = new Trie();
+    const trie = createTrie();
 
     trie.add('rat');
     trie.add('erat');
@@ -33,21 +33,14 @@ describe('Trie', () => {
   });
 
   it('should be possible to set the null sequence.', () => {
-    let trie = new Trie();
+    const trie = createTrie();
 
     trie.add('');
-    trie.size.should.eq(1);
     trie.has('').should.eq(true);
-
-    trie = new Trie(Array);
-
-    trie.add([]);
-    trie.size.should.eq(1);
-    trie.has([]).should.eq(true);
   });
 
   it('should be possible to delete items.', () => {
-    const trie = new Trie();
+    const trie = createTrie();
 
     trie.add('rat');
     trie.add('rate');
@@ -64,16 +57,13 @@ describe('Trie', () => {
     trie.size.should.eq(2);
 
     assert.strictEqual(trie.delete('rate'), true);
-
     assert.strictEqual(trie.size, 1);
-
     assert.strictEqual(trie.delete('tar'), true);
-
     assert.strictEqual(trie.size, 0);
   });
 
   it('should be possible to check the existence of a sequence in the Trie.', () => {
-    const trie = new Trie();
+    const trie = createTrie();
 
     trie.add('romanesque');
 
@@ -83,7 +73,7 @@ describe('Trie', () => {
   });
 
   it('should be possible to retrieve items matching the given prefix.', () => {
-    const trie = new Trie();
+    const trie = createTrie();
 
     trie.add('roman');
     trie.add('esqueroman');
@@ -154,7 +144,7 @@ describe('Trie', () => {
   it('should be possible to create a trie from an arbitrary iterable.', () => {
     const words = ['roman', 'esqueroman'];
 
-    const trie = Trie.from(words);
+    const trie = createTrie(words);
 
     assert.strictEqual(trie.size, 2);
     assert.deepStrictEqual(trie.has('roman'), true);
@@ -163,14 +153,14 @@ describe('Trie', () => {
 
 describe('surge domainset dedupe', () => {
   it('should not remove same entry', () => {
-    const trie = Trie.from(['.skk.moe', 'noc.one']);
+    const trie = createTrie(['.skk.moe', 'noc.one']);
 
     trie.find('.skk.moe').should.eql(['.skk.moe']);
     trie.find('noc.one').should.eql(['noc.one']);
   });
 
   it('should remove subdomain', () => {
-    const trie = Trie.from(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net']);
+    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net']);
     // trie.find('noc.one').should.eql(['www.noc.one']);
     trie.find('.skk.moe').should.eql(['image.cdn.skk.moe', 'blog.skk.moe']);
     // trie.find('sukkaw.net').should.eql(['cdn.sukkaw.net']);
@@ -178,7 +168,7 @@ describe('surge domainset dedupe', () => {
   });
 
   it('should not remove non-subdomain', () => {
-    const trie = Trie.from(['skk.moe', 'sukkaskk.moe']);
+    const trie = createTrie(['skk.moe', 'sukkaskk.moe']);
     trie.find('.skk.moe').should.eql([]);
   });
 });

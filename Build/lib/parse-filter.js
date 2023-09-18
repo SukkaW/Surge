@@ -1,6 +1,6 @@
 // @ts-check
 const { fetchWithRetry } = require('./fetch-retry');
-const tldts = require('tldts');
+const tldts = require('./cached-tld-parse');
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
 const { NetworkFilter } = require('@cliqz/adblocker');
 const { processLine } = require('./process-line');
@@ -113,7 +113,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
  * @param {readonly (string | URL)[] | undefined} [fallbackUrls]
  * @returns {Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }>}
  */
-async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdParties = false) {
+async function processFilterRules(filterRulesUrl, fallbackUrls) {
   const runStart = performance.now();
 
   /** @type Set<string> */
@@ -148,7 +148,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
   const gorhill = await getGorhillPublicSuffixPromise();
 
   const lineCb = (line) => {
-    const result = parse(line, includeThirdParties, gorhill);
+    const result = parse(line, gorhill);
     if (result) {
       const flag = result[1];
       const hostname = result[0];
@@ -180,12 +180,15 @@ async function processFilterRules(filterRulesUrl, fallbackUrls, includeThirdPart
   };
 
   if (!fallbackUrls || fallbackUrls.length === 0) {
-    const downloadStart = performance.now();
+    downloadTime = 0;
+    let last = performance.now();
     for await (const line of await fetchRemoteTextAndCreateReadlineInterface(filterRulesUrl)) {
+      const now = performance.now();
+      downloadTime += performance.now() - last;
+      last = now;
       // don't trim here
       lineCb(line);
     }
-    downloadTime = performance.now() - downloadStart;
   } else {
     let filterRules;
 
@@ -229,11 +232,10 @@ const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)
 
 /**
  * @param {string} $line
- * @param {boolean} includeThirdParties
  * @param {import('gorhill-publicsuffixlist').default} gorhill
- * @returns {null | [string, 0 | 1 | 2 | -1]} - 0 white include subdomain, 1 black abosulte, 2 black include subdomain, -1 white
+ * @returns {null | [hostname: string, flag: 0 | 1 | 2 | -1]} - 0 white include subdomain, 1 black abosulte, 2 black include subdomain, -1 white
  */
-function parse($line, includeThirdParties, gorhill) {
+function parse($line, gorhill) {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -297,7 +299,7 @@ function parse($line, includeThirdParties, gorhill) {
     if (
       filter.hostname // filter.hasHostname() // must have
       && filter.isPlain()
-      && (!filter.isRegex())
+      // && (!filter.isRegex()) // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
       if (!gorhill.getDomain(filter.hostname)) {
@@ -307,22 +309,28 @@ function parse($line, includeThirdParties, gorhill) {
       if (!hostname) {
         return null;
       }
+
+      // console.log({
+      //   '||': filter.isHostnameAnchor(),
+      //   '|': filter.isLeftAnchor(),
+      //   '|https://': !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
+      // });
+      const isIncludeAllSubDomain = filter.isHostnameAnchor();
+
       if (filter.isException() || filter.isBadFilter()) {
-        return [hostname, 0];
+        return [hostname, isIncludeAllSubDomain ? 0 : -1];
       }
 
       const _1p = filter.firstParty();
       const _3p = filter.thirdParty();
-      if (_1p === _3p) {
-        return [hostname, 2];
-      }
-      if (_3p) {
-        if (includeThirdParties) {
-          return [hostname, 2];
+
+      if (_1p) {
+        if (_1p === _3p) {
+          return [hostname, isIncludeAllSubDomain ? 2 : 1];
         }
         return null;
       }
-      if (_1p) {
+      if (_3p) {
         return null;
       }
     }
@@ -340,10 +348,12 @@ function parse($line, includeThirdParties, gorhill) {
     return null;
   }
 
-  const lineEndsWithCaretOrCaretVerticalBar = (
-    lastChar === '^'
-    || (lastChar === '|' && line[len - 2] === '^')
-  );
+  /* eslint-disable no-nested-ternary -- speed */
+
+  const linedEndsWithCaret = lastChar === '^';
+  const lineEndsWithCaretVerticalBar = lastChar === '|' && line[len - 2] === '^';
+
+  const lineEndsWithCaretOrCaretVerticalBar = linedEndsWithCaret || lineEndsWithCaretVerticalBar;
 
   // whitelist (exception)
   if (firstChar === '@' && line[1] === '@') {
@@ -397,13 +407,7 @@ function parse($line, includeThirdParties, gorhill) {
     }
   }
 
-  if (
-    firstChar === '|' && line[1] === '|'
-    && (
-      lineEndsWithCaretOrCaretVerticalBar
-      || line.endsWith('$cname')
-    )
-  ) {
+  if (firstChar === '|' && (lineEndsWithCaretOrCaretVerticalBar || line.endsWith('$cname'))) {
     /**
      * Some malformed filters can not be parsed by NetworkFilter:
      *
@@ -411,17 +415,26 @@ function parse($line, includeThirdParties, gorhill) {
      * `||solutions.|pages.indigovision.com^`
      * `||vystar..0rg@client.iebetanialaargentina.edu.co^`
      */
+
+    const includeAllSubDomain = line[1] === '|';
+
+    const sliceStart = includeAllSubDomain ? 2 : 1;
+    const sliceEnd = lastChar === '^'
+      ? -1
+      : lineEndsWithCaretOrCaretVerticalBar
+        ? -2
+        : line.endsWith('$cname')
+          ? -6
+          : 0;
+
     const _domain = line
       // .replace('||', '')
-      .slice(2) // we already make sure line startsWith ||
-      .replace('^|', '')
-      .replace('$cname', '')
-      .replaceAll('^', '')
+      .slice(sliceStart, sliceEnd) // we already make sure line startsWith ||
       .trim();
 
     const domain = normalizeDomain(_domain);
     if (domain) {
-      return [domain, 2];
+      return [domain, includeAllSubDomain ? 2 : 1];
     }
     console.warn('      * [parse-filter E0002] (black) invalid domain:', _domain);
 
@@ -439,7 +452,14 @@ function parse($line, includeThirdParties, gorhill) {
      * `.wap.x4399.com^`
      */
     const _domain = line
-      .slice(1) // remove prefix dot
+      .slice(
+        1,
+        linedEndsWithCaret
+          ? -1
+          : lineEndsWithCaretVerticalBar
+            ? -2
+            : 0
+      ) // remove prefix dot
       .replace('^|', '')
       .replaceAll('^', '')
       .trim();
@@ -503,6 +523,13 @@ function parse($line, includeThirdParties, gorhill) {
    */
   if (firstChar !== '|' && lastChar === '^') {
     const _domain = line.slice(0, -1);
+
+    const suffix = gorhill.getPublicSuffix(_domain);
+    if (!suffix || !gorhill.suffixInPSL(suffix)) {
+      // This exclude domain-like resource like `_social_tracking.js^`
+      return null;
+    }
+
     const domain = normalizeDomain(_domain);
     if (domain) {
       return [domain, 1];
@@ -540,6 +567,7 @@ function parse($line, includeThirdParties, gorhill) {
   }
 
   return null;
+  /* eslint-enable no-nested-ternary */
 }
 
 module.exports.processDomainLists = processDomainLists;

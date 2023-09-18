@@ -1,11 +1,11 @@
 // @ts-check
-const Trie = require('./trie');
+const createTrie = require('./trie');
 
 /**
  * @param {string[]} inputDomains
  */
 const domainDeduper = (inputDomains) => {
-  const trie = Trie.from(inputDomains);
+  const trie = createTrie(inputDomains);
   const sets = new Set(inputDomains);
 
   for (let j = 0, len = inputDomains.length; j < len; j++) {
