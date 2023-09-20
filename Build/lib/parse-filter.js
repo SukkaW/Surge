@@ -138,9 +138,9 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
    */
   const addToWhiteList = (domainToBeAddedToWhite, isSubDomain = true) => {
     if (isSubDomain && domainToBeAddedToWhite[0] !== '.') {
-      blacklistDomainSets.add(`.${domainToBeAddedToWhite}`);
+      whitelistDomainSets.add(`.${domainToBeAddedToWhite}`);
     } else {
-      blacklistDomainSets.add(domainToBeAddedToWhite);
+      whitelistDomainSets.add(domainToBeAddedToWhite);
     }
   };
 
@@ -157,6 +157,8 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
         if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
           warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
           foundDebugDomain = true;
+
+          console.log({ result, flag });
         }
       }
 
