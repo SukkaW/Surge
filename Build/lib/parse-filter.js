@@ -89,7 +89,7 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
     const _domain = domains.join(' ').trim();
 
     if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-      warnOnce(hostsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      warnOnce(hostsUrl.href, false, DEBUG_DOMAIN_TO_FIND);
       foundDebugDomain = true;
     }
 
