@@ -15,6 +15,7 @@ const domainDeduper = (inputDomains) => {
     }
 
     // delete all included subdomains (ends with `.example.com`)
+    // eslint-disable-next-line sukka/unicorn/no-array-method-this-argument -- it is not an array
     trie.find(d, false).forEach(f => sets.delete(f));
 
     // if `.example.com` exists, then `example.com` should also be removed

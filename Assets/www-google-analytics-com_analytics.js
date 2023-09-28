@@ -33,7 +33,7 @@
     if (typeof fn !== 'function') { return; }
     try {
       fn();
-    } catch (ex) {
+    } catch {
     }
   };
   ga.create = function () {

@@ -2,7 +2,7 @@
  * Suffix Trie based on Mnemonist Trie
  */
 
-const SENTINEL = String.fromCharCode(0);
+const SENTINEL = String.fromCodePoint(0);
 
 /**
  * @param {string[] | Set<string>} [from]

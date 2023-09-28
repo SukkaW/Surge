@@ -19,9 +19,9 @@ const CLASH_SUPPORTED_RULE_TYPE = [
  */
 const surgeRulesetToClashClassicalTextRuleset = (rules) => {
   const trie = Trie.from(rules);
-  return CLASH_SUPPORTED_RULE_TYPE.map(
+  return CLASH_SUPPORTED_RULE_TYPE.flatMap(
     type => trie.find(`${type},`)
-  ).flat();
+  );
 };
 module.exports.surgeRulesetToClashClassicalTextRuleset = surgeRulesetToClashClassicalTextRuleset;
 

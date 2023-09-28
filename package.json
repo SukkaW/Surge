@@ -34,11 +34,11 @@
     "undici": "5.24.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "4.0.0-beta.11",
+    "@eslint-sukka/node": "4.0.0-beta.12",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.6.0",
     "chai": "^4.3.8",
-    "eslint-config-sukka": "4.0.0-beta.11",
+    "eslint-config-sukka": "4.0.0-beta.12",
     "eslint-formatter-sukka": "4.0.0-beta.11",
     "mocha": "^10.2.0"
   },

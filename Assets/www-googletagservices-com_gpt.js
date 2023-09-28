@@ -109,7 +109,7 @@
   gpt.cmd.push = function (a) {
     try {
       a();
-    } catch (ex) {
+    } catch {
     }
     return 1;
   };

@@ -44,7 +44,7 @@ const buildRejectDomainSet = task(__filename, async () => {
     })),
     ...ADGUARD_FILTERS.map(input => {
       const promise = typeof input === 'string'
-        ? processFilterRules(input, undefined)
+        ? processFilterRules(input)
         : processFilterRules(input[0], input[1] || undefined);
 
       return promise.then((i) => {
@@ -133,9 +133,11 @@ const buildRejectDomainSet = task(__filename, async () => {
 
   const trie1 = createTrie(domainSets);
   domainSuffixSet.forEach(suffix => {
+    // eslint-disable-next-line sukka/unicorn/no-array-method-this-argument -- this is not array
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
   filterRuleWhitelistDomainSets.forEach(suffix => {
+    // eslint-disable-next-line sukka/unicorn/no-array-method-this-argument -- this is not array
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
 

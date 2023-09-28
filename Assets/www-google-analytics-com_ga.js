@@ -27,7 +27,7 @@
     ) {
       try {
         window.location.assign(a[1]);
-      } catch (ex) {
+      } catch {
       }
     }
     if (a[0] === '_set' && a[1] === 'hitCallback' && typeof a[2] === 'function') {
@@ -66,7 +66,7 @@
       if (typeof a !== 'string') { return; }
       try {
         window.location.assign(a);
-      } catch (ex) {
+      } catch {
       }
     };
     return out;
