@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+
   const noopfn = function () {
   };
   //
@@ -20,9 +21,9 @@
     if (Array.isArray(a) === false) { return; }
     // https://developers.google.com/analytics/devguides/collection/gajs/methods/gaJSApiDomainDirectory#_gat.GA_Tracker_._link
     if (
-      typeof a[0] === 'string' &&
-      /(^|\.)_link$/.test(a[0]) &&
-      typeof a[1] === 'string'
+      typeof a[0] === 'string'
+      && /(^|\.)_link$/.test(a[0])
+      && typeof a[1] === 'string'
     ) {
       try {
         window.location.assign(a[1]);
@@ -69,7 +70,7 @@
       }
     };
     return out;
-  })();
+  }());
   //
   const Gat = function () {
   };
@@ -102,6 +103,7 @@
         gaq.push(aa.shift());
       }
     }
-  })();
-  window._gaq = gaq.qf = gaq;
-})();
+  }());
+  gaq.qf = gaq;
+  window._gaq = gaq;
+}());

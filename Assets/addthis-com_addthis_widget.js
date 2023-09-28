@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+
   const noopfn = function () {
   };
   window.addthis = {
@@ -15,4 +16,4 @@
     toolbox: noopfn,
     update: noopfn
   };
-})();
+}());

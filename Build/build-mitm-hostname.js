@@ -181,10 +181,10 @@ function matchWithRegExpArray(input, regexps = []) {
 }
 
 function escapeRegExp(string = '') {
-  const reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+  const reRegExpChar = /[$()*+.?[\\\]^{|}]/g;
   const reHasRegExpChar = RegExp(reRegExpChar.source);
 
   return string && reHasRegExpChar.test(string)
-    ? string.replace(reRegExpChar, '\\$&')
+    ? string.replaceAll(reRegExpChar, '\\$&')
     : string;
 }

@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+
   const head = document.head;
   if (!head) { return; }
   const style = document.createElement('style');
@@ -10,4 +11,4 @@
     '}'
   ].join('\n');
   head.appendChild(style);
-})();
+}());

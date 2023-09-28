@@ -1,3 +1,5 @@
+/* global $response, $done */
+
 let body = $response.body;
 body = JSON.parse(body);
 if (body?.response) {
@@ -11,4 +13,4 @@ if (body?.user) {
 }
 body = JSON.stringify(body);
 
-$done({ body })
+$done({ body });

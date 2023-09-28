@@ -1,9 +1,10 @@
 (function () {
   'use strict';
+
   const noopfn = function () {
   };
   window.cxApi = {
-    chooseVariation: function () {
+    chooseVariation() {
       return 0;
     },
     getChosenVariation: noopfn,
@@ -12,4 +13,4 @@
     setCookiePath: noopfn,
     setDomainName: noopfn
   };
-})();
+}());

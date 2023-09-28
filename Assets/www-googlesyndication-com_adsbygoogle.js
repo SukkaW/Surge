@@ -1,9 +1,10 @@
 (function () {
   'use strict';
+
   const init = () => {
     window.adsbygoogle = {
       loaded: true,
-      push: function () {
+      push() {
       }
     };
     const phs = document.querySelectorAll('.adsbygoogle');
@@ -21,11 +22,11 @@
     }
   };
   if (
-    document.querySelectorAll('.adsbygoogle').length === 0 &&
-    document.readyState === 'loading'
+    document.querySelectorAll('.adsbygoogle').length === 0
+    && document.readyState === 'loading'
   ) {
     window.addEventListener('DOMContentLoaded', init, { once: true });
   } else {
     init();
   }
-})();
+}());

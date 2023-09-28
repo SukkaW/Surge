@@ -1,3 +1,5 @@
+/* global $request, $done */
+
 const url = $request.url;
 const newHeaders = {
   Crack: 'Sukka',
@@ -10,9 +12,9 @@ let obj = {};
 
 if (url.includes('/admin/service/registration/validateDevice')) {
   obj = {
-    'cacheExpirationDays': 365,
-    'message': 'Device Valid',
-    'resultCode': 'GOOD'
+    cacheExpirationDays: 365,
+    message: 'Device Valid',
+    resultCode: 'GOOD'
   };
 } else if (url.includes('/admin/service/appstore/register')) {
   obj = {

@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+
   // https://developers.google.com/doubleclick-gpt/reference
   const noopfn = function () {
   }.bind();
@@ -42,8 +43,8 @@
     clearTagForChildDirectedTreatment: noopthisfn,
     clearTargeting: noopthisfn,
     collapseEmptyDivs: noopfn,
-    defineOutOfPagePassback: function () { return new PassbackSlot(); },
-    definePassback: function () { return new PassbackSlot(); },
+    defineOutOfPagePassback() { return new PassbackSlot(); },
+    definePassback() { return new PassbackSlot(); },
     disableInitialLoad: noopfn,
     display: noopfn,
     enableAsyncRendering: noopfn,
@@ -129,4 +130,4 @@
   while (cmd.length !== 0) {
     gpt.cmd.push(cmd.shift());
   }
-})();
+}());

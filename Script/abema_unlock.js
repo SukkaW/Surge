@@ -1,10 +1,12 @@
+/* global $request, $response, $done */
+
 const url = $request.url;
 const body = url.endsWith('region') || url.endsWith('region/')
   ? 'OK'
-  : $response.body
+  : $response.body;
 
 if ($request.method === 'OPTION') {
-  $done({})
+  $done({});
 } else {
   $done({
     status: 200,
@@ -18,5 +20,5 @@ if ($request.method === 'OPTION') {
       'Access-Control-Expose-Headers': 'Server,range,hdntl,hdnts,Akamai-Mon-Iucid-Ing,Akamai-Mon-Iucid-Del,Akamai-Request-BC',
       'Access-Control-Max-Age': '86400'
     }
-  })
+  });
 }

@@ -229,7 +229,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
   };
 }
 
-const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#&%~=]/;
+const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#%&=~]/;
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
 
 /**
@@ -350,8 +350,6 @@ function parse($line, gorhill) {
     return null;
   }
 
-  /* eslint-disable no-nested-ternary -- speed */
-
   const linedEndsWithCaret = lastChar === '^';
   const lineEndsWithCaretVerticalBar = lastChar === '|' && line[len - 2] === '^';
 
@@ -425,9 +423,8 @@ function parse($line, gorhill) {
       ? -1
       : lineEndsWithCaretOrCaretVerticalBar
         ? -2
-        : line.endsWith('$cname')
-          ? -6
-          : 0;
+        // eslint-disable-next-line sukka/unicorn/no-nested-ternary -- speed
+        : (line.endsWith('$cname') ? -6 : 0);
 
     const _domain = line
       // .replace('||', '')
@@ -458,9 +455,7 @@ function parse($line, gorhill) {
         1,
         linedEndsWithCaret
           ? -1
-          : lineEndsWithCaretVerticalBar
-            ? -2
-            : 0
+          : (lineEndsWithCaretVerticalBar ? -2 : 0)
       ) // remove prefix dot
       .replace('^|', '')
       .replaceAll('^', '')
