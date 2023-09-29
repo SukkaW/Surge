@@ -5,7 +5,7 @@
   "description": "",
   "scripts": {
     "build": "node ./Build/index.js",
-    "lint": "eslint --format=eslint-formatter-sukka ."
+    "lint": "eslint --format=sukka ."
   },
   "repository": {
     "type": "git",
@@ -34,11 +34,11 @@
     "undici": "5.24.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "4.0.0-beta.12",
-    "@types/mocha": "^10.0.1",
+    "@eslint-sukka/node": "4.0.0-beta.14",
+    "@types/mocha": "^10.0.2",
     "@types/node": "^20.6.0",
     "chai": "^4.3.8",
-    "eslint-config-sukka": "4.0.0-beta.12",
+    "eslint-config-sukka": "4.0.0-beta.14",
     "eslint-formatter-sukka": "4.0.0-beta.11",
     "mocha": "^10.2.0"
   },
