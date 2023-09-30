@@ -52,7 +52,7 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
     '.speedtest.net',
     '.ooklaserver.net',
     '.speed.misaka.one',
-    'speed.cloudflare.com',
+    '.speed.cloudflare.com',
     '.speedtest.rt.ru',
     '.speedtest.aptg.com.tw',
     '.speedtest.gslnetworks.com',
