@@ -10,12 +10,7 @@ const { compareAndWriteFile } = require('./lib/create-file');
 const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
 const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
-/**
- * @param {string} string
- */
-const escapeRegExp = (string) => {
-  return string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
-};
+const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
 const buildInternalCDNDomains = task(__filename, async () => {
   const set = new Set();

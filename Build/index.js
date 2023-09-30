@@ -13,6 +13,7 @@ const { buildSpeedtestDomainSet } = require('./build-speedtest-domainset');
 const { buildInternalCDNDomains } = require('./build-internal-cdn-rules');
 const { buildInternalChnDomains } = require('./build-internal-chn-domains');
 const { buildDomesticRuleset } = require('./build-domestic-ruleset');
+const { buildRedirectModule } = require('./build-redirect-module');
 const { validate } = require('./validate-domainset');
 
 const { buildPublicHtml } = require('./build-public');
@@ -102,6 +103,8 @@ const endWorker = async (worker) => {
   const buildInternalChnDomainsPromise = buildInternalChnDomains();
   // build:domestic-ruleset
   const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
+  // build:redirect-module
+  const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
 
   const stats = await Promise.all([
     downloadPreviousBuildPromise,
@@ -118,7 +121,8 @@ const endWorker = async (worker) => {
     buildInternalCDNDomainsPromise,
     buildInternalReverseChnCIDRPromise,
     buildInternalChnDomainsPromise,
-    buildDomesticRulesetPromise
+    buildDomesticRulesetPromise,
+    buildRedirectModulePromise
   ]);
 
   await Promise.all([
