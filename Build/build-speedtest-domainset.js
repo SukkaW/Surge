@@ -50,6 +50,7 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
   /** @type {Set<string>} */
   const domains = new Set([
     '.speedtest.net',
+    '.speedtestcustom.com',
     '.ooklaserver.net',
     '.speed.misaka.one',
     '.speed.cloudflare.com',
