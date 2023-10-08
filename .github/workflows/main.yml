@@ -31,9 +31,10 @@ jobs:
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GIT_TOKEN }}
+          personal_token: ${{ secrets.GIT_TOKEN }}
           user_name: ${{ secrets.GIT_USER }}
           user_email: ${{ secrets.GIT_EMAIL }}
-          publish_branch: gh-pages
+          external_repository: SukkaLab/ruleset.skk.moe
+          publish_branch: master
           publish_dir: public
           cname: ruleset.skk.moe

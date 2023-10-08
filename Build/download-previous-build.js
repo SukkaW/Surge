@@ -1,8 +1,9 @@
 const { fetch } = require('undici');
 const tar = require('tar');
 const fs = require('fs');
+const fsp = fs.promises;
 const fse = require('fs-extra');
-const { join, resolve } = require('path');
+const path = require('path');
 const { tmpdir } = require('os');
 const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
@@ -21,7 +22,7 @@ const downloadPreviousBuild = task(__filename, async () => {
 
   let allFileExists = true;
 
-  for await (const line of readFileByLine(resolve(__dirname, '../.gitignore'))) {
+  for await (const line of readFileByLine(path.resolve(__dirname, '../.gitignore'))) {
     if (
       (
         // line.startsWith('List/')
@@ -31,7 +32,7 @@ const downloadPreviousBuild = task(__filename, async () => {
       filesList.push(line);
 
       if (!isCI) {
-        allFileExists = fs.existsSync(join(__dirname, '..', line));
+        allFileExists = fs.existsSync(path.join(__dirname, '..', line));
         if (!allFileExists) {
           break;
         }
@@ -48,20 +49,19 @@ const downloadPreviousBuild = task(__filename, async () => {
     return;
   }
 
-  const extractedPath = join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
+  const extractedPath = path.join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
 
   await traceAsync(
     'Download and extract previous build',
     () => Promise.all([
-      fetch('https://codeload.github.com/sukkaw/surge/tar.gz/gh-pages'),
-      fse.ensureDir(extractedPath)
+      fetch('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master'),
+      fsp.mkdir(extractedPath, { recursive: true })
     ]).then(([resp]) => pipeline(
       Readable.fromWeb(resp.body),
       tar.x({
         cwd: extractedPath,
         filter(p) {
-          const dir = p.split('/')[1];
-          return dir === 'List' || dir === 'Modules' || dir === 'Clash';
+          return p.includes('/List/') || p.includes('/Modules/') || p.includes('/Clash/');
         }
       })
     ))
@@ -70,26 +70,26 @@ const downloadPreviousBuild = task(__filename, async () => {
   console.log('Files list:', filesList);
 
   await Promise.all(filesList.map(async p => {
-    const src = join(extractedPath, 'Surge-gh-pages', p);
+    const src = path.join(extractedPath, 'ruleset.skk.moe-master', p);
     if (await fileExists(src)) {
       return fse.copy(
         src,
-        join(__dirname, '..', p),
+        path.join(__dirname, '..', p),
         { overwrite: true }
       );
     }
   }));
 
-  return fs.promises.unlink(extractedPath).catch(() => { });
+  // return fs.promises.unlink(extractedPath).catch(() => { });
 });
 
 const downloadPublicSuffixList = task(__filename, async () => {
-  const publicSuffixDir = resolve(__dirname, '../node_modules/.cache');
-  const publicSuffixPath = join(publicSuffixDir, 'public_suffix_list_dat.txt');
+  const publicSuffixDir = path.resolve(__dirname, '../node_modules/.cache');
+  const publicSuffixPath = path.join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
   const [resp] = await Promise.all([
     fetch('https://publicsuffix.org/list/public_suffix_list.dat'),
-    fse.ensureDir(publicSuffixDir)
+    fsp.mkdir(publicSuffixDir, { recursive: true })
   ]);
 
   return pipeline(
