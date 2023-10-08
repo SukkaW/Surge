@@ -13,8 +13,7 @@ const folderAndFilesToBeDeployed = [
   'Clash',
   'Modules',
   'Script',
-  'LICENSE',
-  'README.md'
+  'LICENSE'
 ];
 
 const buildPublicHtml = task(__filename, async () => {
