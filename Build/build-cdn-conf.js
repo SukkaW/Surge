@@ -45,6 +45,13 @@ const getS3OSSDomains = async () => {
       S3OSSDomains.add(line);
     }
   });
+  trie.find('sakurastorage.jp').forEach(line => {
+    if (
+      (line.startsWith('s3-') || line.startsWith('s3.'))
+    ) {
+      S3OSSDomains.add(line);
+    }
+  });
 
   return S3OSSDomains;
 };
