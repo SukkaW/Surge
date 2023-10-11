@@ -6,7 +6,7 @@ const HOSTS = [
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', false],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false],
-  ['https://urlhaus.abuse.ch/downloads/hostfile/', false]
+  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', false]
 ];
 
 const ADGUARD_FILTERS = /** @type {const} */([
