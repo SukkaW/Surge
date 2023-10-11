@@ -11,6 +11,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'aliyuncs.com',
       'alikunlun.com',
       'alipay.com',
+      'alipayobjects.com',
+      'alibaba-inc.com',
       'cainiao.com',
       'etao.com',
       '1688.com',
@@ -57,7 +59,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'tencent-cloud.net',
       'tencent.com',
       'weixinbridge.com',
-      'weixin.com'
+      'weixin.com',
+      'wechat.com'
     ]
   },
   BILIBILI: {
