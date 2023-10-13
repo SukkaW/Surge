@@ -10,16 +10,18 @@ const HOSTS = [
 ];
 
 const ADGUARD_FILTERS = /** @type {const} */([
-  // Easy List
+  // EasyList
   [
     'https://easylist.to/easylist/easylist.txt',
     [
       'https://easylist-downloads.adblockplus.org/easylist.txt',
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
-      'https://secure.fanboy.co.nz/easylist.txt'
+      'https://secure.fanboy.co.nz/easylist.txt',
+      'https://ublockorigin.github.io/uAssets/thirdparties/easylist.txt',
+      'https://ublockorigin.pages.dev/thirdparties/easylist.txt'
     ]
   ],
-  // Easy Privacy
+  // EasyPrivacy
   [
     'https://easylist.to/easylist/easyprivacy.txt',
     [
