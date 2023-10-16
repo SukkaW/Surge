@@ -202,7 +202,9 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
       filterRules = (
         await Promise.any(
           [filterRulesUrl, ...(fallbackUrls || [])].map(async url => {
-            const text = await fetchWithRetry(url, { signal: controller.signal }).then(r => r.text());
+            const r = await fetchWithRetry(url, { signal: controller.signal });
+            const text = await r.text();
+
             controller.abort();
             return text;
           })

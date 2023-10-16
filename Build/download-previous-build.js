@@ -2,7 +2,7 @@ const { fetch } = require('undici');
 const tar = require('tar');
 const fs = require('fs');
 const fsp = fs.promises;
-const fse = require('fs-extra');
+const { copy } = require('fs-extra');
 const path = require('path');
 const { tmpdir } = require('os');
 const { Readable } = require('stream');
@@ -72,7 +72,7 @@ const downloadPreviousBuild = task(__filename, async () => {
   await Promise.all(filesList.map(async p => {
     const src = path.join(extractedPath, 'ruleset.skk.moe-master', p);
     if (await fileExists(src)) {
-      return fse.copy(
+      return copy(
         src,
         path.join(__dirname, '..', p),
         { overwrite: true }

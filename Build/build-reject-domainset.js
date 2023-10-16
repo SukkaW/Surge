@@ -1,5 +1,5 @@
 // @ts-check
-const fse = require('fs-extra');
+const { copy } = require('fs-extra');
 const { resolve: pathResolve } = require('path');
 
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
@@ -225,7 +225,7 @@ const buildRejectDomainSet = task(__filename, async () => {
       pathResolve(__dirname, '../List/internal/reject-stats.txt')
     ),
     // Copy reject_sukka.conf for backward compatibility
-    fse.copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
+    copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
   ]);
 });
 

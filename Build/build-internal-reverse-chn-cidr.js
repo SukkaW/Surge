@@ -2,8 +2,8 @@
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
 const { processLineFromReadline } = require('./lib/process-line');
 const path = require('path');
-const fse = require('fs-extra');
 const fs = require('fs');
+const fsp = require('fs/promises');
 const { task } = require('./lib/trace-runner');
 
 const RESERVED_IPV4_CIDR = [
@@ -28,7 +28,7 @@ const buildInternalReverseChnCIDR = task(__filename, async () => {
   const [{ exclude }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),
     processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
-    fse.ensureDir(path.resolve(__dirname, '../List/internal'))
+    fsp.mkdir(path.resolve(__dirname, '../List/internal'), { recursive: true })
   ]);
 
   const reversedCidr = exclude(

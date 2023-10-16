@@ -1,5 +1,5 @@
 // @ts-check
-const fse = require('fs-extra');
+const fsp = require('fs/promises');
 const path = require('path');
 const tldts = require('tldts');
 const { processLine } = require('./lib/process-line');
@@ -79,7 +79,7 @@ const buildInternalCDNDomains = task(__filename, async () => {
     processLocalDomainSet(path.resolve(__dirname, '../List/domainset/cdn.conf')),
     processLocalDomainSet(path.resolve(__dirname, '../List/domainset/download.conf')),
 
-    fse.ensureDir(path.resolve(__dirname, '../List/internal'))
+    fsp.mkdir(path.resolve(__dirname, '../List/internal'), { recursive: true })
   ]);
 
   return compareAndWriteFile(

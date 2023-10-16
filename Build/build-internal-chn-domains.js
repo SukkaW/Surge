@@ -1,6 +1,6 @@
 // @ts-check
 const path = require('path');
-const fse = require('fs-extra');
+const fsp = require('fs/promises');
 const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
 const { task } = require('./lib/trace-runner');
 const { compareAndWriteFile } = require('./lib/create-file');
@@ -8,7 +8,7 @@ const { compareAndWriteFile } = require('./lib/create-file');
 const buildInternalChnDomains = task(__filename, async () => {
   const [result] = await Promise.all([
     parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'),
-    fse.ensureDir(path.resolve(__dirname, '../List/internal'))
+    fsp.mkdir(path.resolve(__dirname, '../List/internal'), { recursive: true })
   ]);
 
   return compareAndWriteFile(
