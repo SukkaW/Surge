@@ -151,12 +151,37 @@ module.exports.DOMESTICS = /** @type {const} */({
   SYSTEM: {
     dns: 'system',
     domains: [
-      'routerlogin.net',
       '_hotspot_.m2m',
-      'router.asus.com',
       'hotspot.cslwifi.com',
       'amplifi.lan',
-      '*.lan'
+      '*.lan',
+      'home.arpa',
+      // TailScale Magic DNS
+      'ts.net',
+      // Aruba Router
+      'instant.arubanetworks.com',
+      'setmeup.arubanetworks.com',
+      // ASUS router
+      'router.asus.com',
+      'asusrouter.com',
+      // NetGear
+      'routerlogin.net',
+      // Tenda WiFi
+      'tendawifi.com',
+      // TP-Link Router
+      'tplinkwifi.net',
+      'tplogin.cn',
+      // Xiaomi Router
+      'miwifi.com',
+      // ZTE CPE
+      'zte.home',
+      // Other Router
+      'hiwifi.com',
+      'my.router',
+      'phicomm.me',
+      'router.ctc',
+      'peiluyou.com',
+      'my.router'
     ]
   }
 });
