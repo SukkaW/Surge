@@ -1,6 +1,6 @@
 // @ts-check
-const { copy } = require('fs-extra');
-const { resolve: pathResolve } = require('path');
+const fsp = require('fs/promises');
+const path = require('path');
 
 const { processHosts, processFilterRules } = require('./lib/parse-filter');
 const createTrie = require('./lib/trie');
@@ -97,7 +97,7 @@ const buildRejectDomainSet = task(__filename, async () => {
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules!`);
 
-  for await (const line of readFileByLine(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'))) {
+  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'))) {
     const l = processLine(line);
     if (l) {
       domainSets.add(l);
@@ -107,7 +107,7 @@ const buildRejectDomainSet = task(__filename, async () => {
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
-  for await (const line of readFileByLine(pathResolve(__dirname, '../Source/non_ip/reject.conf'))) {
+  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
     if (line.startsWith('DOMAIN-KEYWORD')) {
       const [, ...keywords] = line.split(',');
       domainKeywordsSet.add(keywords.join(',').trim());
@@ -117,7 +117,7 @@ const buildRejectDomainSet = task(__filename, async () => {
     }
   }
 
-  for await (const line of readFileByLine(pathResolve(__dirname, '../List/domainset/reject_phishing.conf'))) {
+  for await (const line of readFileByLine(path.resolve(__dirname, '../List/domainset/reject_phishing.conf'))) {
     const l = processLine(line);
     if (l && l[0] === '.') {
       domainSuffixSet.add(l.slice(1));
@@ -217,15 +217,19 @@ const buildRejectDomainSet = task(__filename, async () => {
       new Date(),
       domainset,
       'domainset',
-      pathResolve(__dirname, '../List/domainset/reject.conf'),
-      pathResolve(__dirname, '../Clash/domainset/reject.txt')
+      path.resolve(__dirname, '../List/domainset/reject.conf'),
+      path.resolve(__dirname, '../Clash/domainset/reject.txt')
     ),
     compareAndWriteFile(
       rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
-      pathResolve(__dirname, '../List/internal/reject-stats.txt')
+      path.resolve(__dirname, '../List/internal/reject-stats.txt')
     ),
     // Copy reject_sukka.conf for backward compatibility
-    copy(pathResolve(__dirname, '../Source/domainset/reject_sukka.conf'), pathResolve(__dirname, '../List/domainset/reject_sukka.conf'))
+    fsp.cp(
+      path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'),
+      path.resolve(__dirname, '../List/domainset/reject_sukka.conf'),
+      { force: true, recursive: true }
+    )
   ]);
 });
 

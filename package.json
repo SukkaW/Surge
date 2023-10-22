@@ -21,7 +21,6 @@
     "ci-info": "^3.9.0",
     "cidr-tools-wasm": "^0.0.11",
     "eslint": "^8.51.0",
-    "fs-extra": "^11.1.1",
     "gorhill-publicsuffixlist": "github:gorhill/publicsuffixlist.js",
     "jest-worker": "^29.7.0",
     "mnemonist": "^0.39.5",

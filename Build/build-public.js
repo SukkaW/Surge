@@ -2,7 +2,6 @@ const listDir = require('@sukka/listdir');
 const path = require('path');
 const fs = require('fs');
 const fsp = require('fs/promises');
-const { copy } = require('fs-extra');
 const { task } = require('./lib/trace-runner');
 
 const rootPath = path.resolve(__dirname, '../');
@@ -19,7 +18,11 @@ const folderAndFilesToBeDeployed = [
 
 const buildPublicHtml = task(__filename, async () => {
   await fsp.mkdir(publicPath, { recursive: true });
-  await Promise.all(folderAndFilesToBeDeployed.map(dir => copy(path.resolve(rootPath, dir), path.resolve(publicPath, dir))));
+  await Promise.all(folderAndFilesToBeDeployed.map(dir => fsp.cp(
+    path.resolve(rootPath, dir),
+    path.resolve(publicPath, dir),
+    { force: true, recursive: true }
+  )));
 
   const list = await listDir(publicPath, {
     ignoreHidden: true,
