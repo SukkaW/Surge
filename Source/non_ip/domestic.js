@@ -74,7 +74,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'bilibili.tv',
       'bilivideo.com',
       'bilivideo.cn',
-      'hdslb.com'
+      'hdslb.com',
+      'biliimg.com'
     ]
   },
   XIAOMI: {
