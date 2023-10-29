@@ -68,7 +68,9 @@ const REDIRECT = /** @type {const} */ ([
   ['raw.kgithub.com/', 'https://raw.githubusercontent.com/'],
   ['raw.kkgithub.com/', 'https://raw.githubusercontent.com/'],
   // Misc
-  ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/']
+  ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/'],
+  ['googlefonts.wp-china-yes.net/', 'https://fonts.googleapis.com/'],
+  ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
 ]);
 
 const buildRedirectModule = task(__filename, async () => {
