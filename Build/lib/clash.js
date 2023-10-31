@@ -2,16 +2,19 @@
 const _Trie = require('mnemonist/trie');
 const Trie = _Trie.default || _Trie;
 
+// https://dreamacro.github.io/clash/configuration/rules.html
 const CLASH_SUPPORTED_RULE_TYPE = [
+  'DOMAIN',
   'DOMAIN-SUFFIX',
   'DOMAIN-KEYWORD',
-  'DOMAIN',
-  'SRC-IP-CIDR',
   'GEOIP',
   'IP-CIDR',
   'IP-CIDR6',
+  'SRC-IP-CIDR',
+  'SRC-PORT',
   'DST-PORT',
-  'SRC-PORT'
+  'PROCESS-NAME',
+  'PROCESS-PATH'
 ];
 
 /**
