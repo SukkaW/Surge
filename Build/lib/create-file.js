@@ -12,12 +12,21 @@ async function compareAndWriteFile(linesA, filePath) {
   if (!fs.existsSync(filePath)) {
     console.log(`${filePath} does not exists, writing...`);
     isEqual = false;
+  } else if (linesA.length === 0) {
+    console.log(`Nothing to write to ${filePath}...`);
+    isEqual = false;
   } else {
     let index = 0;
 
     for await (const lineB of readFileByLine(filePath)) {
       const lineA = linesA[index];
       index++;
+
+      if (lineA === undefined) {
+        // The file becomes smaller
+        isEqual = false;
+        break;
+      }
 
       if (lineA[0] === '#' && lineB[0] === '#') {
         continue;
