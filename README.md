@@ -139,6 +139,25 @@ rules:
 **Surge**
 
 ```ini
+# 北美相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_us.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_us.conf,[Replace with your policy]
+# 欧洲相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_eu.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_eu.conf,[Replace with your policy]
+# 日本相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_jp.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_jp.conf,[Replace with your policy]
+# 韩国相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_kr.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_kr.conf,[Replace with your policy]
+# 香港相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_hk.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_hk.conf,[Replace with your policy]
+# 台湾相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_tw.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_tw.conf,[Replace with your policy]
+# 所有流媒体（包括上述所有流媒体）
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,[Replace with your policy]
 ```
@@ -147,6 +166,97 @@ RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,[Replace with your policy]
 
 ```yaml
 rule-providers:
+  # 北美相关流媒体
+  stream_us_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream_us.txt
+    path: ./sukkaw_ruleset/stream_us_non_ip.txt
+  stream_us_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream_us.txt
+    path: ./sukkaw_ruleset/stream_ip.txt
+  # 欧洲相关流媒体
+  stream_eu_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream_eu.txt
+    path: ./sukkaw_ruleset/stream_eu_non_ip.txt
+  stream_eu_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream_eu.txt
+    path: ./sukkaw_ruleset/stream_eu_ip.txt
+  # 日本相关流媒体
+  stream_jp_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream_jp.txt
+    path: ./sukkaw_ruleset/stream_jp_non_ip.txt
+  stream_jp_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream_jp.txt
+    path: ./sukkaw_ruleset/stream_jp_ip.txt
+  # 韩国相关流媒体
+  stream_kr_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream_kr.txt
+    path: ./sukkaw_ruleset/stream_kr_non_ip.txt
+  stream_kr_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream_kr.txt
+    path: ./sukkaw_ruleset/stream_kr_ip.txt
+  # 香港相关流媒体
+  stream_hk_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream_hk.txt
+    path: ./sukkaw_ruleset/stream_hk_non_ip.txt
+  stream_hk_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream_hk.txt
+    path: ./sukkaw_ruleset/stream_hk_ip.txt
+  # 台湾相关流媒体
+  stream_tw_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/stream_tw.txt
+    path: ./sukkaw_ruleset/stream_tw_non_ip.txt
+  stream_tw_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/stream_tw.txt
+    path: ./sukkaw_ruleset/stream_tw_ip.txt
+  # 所有流媒体（包括上述所有流媒体）
   stream_non_ip:
     type: http
     behavior: classical
@@ -163,7 +273,20 @@ rule-providers:
     path: ./sukkaw_ruleset/stream_ip.txt
 
 rules:
+  - RULE-SET,stream_us_non_ip,[Replace with your policy]
+  - RULE-SET,stream_eu_non_ip,[Replace with your policy]
+  - RULE-SET,stream_jp_non_ip,[Replace with your policy]
+  - RULE-SET,stream_kr_non_ip,[Replace with your policy]
+  - RULE-SET,stream_hk_non_ip,[Replace with your policy]
+  - RULE-SET,stream_tw_non_ip,[Replace with your policy]
   - RULE-SET,stream_non_ip,[Replace with your policy]
+
+  - RULE-SET,stream_us_ip,[Replace with your policy]
+  - RULE-SET,stream_eu_ip,[Replace with your policy]
+  - RULE-SET,stream_jp_ip,[Replace with your policy]
+  - RULE-SET,stream_kr_ip,[Replace with your policy]
+  - RULE-SET,stream_hk_ip,[Replace with your policy]
+  - RULE-SET,stream_tw_ip,[Replace with your policy]
   - RULE-SET,stream_ip,[Replace with your policy]
 ```
 
