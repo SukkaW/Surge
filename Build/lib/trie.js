@@ -84,9 +84,7 @@ const createTrie = (from) => {
       // eslint-disable-next-line guard-for-in -- plain object
       for (k in node) {
         if (k === SENTINEL) {
-          if (includeEqualWithSuffix) {
-            matches.push($suffix);
-          } else if ($suffix !== suffix) {
+          if (includeEqualWithSuffix || $suffix !== suffix) {
             matches.push($suffix);
           }
 
@@ -157,11 +155,9 @@ const createTrie = (from) => {
    */
   const has = (suffix) => {
     let node = root;
-    let token;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
-      token = suffix[i];
-      node = node[token];
+      node = node[suffix[i]];
 
       if (typeof node === 'undefined') {
         return false;

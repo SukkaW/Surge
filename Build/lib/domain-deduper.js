@@ -20,7 +20,8 @@ const domainDeduper = (inputDomains) => {
 
     // if `.example.com` exists, then `example.com` should also be removed
     const a = d.slice(1);
-    if (trie.has(a)) {
+
+    if (sets.has(a)) {
       sets.delete(a);
     }
   }
