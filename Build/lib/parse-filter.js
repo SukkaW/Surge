@@ -20,6 +20,9 @@ const warnOnce = (url, isWhite, ...message) => {
   console.warn(url, isWhite ? '(white)' : '(black)', ...message);
 };
 
+/**
+ * @param {string} domain
+ */
 const normalizeDomain = (domain) => {
   if (!domain) return null;
 
@@ -28,7 +31,10 @@ const normalizeDomain = (domain) => {
 
   if (parsed.isIcann || parsed.isPrivate) {
     const h = parsed.hostname;
-    return h?.[0] === '.' ? h.slice(1) : h;
+
+    if (h === null) return null;
+
+    return h[0] === '.' ? h.slice(1) : h;
   }
 
   return null;
@@ -259,6 +265,7 @@ function parse($line, gorhill) {
 
   const line = $line.trim();
 
+  /** @example line.length */
   const len = line.length;
   if (len === 0) {
     return null;
@@ -268,19 +275,21 @@ function parse($line, gorhill) {
   const lastChar = line[len - 1];
 
   if (
-    len === 0
-    || firstChar === '/'
+    firstChar === '/'
     // ends with
     || lastChar === '.' // || line.endsWith('.')
     || lastChar === '-' // || line.endsWith('-')
     || lastChar === '_' // || line.endsWith('_')
     // special modifier
     || R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2.test(line)
-    || ((line.includes('/') || line.includes(':')) && !line.includes('://'))
     // || line.includes('$popup')
     // || line.includes('$removeparam')
     // || line.includes('$popunder')
   ) {
+    return null;
+  }
+
+  if ((line.includes('/') || line.includes(':')) && !line.includes('://')) {
     return null;
   }
 
@@ -352,9 +361,11 @@ function parse($line, gorhill) {
     return null;
   }
 
+  /** @example line.endsWith('^') */
   const linedEndsWithCaret = lastChar === '^';
+  /** @example line.endsWith('^|') */
   const lineEndsWithCaretVerticalBar = lastChar === '|' && line[len - 2] === '^';
-
+  /** @example line.endsWith('^') || line.endsWith('^|') */
   const lineEndsWithCaretOrCaretVerticalBar = linedEndsWithCaret || lineEndsWithCaretVerticalBar;
 
   // whitelist (exception)
@@ -379,8 +390,19 @@ function parse($line, gorhill) {
      * `@@|adsterra.com^|`
      */
     if (
-      // (line.startsWith('@@|') || line.startsWith('@@.'))
-      (line[2] === '|' || line[2] === '.')
+      (
+        // line.startsWith('@@|')
+        line[2] === '|'
+        // line.startsWith('@@.')
+        || line[2] === '.'
+        /**
+         * line.startsWith('@@://')
+         *
+         * `@@://googleadservices.com^|`
+         * `@@://www.googleadservices.com^|`
+         */
+        || (line[2] === ':' && line[3] === '/' && line[4] === '/')
+      )
       && (
         lineEndsWithCaretOrCaretVerticalBar
         || line.endsWith('$genericblock')
@@ -389,6 +411,7 @@ function parse($line, gorhill) {
     ) {
       const _domain = line
         .replace('@@||', '')
+        .replace('@@://', '')
         .replace('@@|', '')
         .replace('@@.', '')
         .replace('^|', '')
@@ -409,37 +432,41 @@ function parse($line, gorhill) {
     }
   }
 
-  if (firstChar === '|' && (lineEndsWithCaretOrCaretVerticalBar || line.endsWith('$cname'))) {
-    /**
-     * Some malformed filters can not be parsed by NetworkFilter:
-     *
-     * `||smetrics.teambeachbody.com^.com^`
-     * `||solutions.|pages.indigovision.com^`
-     * `||vystar..0rg@client.iebetanialaargentina.edu.co^`
-     */
+  if (firstChar === '|') {
+    const lineEndswithCname = line.endsWith('$cname');
 
-    const includeAllSubDomain = line[1] === '|';
+    if (lineEndsWithCaretOrCaretVerticalBar || lineEndswithCname) {
+      /**
+       * Some malformed filters can not be parsed by NetworkFilter:
+       *
+       * `||smetrics.teambeachbody.com^.com^`
+       * `||solutions.|pages.indigovision.com^`
+       * `||vystar..0rg@client.iebetanialaargentina.edu.co^`
+       * `app-uat.latrobehealth.com.au^predirect.snapdeal.com`
+       */
 
-    const sliceStart = includeAllSubDomain ? 2 : 1;
-    const sliceEnd = lastChar === '^'
-      ? -1
-      : lineEndsWithCaretOrCaretVerticalBar
-        ? -2
-        // eslint-disable-next-line sukka/unicorn/no-nested-ternary -- speed
-        : (line.endsWith('$cname') ? -6 : 0);
+      const includeAllSubDomain = line[1] === '|';
 
-    const _domain = line
-      // .replace('||', '')
-      .slice(sliceStart, sliceEnd) // we already make sure line startsWith ||
-      .trim();
+      const sliceStart = includeAllSubDomain ? 2 : 1;
+      const sliceEnd = lastChar === '^'
+        ? -1
+        : lineEndsWithCaretOrCaretVerticalBar
+          ? -2
+          // eslint-disable-next-line sukka/unicorn/no-nested-ternary -- speed
+          : (lineEndswithCname ? -6 : 0);
 
-    const domain = normalizeDomain(_domain);
-    if (domain) {
-      return [domain, includeAllSubDomain ? 2 : 1];
+      const _domain = line
+        .slice(sliceStart, sliceEnd) // we already make sure line startsWith "|"
+        .trim();
+
+      const domain = normalizeDomain(_domain);
+      if (domain) {
+        return [domain, includeAllSubDomain ? 2 : 1];
+      }
+      console.warn('      * [parse-filter E0002] (black) invalid domain:', _domain);
+
+      return null;
     }
-    console.warn('      * [parse-filter E0002] (black) invalid domain:', _domain);
-
-    return null;
   }
 
   const lineStartsWithSingleDot = firstChar === '.';
@@ -452,16 +479,12 @@ function parse($line, gorhill) {
      * `.m.bookben.com^`
      * `.wap.x4399.com^`
      */
-    const _domain = line
-      .slice(
-        1,
-        linedEndsWithCaret
-          ? -1
-          : (lineEndsWithCaretVerticalBar ? -2 : 0)
-      ) // remove prefix dot
-      .replace('^|', '')
-      .replaceAll('^', '')
-      .trim();
+    const _domain = line.slice(
+      1, // remove prefix dot
+      linedEndsWithCaret // replaceAll('^', '')
+        ? -1
+        : (lineEndsWithCaretVerticalBar ? -2 : 0) // replace('^|', '')
+    );
 
     const suffix = gorhill.getPublicSuffix(_domain);
     if (!gorhill.suffixInPSL(suffix)) {
@@ -479,10 +502,10 @@ function parse($line, gorhill) {
   }
 
   /**
-   * `|http://x.o2.pl^`
-   * `://mine.torrent.pw^`
-   * `://say.ac^`
-   */
+ * `|http://x.o2.pl^`
+ * `://mine.torrent.pw^`
+ * `://say.ac^`
+ */
   if (
     (
       line.startsWith('://')
@@ -513,13 +536,14 @@ function parse($line, gorhill) {
   }
 
   /**
-   * `_vmind.qqvideo.tc.qq.com^`
-   * `arketing.indianadunes.com^`
-   * `charlestownwyllie.oaklawnnonantum.com^`
-   * `-telemetry.officeapps.live.com^`
-   * `-tracker.biliapi.net`
-   * `_social_tracking.js^`
-   */
+ * `_vmind.qqvideo.tc.qq.com^`
+ * `arketing.indianadunes.com^`
+ * `charlestownwyllie.oaklawnnonantum.com^`
+ * `-telemetry.officeapps.live.com^`
+ * `-tracker.biliapi.net`
+ * `-logging.nextmedia.com`
+ * `_social_tracking.js^`
+ */
   if (firstChar !== '|' && lastChar === '^') {
     const _domain = line.slice(0, -1);
 
@@ -538,35 +562,48 @@ function parse($line, gorhill) {
     return null;
   }
 
-  /**
-   * `.3.n.2.2.l30.js`
-   * `_prebid.js`
-   * `t.yesware.com`
-   * `ubmcmm.baidustatic.com`
-   * `portal.librus.pl$$advertisement-module`
-   * `@@-ds.metric.gstatic.com^|`
-   * `://gom.ge/cookie.js`
-   * `://accout-update-smba.jp.$document`
-   * `@@://googleadservices.com^|`
-   */
-  const tryNormalizeDomain = normalizeDomain(line);
-  if (tryNormalizeDomain) {
+  if (lineStartsWithSingleDot) {
+    /**
+     * `.cookielaw.js`
+     * `.content_tracking.js`
+     * `.ads.css`
+     */
+    const _domain = line.slice(1);
+
+    const suffix = gorhill.getPublicSuffix(_domain);
+    if (!suffix || !gorhill.suffixInPSL(suffix)) {
+      // This exclude domain-like resource like `.gatracking.js`, `.beacon.min.js` and `.cookielaw.js`
+      return null;
+    }
+
+    const tryNormalizeDomain = normalizeDomain(_domain);
+    if (tryNormalizeDomain === _domain) {
+      // the entire rule is domain
+      return [line, 2];
+    }
+  } else {
+    /**
+     * `_prebid.js`
+     * `t.yesware.com`
+     * `ubmcmm.baidustatic.com`
+     * `://www.smfg-card.$document`
+     * `portal.librus.pl$$advertisement-module`
+     * `@@-ds.metric.gstatic.com^|`
+     * `://gom.ge/cookie.js`
+     * `://accout-update-smba.jp.$document`
+     * `_200x250.png`
+     * `@@://www.liquidweb.com/kb/wp-content/themes/lw-kb-theme/images/ads/vps-sidebar.jpg`
+     */
+    const tryNormalizeDomain = normalizeDomain(line);
     if (tryNormalizeDomain === line) {
       // the entire rule is domain
       return [line, 2];
     }
-    if (lineStartsWithSingleDot && tryNormalizeDomain === line.slice(1)) {
-      // dot prefixed line has stripped
-      return [line, 2];
-    }
   }
 
-  if (!line.endsWith('.js') && !line.endsWith('.css')) {
-    console.warn('      * [parse-filter E0010] can not parse:', line);
-  }
+  console.warn('      * [parse-filter E0010] can not parse:', line);
 
   return null;
-  /* eslint-enable no-nested-ternary */
 }
 
 module.exports.processDomainLists = processDomainLists;

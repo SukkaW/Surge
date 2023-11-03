@@ -27,7 +27,9 @@ const ADGUARD_FILTERS = /** @type {const} */([
     [
       'https://secure.fanboy.co.nz/easyprivacy.txt',
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
-      'https://easylist-downloads.adblockplus.org/easyprivacy.txt'
+      'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
+      'https://ublockorigin.github.io/uAssets/thirdparties/easyprivacy.txt',
+      'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
     ]
   ],
   // AdGuard DNS Filter
@@ -45,70 +47,42 @@ const ADGUARD_FILTERS = /** @type {const} */([
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers.txt',
   // uBlock Origin Filter List
   [
-    'https://ublockorigin.github.io/uAssets/filters/filters.txt',
+    'https://ublockorigin.github.io/uAssets/filters/filters.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/filters.txt',
-      'https://ublockorigin.pages.dev/filters/filters.txt'
-    ]
-  ],
-  [
-    'https://ublockorigin.github.io/uAssets/filters/filters-2020.txt',
-    [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2020.txt',
-      'https://ublockorigin.pages.dev/filters/filters-2020.txt'
-    ]
-  ],
-  [
-    'https://ublockorigin.github.io/uAssets/filters/filters-2021.txt',
-    [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2021.txt',
-      'https://ublockorigin.pages.dev/filters/filters-2021.txt'
-    ]
-  ],
-  [
-    'https://ublockorigin.github.io/uAssets/filters/filters-2022.txt',
-    [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2022.txt',
-      'https://ublockorigin.pages.dev/filters/filters-2022.txt'
-    ]
-  ],
-  [
-    'https://ublockorigin.github.io/uAssets/filters/filters-2023.txt',
-    [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/filters-2023.txt',
-      'https://ublockorigin.pages.dev/filters/filters-2023.txt'
+      'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
+      'https://ublockorigin.pages.dev/filters/filters.min.txt'
     ]
   ],
   // uBlock Origin Badware Risk List
   [
-    'https://ublockorigin.github.io/uAssets/filters/badware.txt',
+    'https://ublockorigin.github.io/uAssets/filters/badware.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/badware.txt',
-      'https://ublockorigin.pages.dev/filters/badware.txt'
+      'https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt',
+      'https://ublockorigin.pages.dev/filters/badware.min.txt'
     ]
   ],
   // uBlock Origin Privacy List
   [
-    'https://ublockorigin.github.io/uAssets/filters/privacy.txt',
+    'https://ublockorigin.github.io/uAssets/filters/privacy.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.txt',
-      'https://ublockorigin.pages.dev/filters/privacy.txt'
+      'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.min.txt',
+      'https://ublockorigin.pages.dev/filters/privacy.min.txt'
     ]
   ],
-  // uBlock Origin Resource Abuse
-  [
-    'https://ublockorigin.github.io/uAssets/filters/resource-abuse.txt',
-    [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
-      'https://ublockorigin.pages.dev/filters/resource-abuse.txt'
-    ]
-  ],
+  // uBlock Origin Resource Abuse: merged in uBlock Origin Privacy List
+  // [
+  //   'https://ublockorigin.github.io/uAssets/filters/resource-abuse.txt',
+  //   [
+  //     'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
+  //     'https://ublockorigin.pages.dev/filters/resource-abuse.txt'
+  //   ]
+  // ],
   // uBlock Origin Unbreak
   [
-    'https://ublockorigin.github.io/uAssets/filters/unbreak.txt',
+    'https://ublockorigin.github.io/uAssets/filters/unbreak.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.txt',
-      'https://ublockorigin.pages.dev/filters/unbreak.txt'
+      'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt',
+      'https://ublockorigin.pages.dev/filters/unbreak.min.txt'
     ]
   ],
   // AdGuard Base Filter
@@ -171,9 +145,7 @@ const ADGUARD_FILTERS = /** @type {const} */([
   // BarbBlock
   'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
   // Brave First Party & First Party CNAME
-  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt',
-  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-cname.txt',
-  'https://raw.githubusercontent.com/brave/adblock-lists/master/coin-miners.txt'
+  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt'
 ]);
 
 const PREDEFINED_WHITELIST = [
