@@ -179,7 +179,7 @@ const buildRejectDomainSet = task(__filename, async () => {
     '* Collect reject domain stats',
     () => Object.entries(
       dudupedDominArray.reduce((acc, cur) => {
-        const suffix = tldts.getDomain(cur, { allowPrivateDomains: false });
+        const suffix = tldts.getDomain(cur, { allowPrivateDomains: false, detectIp: false });
         if (suffix) {
           acc[suffix] = (acc[suffix] ?? 0) + 1;
         }

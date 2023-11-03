@@ -74,7 +74,7 @@ const REDIRECT = /** @type {const} */ ([
 ]);
 
 const buildRedirectModule = task(__filename, async () => {
-  const domains = Array.from(new Set(REDIRECT.map(([from]) => tldts.getHostname(from)))).filter(Boolean);
+  const domains = Array.from(new Set(REDIRECT.map(([from]) => tldts.getHostname(from, { detectIp: false })))).filter(Boolean);
 
   return compareAndWriteFile(
     [

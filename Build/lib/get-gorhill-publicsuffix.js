@@ -1,10 +1,11 @@
 const { toASCII } = require('punycode/');
 const fs = require('fs');
 const path = require('path');
+const { traceAsync } = require('./trace-runner');
 
 const publicSuffixPath = path.resolve(__dirname, '../../node_modules/.cache/public_suffix_list_dat.txt');
 
-const getGorhillPublicSuffix = async () => {
+const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix instance', async () => {
   const customFetch = async (url) => {
     const buf = await fs.promises.readFile(url);
     return {
@@ -26,7 +27,7 @@ const getGorhillPublicSuffix = async () => {
   await gorhill.enableWASM({ customFetch });
 
   return gorhill;
-};
+});
 
 /** @type {Promise<import('gorhill-publicsuffixlist').default> | null} */
 let gorhillPublicSuffixPromise = null;

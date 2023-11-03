@@ -142,7 +142,7 @@ const buildPhishingDomainSet = task(__filename, async () => {
         }
 
         if (domainCountMap[apexDomain] < 5) {
-          const subdomain = tldts.getSubdomain(line);
+          const subdomain = tldts.getSubdomain(line, { detectIp: false });
           if (subdomain?.includes('.')) {
             domainCountMap[apexDomain] += 1.5;
           }
