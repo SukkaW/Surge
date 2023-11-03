@@ -32,7 +32,12 @@ const buildInternalReverseChnCIDR = task(__filename, async () => {
   ]);
 
   const reversedCidr = exclude(
-    ['0.0.0.0/0'],
+    [
+      '0.0.0.0/0',
+      // https://github.com/misakaio/chnroutes2/issues/25
+      '223.118.0.0/15',
+      '223.120.0.0/15'
+    ],
     RESERVED_IPV4_CIDR.concat(cidr),
     true
   );

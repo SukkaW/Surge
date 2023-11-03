@@ -5,6 +5,7 @@ const { createRuleset } = require('./lib/create-file');
 const domainSorter = require('./lib/stable-sort-domain');
 
 const { Sema } = require('async-sema');
+const tldts = require('tldts');
 const { task } = require('./lib/trace-runner');
 const s = new Sema(2);
 
@@ -39,7 +40,7 @@ const querySpeedtestApi = async (keyword) => {
     /** @type {{ url: string }[]} */
     const json = await res.json();
     s.release();
-    return json.map(({ url }) => new URL(url).hostname);
+    return json.map(({ url }) => tldts.getHostname(url, { detectIp: false }));
   } catch (e) {
     s.release();
     console.log(e);
@@ -114,7 +115,9 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
   for (const hostnames of hostnameGroups) {
     if (Array.isArray(hostnames)) {
       for (const hostname of hostnames) {
-        domains.add(hostname);
+        if (hostname) {
+          domains.add(hostname);
+        }
       }
     }
   }
