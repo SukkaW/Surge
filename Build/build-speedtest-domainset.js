@@ -72,7 +72,12 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
     'speedtest.hk.chinamobile.com',
     'speedtestbb.hk.chinamobile.com',
     '.hizinitestet.com',
-    '.linknetspeedtest.net.br'
+    '.linknetspeedtest.net.br',
+    'speedtest.rit.edu',
+    'speedtest.ropa.de',
+    'speedtest.sits.su',
+    'speedtest.tigo.cr',
+    'speedtest.upp.com'
   ]);
 
   const hostnameGroups = await Promise.all([
