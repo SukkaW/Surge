@@ -78,7 +78,8 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
     'speedtest.ropa.de',
     'speedtest.sits.su',
     'speedtest.tigo.cr',
-    'speedtest.upp.com'
+    'speedtest.upp.com',
+    '.fast.com'
   ]);
 
   const hostnameGroups = await Promise.all([
