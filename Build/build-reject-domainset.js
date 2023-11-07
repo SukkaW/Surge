@@ -133,11 +133,9 @@ const buildRejectDomainSet = task(__filename, async () => {
 
   const trie1 = createTrie(domainSets);
   domainSuffixSet.forEach(suffix => {
-    // eslint-disable-next-line sukka/unicorn/no-array-method-this-argument -- this is not array
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
   filterRuleWhitelistDomainSets.forEach(suffix => {
-    // eslint-disable-next-line sukka/unicorn/no-array-method-this-argument -- this is not array
     trie1.find(suffix, true).forEach(f => domainSets.delete(f));
   });
 
