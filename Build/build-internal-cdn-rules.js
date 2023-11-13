@@ -8,7 +8,7 @@ const { createDomainSorter } = require('./lib/stable-sort-domain');
 const { task } = require('./lib/trace-runner');
 const { compareAndWriteFile } = require('./lib/create-file');
 const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
-const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
+// const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
 const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
@@ -17,14 +17,14 @@ const buildInternalCDNDomains = task(__filename, async () => {
   const keywords = new Set();
 
   const gorhill = await getGorhillPublicSuffixPromise();
-  const getDomain = createCachedGorhillGetDomain(gorhill);
   const domainSorter = createDomainSorter(gorhill);
 
   /**
    * @param {string} input
    */
   const addApexDomain = (input) => {
-    const d = getDomain(input);
+    // We are including the private domains themselves
+    const d = tldts.getDomain(input, { allowPrivateDomains: false });
     if (d) {
       set.add(d);
     }
