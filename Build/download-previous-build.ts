@@ -1,15 +1,14 @@
-// @ts-check
-const tar = require('tar');
-const fsp = require('fs/promises');
-const path = require('path');
-const { tmpdir } = require('os');
-const { Readable } = require('stream');
-const { pipeline } = require('stream/promises');
-const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { isCI } = require('ci-info');
-const { task, traceAsync } = require('./lib/trace-runner');
+import tar from 'tar';
+import fsp from 'fs/promises';
+import path from 'path';
+import os from 'os';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
+import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { isCI } from 'ci-info';
+import { task, traceAsync } from './lib/trace-runner';
 
-const downloadPreviousBuild = task(__filename, async () => {
+export const downloadPreviousBuild = task(__filename, async () => {
   const filesList = ['Clash', 'List'];
 
   let allFileExists = true;
@@ -41,7 +40,7 @@ const downloadPreviousBuild = task(__filename, async () => {
     return;
   }
 
-  const extractedPath = path.join(tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
+  const extractedPath = path.join(os.tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
 
   await traceAsync(
     'Download and extract previous build',
@@ -49,7 +48,7 @@ const downloadPreviousBuild = task(__filename, async () => {
       fetch('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master'),
       fsp.mkdir(extractedPath, { recursive: true })
     ]).then(([resp]) => pipeline(
-      Readable.fromWeb(resp.body),
+      Readable.fromWeb(resp.body!),
       tar.x({
         cwd: extractedPath,
         /**
@@ -78,7 +77,7 @@ const downloadPreviousBuild = task(__filename, async () => {
   // return fsp.unlink(extractedPath).catch(() => { });
 });
 
-const downloadPublicSuffixList = task(__filename, async () => {
+export const downloadPublicSuffixList = task(__filename, async () => {
   const publicSuffixDir = path.resolve(__dirname, '../node_modules/.cache');
   const publicSuffixPath = path.join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
@@ -89,9 +88,6 @@ const downloadPublicSuffixList = task(__filename, async () => {
 
   return Bun.write(publicSuffixPath, resp);
 }, 'download-publicsuffixlist');
-
-module.exports.downloadPreviousBuild = downloadPreviousBuild;
-module.exports.downloadPublicSuffixList = downloadPublicSuffixList;
 
 if (import.meta.main) {
   Promise.all([

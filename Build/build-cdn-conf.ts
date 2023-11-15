@@ -13,7 +13,7 @@ const getS3OSSDomains = async (): Promise<Set<string>> => {
   const publicSuffixFile = Bun.file(publicSuffixPath);
 
   if (await publicSuffixFile.exists()) {
-    for await (const line of readFileByLine(publicSuffixPath)) {
+    for await (const line of readFileByLine(publicSuffixFile)) {
       trie.add(line);
     }
   } else {

@@ -34,6 +34,7 @@
   "devDependencies": {
     "@eslint-sukka/node": "^4.1.7",
     "@types/mocha": "10.0.2",
+    "@types/tar": "^6.1.9",
     "bun-types": "^1.0.11",
     "chai": "4.3.10",
     "eslint-config-sukka": "4.1.7",

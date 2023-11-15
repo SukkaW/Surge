@@ -19,7 +19,7 @@ async function compareAndWriteFile(linesA, filePath) {
   } else {
     let index = 0;
 
-    for await (const lineB of readFileByLine(filePath)) {
+    for await (const lineB of readFileByLine(file)) {
       const lineA = linesA[index];
       index++;
 
