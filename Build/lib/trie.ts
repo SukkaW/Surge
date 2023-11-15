@@ -2,23 +2,23 @@
  * Suffix Trie based on Mnemonist Trie
  */
 
-const SENTINEL = String.fromCodePoint(0);
+export const SENTINEL: string = String.fromCodePoint(0);
 
 /**
  * @param {string[] | Set<string>} [from]
  */
-const createTrie = (from) => {
-  let size = 0;
-  const root = {};
+export const createTrie = (from?: string[] | Set<string>) => {
+  let size: number = 0;
+  const root: any = {};
 
   /**
    * Method used to add the given prefix to the trie.
    *
    * @param  {string} suffix - Prefix to follow.
    */
-  const add = (suffix) => {
-    let node = root;
-    let token;
+  const add = (suffix: string): void => {
+    let node: any = root;
+    let token: string;
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
       node[token] ||= {};
@@ -35,9 +35,9 @@ const createTrie = (from) => {
   /**
    * @param {string} suffix
    */
-  const contains = (suffix) => {
-    let node = root;
-    let token;
+  const contains = (suffix: string): boolean => {
+    let node: any = root;
+    let token: string;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
@@ -56,10 +56,10 @@ const createTrie = (from) => {
    * @param  {boolean} [includeEqualWithSuffix]
    * @return {string[]}
    */
-  const find = (suffix, includeEqualWithSuffix = true) => {
-    let node = root;
-    const matches = [];
-    let token;
+  const find = (suffix: string, includeEqualWithSuffix: boolean = true): string[] => {
+    let node: any = root;
+    const matches: string[] = [];
+    let token: string;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
@@ -70,15 +70,15 @@ const createTrie = (from) => {
     }
 
     // Performing DFS from prefix
-    const nodeStack = [node];
+    const nodeStack: any[] = [node];
 
-    const suffixStack = [suffix];
-    let k;
+    const suffixStack: string[] = [suffix];
+    let k: string;
 
-    let $suffix = suffix;
+    let $suffix: string = suffix;
 
     while (nodeStack.length) {
-      $suffix = suffixStack.pop();
+      $suffix = suffixStack.pop()!;
       node = nodeStack.pop();
 
       // eslint-disable-next-line guard-for-in -- plain object
@@ -105,12 +105,12 @@ const createTrie = (from) => {
    * @param  {string} suffix - Prefix to delete.
    * @return {boolean}
    */
-  const remove = (suffix) => {
-    let node = root;
-    let toPrune = null;
-    let tokenToPrune = null;
-    let parent;
-    let token;
+  const remove = (suffix: string): boolean => {
+    let node: any = root;
+    let toPrune: any = null;
+    let tokenToPrune: string | null = null;
+    let parent: any;
+    let token: string;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
@@ -138,7 +138,7 @@ const createTrie = (from) => {
 
     size--;
 
-    if (toPrune) {
+    if (tokenToPrune) {
       delete toPrune[tokenToPrune];
     } else {
       delete node[SENTINEL];
@@ -153,8 +153,8 @@ const createTrie = (from) => {
    * @param  {string} suffix - Prefix to check.
    * @return {boolean}
    */
-  const has = (suffix) => {
-    let node = root;
+  const has = (suffix: string): boolean => {
+    let node: any = root;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       node = node[suffix[i]];
@@ -445,8 +445,4 @@ const createTrie = (from) => {
 //   };
 // }
 
-/**
- * Exporting.
- */
-module.exports.SENTINEL = SENTINEL;
-module.exports = createTrie;
+export default createTrie;

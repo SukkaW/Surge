@@ -47,7 +47,7 @@ const buildCommon = task(__filename, async () => {
 
 module.exports.buildCommon = buildCommon;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildCommon();
 }
 

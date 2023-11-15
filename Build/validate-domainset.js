@@ -71,6 +71,6 @@ const validate = task(__filename, async () => {
 });
 module.exports.validate = validate;
 
-if (require.main === module) {
+if (import.meta.main) {
   validate();
 }

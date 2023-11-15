@@ -23,13 +23,11 @@ const getBogusNxDomainIPs = async () => {
 };
 
 const buildAntiBogusDomain = task(__filename, async () => {
-  const filePath = path.resolve(__dirname, '../Source/ip/reject.conf');
-
   const bogusIpPromise = getBogusNxDomainIPs();
 
   /** @type {string[]} */
   const result = [];
-  for await (const line of readFileByLine(filePath)) {
+  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/ip/reject.conf'))) {
     if (line === '# --- [Anti Bogus Domain Replace Me] ---') {
       (await bogusIpPromise).forEach(rule => result.push(rule));
       continue;
@@ -65,6 +63,6 @@ const buildAntiBogusDomain = task(__filename, async () => {
 
 module.exports.buildAntiBogusDomain = buildAntiBogusDomain;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildAntiBogusDomain();
 }

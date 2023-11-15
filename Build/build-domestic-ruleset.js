@@ -60,6 +60,6 @@ const buildDomesticRuleset = task(__filename, async () => {
 
 module.exports.buildDomesticRuleset = buildDomesticRuleset;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildDomesticRuleset();
 }

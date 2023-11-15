@@ -74,6 +74,6 @@ const buildStreamService = task(__filename, async () => {
 
 module.exports.buildStreamService = buildStreamService;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildStreamService();
 }

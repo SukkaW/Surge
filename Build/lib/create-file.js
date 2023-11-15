@@ -1,5 +1,4 @@
 // @ts-check
-const fs = require('fs');
 const { readFileByLine } = require('./fetch-remote-text-by-line');
 const { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } = require('./clash');
 
@@ -9,7 +8,9 @@ const { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset 
  */
 async function compareAndWriteFile(linesA, filePath) {
   let isEqual = true;
-  if (!fs.existsSync(filePath)) {
+  const file = Bun.file(filePath);
+
+  if (!(await file.exists())) {
     console.log(`${filePath} does not exists, writing...`);
     isEqual = false;
   } else if (linesA.length === 0) {
@@ -44,7 +45,6 @@ async function compareAndWriteFile(linesA, filePath) {
   }
 
   if (!isEqual) {
-    const file = Bun.file(filePath);
     const writer = file.writer();
 
     for (let i = 0, len = linesA.length; i < len; i++) {

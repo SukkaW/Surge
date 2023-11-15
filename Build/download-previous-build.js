@@ -1,6 +1,5 @@
-const { fetch } = require('undici');
+// @ts-check
 const tar = require('tar');
-const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path');
 const { tmpdir } = require('os');
@@ -9,12 +8,6 @@ const { pipeline } = require('stream/promises');
 const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
 const { isCI } = require('ci-info');
 const { task, traceAsync } = require('./lib/trace-runner');
-
-const fileExists = (path) => {
-  return fs.promises.access(path, fs.constants.F_OK)
-    .then(() => true)
-    .catch(() => false);
-};
 
 const downloadPreviousBuild = task(__filename, async () => {
   const filesList = ['Clash', 'List'];
@@ -31,7 +24,7 @@ const downloadPreviousBuild = task(__filename, async () => {
       filesList.push(line);
 
       if (!isCI) {
-        allFileExists = fs.existsSync(path.join(__dirname, '..', line));
+        allFileExists = await Bun.file(path.join(__dirname, '..', line)).exists();
         if (!allFileExists) {
           break;
         }
@@ -59,6 +52,9 @@ const downloadPreviousBuild = task(__filename, async () => {
       Readable.fromWeb(resp.body),
       tar.x({
         cwd: extractedPath,
+        /**
+         * @param {string} p
+         */
         filter(p) {
           return p.includes('/List/') || p.includes('/Modules/') || p.includes('/Clash/');
         }
@@ -70,7 +66,7 @@ const downloadPreviousBuild = task(__filename, async () => {
 
   await Promise.all(filesList.map(async p => {
     const src = path.join(extractedPath, 'ruleset.skk.moe-master', p);
-    if (await fileExists(src)) {
+    if (await Bun.file(src).exists()) {
       return fsp.cp(
         src,
         path.join(__dirname, '..', p),
@@ -79,7 +75,7 @@ const downloadPreviousBuild = task(__filename, async () => {
     }
   }));
 
-  // return fs.promises.unlink(extractedPath).catch(() => { });
+  // return fsp.unlink(extractedPath).catch(() => { });
 });
 
 const downloadPublicSuffixList = task(__filename, async () => {
@@ -91,16 +87,13 @@ const downloadPublicSuffixList = task(__filename, async () => {
     fsp.mkdir(publicSuffixDir, { recursive: true })
   ]);
 
-  return pipeline(
-    Readable.fromWeb(resp.body),
-    fs.createWriteStream(publicSuffixPath)
-  );
+  return Bun.write(publicSuffixPath, resp);
 }, 'download-publicsuffixlist');
 
 module.exports.downloadPreviousBuild = downloadPreviousBuild;
 module.exports.downloadPublicSuffixList = downloadPublicSuffixList;
 
-if (require.main === module) {
+if (import.meta.main) {
   Promise.all([
     downloadPreviousBuild(),
     downloadPublicSuffixList()

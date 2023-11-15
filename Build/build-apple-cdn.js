@@ -44,6 +44,6 @@ const buildAppleCdn = task(__filename, async () => {
 
 module.exports.buildAppleCdn = buildAppleCdn;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildAppleCdn();
 }

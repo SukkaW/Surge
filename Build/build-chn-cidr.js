@@ -52,6 +52,6 @@ const buildChnCidr = task(__filename, async () => {
 
 module.exports.buildChnCidr = buildChnCidr;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildChnCidr();
 }

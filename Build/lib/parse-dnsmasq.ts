@@ -1,17 +1,13 @@
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
-const tldts = require('tldts');
+import { fetchRemoteTextAndCreateReadlineInterface } from './fetch-remote-text-by-line';
+import tldts from 'tldts';
 
-const isDomainLoose = (domain) => {
+const isDomainLoose = (domain: string): boolean => {
   const { isIcann, isPrivate, isIp } = tldts.parse(domain);
   return !!(!isIp && (isIcann || isPrivate));
 };
 
-/**
- * @param {string | URL} url
- */
-const parseFelixDnsmasq = async (url) => {
-  /** @type {string[]} */
-  const res = [];
+const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
+  const res: string[] = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface(url)) {
     if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
       const domain = line.replace('server=/', '').replace('/114.114.114.114', '');
@@ -24,4 +20,4 @@ const parseFelixDnsmasq = async (url) => {
   return res;
 };
 
-module.exports.parseFelixDnsmasq = parseFelixDnsmasq;
+export { parseFelixDnsmasq };

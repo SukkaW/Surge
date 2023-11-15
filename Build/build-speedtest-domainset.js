@@ -1,4 +1,3 @@
-const { fetch } = require('undici');
 const { domainDeduper } = require('./lib/domain-deduper');
 const path = require('path');
 const { createRuleset } = require('./lib/create-file');
@@ -143,6 +142,6 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
 
 module.exports.buildSpeedtestDomainSet = buildSpeedtestDomainSet;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildSpeedtestDomainSet();
 }

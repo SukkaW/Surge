@@ -1,14 +1,16 @@
-// @ts-check
-const { fetchWithRetry } = require('./fetch-retry');
+import type { BunFile } from 'bun';
+import { fetchWithRetry } from './fetch-retry';
 
 const decoder = new TextDecoder('utf-8');
-/**
- * @param {string} path
- */
-module.exports.readFileByLine = async function *(path) {
+
+export async function* readFileByLine(file: string | BunFile): AsyncGenerator<string> {
+  if (typeof file === 'string') {
+    file = Bun.file(file);
+  }
+
   let buf = '';
 
-  for await (const chunk of Bun.file(path).stream()) {
+  for await (const chunk of file.stream()) {
     const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
     for (let i = 0, len = chunkStr.length; i < len; i++) {
       const char = chunkStr[i];
@@ -24,12 +26,9 @@ module.exports.readFileByLine = async function *(path) {
   if (buf) {
     yield buf;
   }
-};
+}
 
-/**
- * @param {import('undici').Response} resp
- */
-const createReadlineInterfaceFromResponse = async function *(resp) {
+export async function* createReadlineInterfaceFromResponse(resp: Response): AsyncGenerator<string> {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }
@@ -55,15 +54,9 @@ const createReadlineInterfaceFromResponse = async function *(resp) {
   if (buf) {
     yield buf;
   }
-};
+}
 
-module.exports.createReadlineInterfaceFromResponse = createReadlineInterfaceFromResponse;
-
-/**
- * @param {import('undici').RequestInfo} url
- * @param {import('undici').RequestInit} [opt]
- */
-module.exports.fetchRemoteTextAndCreateReadlineInterface = async (url, opt) => {
+export async function fetchRemoteTextAndCreateReadlineInterface(url: string | URL, opt?: RequestInit): Promise<AsyncGenerator<string>> {
   const resp = await fetchWithRetry(url, opt);
   return createReadlineInterfaceFromResponse(resp);
-};
+}

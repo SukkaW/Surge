@@ -185,6 +185,6 @@ const buildPhishingDomainSet = task(__filename, async () => {
 
 module.exports.buildPhishingDomainSet = buildPhishingDomainSet;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildPhishingDomainSet();
 }

@@ -29,8 +29,7 @@
     "punycode": "^2.3.1",
     "table": "^6.8.1",
     "tar": "^6.2.0",
-    "tldts": "^6.0.19",
-    "undici": "5.27.0"
+    "tldts": "^6.0.19"
   },
   "devDependencies": {
     "@eslint-sukka/node": "^4.1.7",
@@ -39,7 +38,8 @@
     "chai": "4.3.10",
     "eslint-config-sukka": "4.1.7",
     "eslint-formatter-sukka": "4.1.7",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "typescript": "^5.2.2"
   },
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"

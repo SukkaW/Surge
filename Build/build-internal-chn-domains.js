@@ -19,6 +19,6 @@ const buildInternalChnDomains = task(__filename, async () => {
 
 module.exports.buildInternalChnDomains = buildInternalChnDomains;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildInternalChnDomains();
 }

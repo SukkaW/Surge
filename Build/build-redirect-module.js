@@ -96,6 +96,6 @@ const buildRedirectModule = task(__filename, async () => {
 
 module.exports.buildRedirectModule = buildRedirectModule;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildRedirectModule();
 }

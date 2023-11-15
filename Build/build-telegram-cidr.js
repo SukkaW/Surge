@@ -1,3 +1,4 @@
+// @ts-check
 const { fetchWithRetry } = require('./lib/fetch-retry');
 const { createReadlineInterfaceFromResponse } = require('./lib/fetch-remote-text-by-line');
 const path = require('path');
@@ -53,6 +54,6 @@ const buildTelegramCIDR = task(__filename, async () => {
 
 module.exports.buildTelegramCIDR = buildTelegramCIDR;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildTelegramCIDR();
 }

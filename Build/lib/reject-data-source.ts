@@ -1,6 +1,4 @@
-// @ts-check
-/** @type {[string, boolean][]} */
-const HOSTS = [
+export const HOSTS: [string, boolean][] = [
   // ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', false],
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', false],
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', false],
@@ -9,7 +7,7 @@ const HOSTS = [
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', false]
 ];
 
-const ADGUARD_FILTERS = /** @type {const} */([
+export const ADGUARD_FILTERS = [
   // EasyList
   [
     'https://easylist.to/easylist/easylist.txt',
@@ -146,9 +144,9 @@ const ADGUARD_FILTERS = /** @type {const} */([
   'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
   // Brave First Party & First Party CNAME
   'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt'
-]);
+] as const;
 
-const PREDEFINED_WHITELIST = [
+export const PREDEFINED_WHITELIST = [
   'localhost',
   'broadcasthost',
   'ip6-loopback',
@@ -194,11 +192,11 @@ const PREDEFINED_WHITELIST = [
   'vlscppe.microsoft.com'
 ];
 
-const PREDEFINED_ENFORCED_BACKLIST = [
+export const PREDEFINED_ENFORCED_BACKLIST = [
   'telemetry.mozilla.org'
 ];
 
-const PREDEFINED_ENFORCED_WHITELIST = [
+export const PREDEFINED_ENFORCED_WHITELIST = [
   'godaddysites.com',
   'web.app',
   'firebaseapp.com',
@@ -219,9 +217,3 @@ const PREDEFINED_ENFORCED_WHITELIST = [
   'blogspot.com',
   'appspot.com'
 ];
-
-module.exports.HOSTS = HOSTS;
-module.exports.ADGUARD_FILTERS = ADGUARD_FILTERS;
-module.exports.PREDEFINED_WHITELIST = PREDEFINED_WHITELIST;
-module.exports.PREDEFINED_ENFORCED_BACKLIST = PREDEFINED_ENFORCED_BACKLIST;
-module.exports.PREDEFINED_ENFORCED_WHITELIST = PREDEFINED_ENFORCED_WHITELIST;

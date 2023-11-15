@@ -11,6 +11,13 @@ const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
 let foundDebugDomain = false;
 
 const warnOnceUrl = new Set();
+/**
+ * 
+ * @param {string} url
+ * @param {boolean} isWhite
+ * @param  {...any} message
+ * @returns 
+ */
 const warnOnce = (url, isWhite, ...message) => {
   const key = `${url}${isWhite ? 'white' : 'black'}`;
   if (warnOnceUrl.has(key)) {
@@ -153,6 +160,9 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
   let downloadTime = 0;
   const gorhill = await getGorhillPublicSuffixPromise();
 
+  /**
+   * @param {string} line
+   */
   const lineCb = (line) => {
     const result = parse(line, gorhill);
     if (result) {

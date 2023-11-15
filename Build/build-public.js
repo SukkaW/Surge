@@ -1,6 +1,5 @@
 const listDir = require('@sukka/listdir');
 const path = require('path');
-const fs = require('fs');
 const fsp = require('fs/promises');
 const { task } = require('./lib/trace-runner');
 
@@ -31,12 +30,12 @@ const buildPublicHtml = task(__filename, async () => {
 
   const html = template(list);
 
-  return fs.promises.writeFile(path.join(publicPath, 'index.html'), html, 'utf-8');
+  return Bun.write(path.join(publicPath, 'index.html'), html);
 });
 
 module.exports.buildPublicHtml = buildPublicHtml;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildPublicHtml();
 }
 

@@ -2,7 +2,6 @@
 const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
 const { processLineFromReadline } = require('./lib/process-line');
 const path = require('path');
-const fs = require('fs');
 const fsp = require('fs/promises');
 const { task } = require('./lib/trace-runner');
 
@@ -42,14 +41,11 @@ const buildInternalReverseChnCIDR = task(__filename, async () => {
     true
   );
 
-  return fs.promises.writeFile(
-    path.resolve(__dirname, '../List/internal/reversed-chn-cidr.txt'),
-    `${reversedCidr.join('\n')}\n`
-  );
+  return Bun.write(path.resolve(__dirname, '../List/internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
 });
 
 module.exports.buildInternalReverseChnCIDR = buildInternalReverseChnCIDR;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildInternalReverseChnCIDR();
 }

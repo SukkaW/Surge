@@ -233,6 +233,6 @@ const buildRejectDomainSet = task(__filename, async () => {
 
 module.exports.buildRejectDomainSet = buildRejectDomainSet;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildRejectDomainSet();
 }

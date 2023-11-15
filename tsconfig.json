@@ -14,5 +14,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true
-  }
+  },
+  "include": [
+    "./Build/**/*.js",
+    "./Build/**/*.ts"
+  ]
 }

@@ -1,5 +1,4 @@
 const { toASCII } = require('punycode/');
-const fs = require('fs');
 const path = require('path');
 const { traceAsync } = require('./trace-runner');
 
@@ -7,15 +6,14 @@ const publicSuffixPath = path.resolve(__dirname, '../../node_modules/.cache/publ
 
 const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix instance', async () => {
   const customFetch = async (url) => {
-    const buf = await fs.promises.readFile(url);
-    return {
-      arrayBuffer() { return Promise.resolve(buf.buffer); }
-    };
+    return Bun.file(url);
   };
 
+  const publicSuffixFile = Bun.file(publicSuffixPath);
+
   const [publicSuffixListDat, { default: gorhill }] = await Promise.all([
-    fs.existsSync(publicSuffixPath)
-      ? fs.promises.readFile(publicSuffixPath, 'utf-8')
+    await publicSuffixFile.exists()
+      ? publicSuffixFile.text()
       : fetch('https://publicsuffix.org/list/public_suffix_list.dat').then(r => {
         console.log('public_suffix_list.dat not found, fetch directly from remote.');
         return r.text();

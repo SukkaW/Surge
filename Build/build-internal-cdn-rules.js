@@ -95,6 +95,6 @@ const buildInternalCDNDomains = task(__filename, async () => {
 
 module.exports.buildInternalCDNDomains = buildInternalCDNDomains;
 
-if (require.main === module) {
+if (import.meta.main) {
   buildInternalCDNDomains();
 }

@@ -1,18 +1,18 @@
-// @ts-check
-const path = require('path');
-const { createRuleset } = require('./lib/create-file');
-const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const createTrie = require('./lib/trie');
-const { task } = require('./lib/trace-runner');
-const fs = require('fs');
-const { processLine } = require('./lib/process-line');
+import path from 'path';
+import { createRuleset } from './lib/create-file';
+import { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } from './lib/fetch-remote-text-by-line';
+import { createTrie } from './lib/trie';
+import { task } from './lib/trace-runner';
+import { processLine } from './lib/process-line';
 
-const publicSuffixPath = path.resolve(__dirname, '../node_modules/.cache/public_suffix_list_dat.txt');
+const publicSuffixPath: string = path.resolve(__dirname, '../node_modules/.cache/public_suffix_list_dat.txt');
 
-const getS3OSSDomains = async () => {
+const getS3OSSDomains = async (): Promise<Set<string>> => {
   const trie = createTrie();
 
-  if (fs.existsSync(publicSuffixPath)) {
+  const publicSuffixFile = Bun.file(publicSuffixPath);
+
+  if (await publicSuffixFile.exists()) {
     for await (const line of readFileByLine(publicSuffixPath)) {
       trie.add(line);
     }
@@ -25,11 +25,10 @@ const getS3OSSDomains = async () => {
 
   /**
    * Extract OSS domain from publicsuffix list
-   * @type {Set<string>}
    */
-  const S3OSSDomains = new Set();
+  const S3OSSDomains = new Set<string>();
 
-  trie.find('.amazonaws.com').forEach(line => {
+  trie.find('.amazonaws.com').forEach((line: string) => {
     if (
       (line.startsWith('s3-') || line.startsWith('s3.'))
       && !line.includes('cn-')
@@ -37,7 +36,7 @@ const getS3OSSDomains = async () => {
       S3OSSDomains.add(line);
     }
   });
-  trie.find('.scw.cloud').forEach(line => {
+  trie.find('.scw.cloud').forEach((line: string) => {
     if (
       (line.startsWith('s3-') || line.startsWith('s3.'))
       && !line.includes('cn-')
@@ -45,7 +44,7 @@ const getS3OSSDomains = async () => {
       S3OSSDomains.add(line);
     }
   });
-  trie.find('sakurastorage.jp').forEach(line => {
+  trie.find('sakurastorage.jp').forEach((line: string) => {
     if (
       (line.startsWith('s3-') || line.startsWith('s3.'))
     ) {
@@ -56,15 +55,15 @@ const getS3OSSDomains = async () => {
   return S3OSSDomains;
 };
 
-const buildCdnConf = task(__filename, async () => {
+const buildCdnConf = task(__filename, async ()  => {
   /** @type {string[]} */
-  const cdnDomainsList = [];
+  const cdnDomainsList: string[] = [];
 
-  const getS3OSSDomainsPromise = getS3OSSDomains();
+  const getS3OSSDomainsPromise: Promise<Set<string>> = getS3OSSDomains();
 
   for await (const l of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
     if (l === '# --- [AWS S3 Replace Me] ---') {
-      (await getS3OSSDomainsPromise).forEach(domain => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
+      (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
       continue;
     }
     const line = processLine(l);
@@ -73,7 +72,7 @@ const buildCdnConf = task(__filename, async () => {
     }
   }
 
-  const description = [
+  const description: string[] = [
     'License: AGPL 3.0',
     'Homepage: https://ruleset.skk.moe',
     'GitHub: https://github.com/SukkaW/Surge',
@@ -92,8 +91,8 @@ const buildCdnConf = task(__filename, async () => {
   ));
 });
 
-module.exports.buildCdnConf = buildCdnConf;
+export { buildCdnConf };
 
-if (require.main === module) {
+if (import.meta.main) {
   buildCdnConf();
 }
