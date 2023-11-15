@@ -1,9 +1,10 @@
-const path = require('path');
-const { createRuleset } = require('./lib/create-file');
-const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
-const { task } = require('./lib/trace-runner');
+// @ts-check
+import path from 'path';
+import { createRuleset } from './lib/create-file';
+import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
+import { task } from './lib/trace-runner';
 
-const buildAppleCdn = task(__filename, async () => {
+export const buildAppleCdn = task(__filename, async () => {
   const res = await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
 
   const description = [
@@ -41,8 +42,6 @@ const buildAppleCdn = task(__filename, async () => {
     )
   ]);
 });
-
-module.exports.buildAppleCdn = buildAppleCdn;
 
 if (import.meta.main) {
   buildAppleCdn();

@@ -1,18 +1,14 @@
-const { domainDeduper } = require('./lib/domain-deduper');
-const path = require('path');
-const { createRuleset } = require('./lib/create-file');
-const domainSorter = require('./lib/stable-sort-domain');
+import { domainDeduper } from './lib/domain-deduper';
+import path from 'path';
+import { createRuleset } from './lib/create-file';
+import domainSorter from './lib/stable-sort-domain';
 
-const { Sema } = require('async-sema');
-const tldts = require('tldts');
-const { task } = require('./lib/trace-runner');
+import { Sema } from 'async-sema';
+import * as tldts from 'tldts';
+import { task } from './lib/trace-runner';
 const s = new Sema(2);
 
-/**
- * @param {string} keyword
- * @returns {string[]}
- */
-const querySpeedtestApi = async (keyword) => {
+const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> => {
   await s.acquire();
 
   try {
@@ -36,19 +32,19 @@ const querySpeedtestApi = async (keyword) => {
       throw new Error(text);
     }
 
-    /** @type {{ url: string }[]} */
-    const json = await res.json();
+    const json = await res.json() as { url: string; }[];
     s.release();
     return json.map(({ url }) => tldts.getHostname(url, { detectIp: false }));
   } catch (e) {
     s.release();
     console.log(e);
+    return [];
   }
 };
 
-const buildSpeedtestDomainSet = task(__filename, async () => {
+export const buildSpeedtestDomainSet = task(__filename, async () => {
   /** @type {Set<string>} */
-  const domains = new Set([
+  const domains: Set<string> = new Set([
     '.speedtest.net',
     '.speedtestcustom.com',
     '.ooklaserver.net',
@@ -139,8 +135,6 @@ const buildSpeedtestDomainSet = task(__filename, async () => {
     path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
   ));
 });
-
-module.exports.buildSpeedtestDomainSet = buildSpeedtestDomainSet;
 
 if (import.meta.main) {
   buildSpeedtestDomainSet();

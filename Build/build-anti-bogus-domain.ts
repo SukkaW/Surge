@@ -1,10 +1,10 @@
 // @ts-check
-const path = require('path');
-const { isIPv4, isIPv6 } = require('net');
-const { createRuleset } = require('./lib/create-file');
-const { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { processLine } = require('./lib/process-line');
-const { task } = require('./lib/trace-runner');
+import path from 'path';
+import { isIPv4, isIPv6 } from 'net';
+import { createRuleset } from './lib/create-file';
+import { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } from './lib/fetch-remote-text-by-line';
+import { processLine } from './lib/process-line';
+import { task } from './lib/trace-runner';
 
 const getBogusNxDomainIPs = async () => {
   /** @type {string[]} */
@@ -22,7 +22,7 @@ const getBogusNxDomainIPs = async () => {
   return result;
 };
 
-const buildAntiBogusDomain = task(__filename, async () => {
+export const buildAntiBogusDomain = task(__filename, async () => {
   const bogusIpPromise = getBogusNxDomainIPs();
 
   /** @type {string[]} */
@@ -60,8 +60,6 @@ const buildAntiBogusDomain = task(__filename, async () => {
     path.resolve(__dirname, '../Clash/ip/reject.txt')
   ));
 });
-
-module.exports.buildAntiBogusDomain = buildAntiBogusDomain;
 
 if (import.meta.main) {
   buildAntiBogusDomain();

@@ -1,12 +1,12 @@
 // Surge Domain Set can not include root domain from public suffix list.
 
-const tldts = require('tldts'); // hit ratio way too low, dont cache
-const picocolors = require('picocolors');
-const path = require('path');
-const listDir = require('@sukka/listdir');
-const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { processLine } = require('./lib/process-line');
-const { task } = require('./lib/trace-runner');
+import * as tldts from 'tldts'; // hit ratio way too low, dont cache
+import picocolors from 'picocolors';
+import path from 'path';
+import listDir from '@sukka/listdir';
+import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { processLine } from './lib/process-line';
+import { task } from './lib/trace-runner';
 
 const SPECIAL_SUFFIXES = new Set([
   'linodeobjects.com', // only *.linodeobjects.com are public suffix
@@ -14,7 +14,7 @@ const SPECIAL_SUFFIXES = new Set([
   'dweb.link' // only *.dweb.link are public suffix
 ]);
 
-const validateDomainSet = async (filePath) => {
+const validateDomainSet = async (filePath: string) => {
   for await (const l of readFileByLine(path.resolve(__dirname, '../List/domainset', filePath))) {
     // starts with #
     const line = processLine(l);
@@ -35,7 +35,7 @@ const validateDomainSet = async (filePath) => {
   }
 };
 
-const _validateRuleset = async (filePath) => {
+const _validateRuleset = async (filePath: string) => {
   console.log(`[${filePath}]`);
 
   for await (const l of readFileByLine(path.resolve(__dirname, '../List/non_ip', filePath))) {
@@ -58,7 +58,7 @@ const _validateRuleset = async (filePath) => {
   }
 };
 
-const validate = task(__filename, async () => {
+export const validate = task(__filename, async () => {
   // const [domainsetFiles, _rulesetFiles] = await Promise.all([
   //   listDir(path.resolve(__dirname, '../List/domainset')),
   //   listDir(path.resolve(__dirname, '../List/non_ip'))
@@ -69,7 +69,6 @@ const validate = task(__filename, async () => {
     // rulesetFiles.map(file => validateRuleset(file))
   ]);
 });
-module.exports.validate = validate;
 
 if (import.meta.main) {
   validate();

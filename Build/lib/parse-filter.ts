@@ -1,24 +1,18 @@
 // @ts-check
-const { fetchWithRetry } = require('./fetch-retry');
-const tldts = require('./cached-tld-parse');
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./fetch-remote-text-by-line');
-const { NetworkFilter } = require('@cliqz/adblocker');
-const { processLine } = require('./process-line');
-const { performance } = require('perf_hooks');
-const { getGorhillPublicSuffixPromise } = require('./get-gorhill-publicsuffix');
+import { fetchWithRetry } from './fetch-retry';
+import * as tldts from './cached-tld-parse';
+import { fetchRemoteTextAndCreateReadlineInterface } from './fetch-remote-text-by-line';
+import { NetworkFilter } from '@cliqz/adblocker';
+import { processLine } from './process-line';
+import { performance } from 'perf_hooks';
+import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
+import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 
 const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
 let foundDebugDomain = false;
 
-const warnOnceUrl = new Set();
-/**
- * 
- * @param {string} url
- * @param {boolean} isWhite
- * @param  {...any} message
- * @returns 
- */
-const warnOnce = (url, isWhite, ...message) => {
+const warnOnceUrl = new Set<string>();
+const warnOnce = (url: string, isWhite: boolean, ...message: any[]) => {
   const key = `${url}${isWhite ? 'white' : 'black'}`;
   if (warnOnceUrl.has(key)) {
     return;
@@ -27,10 +21,7 @@ const warnOnce = (url, isWhite, ...message) => {
   console.warn(url, isWhite ? '(white)' : '(black)', ...message);
 };
 
-/**
- * @param {string} domain
- */
-const normalizeDomain = (domain) => {
+const normalizeDomain = (domain: string) => {
   if (!domain) return null;
 
   const parsed = tldts.parse(domain);
@@ -47,10 +38,7 @@ const normalizeDomain = (domain) => {
   return null;
 };
 
-/**
- * @param {string | URL} domainListsUrl
- */
-async function processDomainLists(domainListsUrl) {
+export async function processDomainLists(domainListsUrl: string | URL) {
   if (typeof domainListsUrl === 'string') {
     domainListsUrl = new URL(domainListsUrl);
   }
@@ -79,18 +67,14 @@ async function processDomainLists(domainListsUrl) {
   return domainSets;
 }
 
-/**
- * @param {string | URL} hostsUrl
- */
-async function processHosts(hostsUrl, includeAllSubDomain = false) {
+export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false) {
   console.time(`   - processHosts: ${hostsUrl}`);
 
   if (typeof hostsUrl === 'string') {
     hostsUrl = new URL(hostsUrl);
   }
 
-  /** @type Set<string> */
-  const domainSets = new Set();
+  const domainSets = new Set<string>();
 
   for await (const l of await fetchRemoteTextAndCreateReadlineInterface(hostsUrl)) {
     const line = processLine(l);
@@ -121,24 +105,20 @@ async function processHosts(hostsUrl, includeAllSubDomain = false) {
   return domainSets;
 }
 
-/**
- * @param {string | URL} filterRulesUrl
- * @param {readonly (string | URL)[] | undefined} [fallbackUrls]
- * @returns {Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }>}
- */
-async function processFilterRules(filterRulesUrl, fallbackUrls) {
+export async function processFilterRules(
+  filterRulesUrl: string | URL,
+  fallbackUrls?: readonly (string | URL)[] | undefined
+): Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }> {
   const runStart = performance.now();
 
-  /** @type Set<string> */
-  const whitelistDomainSets = new Set();
-  /** @type Set<string> */
-  const blacklistDomainSets = new Set();
+  const whitelistDomainSets = new Set<string>();
+  const blacklistDomainSets = new Set<string>();
 
   /**
    * @param {string} domainToBeAddedToBlack
    * @param {boolean} isSubDomain
    */
-  const addToBlackList = (domainToBeAddedToBlack, isSubDomain) => {
+  const addToBlackList = (domainToBeAddedToBlack: string, isSubDomain: boolean) => {
     if (isSubDomain && domainToBeAddedToBlack[0] !== '.') {
       blacklistDomainSets.add(`.${domainToBeAddedToBlack}`);
     } else {
@@ -149,7 +129,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
    * @param {string} domainToBeAddedToWhite
    * @param {boolean} [isSubDomain]
    */
-  const addToWhiteList = (domainToBeAddedToWhite, isSubDomain = true) => {
+  const addToWhiteList = (domainToBeAddedToWhite: string, isSubDomain = true) => {
     if (isSubDomain && domainToBeAddedToWhite[0] !== '.') {
       whitelistDomainSets.add(`.${domainToBeAddedToWhite}`);
     } else {
@@ -163,7 +143,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
   /**
    * @param {string} line
    */
-  const lineCb = (line) => {
+  const lineCb = (line: string) => {
     const result = parse(line, gorhill);
     if (result) {
       const flag = result[1];
@@ -250,12 +230,7 @@ async function processFilterRules(filterRulesUrl, fallbackUrls) {
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#%&=~]/;
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
 
-/**
- * @param {string} $line
- * @param {import('gorhill-publicsuffixlist').default} gorhill
- * @returns {null | [hostname: string, flag: 0 | 1 | 2 | -1]} - 0 white include subdomain, 1 black abosulte, 2 black include subdomain, -1 white
- */
-function parse($line, gorhill) {
+function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: 0 | 1 | 2 | -1] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -615,7 +590,3 @@ function parse($line, gorhill) {
 
   return null;
 }
-
-module.exports.processDomainLists = processDomainLists;
-module.exports.processHosts = processHosts;
-module.exports.processFilterRules = processFilterRules;

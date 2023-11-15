@@ -1,12 +1,8 @@
 // @ts-check
-const { readFileByLine } = require('./fetch-remote-text-by-line');
-const { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } = require('./clash');
+import { readFileByLine } from './fetch-remote-text-by-line';
+import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
 
-/**
- * @param {string[]} linesA
- * @param {string} filePath
- */
-async function compareAndWriteFile(linesA, filePath) {
+export async function compareAndWriteFile(linesA: string[], filePath: string) {
   let isEqual = true;
   const file = Bun.file(filePath);
 
@@ -57,16 +53,8 @@ async function compareAndWriteFile(linesA, filePath) {
 
   console.log(`Same Content, bail out writing: ${filePath}`);
 }
-module.exports.compareAndWriteFile = compareAndWriteFile;
 
-/**
- * @param {string} title
- * @param {string[]} description
- * @param {Date} date
- * @param {string[]} content
- * @returns {string[]}
- */
-const withBannerArray = (title, description, date, content) => {
+export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {
   return [
     '########################################',
     `# ${title}`,
@@ -78,20 +66,10 @@ const withBannerArray = (title, description, date, content) => {
     '################# END ###################'
   ];
 };
-module.exports.withBannerArray = withBannerArray;
 
-/**
- * @param {string} title
- * @param {string[]} description
- * @param {Date} date
- * @param {string[]} content
- * @param {'ruleset' | 'domainset'} type
- * @param {string} surgePath
- * @param {string} clashPath
- */
-const createRuleset = (
-  title, description, date, content,
-  type, surgePath, clashPath
+export const createRuleset = (
+  title: string, description: string[], date: Date, content: string[],
+  type: 'ruleset' | 'domainset', surgePath: string, clashPath: string
 ) => {
   const surgeContent = withBannerArray(title, description, date, content);
 
@@ -114,4 +92,3 @@ const createRuleset = (
     compareAndWriteFile(clashContent, clashPath)
   ];
 };
-module.exports.createRuleset = createRuleset;

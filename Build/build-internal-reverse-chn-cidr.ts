@@ -1,9 +1,8 @@
-// @ts-check
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
-const { processLineFromReadline } = require('./lib/process-line');
-const path = require('path');
-const fsp = require('fs/promises');
-const { task } = require('./lib/trace-runner');
+import { fetchRemoteTextAndCreateReadlineInterface } from './lib/fetch-remote-text-by-line';
+import { processLineFromReadline } from './lib/process-line';
+import path from 'path';
+import fsp from 'fs/promises'
+import { task } from './lib/trace-runner';
 
 const RESERVED_IPV4_CIDR = [
   '0.0.0.0/8',
@@ -23,7 +22,7 @@ const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
-const buildInternalReverseChnCIDR = task(__filename, async () => {
+export const buildInternalReverseChnCIDR = task(__filename, async () => {
   const [{ exclude }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),
     processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
@@ -43,8 +42,6 @@ const buildInternalReverseChnCIDR = task(__filename, async () => {
 
   return Bun.write(path.resolve(__dirname, '../List/internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
 });
-
-module.exports.buildInternalReverseChnCIDR = buildInternalReverseChnCIDR;
 
 if (import.meta.main) {
   buildInternalReverseChnCIDR();

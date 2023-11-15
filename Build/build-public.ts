@@ -1,7 +1,7 @@
-const listDir = require('@sukka/listdir');
-const path = require('path');
-const fsp = require('fs/promises');
-const { task } = require('./lib/trace-runner');
+import listDir from '@sukka/listdir';
+import path from 'path';
+import fsp from 'fs/promises'
+import { task } from './lib/trace-runner';
 
 const rootPath = path.resolve(__dirname, '../');
 const publicPath = path.resolve(__dirname, '../public');
@@ -15,7 +15,7 @@ const folderAndFilesToBeDeployed = [
   'LICENSE'
 ];
 
-const buildPublicHtml = task(__filename, async () => {
+export const buildPublicHtml = task(__filename, async () => {
   await fsp.mkdir(publicPath, { recursive: true });
   await Promise.all(folderAndFilesToBeDeployed.map(dir => fsp.cp(
     path.resolve(rootPath, dir),
@@ -33,17 +33,11 @@ const buildPublicHtml = task(__filename, async () => {
   return Bun.write(path.join(publicPath, 'index.html'), html);
 });
 
-module.exports.buildPublicHtml = buildPublicHtml;
-
 if (import.meta.main) {
   buildPublicHtml();
 }
 
-/**
- * @param {string[]} urlList
- * @returns {string}
- */
-function template(urlList) {
+function template(urlList: string[]) {
   return `
   <!DOCTYPE html>
   <html lang="en">

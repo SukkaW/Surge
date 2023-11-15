@@ -1,6 +1,6 @@
 import createTrie from './trie';
 
-const domainDeduper = (inputDomains: string[]): string[] => {
+export const domainDeduper = (inputDomains: string[]): string[] => {
   const trie = createTrie(inputDomains);
   const sets = new Set(inputDomains);
 

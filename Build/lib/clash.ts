@@ -1,6 +1,5 @@
 // @ts-check
-const _Trie = require('mnemonist/trie');
-const Trie = _Trie.default || _Trie;
+import Trie from 'mnemonist/trie';
 
 // https://dreamacro.github.io/clash/configuration/rules.html
 const CLASH_SUPPORTED_RULE_TYPE = [
@@ -17,21 +16,13 @@ const CLASH_SUPPORTED_RULE_TYPE = [
   'PROCESS-PATH'
 ];
 
-/**
- * @param {string[] | Set<string>} rules
- */
-const surgeRulesetToClashClassicalTextRuleset = (rules) => {
+export const surgeRulesetToClashClassicalTextRuleset = (rules: string[] | Set<string>) => {
   const trie = Trie.from(rules);
   return CLASH_SUPPORTED_RULE_TYPE.flatMap(
     type => trie.find(`${type},`)
   );
 };
-module.exports.surgeRulesetToClashClassicalTextRuleset = surgeRulesetToClashClassicalTextRuleset;
 
-/**
- * @param {string[]} domainset
- */
-const surgeDomainsetToClashDomainset = (domainset) => {
+export const surgeDomainsetToClashDomainset = (domainset: string[]) => {
   return domainset.map(i => (i[0] === '.' ? `+${i}` : i));
 };
-module.exports.surgeDomainsetToClashDomainset = surgeDomainsetToClashDomainset;

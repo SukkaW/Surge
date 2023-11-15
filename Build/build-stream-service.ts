@@ -1,20 +1,12 @@
 // @ts-check
-const { task } = require('./lib/trace-runner');
+import { task } from './lib/trace-runner';
 
-const path = require('path');
-const { createRuleset } = require('./lib/create-file');
+import path from 'path';
+import { createRuleset } from './lib/create-file';
 
-const {
-  ALL, NORTH_AMERICA, EU, HK, TW, JP, KR
-  // SOUTH_EAST_ASIA, AU
-} = require('../Source/stream');
+import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 
-/**
- * @param {string} fileId
- * @param {string} title
- * @param {import('../Source/stream').StreamService[]} streamServices
- */
-const createRulesetForStreamService = (fileId, title, streamServices) => {
+const createRulesetForStreamService = (fileId: string, title: string, streamServices: import('../Source/stream').StreamService[]) => {
   return [
     // Domains
     ...createRuleset(
@@ -24,10 +16,10 @@ const createRulesetForStreamService = (fileId, title, streamServices) => {
         'Homepage: https://ruleset.skk.moe',
         'GitHub: https://github.com/SukkaW/Surge',
         '',
-        ...streamServices.map(i => `- ${i.name}`)
+        ...streamServices.map((i: { name: any; }) => `- ${i.name}`)
       ],
       new Date(),
-      streamServices.flatMap(i => i.rules),
+      streamServices.flatMap((i: { rules: any; }) => i.rules),
       'ruleset',
       path.resolve(__dirname, `../List/non_ip/${fileId}.conf`),
       path.resolve(__dirname, `../Clash/non_ip/${fileId}.txt`)
@@ -40,14 +32,14 @@ const createRulesetForStreamService = (fileId, title, streamServices) => {
         'Homepage: https://ruleset.skk.moe',
         'GitHub: https://github.com/SukkaW/Surge',
         '',
-        ...streamServices.map(i => `- ${i.name}`)
+        ...streamServices.map((i: { name: any; }) => `- ${i.name}`)
       ],
       new Date(),
-      streamServices.flatMap(i => (
+      streamServices.flatMap((i) => (
         i.ip
           ? [
-            ...i.ip.v4.map(ip => `IP-CIDR,${ip},no-resolve`),
-            ...i.ip.v6.map(ip => `IP-CIDR6,${ip},no-resolve`)
+            ...i.ip.v4.map((ip: any) => `IP-CIDR,${ip},no-resolve`),
+            ...i.ip.v6.map((ip: any) => `IP-CIDR6,${ip},no-resolve`)
           ]
           : []
       )),
@@ -58,7 +50,7 @@ const createRulesetForStreamService = (fileId, title, streamServices) => {
   ];
 };
 
-const buildStreamService = task(__filename, async () => {
+export const buildStreamService = task(__filename, async () => {
   return Promise.all([
     ...createRulesetForStreamService('stream', 'All', ALL),
     ...createRulesetForStreamService('stream_us', 'North America', NORTH_AMERICA),
@@ -71,8 +63,6 @@ const buildStreamService = task(__filename, async () => {
     // ...createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
   ]);
 });
-
-module.exports.buildStreamService = buildStreamService;
 
 if (import.meta.main) {
   buildStreamService();

@@ -16,7 +16,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "./Build/**/*.js",
+    "./Source/**/*.js",
     "./Build/**/*.ts"
   ]
 }

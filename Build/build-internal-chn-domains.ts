@@ -1,11 +1,10 @@
-// @ts-check
-const path = require('path');
-const fsp = require('fs/promises');
-const { parseFelixDnsmasq } = require('./lib/parse-dnsmasq');
-const { task } = require('./lib/trace-runner');
-const { compareAndWriteFile } = require('./lib/create-file');
+import path from 'path';
+import fsp from 'fs/promises'
+import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
+import { task } from './lib/trace-runner';
+import { compareAndWriteFile } from './lib/create-file';
 
-const buildInternalChnDomains = task(__filename, async () => {
+export const buildInternalChnDomains = task(__filename, async () => {
   const [result] = await Promise.all([
     parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'),
     fsp.mkdir(path.resolve(__dirname, '../List/internal'), { recursive: true })
@@ -16,8 +15,6 @@ const buildInternalChnDomains = task(__filename, async () => {
     path.resolve(__dirname, '../List/internal/accelerated-china-domains.txt')
   );
 });
-
-module.exports.buildInternalChnDomains = buildInternalChnDomains;
 
 if (import.meta.main) {
   buildInternalChnDomains();

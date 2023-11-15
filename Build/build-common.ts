@@ -1,12 +1,12 @@
 // @ts-check
 
-const path = require('path');
-const { PathScurry } = require('path-scurry');
-const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { processLine } = require('./lib/process-line');
-const { createRuleset } = require('./lib/create-file');
-const { domainDeduper } = require('./lib/domain-deduper');
-const { task } = require('./lib/trace-runner');
+import * as path from 'path';
+import { PathScurry } from 'path-scurry';
+import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { processLine } from './lib/process-line';
+import { createRuleset } from './lib/create-file';
+import { domainDeduper } from './lib/domain-deduper';
+import { task } from './lib/trace-runner';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -16,7 +16,7 @@ const sourceDir = path.resolve(__dirname, '../Source');
 const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
 
-const buildCommon = task(__filename, async () => {
+export const buildCommon = task(__filename, async () => {
   /** @type {Promise<unknown>[]} */
   const promises = [];
 
@@ -45,16 +45,11 @@ const buildCommon = task(__filename, async () => {
   return Promise.all(promises);
 });
 
-module.exports.buildCommon = buildCommon;
-
 if (import.meta.main) {
   buildCommon();
 }
 
-/**
- * @param {string} sourcePath
- */
-const processFile = async (sourcePath) => {
+const processFile = async (sourcePath: string) => {
   /** @type {string[]} */
   const lines = [];
 
@@ -83,14 +78,10 @@ const processFile = async (sourcePath) => {
     }
   }
 
-  return /** @type {const} */ ([title, descriptions, lines]);
+  return [title, descriptions, lines] as const;
 };
 
-/**
- * @param {string} sourcePath
- * @param {string} relativePath
- */
-async function transformDomainset(sourcePath, relativePath) {
+async function transformDomainset(sourcePath: string, relativePath: string) {
   const res = await processFile(sourcePath);
   if (!res) return;
   const [title, descriptions, lines] = res;
@@ -120,11 +111,8 @@ async function transformDomainset(sourcePath, relativePath) {
 
 /**
  * Output Surge RULE-SET and Clash classical text format
- *
- * @param {string} sourcePath
- * @param {string} relativePath
  */
-async function transformRuleset(sourcePath, relativePath) {
+async function transformRuleset(sourcePath: string, relativePath: string) {
   const res = await processFile(sourcePath);
   if (!res) return;
   const [title, descriptions, lines] = res;

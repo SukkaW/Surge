@@ -1,14 +1,13 @@
-// @ts-check
-const { processFilterRules } = require('./lib/parse-filter.js');
-const path = require('path');
-const { createRuleset } = require('./lib/create-file');
-const { processLine } = require('./lib/process-line.js');
-const { createDomainSorter } = require('./lib/stable-sort-domain');
-const { traceSync, task } = require('./lib/trace-runner.js');
-const createTrie = require('./lib/trie.js');
-const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix.js');
-const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse.js');
-const tldts = require('tldts');
+import { processFilterRules } from './lib/parse-filter';
+import path from 'path';
+import { createRuleset } from './lib/create-file';
+import { processLine } from './lib/process-line';
+import { createDomainSorter } from './lib/stable-sort-domain';
+import { traceSync, task } from './lib/trace-runner';
+import createTrie from './lib/trie';
+import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
+import { createCachedGorhillGetDomain } from './lib/cached-tld-parse';
+import * as tldts from 'tldts';
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -64,7 +63,7 @@ const BLACK_TLD = new Set([
   'com.cn'
 ]);
 
-const buildPhishingDomainSet = task(__filename, async () => {
+export const buildPhishingDomainSet = task(__filename, async () => {
   const [{ black: domainSet }, gorhill] = await Promise.all([
     processFilterRules(
       'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
@@ -87,7 +86,7 @@ const buildPhishingDomainSet = task(__filename, async () => {
     });
   });
 
-  const domainCountMap = {};
+  const domainCountMap: Record<string, number> = {};
   const getDomain = createCachedGorhillGetDomain(gorhill);
 
   traceSync('* process domain set', () => {
@@ -154,12 +153,12 @@ const buildPhishingDomainSet = task(__filename, async () => {
   const domainSorter = createDomainSorter(gorhill);
 
   const results = traceSync('* get final results', () => Object.entries(domainCountMap)
-    .reduce((acc, [apexDomain, count]) => {
+    .reduce<string[]>((acc, [apexDomain, count]) => {
       if (count >= 5) {
         acc.push(`.${apexDomain}`);
       }
       return acc;
-    }, /** @type {string[]} */([]))
+    }, [])
     .sort(domainSorter));
 
   const description = [
@@ -182,8 +181,6 @@ const buildPhishingDomainSet = task(__filename, async () => {
     path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
   ));
 });
-
-module.exports.buildPhishingDomainSet = buildPhishingDomainSet;
 
 if (import.meta.main) {
   buildPhishingDomainSet();

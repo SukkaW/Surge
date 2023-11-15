@@ -1,13 +1,13 @@
 // @ts-check
-const { fetchWithRetry } = require('./lib/fetch-retry');
-const { createReadlineInterfaceFromResponse } = require('./lib/fetch-remote-text-by-line');
-const path = require('path');
-const { isIPv4, isIPv6 } = require('net');
-const { processLine } = require('./lib/process-line');
-const { createRuleset } = require('./lib/create-file');
-const { task } = require('./lib/trace-runner');
+import { fetchWithRetry } from './lib/fetch-retry';
+import { createReadlineInterfaceFromResponse } from './lib/fetch-remote-text-by-line';
+import path from 'path';
+import { isIPv4, isIPv6 } from 'net';
+import { processLine } from './lib/process-line';
+import { createRuleset } from './lib/create-file';
+import { task } from './lib/trace-runner';
 
-const buildTelegramCIDR = task(__filename, async () => {
+export const buildTelegramCIDR = task(__filename, async () => {
   /** @type {Response} */
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt');
   const lastModified = resp.headers.get('last-modified');
@@ -51,8 +51,6 @@ const buildTelegramCIDR = task(__filename, async () => {
     path.resolve(__dirname, '../Clash/ip/telegram.txt')
   ));
 });
-
-module.exports.buildTelegramCIDR = buildTelegramCIDR;
 
 if (import.meta.main) {
   buildTelegramCIDR();

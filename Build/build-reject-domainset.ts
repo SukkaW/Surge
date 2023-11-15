@@ -1,31 +1,31 @@
 // @ts-check
-const fsp = require('fs/promises');
-const path = require('path');
+import fsp from 'fs/promises'
+import path from 'path';
 
-const { processHosts, processFilterRules } = require('./lib/parse-filter');
-const createTrie = require('./lib/trie');
+import { processHosts, processFilterRules } from './lib/parse-filter';
+import createTrie from './lib/trie';
 
-const { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } = require('./lib/reject-data-source');
-const { createRuleset, compareAndWriteFile } = require('./lib/create-file');
-const { processLine } = require('./lib/process-line');
-const { domainDeduper } = require('./lib/domain-deduper');
-const createKeywordFilter = require('./lib/aho-corasick');
-const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { createDomainSorter } = require('./lib/stable-sort-domain');
-const { traceSync, task } = require('./lib/trace-runner');
-const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
-const tldts = require('tldts');
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } from './lib/reject-data-source';
+import { createRuleset, compareAndWriteFile } from './lib/create-file';
+import { processLine } from './lib/process-line';
+import { domainDeduper } from './lib/domain-deduper';
+import createKeywordFilter from './lib/aho-corasick';
+import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { createDomainSorter } from './lib/stable-sort-domain';
+import { traceSync, task } from './lib/trace-runner';
+import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
+import * as tldts from 'tldts';
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 /** @type {Set<string>} Dedupe domains inclued by DOMAIN-KEYWORD */
-const domainKeywordsSet = new Set();
+const domainKeywordsSet: Set<string> = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
-const domainSuffixSet = new Set();
+const domainSuffixSet: Set<string> = new Set();
 
-const buildRejectDomainSet = task(__filename, async () => {
+export const buildRejectDomainSet = task(__filename, async () => {
   /** @type Set<string> */
-  const domainSets = new Set();
+  const domainSets: Set<string> = new Set();
 
   // Parse from AdGuard Filters
   console.time('* Download and process Hosts / AdBlock Filter Rules');
@@ -172,11 +172,10 @@ const buildRejectDomainSet = task(__filename, async () => {
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
   // Create reject stats
-  /** @type {[string, number][]} */
-  const rejectDomainsStats = traceSync(
+  const rejectDomainsStats: [string, number][] = traceSync(
     '* Collect reject domain stats',
     () => Object.entries(
-      dudupedDominArray.reduce((acc, cur) => {
+      dudupedDominArray.reduce<Record<string, number>>((acc, cur) => {
         const suffix = tldts.getDomain(cur, { allowPrivateDomains: false, detectIp: false });
         if (suffix) {
           acc[suffix] = (acc[suffix] ?? 0) + 1;
@@ -230,8 +229,6 @@ const buildRejectDomainSet = task(__filename, async () => {
     )
   ]);
 });
-
-module.exports.buildRejectDomainSet = buildRejectDomainSet;
 
 if (import.meta.main) {
   buildRejectDomainSet();

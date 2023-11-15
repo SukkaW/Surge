@@ -1,10 +1,7 @@
-// @ts-check
-/**
- * @param {string | null} a
- * @param {string | null} b
- * @returns {0 | 1 | -1}
- */
-const compare = (a, b) => {
+import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import { createCachedGorhillGetDomain } from './cached-tld-parse';
+
+const compare = (a: string | null, b: string | null) => {
   if (a === b) return 0;
   if (b == null) {
     return 1;
@@ -38,22 +35,11 @@ const compare = (a, b) => {
   return 0;
 };
 
-/**
- * @param {import('gorhill-publicsuffixlist').default | null} [gorhill]
- */
-const createDomainSorter = (gorhill = null) => {
+const createDomainSorter = (gorhill: PublicSuffixList | null = null) => {
   if (gorhill) {
-    /**
-     * @param {string} input
-     */
-    const getDomain = require('./cached-tld-parse').createCachedGorhillGetDomain(gorhill);
+    const getDomain = createCachedGorhillGetDomain(gorhill);
 
-    /**
-   * @param {string} a
-   * @param {string} b
-   * @returns {0 | 1 | -1}
-   */
-    return (a, b) => {
+    return (a: string, b: string) => {
       if (a === b) return 0;
 
       const aDomain = getDomain(a);
@@ -65,12 +51,8 @@ const createDomainSorter = (gorhill = null) => {
   }
 
   const tldts = require('./cached-tld-parse');
-  /**
-   * @param {string} a
-   * @param {string} b
-   * @returns {0 | 1 | -1}
-   */
-  return (a, b) => {
+
+  return (a: string, b: string) => {
     if (a === b) return 0;
 
     const aDomain = tldts.parse(a).domain;
@@ -81,5 +63,5 @@ const createDomainSorter = (gorhill = null) => {
   };
 };
 
-module.exports = createDomainSorter();
-module.exports.createDomainSorter = createDomainSorter;
+export default createDomainSorter();
+export { createDomainSorter };

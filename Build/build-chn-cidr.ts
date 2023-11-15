@@ -1,10 +1,8 @@
-// @ts-check
-const { fetchRemoteTextAndCreateReadlineInterface } = require('./lib/fetch-remote-text-by-line');
-const { resolve: pathResolve } = require('path');
-// This should not use `createRuleset` API since we are going to generate ipcidr for Clash
-const { compareAndWriteFile, withBannerArray } = require('./lib/create-file');
-const { processLineFromReadline } = require('./lib/process-line');
-const { task } = require('./lib/trace-runner');
+import { fetchRemoteTextAndCreateReadlineInterface } from './lib/fetch-remote-text-by-line';
+import { resolve as pathResolve } from 'path';
+import { compareAndWriteFile, withBannerArray } from './lib/create-file';
+import { processLineFromReadline } from './lib/process-line';
+import { task } from './lib/trace-runner';
 
 // https://github.com/misakaio/chnroutes2/issues/25
 const EXCLUDE_CIDRS = [
@@ -12,7 +10,7 @@ const EXCLUDE_CIDRS = [
   '223.120.0.0/15'
 ];
 
-const buildChnCidr = task(__filename, async () => {
+export const buildChnCidr = task(__filename, async () => {
   const [{ exclude: excludeCidrs }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),
     processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'))
@@ -49,8 +47,6 @@ const buildChnCidr = task(__filename, async () => {
     )
   ]);
 });
-
-module.exports.buildChnCidr = buildChnCidr;
 
 if (import.meta.main) {
   buildChnCidr();

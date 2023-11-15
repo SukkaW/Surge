@@ -1,19 +1,15 @@
-/**
- * @typedef {Object} Node
- * @prop {number} [depth = 0]
- * @prop {string} key
- * @prop {boolean} [word = false]
- * @prop {Record<string, Node>} [children={}]
- * @prop {Node} [fail]
- * @prop {number} [count=0]
- */
+interface Node {
+  /** @default 0 */
+  depth?: number;
+  key: string;
+  /** @default false */
+  word?: boolean;
+  children: Record<string, Node>;
+  fail?: Node;
+  count: number;
+}
 
-/**
- * @param {string} key
- * @param {number} depth
- * @returns {Node}
- */
-const createNode = (key, depth = 0) => ({
+const createNode = (key: string, depth = 0): Node => ({
   depth,
   key,
   word: false,
@@ -22,15 +18,11 @@ const createNode = (key, depth = 0) => ({
   count: 0
 });
 
-/**
- * @param {string[] | Set<string>} keys
- */
-const createKeywordFilter = (keys) => {
+const createKeywordFilter = (keys: string[] | Set<string>) => {
   const root = createNode('root');
 
   const build = () => {
-    /** @type {Node[]} */
-    const queue = [];
+    const queue: Node[] = [];
     queue.push(root);
 
     let idx = 0;
@@ -57,11 +49,7 @@ const createKeywordFilter = (keys) => {
     }
   };
 
-  /**
-   * @param {string} key
-   * @param {number} len
-   */
-  const put = (key, len) => {
+  const put = (key: string, len: number) => {
     let node = root;
     const lastIdx = len - 1;
     node.count++;
@@ -91,12 +79,8 @@ const createKeywordFilter = (keys) => {
 
   build();
 
-  /**
-   * @param {string} text
-   * @returns {boolean}
-   */
-  const search = (text) => {
-    let node = root;
+  const search = (text: string) => {
+    let node: Node | undefined = root;
 
     for (let i = 0, textLen = text.length; i < textLen; i++) {
       // const key = text.charAt(i);
@@ -120,4 +104,4 @@ const createKeywordFilter = (keys) => {
   };
 };
 
-module.exports = createKeywordFilter;
+export default createKeywordFilter;

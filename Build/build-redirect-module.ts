@@ -1,9 +1,7 @@
-// @ts-check
-
-const path = require('path');
-const { task } = require('./lib/trace-runner');
-const { compareAndWriteFile } = require('./lib/create-file');
-const tldts = require('tldts');
+import path from 'path';
+import { task } from './lib/trace-runner';
+import { compareAndWriteFile } from './lib/create-file';
+import * as tldts from 'tldts';
 
 function escapeRegExp(string = '') {
   const reRegExpChar = /[$()*+.?[\\\]^{|}]/g;
@@ -73,7 +71,7 @@ const REDIRECT = /** @type {const} */ ([
   ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
 ]);
 
-const buildRedirectModule = task(__filename, async () => {
+export const buildRedirectModule = task(__filename, async () => {
   const domains = Array.from(new Set(REDIRECT.map(([from]) => tldts.getHostname(from, { detectIp: false })))).filter(Boolean);
 
   return compareAndWriteFile(
@@ -93,8 +91,6 @@ const buildRedirectModule = task(__filename, async () => {
     path.resolve(__dirname, '../Modules/sukka_url_redirect.sgmodule')
   );
 });
-
-module.exports.buildRedirectModule = buildRedirectModule;
 
 if (import.meta.main) {
   buildRedirectModule();

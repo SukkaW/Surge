@@ -1,44 +1,24 @@
-// @ts-check
-const path = require('path');
-const { performance } = require('perf_hooks');
+import path from 'path';
 
-/**
- * @template T
- * @param {string} prefix
- * @param {() => T} fn
- * @returns {T}
- */
-const traceSync = (prefix, fn) => {
+const traceSync = <T>(prefix: string, fn: () => T): T => {
   const start = performance.now();
   const result = fn();
   const end = performance.now();
   console.log(`${prefix}: ${(end - start).toFixed(3)}ms`);
   return result;
 };
-module.exports.traceSync = traceSync;
+export { traceSync };
 
-/**
- * @template T
- * @param {string} prefix
- * @param {() => Promise<T>} fn
- * @returns {Promise<T>}
- */
-const traceAsync = async (prefix, fn) => {
+const traceAsync = async <T>(prefix: string, fn: () => Promise<T>): Promise<T> => {
   const start = performance.now();
   const result = await fn();
   const end = performance.now();
   console.log(`${prefix}: ${(end - start).toFixed(3)}ms`);
   return result;
 };
-module.exports.traceAsync = traceAsync;
+export { traceAsync };
 
-/**
- * @template T
- * @param {string} __filename
- * @param {() => Promise<T>} fn
- * @param {string | null} [customname]
- */
-module.exports.task = (__filename, fn, customname = null) => {
+const task = <T>(__filename: string, fn: () => Promise<T>, customname: string | null = null) => {
   const taskName = customname ?? path.basename(__filename, path.extname(__filename));
   return async () => {
     console.log(`🏃 [${taskName}] Start executing`);
@@ -47,6 +27,7 @@ module.exports.task = (__filename, fn, customname = null) => {
     const end = performance.now();
     console.log(`✅ [${taskName}] Executed successfully: ${(end - start).toFixed(3)}ms`);
 
-    return { start, end, taskName };
+    return { start, end, taskName } as const;
   };
 };
+export { task };

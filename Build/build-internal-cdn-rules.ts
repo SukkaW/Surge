@@ -1,28 +1,25 @@
 // @ts-check
-const fsp = require('fs/promises');
-const path = require('path');
-const tldts = require('tldts');
-const { processLine } = require('./lib/process-line');
-const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { createDomainSorter } = require('./lib/stable-sort-domain');
-const { task } = require('./lib/trace-runner');
-const { compareAndWriteFile } = require('./lib/create-file');
-const { getGorhillPublicSuffixPromise } = require('./lib/get-gorhill-publicsuffix');
+import fsp from 'fs/promises'
+import path from 'path';
+import * as tldts from 'tldts';
+import { processLine } from './lib/process-line';
+import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { createDomainSorter } from './lib/stable-sort-domain';
+import { task } from './lib/trace-runner';
+import { compareAndWriteFile } from './lib/create-file';
+import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 // const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
 const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
-const buildInternalCDNDomains = task(__filename, async () => {
-  const set = new Set();
+export const buildInternalCDNDomains = task(__filename, async () => {
+  const set = new Set<string>();
   const keywords = new Set();
 
   const gorhill = await getGorhillPublicSuffixPromise();
   const domainSorter = createDomainSorter(gorhill);
 
-  /**
-   * @param {string} input
-   */
-  const addApexDomain = (input) => {
+  const addApexDomain = (input: string) => {
     // We are including the private domains themselves
     const d = tldts.getDomain(input, { allowPrivateDomains: false });
     if (d) {
@@ -30,10 +27,7 @@ const buildInternalCDNDomains = task(__filename, async () => {
     }
   };
 
-  /**
-   * @param {string} domainSetPath
-   */
-  const processLocalDomainSet = async (domainSetPath) => {
+  const processLocalDomainSet = async (domainSetPath: string) => {
     for await (const line of readFileByLine(domainSetPath)) {
       // console.log({ line });
 
@@ -52,10 +46,7 @@ const buildInternalCDNDomains = task(__filename, async () => {
     }
   };
 
-  /**
-   * @param {string} ruleSetPath
-   */
-  const processLocalRuleSet = async (ruleSetPath) => {
+  const processLocalRuleSet = async (ruleSetPath: string) => {
     for await (const line of readFileByLine(ruleSetPath)) {
       if (line.startsWith('DOMAIN-SUFFIX,')) {
         addApexDomain(line.replace('DOMAIN-SUFFIX,', ''));
@@ -92,8 +83,6 @@ const buildInternalCDNDomains = task(__filename, async () => {
     path.resolve(__dirname, '../List/internal/cdn.txt')
   );
 });
-
-module.exports.buildInternalCDNDomains = buildInternalCDNDomains;
 
 if (import.meta.main) {
   buildInternalCDNDomains();

@@ -6,7 +6,7 @@ const isDomainLoose = (domain: string): boolean => {
   return !!(!isIp && (isIcann || isPrivate));
 };
 
-const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
+export const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
   const res: string[] = [];
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface(url)) {
     if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
@@ -19,5 +19,3 @@ const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
 
   return res;
 };
-
-export { parseFelixDnsmasq };

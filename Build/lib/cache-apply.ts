@@ -1,7 +1,4 @@
-/**
- * @param {string} [namespace]
- */
-const createCache = (namespace, printStats = false) => {
+export const createCache = (namespace?: string, printStats = false) => {
   const cache = new Map();
 
   let hit = 0;
@@ -12,13 +9,7 @@ const createCache = (namespace, printStats = false) => {
   }
 
   return {
-    /**
-     * @template T
-     * @param {string} key
-     * @param {() => T} fn
-     * @returns {T}
-     */
-    sync(key, fn) {
+    sync<T>(key: string, fn: () => T): T {
       if (cache.has(key)) {
         hit++;
         return cache.get(key);
@@ -27,13 +18,7 @@ const createCache = (namespace, printStats = false) => {
       cache.set(key, value);
       return value;
     },
-    /**
-     * @template T
-     * @param {string} key
-     * @param {() => Promise<T>} fn
-     * @returns {Promise<T>}
-     */
-    async async(key, fn) {
+    async async<T>(key: string, fn: () => Promise<T>): Promise<T> {
       if (cache.has(key)) {
         hit++;
         return cache.get(key);
@@ -44,4 +29,3 @@ const createCache = (namespace, printStats = false) => {
     }
   };
 };
-module.exports.createCache = createCache;

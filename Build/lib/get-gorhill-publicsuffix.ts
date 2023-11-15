@@ -1,13 +1,12 @@
-const { toASCII } = require('punycode/');
-const path = require('path');
-const { traceAsync } = require('./trace-runner');
+import { toASCII } from 'punycode';
+import path from 'path';
+import { traceAsync } from './trace-runner';
+import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 
 const publicSuffixPath = path.resolve(__dirname, '../../node_modules/.cache/public_suffix_list_dat.txt');
 
 const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix instance', async () => {
-  const customFetch = async (url) => {
-    return Bun.file(url);
-  };
+  const customFetch = async (url: string | URL) => Bun.file(url);
 
   const publicSuffixFile = Bun.file(publicSuffixPath);
 
@@ -27,9 +26,8 @@ const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix in
   return gorhill;
 });
 
-/** @type {Promise<import('gorhill-publicsuffixlist').default> | null} */
-let gorhillPublicSuffixPromise = null;
-module.exports.getGorhillPublicSuffixPromise = () => {
+let gorhillPublicSuffixPromise: Promise<PublicSuffixList> | null = null;
+export const getGorhillPublicSuffixPromise = () => {
   gorhillPublicSuffixPromise ||= getGorhillPublicSuffix();
   return gorhillPublicSuffixPromise;
 };

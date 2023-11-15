@@ -1,22 +1,22 @@
 // @ts-check
-const path = require('path');
-const { DOMESTICS } = require('../Source/non_ip/domestic');
-const { readFileByLine } = require('./lib/fetch-remote-text-by-line');
-const { processLineFromReadline } = require('./lib/process-line');
-const { compareAndWriteFile, createRuleset } = require('./lib/create-file');
-const { task } = require('./lib/trace-runner');
+import path from 'path';
+import { DOMESTICS } from '../Source/non_ip/domestic';
+import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { processLineFromReadline } from './lib/process-line';
+import { compareAndWriteFile, createRuleset } from './lib/create-file';
+import { task } from './lib/trace-runner';
 
-const buildDomesticRuleset = task(__filename, async () => {
+export const buildDomesticRuleset = task(__filename, async () => {
   const results = await processLineFromReadline(readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf')));
 
   results.push(
     ...Object.entries(DOMESTICS)
-      .reduce(
+      .reduce<string[]>(
         (acc, [key, { domains }]) => {
           if (key === 'SYSTEM') return acc;
           return [...acc, ...domains];
         },
-        /** @type {string[]} */([])
+        []
       )
       .map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );
@@ -57,8 +57,6 @@ const buildDomesticRuleset = task(__filename, async () => {
     )
   ]);
 });
-
-module.exports.buildDomesticRuleset = buildDomesticRuleset;
 
 if (import.meta.main) {
   buildDomesticRuleset();
