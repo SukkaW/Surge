@@ -35,6 +35,8 @@ const buildInternalCDNDomains = task(__filename, async () => {
    */
   const processLocalDomainSet = async (domainSetPath) => {
     for await (const line of readFileByLine(domainSetPath)) {
+      // console.log({ line });
+
       const parsed = tldts.parse(line, { allowPrivateDomains: true, detectIp: false });
       if (parsed.isIp) continue;
       if (parsed.isIcann || parsed.isPrivate) {

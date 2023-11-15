@@ -8,7 +8,7 @@
     "url": "git+https://github.com/SukkaW/Surge.git"
   },
   "scripts": {
-    "build": "node ./Build/index.js",
+    "build": "bun ./Build/index.ts",
     "lint": "eslint --format=sukka ."
   },
   "author": "",
@@ -35,21 +35,13 @@
   "devDependencies": {
     "@eslint-sukka/node": "^4.1.7",
     "@types/mocha": "10.0.2",
-    "@types/node": "^20.9.0",
+    "bun-types": "^1.0.11",
     "chai": "4.3.10",
     "eslint-config-sukka": "4.1.7",
     "eslint-formatter-sukka": "4.1.7",
     "mocha": "^10.2.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@vercel/fetch-retry@5.1.3": "patches/@vercel__fetch-retry@5.1.3.patch"
-    },
-    "overrides": {
-      "has": "npm:@nolyfill/has@latest"
-    }
+  "resolutions": {
+    "has": "npm:@nolyfill/has@latest"
   }
 }

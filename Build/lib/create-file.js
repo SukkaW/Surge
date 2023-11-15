@@ -44,34 +44,20 @@ async function compareAndWriteFile(linesA, filePath) {
   }
 
   if (!isEqual) {
-    const stream = fs.createWriteStream(filePath, { encoding: 'utf-8' });
+    const file = Bun.file(filePath);
+    const writer = file.writer();
 
     for (let i = 0, len = linesA.length; i < len; i++) {
-      const p = writeToStream(stream, `${linesA[i]}\n`);
-      if (p) {
-        // eslint-disable-next-line no-await-in-loop -- backpressure, besides we only wait for drain
-        await p;
-      }
+      writer.write(`${linesA[i]}\n`);
     }
-    stream.end();
-  } else {
-    console.log(`Same Content, bail out writing: ${filePath}`);
+
+    await writer.end();
+    return;
   }
+
+  console.log(`Same Content, bail out writing: ${filePath}`);
 }
 module.exports.compareAndWriteFile = compareAndWriteFile;
-
-/**
- * @param {import('fs').WriteStream} stream
- * @param {string} data
- */
-function writeToStream(stream, data) {
-  if (!stream.write(data)) {
-    return /** @type {Promise<void>} */(new Promise((resolve) => {
-      stream.once('drain', resolve);
-    }));
-  }
-  return null;
-}
 
 /**
  * @param {string} title
