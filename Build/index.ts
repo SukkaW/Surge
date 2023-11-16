@@ -21,13 +21,14 @@ import { Worker } from 'jest-worker';
 
 type WithWorker<T> = import('jest-worker').Worker & { __sukka_worker_name: string } & T
 
-const requireWorker = <T>(path: string): WithWorker<T> => {
+const requireWorker = <T>(path: string, exposedMethods?: (keyof T & string)[]): WithWorker<T> => {
   const _worker = new Worker(
-    require.resolve(path),
+    import.meta.require.resolve(path),
     {
       numWorkers: 1,
       maxRetries: 0,
-      enableWorkerThreads: true
+      enableWorkerThreads: true,
+      exposedMethods
     }
   ) as WithWorker<T>;
   _worker.getStderr().pipe(process.stderr);
@@ -44,69 +45,72 @@ const endWorker = async <T>(worker: WithWorker<T>) => {
 };
 
 (async () => {
-  const buildInternalReverseChnCIDRWorker: WithWorker<typeof import('./build-internal-reverse-chn-cidr')> = requireWorker('./build-internal-reverse-chn-cidr');
-  const { buildInternalReverseChnCIDR } = buildInternalReverseChnCIDRWorker;
+  const buildInternalReverseChnCIDRWorker: WithWorker<typeof import('./build-internal-reverse-chn-cidr')> = requireWorker('./build-internal-reverse-chn-cidr', ['buildInternalReverseChnCIDR']);
+  try {
+    const { buildInternalReverseChnCIDR } = buildInternalReverseChnCIDRWorker;
 
-  const downloadPreviousBuildPromise = downloadPreviousBuild();
-  const downloadPublicSuffixListPromise = downloadPublicSuffixList();
-  const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon());
-  const buildAntiBogusDomainPromise = downloadPreviousBuildPromise.then(() => buildAntiBogusDomain());
-  const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn());
-  const buildCdnConfPromise = Promise.all([
-    downloadPreviousBuildPromise,
-    downloadPublicSuffixListPromise
-  ]).then(() => buildCdnConf());
-  const buildPhilishingDomainsetPromise = Promise.all([
-    downloadPreviousBuildPromise,
-    downloadPublicSuffixListPromise
-  ]).then(() => buildPhishingDomainSet());
-  const buildRejectDomainSetPromise = Promise.all([
-    downloadPreviousBuildPromise,
-    downloadPublicSuffixListPromise,
-    buildPhilishingDomainsetPromise
-  ]).then(() => buildRejectDomainSet());
-  const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR());
-  const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr());
-  const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet());
-  const buildInternalCDNDomainsPromise = Promise.all([
-    downloadPublicSuffixListPromise,
-    buildCommonPromise,
-    buildCdnConfPromise
-  ]).then(() => buildInternalCDNDomains());
-  const buildInternalReverseChnCIDRPromise = buildInternalReverseChnCIDR();
-  const buildInternalChnDomainsPromise = buildInternalChnDomains();
-  const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
+    const downloadPreviousBuildPromise = downloadPreviousBuild();
+    const downloadPublicSuffixListPromise = downloadPublicSuffixList();
+    const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon());
+    const buildAntiBogusDomainPromise = downloadPreviousBuildPromise.then(() => buildAntiBogusDomain());
+    const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn());
+    const buildCdnConfPromise = Promise.all([
+      downloadPreviousBuildPromise,
+      downloadPublicSuffixListPromise
+    ]).then(() => buildCdnConf());
+    const buildPhilishingDomainsetPromise = Promise.all([
+      downloadPreviousBuildPromise,
+      downloadPublicSuffixListPromise
+    ]).then(() => buildPhishingDomainSet());
+    const buildRejectDomainSetPromise = Promise.all([
+      downloadPreviousBuildPromise,
+      downloadPublicSuffixListPromise,
+      buildPhilishingDomainsetPromise
+    ]).then(() => buildRejectDomainSet());
+    const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR());
+    const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr());
+    const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet());
+    const buildInternalCDNDomainsPromise = Promise.all([
+      downloadPublicSuffixListPromise,
+      buildCommonPromise,
+      buildCdnConfPromise
+    ]).then(() => buildInternalCDNDomains());
+    const buildInternalReverseChnCIDRPromise = buildInternalReverseChnCIDR();
+    const buildInternalChnDomainsPromise = buildInternalChnDomains();
+    const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
 
-  const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
-  const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
+    const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
+    const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
 
-  const stats: Array<{ start: number, end: number, taskName: string }> = await Promise.all([
-    downloadPreviousBuildPromise,
-    downloadPublicSuffixListPromise,
-    buildCommonPromise,
-    buildAntiBogusDomainPromise,
-    buildAppleCdnPromise,
-    buildCdnConfPromise,
-    buildPhilishingDomainsetPromise,
-    buildRejectDomainSetPromise,
-    buildTelegramCIDRPromise,
-    buildChnCidrPromise,
-    buildSpeedtestDomainSetPromise,
-    buildInternalCDNDomainsPromise,
-    buildInternalReverseChnCIDRPromise,
-    buildInternalChnDomainsPromise,
-    buildDomesticRulesetPromise,
-    buildRedirectModulePromise,
-    buildStreamServicePromise
-  ]);
+    const stats: Array<{ start: number, end: number, taskName: string }> = await Promise.all([
+      downloadPreviousBuildPromise,
+      downloadPublicSuffixListPromise,
+      buildCommonPromise,
+      buildAntiBogusDomainPromise,
+      buildAppleCdnPromise,
+      buildCdnConfPromise,
+      buildPhilishingDomainsetPromise,
+      buildRejectDomainSetPromise,
+      buildTelegramCIDRPromise,
+      buildChnCidrPromise,
+      buildSpeedtestDomainSetPromise,
+      buildInternalCDNDomainsPromise,
+      buildInternalReverseChnCIDRPromise,
+      buildInternalChnDomainsPromise,
+      buildDomesticRulesetPromise,
+      buildRedirectModulePromise,
+      buildStreamServicePromise
+    ]);
 
-  await Promise.all([
-    buildPublicHtml(),
-    validate(),
-    endWorker(buildInternalReverseChnCIDRWorker)
-  ]);
+    await Promise.all([
+      buildPublicHtml(),
+      validate()
+    ]);
 
-  printStats(stats);
+    printStats(stats);
+  } finally {
+    await endWorker(buildInternalReverseChnCIDRWorker)
+  }
 })();
 
 function printStats(stats: Array<{ start: number, end: number, taskName: string }>): void {
