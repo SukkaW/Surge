@@ -1,4 +1,5 @@
 import tar from 'tar';
+import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -8,39 +9,44 @@ import { readFileByLine } from './lib/fetch-remote-text-by-line';
 import { isCI } from 'ci-info';
 import { task, traceAsync } from './lib/trace-runner';
 
-export const downloadPreviousBuild = task(__filename, async () => {
-  const filesList = ['Clash', 'List'];
+const IS_READING_BUILD_OUTPUT = 1 << 2;
+const ALL_FILES_EXISTS = 1 << 3;
 
-  let allFileExists = true;
+export const downloadPreviousBuild = task(__filename, async () => {
+  const buildOutputList: string[] = [];
+
+  let flag = 1 | ALL_FILES_EXISTS;
 
   for await (const line of readFileByLine(path.resolve(__dirname, '../.gitignore'))) {
-    if (
-      (
-        // line.startsWith('List/')
-        line.startsWith('Modules/')
-      ) && !line.endsWith('/')
-    ) {
-      filesList.push(line);
+    if (line === '# $ build output') {
+      flag = flag | IS_READING_BUILD_OUTPUT;
+      continue;
+    }
+    if (!(flag & IS_READING_BUILD_OUTPUT)) {
+      continue;
+    }
 
-      if (!isCI) {
-        allFileExists = await Bun.file(path.join(__dirname, '..', line)).exists();
-        if (!allFileExists) {
-          break;
-        }
+    buildOutputList.push(line);
+
+    if (!isCI) {
+      // Bun.file().exists() doesn't check directory
+      if (!fs.existsSync(path.join(__dirname, '..', line))) {
+        flag = flag & ~ALL_FILES_EXISTS;
       }
     }
   }
 
   if (isCI) {
-    allFileExists = false;
+    flag = flag & ~ALL_FILES_EXISTS;
   }
 
-  if (allFileExists) {
+  if (flag & ALL_FILES_EXISTS) {
     console.log('All files exists, skip download.');
     return;
   }
 
   const extractedPath = path.join(os.tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
+  const filesList = buildOutputList.map(f => path.join('ruleset.skk.moe-master', f));
 
   await traceAsync(
     'Download and extract previous build',
@@ -51,21 +57,17 @@ export const downloadPreviousBuild = task(__filename, async () => {
       Readable.fromWeb(resp.body!),
       tar.x({
         cwd: extractedPath,
-        /**
-         * @param {string} p
-         */
         filter(p) {
-          return p.includes('/List/') || p.includes('/Modules/') || p.includes('/Clash/');
+          return filesList.some(f => p.startsWith(f));
         }
       })
     ))
   );
 
-  console.log('Files list:', filesList);
-
-  await Promise.all(filesList.map(async p => {
+  await Promise.all(buildOutputList.map(async p => {
     const src = path.join(extractedPath, 'ruleset.skk.moe-master', p);
-    if (await Bun.file(src).exists()) {
+
+    if (fs.existsSync(src)) { // Bun.file().exists() doesn't check directory
       return fsp.cp(
         src,
         path.join(__dirname, '..', p),

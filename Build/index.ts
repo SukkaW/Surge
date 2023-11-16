@@ -108,6 +108,8 @@ const endWorker = async <T>(worker: WithWorker<T>) => {
     ]);
 
     printStats(stats);
+  } catch (e) {
+    console.error(e)
   } finally {
     await endWorker(buildInternalReverseChnCIDRWorker)
   }
