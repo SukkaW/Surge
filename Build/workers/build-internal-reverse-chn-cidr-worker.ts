@@ -1,8 +1,5 @@
-declare const self: Worker;
-
-import { buildInternalReverseChnCIDR } from '../build-internal-reverse-chn-cidr';
-
-self.onmessage = async () => {
+(async () => {
+  const { buildInternalReverseChnCIDR } = await import('../build-internal-reverse-chn-cidr');
   const stat = await buildInternalReverseChnCIDR();
   postMessage(stat);
-};
+})();
