@@ -82,7 +82,7 @@ const endWorker = async <T>(worker: WithWorker<T>) => {
     const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
     const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
 
-    const stats: Array<{ start: number, end: number, taskName: string }> = await Promise.all([
+    const stats = await Promise.all([
       downloadPreviousBuildPromise,
       downloadPublicSuffixListPromise,
       buildCommonPromise,
@@ -118,13 +118,11 @@ const endWorker = async <T>(worker: WithWorker<T>) => {
 function printStats(stats: Array<{ start: number, end: number, taskName: string }>): void {
   stats.sort((a, b) => a.start - b.start);
 
-  const longestTaskName: number = Math.max(...stats.map(i => i.taskName.length));
-  const realStart: number = Math.min(...stats.map(i => i.start));
-  const realEnd: number = Math.max(...stats.map(i => i.end));
+  const longestTaskName = Math.max(...stats.map(i => i.taskName.length));
+  const realStart = Math.min(...stats.map(i => i.start));
+  const realEnd = Math.max(...stats.map(i => i.end));
 
-  const totalMs: number = realEnd - realStart;
-
-  const statsStep: number = (totalMs / 160) | 0;
+  const statsStep = ((realEnd - realStart) / 160) | 0;
 
   stats.forEach(stat => {
     console.log(
