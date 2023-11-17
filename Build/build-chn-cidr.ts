@@ -11,12 +11,12 @@ const EXCLUDE_CIDRS = [
 ];
 
 export const buildChnCidr = task(__filename, async () => {
-  const [{ exclude: excludeCidrs }, cidr] = await Promise.all([
+  const [{ exclude }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),
     processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'))
   ]);
 
-  const filteredCidr = excludeCidrs(cidr, EXCLUDE_CIDRS, true);
+  const filteredCidr = exclude(cidr, EXCLUDE_CIDRS, true);
 
   const description = [
     'License: CC BY-SA 2.0',

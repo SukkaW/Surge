@@ -18,6 +18,12 @@ const traceAsync = async <T>(prefix: string, fn: () => Promise<T>): Promise<T> =
 };
 export { traceAsync };
 
+export interface TaskResult {
+  readonly start: number;
+  readonly end: number;
+  readonly taskName: string;
+}
+
 const task = <T>(__filename: string, fn: () => Promise<T>, customname: string | null = null) => {
   const taskName = customname ?? path.basename(__filename, path.extname(__filename));
   return async () => {
@@ -27,7 +33,7 @@ const task = <T>(__filename: string, fn: () => Promise<T>, customname: string | 
     const end = performance.now();
     console.log(`✅ [${taskName}] Executed successfully: ${(end - start).toFixed(3)}ms`);
 
-    return { start, end, taskName } as const;
+    return { start, end, taskName } as TaskResult;
   };
 };
 export { task };

@@ -56,7 +56,6 @@ export async function* createReadlineInterfaceFromResponse(resp: Response): Asyn
   }
 }
 
-export async function fetchRemoteTextAndCreateReadlineInterface(url: string | URL, opt?: RequestInit): Promise<AsyncGenerator<string>> {
-  const resp = await fetchWithRetry(url, opt);
-  return createReadlineInterfaceFromResponse(resp);
+export function fetchRemoteTextAndCreateReadlineInterface(url: string | URL, opt?: RequestInit): Promise<AsyncGenerator<string>> {
+  return fetchWithRetry(url, opt).then(res => createReadlineInterfaceFromResponse(res));
 }

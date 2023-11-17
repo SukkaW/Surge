@@ -6,18 +6,29 @@ import domainSorter from './lib/stable-sort-domain';
 import { Sema } from 'async-sema';
 import * as tldts from 'tldts';
 import { task } from './lib/trace-runner';
-const s = new Sema(2);
+const s = new Sema(3);
+
+const latestTopUserAgentsPromise = fetch('https://unpkg.com/top-user-agents@latest/index.json')
+  .then(res => res.json() as Promise<string[]>);
 
 const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> => {
-  await s.acquire();
+  const [topUserAgents] = await Promise.all([
+    latestTopUserAgentsPromise,
+    s.acquire()
+  ]);
+
+  const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
   try {
+    const key = `fetch speedtest endpoints: ${keyword}`;
+    console.time(key);
+
     const res = await fetch(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
       headers: {
         dnt: '1',
         Referer: 'https://www.speedtest.net/',
         accept: 'application/json, text/plain, */*',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+        'User-Agent': randomUserAgent,
         'Accept-Language': 'en-US,en;q=0.9',
         'Sec-Ch-Ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
         'Sec-Ch-Ua-Mobile': '?0',
@@ -28,12 +39,14 @@ const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> =>
       }
     });
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
+      throw new Error(res.statusText + '\n' + await res.text());
     }
 
     const json = await res.json() as { url: string; }[];
     s.release();
+
+    console.timeEnd(key);
+
     return json.map(({ url }) => tldts.getHostname(url, { detectIp: false }));
   } catch (e) {
     s.release();

@@ -16,39 +16,11 @@ import { buildRedirectModule } from './build-redirect-module';
 import { validate } from './validate-domainset';
 
 import { buildPublicHtml } from './build-public';
-
-import { Worker } from 'jest-worker';
-
-type WithWorker<T> = import('jest-worker').Worker & { __sukka_worker_name: string } & T
-
-const requireWorker = <T>(path: string, exposedMethods?: (keyof T & string)[]): WithWorker<T> => {
-  const _worker = new Worker(
-    import.meta.require.resolve(path),
-    {
-      numWorkers: 1,
-      maxRetries: 0,
-      enableWorkerThreads: true,
-      exposedMethods
-    }
-  ) as WithWorker<T>;
-  _worker.getStderr().pipe(process.stderr);
-  _worker.getStdout().pipe(process.stdout);
-  _worker.__sukka_worker_name = path;
-  return _worker;
-};
-
-const endWorker = async <T>(worker: WithWorker<T>) => {
-  const { forceExited } = await worker.end();
-  if (forceExited && worker.__sukka_worker_name) {
-    console.log(worker.__sukka_worker_name, 'forceExited');
-  }
-};
+import { TaskResult } from './lib/trace-runner';
 
 (async () => {
-  const buildInternalReverseChnCIDRWorker: WithWorker<typeof import('./build-internal-reverse-chn-cidr')> = requireWorker('./build-internal-reverse-chn-cidr', ['buildInternalReverseChnCIDR']);
+  const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
   try {
-    const { buildInternalReverseChnCIDR } = buildInternalReverseChnCIDRWorker;
-
     const downloadPreviousBuildPromise = downloadPreviousBuild();
     const downloadPublicSuffixListPromise = downloadPublicSuffixList();
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon());
@@ -75,7 +47,15 @@ const endWorker = async <T>(worker: WithWorker<T>) => {
       buildCommonPromise,
       buildCdnConfPromise
     ]).then(() => buildInternalCDNDomains());
-    const buildInternalReverseChnCIDRPromise = buildInternalReverseChnCIDR();
+
+    const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
+      buildInternalReverseChnCIDRWorker.postMessage(null);
+      buildInternalReverseChnCIDRWorker.onmessage = (e: MessageEvent<TaskResult>) => {
+        buildInternalReverseChnCIDRWorker.terminate();
+        resolve(e.data);
+      };
+    });
+
     const buildInternalChnDomainsPromise = buildInternalChnDomains();
     const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
 
@@ -109,9 +89,7 @@ const endWorker = async <T>(worker: WithWorker<T>) => {
 
     printStats(stats);
   } catch (e) {
-    console.error(e)
-  } finally {
-    await endWorker(buildInternalReverseChnCIDRWorker)
+    console.error(e);
   }
 })();
 

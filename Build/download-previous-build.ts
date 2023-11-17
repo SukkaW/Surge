@@ -75,8 +75,6 @@ export const downloadPreviousBuild = task(__filename, async () => {
       );
     }
   }));
-
-  // return fsp.unlink(extractedPath).catch(() => { });
 });
 
 export const downloadPublicSuffixList = task(__filename, async () => {

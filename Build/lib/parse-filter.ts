@@ -68,7 +68,7 @@ export async function processDomainLists(domainListsUrl: string | URL) {
 }
 
 export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false) {
-  console.time(`   - processHosts: ${hostsUrl}`);
+  console.time(`- processHosts: ${hostsUrl}`);
 
   if (typeof hostsUrl === 'string') {
     hostsUrl = new URL(hostsUrl);
