@@ -189,7 +189,9 @@ export const PREDEFINED_WHITELIST = [
   'uploads.codesandbox.io',
   // Affect Windows ISO download
   // https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
-  'vlscppe.microsoft.com'
+  'vlscppe.microsoft.com',
+  // OpenAI use this for A/B testing
+  'statsig.com',
 ];
 
 export const PREDEFINED_ENFORCED_BACKLIST = [
