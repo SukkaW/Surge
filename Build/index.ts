@@ -22,6 +22,8 @@ import { TaskResult } from './lib/trace-runner';
   console.log('Bun version:', Bun.version);
 
   try {
+    const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
+
     const downloadPreviousBuildPromise = downloadPreviousBuild();
     const downloadPublicSuffixListPromise = downloadPublicSuffixList();
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon());
@@ -50,14 +52,15 @@ import { TaskResult } from './lib/trace-runner';
     ]).then(() => buildInternalCDNDomains());
 
     const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
-      const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
-
       const handleMessage = (e: MessageEvent<TaskResult>) => {
-        buildInternalReverseChnCIDRWorker.terminate();
-        resolve(e.data);
-      }
+        buildInternalReverseChnCIDRWorker.unref();
+        const { data } = e;
 
-      buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage);
+        buildInternalReverseChnCIDRWorker.postMessage('exit');
+        resolve(data);
+      };
+      buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage, { once: true });
+      buildInternalReverseChnCIDRWorker.postMessage('build');
     });
 
     const buildInternalChnDomainsPromise = buildInternalChnDomains();
@@ -94,6 +97,7 @@ import { TaskResult } from './lib/trace-runner';
     printStats(stats);
   } catch (e) {
     console.error(e);
+    console.error('Something went wrong!')
   }
 })();
 
