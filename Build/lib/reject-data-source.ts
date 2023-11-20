@@ -106,9 +106,10 @@ export const ADGUARD_FILTERS = [
   [
     'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
     [
-      'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt'
+      'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
       // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-      // 'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt'
+      // 'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
+      'https://ublockorigin.github.io/uAssets/thirdparties/urlhaus-filter/urlhaus-filter-online.txt',
     ]
   ],
   // Curben's Phishing URL Blocklist

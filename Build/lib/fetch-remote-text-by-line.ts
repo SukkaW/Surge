@@ -1,5 +1,5 @@
 import type { BunFile } from 'bun';
-import { fetchWithRetry } from './fetch-retry';
+import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
 
 const decoder = new TextDecoder('utf-8');
 
@@ -56,6 +56,6 @@ export async function* createReadlineInterfaceFromResponse(resp: Response): Asyn
   }
 }
 
-export function fetchRemoteTextAndCreateReadlineInterface(url: string | URL, opt?: RequestInit): Promise<AsyncGenerator<string>> {
-  return fetchWithRetry(url, opt).then(res => createReadlineInterfaceFromResponse(res));
+export function fetchRemoteTextAndCreateReadlineInterface(url: string | URL): Promise<AsyncGenerator<string>> {
+  return fetchWithRetry(url, defaultRequestInit).then(res => createReadlineInterfaceFromResponse(res));
 }

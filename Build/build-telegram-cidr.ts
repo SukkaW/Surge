@@ -1,5 +1,5 @@
 // @ts-check
-import { fetchWithRetry } from './lib/fetch-retry';
+import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import { createReadlineInterfaceFromResponse } from './lib/fetch-remote-text-by-line';
 import path from 'path';
 import { isIPv4, isIPv6 } from 'net';
@@ -9,7 +9,7 @@ import { task } from './lib/trace-runner';
 
 export const buildTelegramCIDR = task(__filename, async () => {
   /** @type {Response} */
-  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt');
+  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 

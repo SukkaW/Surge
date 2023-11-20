@@ -8,6 +8,7 @@ import { pipeline } from 'stream/promises';
 import { readFileByLine } from './lib/fetch-remote-text-by-line';
 import { isCI } from 'ci-info';
 import { task, traceAsync } from './lib/trace-runner';
+import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
@@ -51,7 +52,7 @@ export const downloadPreviousBuild = task(__filename, async () => {
   await traceAsync(
     'Download and extract previous build',
     () => Promise.all([
-      fetch('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master'),
+      fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit),
       fsp.mkdir(extractedPath, { recursive: true })
     ]).then(([resp]) => pipeline(
       Readable.fromWeb(resp.body!),
@@ -82,7 +83,7 @@ export const downloadPublicSuffixList = task(__filename, async () => {
   const publicSuffixPath = path.join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
   const [resp] = await Promise.all([
-    fetch('https://publicsuffix.org/list/public_suffix_list.dat'),
+    fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat', defaultRequestInit),
     fsp.mkdir(publicSuffixDir, { recursive: true })
   ]);
 

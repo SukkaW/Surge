@@ -1,5 +1,5 @@
 // @ts-check
-import { fetchWithRetry } from './fetch-retry';
+import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 import * as tldts from './cached-tld-parse';
 import { fetchRemoteTextAndCreateReadlineInterface } from './fetch-remote-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
@@ -198,7 +198,7 @@ export async function processFilterRules(
       filterRules = (
         await Promise.any(
           [filterRulesUrl, ...(fallbackUrls || [])].map(async url => {
-            const r = await fetchWithRetry(url, { signal: controller.signal });
+            const r = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
             const text = await r.text();
 
             controller.abort();

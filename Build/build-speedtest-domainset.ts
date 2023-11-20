@@ -6,9 +6,11 @@ import domainSorter from './lib/stable-sort-domain';
 import { Sema } from 'async-sema';
 import * as tldts from 'tldts';
 import { task } from './lib/trace-runner';
+import { fetchWithRetry } from './lib/fetch-retry';
+
 const s = new Sema(3);
 
-const latestTopUserAgentsPromise = fetch('https://unpkg.com/top-user-agents@latest/index.json')
+const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
   .then(res => res.json() as Promise<string[]>);
 
 const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> => {
@@ -23,7 +25,7 @@ const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> =>
     const key = `fetch speedtest endpoints: ${keyword}`;
     console.time(key);
 
-    const res = await fetch(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
+    const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
       headers: {
         dnt: '1',
         Referer: 'https://www.speedtest.net/',
