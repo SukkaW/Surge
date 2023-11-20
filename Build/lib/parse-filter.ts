@@ -43,14 +43,9 @@ export async function processDomainLists(domainListsUrl: string | URL) {
     domainListsUrl = new URL(domainListsUrl);
   }
 
-  /** @type Set<string> */
-  const domainSets = new Set();
+  const domainSets = new Set<string>();
 
   for await (const line of await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl)) {
-    if (line[0] === '!') {
-      continue;
-    }
-
     const domainToAdd = processLine(line);
     if (!domainToAdd) {
       continue;
@@ -230,6 +225,9 @@ export async function processFilterRules(
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#%&=~]/;
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
 
+/**
+ * 0 white include subdomain, 1 black abosulte, 2 black include subdomain, -1 white
+ */
 function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: 0 | 1 | 2 | -1] {
   if (
     // doesn't include
@@ -412,7 +410,7 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
         return [domain, 0];
       }
 
-      console.warn('      * [parse-filter E0001] (black) invalid domain:', _domain);
+      console.warn('      * [parse-filter E0001] (white) invalid domain:', _domain);
       return null;
     }
   }
