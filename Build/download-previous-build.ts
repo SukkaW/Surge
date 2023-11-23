@@ -51,31 +51,49 @@ export const downloadPreviousBuild = task(__filename, async () => {
 
   await traceAsync(
     'Download and extract previous build',
-    () => Promise.all([
-      fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit),
-      fsp.mkdir(extractedPath, { recursive: true })
-    ]).then(([resp]) => pipeline(
-      Readable.fromWeb(resp.body!),
-      tar.x({
-        cwd: extractedPath,
-        filter(p) {
-          return filesList.some(f => p.startsWith(f));
-        }
-      })
-    ))
-  );
+    async () => {
+      const [resp] = await Promise.all([
+        fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit),
+        fsp.mkdir(extractedPath, { recursive: true })
+      ]);
+      await pipeline(
+        Readable.fromWeb(resp.body!),
+        tar.t({
+          filter(p) {
+            return filesList.some(f => p.startsWith(f));
+          },
+          // onentry is async, so we close entry manually after consumed
+          noResume: true,
+          async onentry(entry) {
+            if (entry.type !== 'File') {
+              // not a file, throw away
+              console.log(entry.type, entry.path)
+              entry.resume();
+              return;
+            }
 
-  await Promise.all(buildOutputList.map(async p => {
-    const src = path.join(extractedPath, 'ruleset.skk.moe-master', p);
+            const relativeEntryPath = entry.path.replace('ruleset.skk.moe-master' + path.sep, '');
 
-    if (fs.existsSync(src)) { // Bun.file().exists() doesn't check directory
-      return fsp.cp(
-        src,
-        path.join(__dirname, '..', p),
-        { force: true, recursive: true }
+            const targetPath = path.join(__dirname, '..', relativeEntryPath);
+            await fsp.mkdir(path.dirname(targetPath), { recursive: true });
+
+            const targetFile = Bun.file(targetPath);
+            const targetFileSink = targetFile.writer();
+
+            await new Promise<void>((resolve, reject) => {
+              entry.on('data', (chunk) => {
+                targetFileSink.write(chunk);
+              });
+              entry.on('end', resolve);
+              entry.on('error', reject);
+            });
+
+            await targetFileSink.end();
+          }
+        })
       );
     }
-  }));
+  );
 });
 
 export const downloadPublicSuffixList = task(__filename, async () => {

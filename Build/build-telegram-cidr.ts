@@ -8,7 +8,6 @@ import { createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';
 
 export const buildTelegramCIDR = task(__filename, async () => {
-  /** @type {Response} */
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
