@@ -17,8 +17,7 @@ const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
 
 export const buildCommon = task(__filename, async () => {
-  /** @type {Promise<unknown>[]} */
-  const promises = [];
+  const promises: Promise<unknown>[] = [];
 
   const pw = new PathScurry(sourceDir);
   for await (const entry of pw) {
@@ -50,12 +49,10 @@ if (import.meta.main) {
 }
 
 const processFile = async (sourcePath: string) => {
-  /** @type {string[]} */
-  const lines = [];
+  const lines: string[] = [];
 
   let title = '';
-  /** @type {string[]} */
-  const descriptions = [];
+  const descriptions: string[] = [];
 
   for await (const line of readFileByLine(sourcePath)) {
     if (line === MAGIC_COMMAND_SKIP) {

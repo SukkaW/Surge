@@ -1,34 +1,16 @@
 import type { BunFile } from 'bun';
 import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
+import { TextLineStream } from './text-line-transform-stream';
+import { PolyfillTextDecoderStream } from './text-decoder-stream';
 
-const decoder = new TextDecoder('utf-8');
-
-export async function* readFileByLine(file: string | BunFile): AsyncGenerator<string> {
+export function readFileByLine(file: string | BunFile) {
   if (typeof file === 'string') {
     file = Bun.file(file);
   }
-
-  let buf = '';
-
-  for await (const chunk of file.stream()) {
-    const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
-    for (let i = 0, len = chunkStr.length; i < len; i++) {
-      const char = chunkStr[i];
-      if (char === '\n') {
-        yield buf;
-        buf = '';
-      } else {
-        buf += char;
-      }
-    }
-  }
-
-  if (buf) {
-    yield buf;
-  }
+  return file.stream().pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream());
 }
 
-export async function* createReadlineInterfaceFromResponse(resp: Response): AsyncGenerator<string> {
+export async function createReadlineInterfaceFromResponse(resp: Response) {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }
@@ -36,26 +18,9 @@ export async function* createReadlineInterfaceFromResponse(resp: Response): Asyn
     throw new Error('Body has already been consumed.');
   }
 
-  let buf = '';
-
-  for await (const chunk of resp.body) {
-    const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
-    for (let i = 0, len = chunkStr.length; i < len; i++) {
-      const char = chunkStr[i];
-      if (char === '\n') {
-        yield buf;
-        buf = '';
-      } else {
-        buf += char;
-      }
-    }
-  }
-
-  if (buf) {
-    yield buf;
-  }
+  return (resp.body as ReadableStream<Uint8Array>).pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream());
 }
 
-export function fetchRemoteTextAndCreateReadlineInterface(url: string | URL): Promise<AsyncGenerator<string>> {
+export function fetchRemoteTextAndCreateReadlineInterface(url: string | URL) {
   return fetchWithRetry(url, defaultRequestInit).then(res => createReadlineInterfaceFromResponse(res));
 }

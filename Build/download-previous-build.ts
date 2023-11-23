@@ -43,7 +43,7 @@ export const downloadPreviousBuild = task(__filename, async () => {
 
   if (flag & ALL_FILES_EXISTS) {
     console.log('All files exists, skip download.');
-    return;
+    // return;
   }
 
   const extractedPath = path.join(os.tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
@@ -80,6 +80,7 @@ export const downloadPreviousBuild = task(__filename, async () => {
             const targetFile = Bun.file(targetPath);
             const targetFileSink = targetFile.writer();
 
+            // I don't know, but for some reason it is impossible to consume entry with AsyncIterator
             await new Promise<void>((resolve, reject) => {
               entry.on('data', (chunk) => {
                 targetFileSink.write(chunk);
