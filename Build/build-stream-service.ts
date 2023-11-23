@@ -5,6 +5,7 @@ import path from 'path';
 import { createRuleset } from './lib/create-file';
 
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
 const createRulesetForStreamService = (fileId: string, title: string, streamServices: import('../Source/stream').StreamService[]) => {
   return [
@@ -12,25 +13,21 @@ const createRulesetForStreamService = (fileId: string, title: string, streamServ
     ...createRuleset(
       `Sukka's Ruleset - Stream Services: ${title}`,
       [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
+        ...SHARED_DESCRIPTION,
         '',
         ...streamServices.map((i: { name: any; }) => `- ${i.name}`)
       ],
       new Date(),
       streamServices.flatMap((i: { rules: any; }) => i.rules),
       'ruleset',
-      path.resolve(__dirname, `../List/non_ip/${fileId}.conf`),
-      path.resolve(__dirname, `../Clash/non_ip/${fileId}.txt`)
+      path.resolve(import.meta.dir, `../List/non_ip/${fileId}.conf`),
+      path.resolve(import.meta.dir, `../Clash/non_ip/${fileId}.txt`)
     ),
     // IP
     ...createRuleset(
       `Sukka's Ruleset - Stream Services' IPs: ${title}`,
       [
-        'License: AGPL 3.0',
-        'Homepage: https://ruleset.skk.moe',
-        'GitHub: https://github.com/SukkaW/Surge',
+        ...SHARED_DESCRIPTION,
         '',
         ...streamServices.map((i: { name: any; }) => `- ${i.name}`)
       ],
@@ -44,13 +41,13 @@ const createRulesetForStreamService = (fileId: string, title: string, streamServ
           : []
       )),
       'ruleset',
-      path.resolve(__dirname, `../List/ip/${fileId}.conf`),
-      path.resolve(__dirname, `../Clash/ip/${fileId}.txt`)
+      path.resolve(import.meta.dir, `../List/ip/${fileId}.conf`),
+      path.resolve(import.meta.dir, `../Clash/ip/${fileId}.txt`)
     )
   ];
 };
 
-export const buildStreamService = task(__filename, async () => {
+export const buildStreamService = task(import.meta.path, async () => {
   return Promise.all([
     ...createRulesetForStreamService('stream', 'All', ALL),
     ...createRulesetForStreamService('stream_us', 'North America', NORTH_AMERICA),

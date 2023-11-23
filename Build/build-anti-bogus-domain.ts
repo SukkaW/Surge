@@ -5,6 +5,7 @@ import { createRuleset } from './lib/create-file';
 import { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } from './lib/fetch-remote-text-by-line';
 import { processLine } from './lib/process-line';
 import { task } from './lib/trace-runner';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
 const getBogusNxDomainIPs = async () => {
   /** @type {string[]} */
@@ -22,12 +23,12 @@ const getBogusNxDomainIPs = async () => {
   return result;
 };
 
-export const buildAntiBogusDomain = task(__filename, async () => {
+export const buildAntiBogusDomain = task(import.meta.path, async () => {
   const bogusIpPromise = getBogusNxDomainIPs();
 
   /** @type {string[]} */
   const result = [];
-  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/ip/reject.conf'))) {
+  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/ip/reject.conf'))) {
     if (line === '# --- [Anti Bogus Domain Replace Me] ---') {
       (await bogusIpPromise).forEach(rule => result.push(rule));
       continue;
@@ -40,9 +41,7 @@ export const buildAntiBogusDomain = task(__filename, async () => {
   }
 
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     '',
     'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers.',
     '',
@@ -56,8 +55,8 @@ export const buildAntiBogusDomain = task(__filename, async () => {
     new Date(),
     result,
     'ruleset',
-    path.resolve(__dirname, '../List/ip/reject.conf'),
-    path.resolve(__dirname, '../Clash/ip/reject.txt')
+    path.resolve(import.meta.dir, '../List/ip/reject.conf'),
+    path.resolve(import.meta.dir, '../Clash/ip/reject.txt')
   ));
 });
 

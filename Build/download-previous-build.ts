@@ -13,12 +13,12 @@ import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
 
-export const downloadPreviousBuild = task(__filename, async () => {
+export const downloadPreviousBuild = task(import.meta.path, async () => {
   const buildOutputList: string[] = [];
 
   let flag = 1 | ALL_FILES_EXISTS;
 
-  for await (const line of readFileByLine(path.resolve(__dirname, '../.gitignore'))) {
+  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../.gitignore'))) {
     if (line === '# $ build output') {
       flag = flag | IS_READING_BUILD_OUTPUT;
       continue;
@@ -31,7 +31,7 @@ export const downloadPreviousBuild = task(__filename, async () => {
 
     if (!isCI) {
       // Bun.file().exists() doesn't check directory
-      if (!fs.existsSync(path.join(__dirname, '..', line))) {
+      if (!fs.existsSync(path.join(import.meta.dir, '..', line))) {
         flag = flag & ~ALL_FILES_EXISTS;
       }
     }
@@ -74,7 +74,7 @@ export const downloadPreviousBuild = task(__filename, async () => {
 
             const relativeEntryPath = entry.path.replace('ruleset.skk.moe-master' + path.sep, '');
 
-            const targetPath = path.join(__dirname, '..', relativeEntryPath);
+            const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
             await fsp.mkdir(path.dirname(targetPath), { recursive: true });
 
             const targetFile = Bun.file(targetPath);
@@ -97,8 +97,8 @@ export const downloadPreviousBuild = task(__filename, async () => {
   );
 });
 
-export const downloadPublicSuffixList = task(__filename, async () => {
-  const publicSuffixDir = path.resolve(__dirname, '../node_modules/.cache');
+export const downloadPublicSuffixList = task(import.meta.path, async () => {
+  const publicSuffixDir = path.resolve(import.meta.dir, '../node_modules/.cache');
   const publicSuffixPath = path.join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
   const [resp] = await Promise.all([

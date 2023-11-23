@@ -7,16 +7,17 @@ import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { domainDeduper } from './lib/domain-deduper';
 import { task } from './lib/trace-runner';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
 const MAGIC_COMMAND_DESCRIPTION = '# $ meta_description ';
 
-const sourceDir = path.resolve(__dirname, '../Source');
-const outputSurgeDir = path.resolve(__dirname, '../List');
-const outputClashDir = path.resolve(__dirname, '../Clash');
+const sourceDir = path.resolve(import.meta.dir, '../Source');
+const outputSurgeDir = path.resolve(import.meta.dir, '../List');
+const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
-export const buildCommon = task(__filename, async () => {
+export const buildCommon = task(import.meta.path, async () => {
   const promises: Promise<unknown>[] = [];
 
   const pw = new PathScurry(sourceDir);
@@ -49,30 +50,38 @@ if (import.meta.main) {
 }
 
 const processFile = async (sourcePath: string) => {
+  console.log('Processing', sourcePath);
+
   const lines: string[] = [];
 
   let title = '';
   const descriptions: string[] = [];
 
-  for await (const line of readFileByLine(sourcePath)) {
-    if (line === MAGIC_COMMAND_SKIP) {
-      return;
-    }
 
-    if (line.startsWith(MAGIC_COMMAND_TITLE)) {
-      title = line.slice(MAGIC_COMMAND_TITLE.length).trim();
-      continue;
+  try {
+    for await (const line of readFileByLine(sourcePath)) {
+      if (line === MAGIC_COMMAND_SKIP) {
+        return;
+      }
+  
+      if (line.startsWith(MAGIC_COMMAND_TITLE)) {
+        title = line.slice(MAGIC_COMMAND_TITLE.length).trim();
+        continue;
+      }
+  
+      if (line.startsWith(MAGIC_COMMAND_DESCRIPTION)) {
+        descriptions.push(line.slice(MAGIC_COMMAND_DESCRIPTION.length).trim());
+        continue;
+      }
+  
+      const l = processLine(line);
+      if (l) {
+        lines.push(l);
+      }
     }
-
-    if (line.startsWith(MAGIC_COMMAND_DESCRIPTION)) {
-      descriptions.push(line.slice(MAGIC_COMMAND_DESCRIPTION.length).trim());
-      continue;
-    }
-
-    const l = processLine(line);
-    if (l) {
-      lines.push(l);
-    }
+  } catch (e) {
+    console.error('Error processing', sourcePath);
+    console.trace(e);
   }
 
   return [title, descriptions, lines] as const;
@@ -85,9 +94,7 @@ async function transformDomainset(sourcePath: string, relativePath: string) {
 
   const deduped = domainDeduper(lines);
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     ...(
       descriptions.length
         ? ['', ...descriptions]
@@ -115,9 +122,7 @@ async function transformRuleset(sourcePath: string, relativePath: string) {
   const [title, descriptions, lines] = res;
 
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     ...(
       descriptions.length
         ? ['', ...descriptions]

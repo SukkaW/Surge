@@ -12,7 +12,7 @@ import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 
 const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
-export const buildInternalCDNDomains = task(__filename, async () => {
+export const buildInternalCDNDomains = task(import.meta.path, async () => {
   const set = new Set<string>();
   const keywords = new Set();
 
@@ -63,16 +63,16 @@ export const buildInternalCDNDomains = task(__filename, async () => {
   };
 
   await Promise.all([
-    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/cdn.conf')),
-    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global.conf')),
-    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/global_plus.conf')),
-    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/my_proxy.conf')),
-    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/stream.conf')),
-    processLocalRuleSet(path.resolve(__dirname, '../List/non_ip/telegram.conf')),
-    processLocalDomainSet(path.resolve(__dirname, '../List/domainset/cdn.conf')),
-    processLocalDomainSet(path.resolve(__dirname, '../List/domainset/download.conf')),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf')),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf')),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf')),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_proxy.conf')),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/stream.conf')),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/telegram.conf')),
+    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/cdn.conf')),
+    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/download.conf')),
 
-    fsp.mkdir(path.resolve(__dirname, '../List/internal'), { recursive: true })
+    fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
   ]);
 
   return compareAndWriteFile(
@@ -80,7 +80,7 @@ export const buildInternalCDNDomains = task(__filename, async () => {
       ...Array.from(set).sort(domainSorter).map(i => `SUFFIX,${i}`),
       ...Array.from(keywords).sort().map(i => `REGEX,${i}`)
     ],
-    path.resolve(__dirname, '../List/internal/cdn.txt')
+    path.resolve(import.meta.dir, '../List/internal/cdn.txt')
   );
 });
 

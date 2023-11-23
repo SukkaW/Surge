@@ -10,7 +10,7 @@ const EXCLUDE_CIDRS = [
   '223.120.0.0/15'
 ];
 
-export const buildChnCidr = task(__filename, async () => {
+export const buildChnCidr = task(import.meta.path, async () => {
   const [{ exclude }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),
     processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'))
@@ -18,6 +18,7 @@ export const buildChnCidr = task(__filename, async () => {
 
   const filteredCidr = exclude(cidr, EXCLUDE_CIDRS, true);
 
+  // Can not use SHARED_DESCRIPTION here as different license
   const description = [
     'License: CC BY-SA 2.0',
     'Homepage: https://ruleset.skk.moe',
@@ -34,7 +35,7 @@ export const buildChnCidr = task(__filename, async () => {
         new Date(),
         filteredCidr.map(i => `IP-CIDR,${i}`)
       ),
-      pathResolve(__dirname, '../List/ip/china_ip.conf')
+      pathResolve(import.meta.dir, '../List/ip/china_ip.conf')
     ),
     compareAndWriteFile(
       withBannerArray(
@@ -43,7 +44,7 @@ export const buildChnCidr = task(__filename, async () => {
         new Date(),
         filteredCidr
       ),
-      pathResolve(__dirname, '../Clash/ip/china_ip.txt')
+      pathResolve(import.meta.dir, '../Clash/ip/china_ip.txt')
     )
   ]);
 });

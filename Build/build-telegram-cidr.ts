@@ -6,14 +6,14 @@ import { isIPv4, isIPv6 } from 'net';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
-export const buildTelegramCIDR = task(__filename, async () => {
+export const buildTelegramCIDR = task(import.meta.path, async () => {
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 
-  /** @type {string[]} */
-  const results = [];
+  const results: string[] = [];
 
   for await (const line of createReadlineInterfaceFromResponse(resp)) {
     const cidr = processLine(line);
@@ -33,9 +33,7 @@ export const buildTelegramCIDR = task(__filename, async () => {
   }
 
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     'Data from:',
     ' - https://core.telegram.org/resources/cidr.txt'
   ];
@@ -46,8 +44,8 @@ export const buildTelegramCIDR = task(__filename, async () => {
     date,
     results,
     'ruleset',
-    path.resolve(__dirname, '../List/ip/telegram.conf'),
-    path.resolve(__dirname, '../Clash/ip/telegram.txt')
+    path.resolve(import.meta.dir, '../List/ip/telegram.conf'),
+    path.resolve(import.meta.dir, '../Clash/ip/telegram.txt')
   ));
 });
 

@@ -24,8 +24,8 @@ export interface TaskResult {
   readonly taskName: string;
 }
 
-const task = <T>(__filename: string, fn: () => Promise<T>, customname: string | null = null) => {
-  const taskName = customname ?? path.basename(__filename, path.extname(__filename));
+const task = <T>(importMetaPath: string, fn: () => Promise<T>, customname: string | null = null) => {
+  const taskName = customname ?? path.basename(importMetaPath, path.extname(importMetaPath));
   return async () => {
     console.log(`🏃 [${taskName}] Start executing`);
     const start = performance.now();

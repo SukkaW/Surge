@@ -13,7 +13,6 @@
 // limitations under the License.
 
 // Polyfill for TextEncoderStream and TextDecoderStream
-
 // Modified by Sukka (https://skk.moe) to increase compatibility and performance with Bun.
 
 export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, string> {
@@ -23,10 +22,7 @@ export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, strin
 
   constructor(
     encoding: Encoding = 'utf-8',
-    {
-      fatal = false,
-      ignoreBOM = false,
-    }: ConstructorParameters<typeof TextDecoder>[1] = {},
+    { fatal = false, ignoreBOM = false }: ConstructorParameters<typeof TextDecoder>[1] = {},
   ) {
     const decoder = new TextDecoder(encoding, { fatal, ignoreBOM });
     super({

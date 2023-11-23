@@ -15,7 +15,7 @@ const SPECIAL_SUFFIXES = new Set([
 ]);
 
 const validateDomainSet = async (filePath: string) => {
-  for await (const l of readFileByLine(path.resolve(__dirname, '../List/domainset', filePath))) {
+  for await (const l of readFileByLine(path.resolve(import.meta.dir, '../List/domainset', filePath))) {
     // starts with #
     const line = processLine(l);
     if (!line) {
@@ -38,7 +38,7 @@ const validateDomainSet = async (filePath: string) => {
 const _validateRuleset = async (filePath: string) => {
   console.log(`[${filePath}]`);
 
-  for await (const l of readFileByLine(path.resolve(__dirname, '../List/non_ip', filePath))) {
+  for await (const l of readFileByLine(path.resolve(import.meta.dir, '../List/non_ip', filePath))) {
     // starts with #
     const line = processLine(l);
     if (!line) {
@@ -58,13 +58,13 @@ const _validateRuleset = async (filePath: string) => {
   }
 };
 
-export const validate = task(__filename, async () => {
+export const validate = task(import.meta.path, async () => {
   // const [domainsetFiles, _rulesetFiles] = await Promise.all([
-  //   listDir(path.resolve(__dirname, '../List/domainset')),
-  //   listDir(path.resolve(__dirname, '../List/non_ip'))
+  //   listDir(path.resolve(import.meta.dir, '../List/domainset')),
+  //   listDir(path.resolve(import.meta.dir, '../List/non_ip'))
   // ]);
   return Promise.all([
-    listDir(path.resolve(__dirname, '../List/domainset'))
+    listDir(path.resolve(import.meta.dir, '../List/domainset'))
       .then(domainsetFiles => Promise.all(domainsetFiles.map(file => validateDomainSet(file))))
     // rulesetFiles.map(file => validateRuleset(file))
   ]);

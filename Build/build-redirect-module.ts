@@ -71,7 +71,7 @@ const REDIRECT = /** @type {const} */ ([
   ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
 ]);
 
-export const buildRedirectModule = task(__filename, async () => {
+export const buildRedirectModule = task(import.meta.path, async () => {
   const domains = Array.from(new Set(REDIRECT.map(([from]) => tldts.getHostname(from, { detectIp: false })))).filter(Boolean);
 
   return compareAndWriteFile(
@@ -88,7 +88,7 @@ export const buildRedirectModule = task(__filename, async () => {
         return `${src} ${to}$1 302`;
       })
     ],
-    path.resolve(__dirname, '../Modules/sukka_url_redirect.sgmodule')
+    path.resolve(import.meta.dir, '../Modules/sukka_url_redirect.sgmodule')
   );
 });
 

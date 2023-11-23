@@ -4,8 +4,9 @@ import { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } from './lib
 import { createTrie } from './lib/trie';
 import { task } from './lib/trace-runner';
 import { processLine } from './lib/process-line';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
-const publicSuffixPath: string = path.resolve(__dirname, '../node_modules/.cache/public_suffix_list_dat.txt');
+const publicSuffixPath: string = path.resolve(import.meta.dir, '../node_modules/.cache/public_suffix_list_dat.txt');
 
 const getS3OSSDomains = async (): Promise<Set<string>> => {
   const trie = createTrie();
@@ -55,13 +56,13 @@ const getS3OSSDomains = async (): Promise<Set<string>> => {
   return S3OSSDomains;
 };
 
-const buildCdnConf = task(__filename, async ()  => {
+const buildCdnConf = task(import.meta.path, async ()  => {
   /** @type {string[]} */
   const cdnDomainsList: string[] = [];
 
   const getS3OSSDomainsPromise: Promise<Set<string>> = getS3OSSDomains();
 
-  for await (const l of readFileByLine(path.resolve(__dirname, '../Source/non_ip/cdn.conf'))) {
+  for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'))) {
     if (l === '# --- [AWS S3 Replace Me] ---') {
       (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
       continue;
@@ -73,9 +74,7 @@ const buildCdnConf = task(__filename, async ()  => {
   }
 
   const description: string[] = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     '',
     'This file contains object storage and static assets CDN domains.'
   ];
@@ -86,8 +85,8 @@ const buildCdnConf = task(__filename, async ()  => {
     new Date(),
     cdnDomainsList,
     'ruleset',
-    path.resolve(__dirname, '../List/non_ip/cdn.conf'),
-    path.resolve(__dirname, '../Clash/non_ip/cdn.txt')
+    path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'),
+    path.resolve(import.meta.dir, '../Clash/non_ip/cdn.txt')
   ));
 });
 

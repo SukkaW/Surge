@@ -8,6 +8,7 @@ import createTrie from './lib/trie';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import { createCachedGorhillGetDomain } from './lib/cached-tld-parse';
 import * as tldts from 'tldts';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -63,7 +64,7 @@ const BLACK_TLD = new Set([
   'com.cn'
 ]);
 
-export const buildPhishingDomainSet = task(__filename, async () => {
+export const buildPhishingDomainSet = task(import.meta.path, async () => {
   const [{ black: domainSet }, gorhill] = await Promise.all([
     processFilterRules(
       'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
@@ -162,9 +163,7 @@ export const buildPhishingDomainSet = task(__filename, async () => {
     .sort(domainSorter));
 
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     '',
     'The domainset supports enhanced phishing protection',
     'Build from:',
@@ -177,8 +176,8 @@ export const buildPhishingDomainSet = task(__filename, async () => {
     new Date(),
     results,
     'domainset',
-    path.resolve(__dirname, '../List/domainset/reject_phishing.conf'),
-    path.resolve(__dirname, '../Clash/domainset/reject_phishing.txt')
+    path.resolve(import.meta.dir, '../List/domainset/reject_phishing.conf'),
+    path.resolve(import.meta.dir, '../Clash/domainset/reject_phishing.txt')
   ));
 });
 

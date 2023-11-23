@@ -15,6 +15,7 @@ import { createDomainSorter } from './lib/stable-sort-domain';
 import { traceSync, task } from './lib/trace-runner';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import * as tldts from 'tldts';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -23,7 +24,7 @@ const domainKeywordsSet: Set<string> = new Set();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
 const domainSuffixSet: Set<string> = new Set();
 
-export const buildRejectDomainSet = task(__filename, async () => {
+export const buildRejectDomainSet = task(import.meta.path, async () => {
   /** @type Set<string> */
   const domainSets: Set<string> = new Set();
 
@@ -97,7 +98,7 @@ export const buildRejectDomainSet = task(__filename, async () => {
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules!`);
 
-  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'))) {
+  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
     const l = processLine(line);
     if (l) {
       domainSets.add(l);
@@ -107,7 +108,7 @@ export const buildRejectDomainSet = task(__filename, async () => {
   previousSize = domainSets.size - previousSize;
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
-  for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
+  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
     if (line.startsWith('DOMAIN-KEYWORD')) {
       const [, ...keywords] = line.split(',');
       domainKeywordsSet.add(keywords.join(',').trim());
@@ -117,7 +118,7 @@ export const buildRejectDomainSet = task(__filename, async () => {
     }
   }
 
-  for await (const line of readFileByLine(path.resolve(__dirname, '../List/domainset/reject_phishing.conf'))) {
+  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../List/domainset/reject_phishing.conf'))) {
     const l = processLine(line);
     if (l && l[0] === '.') {
       domainSuffixSet.add(l.slice(1));
@@ -196,9 +197,7 @@ export const buildRejectDomainSet = task(__filename, async () => {
   const domainset = traceSync('* Sort reject domainset', () => dudupedDominArray.sort(domainSorter));
 
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     '',
     'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
     '',
@@ -214,17 +213,17 @@ export const buildRejectDomainSet = task(__filename, async () => {
       new Date(),
       domainset,
       'domainset',
-      path.resolve(__dirname, '../List/domainset/reject.conf'),
-      path.resolve(__dirname, '../Clash/domainset/reject.txt')
+      path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
+      path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')
     ),
     compareAndWriteFile(
       rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
-      path.resolve(__dirname, '../List/internal/reject-stats.txt')
+      path.resolve(import.meta.dir, '../List/internal/reject-stats.txt')
     ),
     // Copy reject_sukka.conf for backward compatibility
     fsp.cp(
-      path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'),
-      path.resolve(__dirname, '../List/domainset/reject_sukka.conf'),
+      path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'),
+      path.resolve(import.meta.dir, '../List/domainset/reject_sukka.conf'),
       { force: true, recursive: true }
     )
   ]);

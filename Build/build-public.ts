@@ -3,8 +3,8 @@ import path from 'path';
 import fsp from 'fs/promises'
 import { task } from './lib/trace-runner';
 
-const rootPath = path.resolve(__dirname, '../');
-const publicPath = path.resolve(__dirname, '../public');
+const rootPath = path.resolve(import.meta.dir, '../');
+const publicPath = path.resolve(import.meta.dir, '../public');
 
 const folderAndFilesToBeDeployed = [
   'Assets',
@@ -15,7 +15,7 @@ const folderAndFilesToBeDeployed = [
   'LICENSE'
 ];
 
-export const buildPublicHtml = task(__filename, async () => {
+export const buildPublicHtml = task(import.meta.path, async () => {
   await fsp.mkdir(publicPath, { recursive: true });
   await Promise.all(folderAndFilesToBeDeployed.map(dir => fsp.cp(
     path.resolve(rootPath, dir),

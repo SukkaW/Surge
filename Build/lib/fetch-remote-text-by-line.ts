@@ -10,7 +10,7 @@ export function readFileByLine(file: string | BunFile) {
   return file.stream().pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream());
 }
 
-export async function createReadlineInterfaceFromResponse(resp: Response) {
+export function createReadlineInterfaceFromResponse(resp: Response) {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }

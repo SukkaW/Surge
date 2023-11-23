@@ -3,14 +3,13 @@ import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task } from './lib/trace-runner';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
-export const buildAppleCdn = task(__filename, async () => {
+export const buildAppleCdn = task(import.meta.path, async () => {
   const res = await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
 
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     '',
     'This file contains Apple\'s domains using their China mainland CDN servers.',
     '',
@@ -28,8 +27,8 @@ export const buildAppleCdn = task(__filename, async () => {
       new Date(),
       ruleset,
       'ruleset',
-      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/apple_cdn.txt')
+      path.resolve(import.meta.dir, '../List/non_ip/apple_cdn.conf'),
+      path.resolve(import.meta.dir, '../Clash/non_ip/apple_cdn.txt')
     ),
     ...createRuleset(
       'Sukka\'s Ruleset - Apple CDN',
@@ -37,8 +36,8 @@ export const buildAppleCdn = task(__filename, async () => {
       new Date(),
       domainset,
       'domainset',
-      path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
-      path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt')
+      path.resolve(import.meta.dir, '../List/domainset/apple_cdn.conf'),
+      path.resolve(import.meta.dir, '../Clash/domainset/apple_cdn.txt')
     )
   ]);
 });

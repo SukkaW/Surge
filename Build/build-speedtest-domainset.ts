@@ -7,6 +7,7 @@ import { Sema } from 'async-sema';
 import * as tldts from 'tldts';
 import { task } from './lib/trace-runner';
 import { fetchWithRetry } from './lib/fetch-retry';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
 const s = new Sema(3);
 
@@ -57,7 +58,7 @@ const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> =>
   }
 };
 
-export const buildSpeedtestDomainSet = task(__filename, async () => {
+export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
   /** @type {Set<string>} */
   const domains: Set<string> = new Set([
     '.speedtest.net',
@@ -135,9 +136,9 @@ export const buildSpeedtestDomainSet = task(__filename, async () => {
 
   const deduped = domainDeduper(Array.from(domains)).sort(domainSorter);
   const description = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge'
+    ...SHARED_DESCRIPTION,
+    '',
+    'This file contains common speedtest endpoints.'
   ];
 
   return Promise.all(createRuleset(
@@ -146,8 +147,8 @@ export const buildSpeedtestDomainSet = task(__filename, async () => {
     new Date(),
     deduped,
     'domainset',
-    path.resolve(__dirname, '../List/domainset/speedtest.conf'),
-    path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
+    path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'),
+    path.resolve(import.meta.dir, '../Clash/domainset/speedtest.txt')
   ));
 });
 

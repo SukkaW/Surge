@@ -19,57 +19,55 @@ interface TextLineStreamOptions {
  * ```
  */
 export class TextLineStream extends TransformStream<string, string> {
-  private __allowCR: boolean;
   private __buf = '';
 
   constructor(options?: TextLineStreamOptions) {
+    const allowCR = options?.allowCR ?? false;
+
     super({
-      transform: (chunk, controller) => this.handle(chunk, controller),
+      transform: (chunk, controller) => {
+        chunk = this.__buf + chunk;
+
+        for (; ;) {
+          const lfIndex = chunk.indexOf('\n');
+
+          if (allowCR) {
+            const crIndex = chunk.indexOf('\r');
+
+            if (
+              crIndex !== -1 && crIndex !== (chunk.length - 1) &&
+              (lfIndex === -1 || (lfIndex - 1) > crIndex)
+            ) {
+              controller.enqueue(chunk.slice(0, crIndex));
+              chunk = chunk.slice(crIndex + 1);
+              continue;
+            }
+          }
+
+          if (lfIndex !== -1) {
+            let crOrLfIndex = lfIndex;
+            if (chunk[lfIndex - 1] === '\r') {
+              crOrLfIndex--;
+            }
+            controller.enqueue(chunk.slice(0, crOrLfIndex));
+            chunk = chunk.slice(lfIndex + 1);
+            continue;
+          }
+
+          break;
+        }
+
+        this.__buf = chunk;
+      },
       flush: (controller) => {
         if (this.__buf.length > 0) {
-          if (
-            this.__allowCR &&
-            this.__buf[this.__buf.length - 1] === '\r'
-          ) controller.enqueue(this.__buf.slice(0, -1));
-          else controller.enqueue(this.__buf);
+          if (allowCR && this.__buf[this.__buf.length - 1] === '\r') {
+            controller.enqueue(this.__buf.slice(0, -1));
+          } else {
+            controller.enqueue(this.__buf);
+          };
         }
       },
     });
-    this.__allowCR = options?.allowCR ?? false;
-  }
-
-  private handle(chunk: string, controller: TransformStreamDefaultController<string>) {
-    chunk = this.__buf + chunk;
-
-    for (;;) {
-      const lfIndex = chunk.indexOf('\n');
-
-      if (this.__allowCR) {
-        const crIndex = chunk.indexOf('\r');
-
-        if (
-          crIndex !== -1 && crIndex !== (chunk.length - 1) &&
-          (lfIndex === -1 || (lfIndex - 1) > crIndex)
-        ) {
-          controller.enqueue(chunk.slice(0, crIndex));
-          chunk = chunk.slice(crIndex + 1);
-          continue;
-        }
-      }
-
-      if (lfIndex !== -1) {
-        let crOrLfIndex = lfIndex;
-        if (chunk[lfIndex - 1] === '\r') {
-          crOrLfIndex--;
-        }
-        controller.enqueue(chunk.slice(0, crOrLfIndex));
-        chunk = chunk.slice(lfIndex + 1);
-        continue;
-      }
-
-      break;
-    }
-
-    this.__buf = chunk;
   }
 }

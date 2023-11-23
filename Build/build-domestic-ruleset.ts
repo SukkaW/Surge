@@ -5,9 +5,10 @@ import { readFileByLine } from './lib/fetch-remote-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';
+import { SHARED_DESCRIPTION } from './lib/constants';
 
-export const buildDomesticRuleset = task(__filename, async () => {
-  const results = await processLineFromReadline(readFileByLine(path.resolve(__dirname, '../Source/non_ip/domestic.conf')));
+export const buildDomesticRuleset = task(import.meta.path, async () => {
+  const results = await processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf')));
 
   results.push(
     ...Object.entries(DOMESTICS)
@@ -22,9 +23,7 @@ export const buildDomesticRuleset = task(__filename, async () => {
   );
 
   const rulesetDescription = [
-    'License: AGPL 3.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
+    ...SHARED_DESCRIPTION,
     '',
     'This file contains known addresses that are avaliable in the Mainland China.'
   ];
@@ -36,8 +35,8 @@ export const buildDomesticRuleset = task(__filename, async () => {
       new Date(),
       results,
       'ruleset',
-      path.resolve(__dirname, '../List/non_ip/domestic.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/domestic.txt')
+      path.resolve(import.meta.dir, '../List/non_ip/domestic.conf'),
+      path.resolve(import.meta.dir, '../Clash/non_ip/domestic.txt')
     ),
     compareAndWriteFile(
       [
@@ -53,7 +52,7 @@ export const buildDomesticRuleset = task(__filename, async () => {
             ])
           )
       ],
-      path.resolve(__dirname, '../Modules/sukka_local_dns_mapping.sgmodule')
+      path.resolve(import.meta.dir, '../Modules/sukka_local_dns_mapping.sgmodule')
     )
   ]);
 });
