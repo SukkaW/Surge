@@ -12,6 +12,7 @@ const handleMessage = async (e: MessageEvent<'build' | 'exit'>) => {
   } else if (e.data === 'exit') {
     self.removeEventListener('message', handleMessage);
     self.unref();
+    self.terminate();
   }
 };
 
