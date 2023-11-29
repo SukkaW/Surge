@@ -10,6 +10,9 @@ const EXCLUDE_CIDRS = [
   '223.120.0.0/15'
 ];
 
+// preload the module
+import('cidr-tools-wasm');
+
 export const buildChnCidr = task(import.meta.path, async () => {
   const [{ exclude }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),

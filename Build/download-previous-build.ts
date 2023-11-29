@@ -67,7 +67,6 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
           async onentry(entry) {
             if (entry.type !== 'File') {
               // not a file, throw away
-              console.log(entry.type, entry.path)
               entry.resume();
               return;
             }

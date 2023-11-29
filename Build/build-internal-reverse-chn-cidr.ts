@@ -22,6 +22,9 @@ const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
+// preload the module
+import('cidr-tools-wasm');
+
 export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
   const [{ exclude }, cidr] = await Promise.all([
     import('cidr-tools-wasm'),

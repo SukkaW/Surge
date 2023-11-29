@@ -19,14 +19,15 @@ interface TextLineStreamOptions {
  * ```
  */
 export class TextLineStream extends TransformStream<string, string> {
-  private __buf = '';
-
+  // private __buf = '';
   constructor(options?: TextLineStreamOptions) {
     const allowCR = options?.allowCR ?? false;
 
+    let __buf = '';
+
     super({
-      transform: (chunk, controller) => {
-        chunk = this.__buf + chunk;
+      transform(chunk, controller) {
+        chunk = __buf + chunk;
 
         for (; ;) {
           const lfIndex = chunk.indexOf('\n');
@@ -57,14 +58,14 @@ export class TextLineStream extends TransformStream<string, string> {
           break;
         }
 
-        this.__buf = chunk;
+        __buf = chunk;
       },
-      flush: (controller) => {
-        if (this.__buf.length > 0) {
-          if (allowCR && this.__buf[this.__buf.length - 1] === '\r') {
-            controller.enqueue(this.__buf.slice(0, -1));
+      flush(controller) {
+        if (__buf.length > 0) {
+          if (allowCR && __buf[__buf.length - 1] === '\r') {
+            controller.enqueue(__buf.slice(0, -1));
           } else {
-            controller.enqueue(this.__buf);
+            controller.enqueue(__buf);
           };
         }
       },

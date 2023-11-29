@@ -6,10 +6,12 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
   let isEqual = true;
   const file = Bun.file(filePath);
 
+  const linesALen = linesA.length;
+
   if (!(await file.exists())) {
     console.log(`${filePath} does not exists, writing...`);
     isEqual = false;
-  } else if (linesA.length === 0) {
+  } else if (linesALen === 0) {
     console.log(`Nothing to write to ${filePath}...`);
     isEqual = false;
   } else {
@@ -35,23 +37,24 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
       }
     }
 
-    if (index !== linesA.length) {
+    if (index !== linesALen) {
+      // The file becomes larger
       isEqual = false;
     }
   }
 
-  if (!isEqual) {
-    const writer = file.writer();
-
-    for (let i = 0, len = linesA.length; i < len; i++) {
-      writer.write(`${linesA[i]}\n`);
-    }
-
-    await writer.end();
+  if (isEqual) {
+    console.log(`Same Content, bail out writing: ${filePath}`);
     return;
   }
 
-  console.log(`Same Content, bail out writing: ${filePath}`);
+  const writer = file.writer();
+
+  for (let i = 0; i < linesALen; i++) {
+    writer.write(`${linesA[i]}\n`);
+  }
+
+  return writer.end();
 }
 
 export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {
