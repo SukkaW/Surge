@@ -62,7 +62,7 @@ export async function processDomainLists(domainListsUrl: string | URL) {
   return domainSets;
 }
 
-export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false) {
+export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false, skipDomainCheck = false) {
   console.time(`- processHosts: ${hostsUrl}`);
 
   if (typeof hostsUrl === 'string') {
@@ -85,7 +85,7 @@ export async function processHosts(hostsUrl: string | URL, includeAllSubDomain =
       foundDebugDomain = true;
     }
 
-    const domain = normalizeDomain(_domain);
+    const domain = skipDomainCheck ? _domain : normalizeDomain(_domain);
     if (domain) {
       if (includeAllSubDomain) {
         domainSets.add(`.${domain}`);

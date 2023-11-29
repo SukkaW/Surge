@@ -1,4 +1,4 @@
-import { processFilterRules } from './lib/parse-filter';
+import { processFilterRules, processHosts } from './lib/parse-filter';
 import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { processLine } from './lib/process-line';
@@ -65,15 +65,16 @@ const BLACK_TLD = new Set([
 ]);
 
 export const buildPhishingDomainSet = task(import.meta.path, async () => {
-  const [{ black: domainSet }, gorhill] = await Promise.all([
-    processFilterRules(
-      'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
-      [
-        'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
-        // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-        // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
-      ]
-    ),
+  const [domainSet, gorhill] = await Promise.all([
+    processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true),
+    // processFilterRules(
+    //   'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
+    //   [
+    //     'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
+    //     // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
+    //     // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
+    //   ]
+    // ),
     getGorhillPublicSuffixPromise()
   ]);
 
