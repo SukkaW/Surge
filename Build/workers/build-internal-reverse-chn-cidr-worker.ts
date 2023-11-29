@@ -1,11 +1,18 @@
 declare const self: Worker;
 
-self.addEventListener('message', async (e: MessageEvent<'build' | 'exit'>) => {
+import { buildInternalReverseChnCIDR } from '../build-internal-reverse-chn-cidr';
+
+// preload the task
+const promise = buildInternalReverseChnCIDR();
+
+const handleMessage = async (e: MessageEvent<'build' | 'exit'>) => {
   if (e.data === 'build') {
-    const { buildInternalReverseChnCIDR } = await import('../build-internal-reverse-chn-cidr');
-    const stat = await buildInternalReverseChnCIDR();
+    const stat = await promise;
     postMessage(stat);
   } else if (e.data === 'exit') {
-    process.exit(0);
+    self.removeEventListener('message', handleMessage);
+    self.unref();
   }
-}, { once: true });
+};
+
+self.addEventListener('message', handleMessage);

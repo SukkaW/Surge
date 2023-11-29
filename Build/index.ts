@@ -53,13 +53,13 @@ import { TaskResult } from './lib/trace-runner';
 
     const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
       const handleMessage = (e: MessageEvent<TaskResult>) => {
-        buildInternalReverseChnCIDRWorker.unref();
         const { data } = e;
 
         buildInternalReverseChnCIDRWorker.postMessage('exit');
+        buildInternalReverseChnCIDRWorker.removeEventListener('message', handleMessage);
         resolve(data);
       };
-      buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage, { once: true });
+      buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage);
       buildInternalReverseChnCIDRWorker.postMessage('build');
     });
 
