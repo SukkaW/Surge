@@ -6,12 +6,20 @@ export const HOSTS = [
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', false],
   // Curben's UrlHaus Malicious URL Blocklist
+  // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
+  // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
+  // 'https://ublockorigin.github.io/uAssets/thirdparties/urlhaus-filter/urlhaus-filter-online.txt',
   ['https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt', true, true],
   // Curben's Phishing URL Blocklist
+  // 'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt'
+  // 'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
   ['https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true],
   // Curben's PUP Domains Blocklist
+  // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
+  // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
   ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, true],
   // BarbBlock
+  // 'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
   ['https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt', true, true]
 ] as const;
 
@@ -110,34 +118,6 @@ export const ADGUARD_FILTERS = [
       'https://easylist-downloads.adblockplus.org/easylistgermany.txt'
     ]
   ],
-  // Curben's UrlHaus Malicious URL Blocklist
-  // [
-  //   'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
-  //   [
-  //     'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
-  //     // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-  //     // 'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
-  //     'https://ublockorigin.github.io/uAssets/thirdparties/urlhaus-filter/urlhaus-filter-online.txt',
-  //   ]
-  // ],
-  // Curben's Phishing URL Blocklist
-  // [
-  //   'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
-  //   [
-  //     'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
-  //     // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-  //     // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
-  //   ]
-  // ],
-  // Curben's PUP Domains Blocklist
-  // [
-  //   'https://curbengh.github.io/pup-filter/pup-filter-agh.txt',
-  //   [
-  //     'https://pup-filter.pages.dev/pup-filter-agh.txt'
-  //     // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-  //     // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-agh.txt'
-  //   ]
-  // ],
   // GameConsoleAdblockList
   'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt',
   // PiHoleBlocklist
@@ -149,8 +129,6 @@ export const ADGUARD_FILTERS = [
   ],
   // Spam404
   'https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt',
-  // BarbBlock
-  // 'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
   // Brave First Party & First Party CNAME
   'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt'
 ] as const;
@@ -167,7 +145,6 @@ export const PREDEFINED_WHITELIST = [
   'mcastprefix',
   'skk.moe',
   'analytics.google.com',
-  'msa.cdn.mediaset.net', // Added manually using DOMAIN-KEYWORDS
   'cloud.answerhub.com',
   'ae01.alicdn.com',
   'whoami.akamai.net',
