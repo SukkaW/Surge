@@ -28,9 +28,7 @@ export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, strin
     super({
       transform(chunk: Uint8Array, controller: TransformStreamDefaultController<string>) {
         const decoded = decoder.decode(chunk);
-        if (decoded.length > 0) {
-          controller.enqueue(decoded);
-        }
+        controller.enqueue(decoded);
       },
       flush(controller: TransformStreamDefaultController<string>) {
         // If {fatal: false} is in options (the default), then the final call to

@@ -53,7 +53,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
         addApexDomain(line.replace('DOMAIN,', ''));
       } else if (line.startsWith('DOMAIN-KEYWORD')) {
         keywords.add(escapeRegExp(line.replace('DOMAIN-KEYWORD,', '')));
-      } else if (line.startsWith('USER-AGENT,') || line.startsWith('PROCESS-NAME,')) {
+      } else if (line.startsWith('USER-AGENT,') || line.startsWith('PROCESS-NAME,') || line.startsWith('URL-REGEX,')) {
         // do nothing
       } else if (processLine(line)) {
         console.warn('[drop line from ruleset]', line);

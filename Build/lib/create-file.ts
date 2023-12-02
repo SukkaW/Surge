@@ -21,7 +21,7 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
       const lineA = linesA[index];
       index++;
 
-      if (lineA === undefined) {
+      if (typeof lineA !== 'string') {
         // The file becomes smaller
         isEqual = false;
         break;

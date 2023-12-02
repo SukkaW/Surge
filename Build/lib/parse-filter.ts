@@ -4,7 +4,6 @@ import * as tldts from './cached-tld-parse';
 import { fetchRemoteTextAndCreateReadlineInterface } from './fetch-remote-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
-import { performance } from 'perf_hooks';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 
@@ -104,7 +103,7 @@ export async function processFilterRules(
   filterRulesUrl: string | URL,
   fallbackUrls?: ReadonlyArray<string | URL> | undefined
 ): Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }> {
-  const runStart = performance.now();
+  const runStart = Bun.nanoseconds();
 
   const whitelistDomainSets = new Set<string>();
   const blacklistDomainSets = new Set<string>();
@@ -174,10 +173,10 @@ export async function processFilterRules(
 
   if (!fallbackUrls || fallbackUrls.length === 0) {
     downloadTime = 0;
-    let last = performance.now();
+    let last = Bun.nanoseconds();
     for await (const line of await fetchRemoteTextAndCreateReadlineInterface(filterRulesUrl)) {
-      const now = performance.now();
-      downloadTime += performance.now() - last;
+      const now = Bun.nanoseconds();
+      downloadTime += Bun.nanoseconds() - last;
       last = now;
       // don't trim here
       lineCb(line);
@@ -185,7 +184,7 @@ export async function processFilterRules(
   } else {
     let filterRules;
 
-    const downloadStart = performance.now();
+    const downloadStart = Bun.nanoseconds();
     try {
       const controller = new AbortController();
 
@@ -205,15 +204,15 @@ export async function processFilterRules(
       console.log(`Download Rule for [${filterRulesUrl.toString()}] failed`);
       throw e;
     }
-    downloadTime = performance.now() - downloadStart;
+    downloadTime = Bun.nanoseconds() - downloadStart;
 
     for (let i = 0, len = filterRules.length; i < len; i++) {
       lineCb(filterRules[i]);
     }
   }
 
-  console.log(`   ┬ processFilterRules (${filterRulesUrl.toString()}): ${(performance.now() - runStart).toFixed(3)}ms`);
-  console.log(`   └── download time: ${downloadTime.toFixed(3)}ms`);
+  console.log(`   ┬ processFilterRules (${filterRulesUrl.toString()}): ${((Bun.nanoseconds() - runStart) / 1e6).toFixed(3)}ms`);
+  console.log(`   └── download time: ${(downloadTime / 1e6).toFixed(3)}ms`);
 
   return {
     white: whitelistDomainSets,
