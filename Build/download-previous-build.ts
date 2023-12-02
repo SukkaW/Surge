@@ -71,7 +71,7 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
               return;
             }
 
-            const relativeEntryPath = entry.path.replace('ruleset.skk.moe-master' + path.sep, '');
+            const relativeEntryPath = entry.path.replace(`ruleset.skk.moe-master${path.sep}`, '');
 
             const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
             await fsp.mkdir(path.dirname(targetPath), { recursive: true });
@@ -105,7 +105,7 @@ export const downloadPublicSuffixList = task(import.meta.path, async () => {
     fsp.mkdir(publicSuffixDir, { recursive: true })
   ]);
 
-  return Bun.write(publicSuffixPath, resp);
+  return Bun.write(publicSuffixPath, resp as Response);
 }, 'download-publicsuffixlist');
 
 if (import.meta.main) {

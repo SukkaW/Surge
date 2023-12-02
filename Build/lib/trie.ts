@@ -8,7 +8,7 @@ export const SENTINEL: string = String.fromCodePoint(0);
  * @param {string[] | Set<string>} [from]
  */
 export const createTrie = (from?: string[] | Set<string>) => {
-  let size: number = 0;
+  let size = 0;
   const root: any = {};
 
   /**
@@ -56,7 +56,7 @@ export const createTrie = (from?: string[] | Set<string>) => {
    * @param  {boolean} [includeEqualWithSuffix]
    * @return {string[]}
    */
-  const find = (suffix: string, includeEqualWithSuffix: boolean = true): string[] => {
+  const find = (suffix: string, includeEqualWithSuffix = true): string[] => {
     let node: any = root;
     const matches: string[] = [];
     let token: string;

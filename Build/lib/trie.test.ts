@@ -1,4 +1,5 @@
-import createTrie from './trie';
+import { createTrie } from './trie';
+// eslint-disable-next-line import/no-unresolved -- fuck eslint-import
 import { describe, expect, it } from 'bun:test';
 
 describe('Trie', () => {

@@ -1,5 +1,4 @@
-// @ts-check
-import fsp from 'fs/promises'
+import fsp from 'fs/promises';
 import path from 'path';
 import * as tldts from 'tldts';
 import { processLine } from './lib/process-line';
@@ -14,7 +13,7 @@ const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '
 
 export const buildInternalCDNDomains = task(import.meta.path, async () => {
   const set = new Set<string>();
-  const keywords = new Set();
+  const keywords = new Set<string>();
 
   const gorhill = await getGorhillPublicSuffixPromise();
   const domainSorter = createDomainSorter(gorhill);

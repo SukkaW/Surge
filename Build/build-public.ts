@@ -1,6 +1,6 @@
 import listDir from '@sukka/listdir';
 import path from 'path';
-import fsp from 'fs/promises'
+import fsp from 'fs/promises';
 import { task } from './lib/trace-runner';
 
 const rootPath = path.resolve(import.meta.dir, '../');

@@ -50,6 +50,7 @@ const createDomainSorter = (gorhill: PublicSuffixList | null = null) => {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires -- fuck
   const tldts = require('./cached-tld-parse');
 
   return (a: string, b: string) => {

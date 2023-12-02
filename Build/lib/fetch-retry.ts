@@ -9,9 +9,30 @@ const FACTOR = 6;
 function isClientError(err: any): err is NodeJS.ErrnoException {
   if (!err) return false;
   return (
-    err.code === 'ERR_UNESCAPED_CHARACTERS' ||
-    err.message === 'Request path contains unescaped characters'
+    err.code === 'ERR_UNESCAPED_CHARACTERS'
+    || err.message === 'Request path contains unescaped characters'
   );
+}
+
+export class ResponseError extends Error {
+  readonly res: Response;
+  readonly code: number;
+  readonly statusCode: number;
+  readonly url: string;
+
+  constructor(res: Response) {
+    super(res.statusText);
+
+    if ('captureStackTrace' in Error) {
+      Error.captureStackTrace(this, ResponseError);
+    }
+
+    this.name = this.constructor.name;
+    this.res = res;
+    this.code = res.status;
+    this.statusCode = res.status;
+    this.url = res.url;
+  }
 }
 
 interface FetchRetryOpt {
@@ -32,7 +53,7 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
         minTimeout: MIN_TIMEOUT,
         retries: MAX_RETRIES,
         factor: FACTOR,
-        maxRetryAfter: MAX_RETRY_AFTER,
+        maxRetryAfter: MAX_RETRY_AFTER
       },
       opts.retry
     );
@@ -41,19 +62,18 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
       return await retry(async (bail) => {
         try {
           // this will be retried
-          const res = await $fetch(url, opts);
+          const res = (await $fetch(url, opts)) as Response;
 
           if ((res.status >= 500 && res.status < 600) || res.status === 429) {
             // NOTE: doesn't support http-date format
             const retryAfterHeader = res.headers.get('retry-after');
             if (retryAfterHeader) {
-              const retryAfter = parseInt(retryAfterHeader, 10);
+              const retryAfter = Number.parseInt(retryAfterHeader, 10);
               if (retryAfter) {
                 if (retryAfter > retryOpts.maxRetryAfter) {
                   return res;
-                } else {
-                  await new Promise((r) => setTimeout(r, retryAfter * 1e3));
                 }
+                await Bun.sleep(retryAfter * 1e3);
               }
             }
             throw new ResponseError(res);
@@ -78,7 +98,7 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
       }
       throw err;
     }
-  }
+  };
 
   for (const k of Object.keys($fetch)) {
     const key = k as keyof typeof $fetch;
@@ -88,30 +108,10 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
   return fetchRetry as typeof fetch;
 }
 
-export class ResponseError extends Error {
-  readonly res: Response;
-  readonly code: number;
-  readonly statusCode: number;
-  readonly url: string;
-
-  constructor(res: Response) {
-    super(res.statusText);
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ResponseError);
-    }
-
-    this.name = this.constructor.name;
-    this.res = res;
-    this.code = this.statusCode = res.status;
-    this.url = res.url;
-  }
-}
-
 export const defaultRequestInit: RequestInit = {
   headers: {
     'User-Agent': 'curl/8.1.2 (https://github.com/SukkaW/Surge)'
   }
-}
+};
 
 export const fetchWithRetry = createFetchRetry(fetch);

@@ -11,15 +11,10 @@ export const buildDomesticRuleset = task(import.meta.path, async () => {
   const results = await processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf')));
 
   results.push(
-    ...Object.entries(DOMESTICS)
-      .reduce<string[]>(
-        (acc, [key, { domains }]) => {
-          if (key === 'SYSTEM') return acc;
-          return [...acc, ...domains];
-        },
-        []
-      )
-      .map((domain) => `DOMAIN-SUFFIX,${domain}`)
+    ...Object.entries(DOMESTICS).reduce<string[]>((acc, [key, { domains }]) => {
+      if (key === 'SYSTEM') return acc;
+      return [...acc, ...domains];
+    }, []).map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );
 
   const rulesetDescription = [

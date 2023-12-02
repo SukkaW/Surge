@@ -1,7 +1,7 @@
 import { fetchRemoteTextAndCreateReadlineInterface } from './lib/fetch-remote-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import path from 'path';
-import fsp from 'fs/promises'
+import fsp from 'fs/promises';
 import { task } from './lib/trace-runner';
 
 const RESERVED_IPV4_CIDR = [

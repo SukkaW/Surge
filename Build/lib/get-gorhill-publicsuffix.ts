@@ -7,7 +7,7 @@ import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 const publicSuffixPath = path.resolve(import.meta.dir, '../../node_modules/.cache/public_suffix_list_dat.txt');
 
 const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix instance', async () => {
-  const customFetch = async (url: string | URL) => Bun.file(url);
+  const customFetch = (url: string | URL) => Promise.resolve(Bun.file(url));
 
   const publicSuffixFile = Bun.file(publicSuffixPath);
 

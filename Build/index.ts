@@ -98,7 +98,7 @@ import { buildPublicHtml } from './build-public';
     printStats(stats);
   } catch (e) {
     console.error(e);
-    console.error('Something went wrong!')
+    console.error('Something went wrong!');
   }
 })();
 

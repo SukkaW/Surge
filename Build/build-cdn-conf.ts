@@ -56,7 +56,7 @@ const getS3OSSDomains = async (): Promise<Set<string>> => {
   return S3OSSDomains;
 };
 
-const buildCdnConf = task(import.meta.path, async ()  => {
+const buildCdnConf = task(import.meta.path, async () => {
   /** @type {string[]} */
   const cdnDomainsList: string[] = [];
 

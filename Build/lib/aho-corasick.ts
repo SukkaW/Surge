@@ -1,12 +1,12 @@
 interface Node {
   /** @default 0 */
-  depth?: number;
-  key: string;
+  depth?: number,
+  key: string,
   /** @default false */
-  word?: boolean;
-  children: Record<string, Node>;
-  fail?: Node;
-  count: number;
+  word?: boolean,
+  children: Record<string, Node>,
+  fail?: Node,
+  count: number
 }
 
 const createNode = (key: string, depth = 0): Node => ({
@@ -31,15 +31,15 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
       const map = beginNode.children;
       // eslint-disable-next-line guard-for-in -- plain object
       for (const key in beginNode.children) {
-        const node = map?.[key];
+        const node = map[key];
         let failNode = beginNode.fail;
 
-        while (failNode && !failNode.children?.[key]) {
+        while (failNode && !failNode.children[key]) {
           failNode = failNode.fail;
         }
 
         if (node) {
-          node.fail = failNode?.children?.[key] || root;
+          node.fail = failNode?.children[key] || root;
 
           queue.push(node);
         }
@@ -86,8 +86,8 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
       // const key = text.charAt(i);
       const key = text[i];
 
-      while (node && !node?.children[key]) {
-        node = node?.fail;
+      while (node && !node.children[key]) {
+        node = node.fail;
       }
       node = node?.children[key] || root;
 

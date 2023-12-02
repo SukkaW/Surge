@@ -31,14 +31,14 @@
     "tldts": "^6.0.22"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "4.1.9",
-    "@eslint-sukka/ts": "4.1.9",
+    "@eslint-sukka/node": "4.1.10-beta.2",
+    "@eslint-sukka/ts": "4.1.10-beta.2",
     "@types/async-retry": "^1.4.8",
     "@types/mocha": "10.0.2",
     "@types/tar": "^6.1.9",
     "bun-types": "^1.0.11",
     "chai": "4.3.10",
-    "eslint-config-sukka": "4.1.9",
+    "eslint-config-sukka": "4.1.10-beta.2",
     "eslint-formatter-sukka": "4.1.9",
     "mocha": "^10.2.0",
     "typescript": "^5.2.2"

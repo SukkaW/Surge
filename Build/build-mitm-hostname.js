@@ -1,7 +1,7 @@
 const fsPromises = require('fs').promises;
 const pathFn = require('path');
 const table = require('table');
-import listDir from '@sukka/listdir';
+const listDir = require('@sukka/listdir');
 const { green, yellow } = require('picocolors');
 
 const PRESET_MITM_HOSTNAMES = [

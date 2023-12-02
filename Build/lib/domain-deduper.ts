@@ -1,4 +1,4 @@
-import createTrie from './trie';
+import { createTrie } from './trie';
 
 export const domainDeduper = (inputDomains: string[]): string[] => {
   const trie = createTrie(inputDomains);

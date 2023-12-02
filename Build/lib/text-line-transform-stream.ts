@@ -4,7 +4,7 @@
 
 interface TextLineStreamOptions {
   /** Allow splitting by solo \r */
-  allowCR: boolean;
+  allowCR: boolean
 }
 
 /** Transform a stream into a stream where each chunk is divided by a newline,
@@ -36,8 +36,8 @@ export class TextLineStream extends TransformStream<string, string> {
             const crIndex = chunk.indexOf('\r');
 
             if (
-              crIndex !== -1 && crIndex !== (chunk.length - 1) &&
-              (lfIndex === -1 || (lfIndex - 1) > crIndex)
+              crIndex !== -1 && crIndex !== (chunk.length - 1)
+              && (lfIndex === -1 || (lfIndex - 1) > crIndex)
             ) {
               controller.enqueue(chunk.slice(0, crIndex));
               chunk = chunk.slice(crIndex + 1);
@@ -62,13 +62,14 @@ export class TextLineStream extends TransformStream<string, string> {
       },
       flush(controller) {
         if (__buf.length > 0) {
+          // eslint-disable-next-line sukka-ts/string/prefer-string-starts-ends-with -- performance
           if (allowCR && __buf[__buf.length - 1] === '\r') {
             controller.enqueue(__buf.slice(0, -1));
           } else {
             controller.enqueue(__buf);
-          };
+          }
         }
-      },
+      }
     });
   }
 }

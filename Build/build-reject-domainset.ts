@@ -1,9 +1,9 @@
 // @ts-check
-import fsp from 'fs/promises'
+import fsp from 'fs/promises';
 import path from 'path';
 
 import { processHosts, processFilterRules } from './lib/parse-filter';
-import createTrie from './lib/trie';
+import { createTrie } from './lib/trie';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST } from './lib/reject-data-source';
 import { createRuleset, compareAndWriteFile } from './lib/create-file';
@@ -20,13 +20,13 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 /** Whitelists */
 const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 /** @type {Set<string>} Dedupe domains inclued by DOMAIN-KEYWORD */
-const domainKeywordsSet: Set<string> = new Set();
+const domainKeywordsSet = new Set<string>();
 /** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
-const domainSuffixSet: Set<string> = new Set();
+const domainSuffixSet = new Set<string>();
 
 export const buildRejectDomainSet = task(import.meta.path, async () => {
   /** @type Set<string> */
-  const domainSets: Set<string> = new Set();
+  const domainSets = new Set<string>();
 
   // Parse from AdGuard Filters
   console.time('* Download and process Hosts / AdBlock Filter Rules');
@@ -91,7 +91,6 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   console.timeEnd('* Download and process Hosts / AdBlock Filter Rules');
 
   if (shouldStop) {
-    // eslint-disable-next-line n/no-process-exit -- force stop
     process.exit(1);
   }
 
@@ -173,7 +172,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
 
   // Create reject stats
-  const rejectDomainsStats: [string, number][] = traceSync(
+  const rejectDomainsStats: Array<[string, number]> = traceSync(
     '* Collect reject domain stats',
     () => Object.entries(
       dudupedDominArray.reduce<Record<string, number>>((acc, cur) => {

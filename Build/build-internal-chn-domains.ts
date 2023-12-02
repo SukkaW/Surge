@@ -1,5 +1,5 @@
 import path from 'path';
-import fsp from 'fs/promises'
+import fsp from 'fs/promises';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task } from './lib/trace-runner';
 import { compareAndWriteFile } from './lib/create-file';

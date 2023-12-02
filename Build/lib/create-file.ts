@@ -85,7 +85,7 @@ export const createRuleset = (
       _clashContent = surgeRulesetToClashClassicalTextRuleset(content);
       break;
     default:
-      throw new TypeError(`Unknown type: ${type}`);
+      throw new TypeError(`Unknown type: ${type as any}`);
   }
 
   const clashContent = withBannerArray(title, description, date, _clashContent);

@@ -1,6 +1,6 @@
-import tldts from 'tldts';
+import * as tldts from 'tldts';
 import { createCache } from './cache-apply';
-import { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 
 const cache = createCache('cached-tld-parse', true);
 
@@ -12,6 +12,6 @@ let gothillGetDomainCache: ReturnType<typeof createCache> | null = null;
 export const createCachedGorhillGetDomain = (gorhill: PublicSuffixList) => {
   return (domain: string) => {
     gothillGetDomainCache ??= createCache('cached-gorhill-get-domain', true);
-    return gothillGetDomainCache.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain))
+    return gothillGetDomainCache.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
   };
 };

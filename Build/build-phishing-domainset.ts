@@ -1,10 +1,10 @@
-import { processFilterRules, processHosts } from './lib/parse-filter';
+import { processHosts } from './lib/parse-filter';
 import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { processLine } from './lib/process-line';
 import { createDomainSorter } from './lib/stable-sort-domain';
 import { traceSync, task } from './lib/trace-runner';
-import createTrie from './lib/trie';
+import { createTrie } from './lib/trie';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import { createCachedGorhillGetDomain } from './lib/cached-tld-parse';
 import * as tldts from 'tldts';
@@ -156,11 +156,11 @@ export const buildPhishingDomainSet = task(import.meta.path, async () => {
 
   const results = traceSync('* get final results', () => Object.entries(domainCountMap)
     .reduce<string[]>((acc, [apexDomain, count]) => {
-      if (count >= 5) {
-        acc.push(`.${apexDomain}`);
-      }
-      return acc;
-    }, [])
+    if (count >= 5) {
+      acc.push(`.${apexDomain}`);
+    }
+    return acc;
+  }, [])
     .sort(domainSorter));
 
   const description = [

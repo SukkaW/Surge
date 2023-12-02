@@ -177,7 +177,7 @@ export const PREDEFINED_WHITELIST = [
   // https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
   'vlscppe.microsoft.com',
   // OpenAI use this for A/B testing
-  'statsig.com',
+  'statsig.com'
 ];
 
 export const PREDEFINED_ENFORCED_BACKLIST = [

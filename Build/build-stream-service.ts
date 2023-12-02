@@ -7,7 +7,7 @@ import { createRuleset } from './lib/create-file';
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
-const createRulesetForStreamService = (fileId: string, title: string, streamServices: import('../Source/stream').StreamService[]) => {
+const createRulesetForStreamService = (fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
   return [
     // Domains
     ...createRuleset(
@@ -15,10 +15,10 @@ const createRulesetForStreamService = (fileId: string, title: string, streamServ
       [
         ...SHARED_DESCRIPTION,
         '',
-        ...streamServices.map((i: { name: any; }) => `- ${i.name}`)
+        ...streamServices.map((i) => `- ${i.name}`)
       ],
       new Date(),
-      streamServices.flatMap((i: { rules: any; }) => i.rules),
+      streamServices.flatMap((i) => i.rules),
       'ruleset',
       path.resolve(import.meta.dir, `../List/non_ip/${fileId}.conf`),
       path.resolve(import.meta.dir, `../Clash/non_ip/${fileId}.txt`)
@@ -29,14 +29,14 @@ const createRulesetForStreamService = (fileId: string, title: string, streamServ
       [
         ...SHARED_DESCRIPTION,
         '',
-        ...streamServices.map((i: { name: any; }) => `- ${i.name}`)
+        ...streamServices.map((i) => `- ${i.name}`)
       ],
       new Date(),
       streamServices.flatMap((i) => (
         i.ip
           ? [
-            ...i.ip.v4.map((ip: any) => `IP-CIDR,${ip},no-resolve`),
-            ...i.ip.v6.map((ip: any) => `IP-CIDR6,${ip},no-resolve`)
+            ...i.ip.v4.map((ip) => `IP-CIDR,${ip},no-resolve`),
+            ...i.ip.v6.map((ip) => `IP-CIDR6,${ip},no-resolve`)
           ]
           : []
       )),

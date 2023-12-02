@@ -8,7 +8,7 @@ import { performance } from 'perf_hooks';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 
-const DEBUG_DOMAIN_TO_FIND = null; // example.com | null
+const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
 const warnOnceUrl = new Set<string>();
@@ -63,7 +63,7 @@ export async function processDomainLists(domainListsUrl: string | URL) {
 }
 
 export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false, skipDomainCheck = false) {
-  console.time(`- processHosts: ${hostsUrl}`);
+  console.time(`- processHosts: ${hostsUrl.toString()}`);
 
   if (typeof hostsUrl === 'string') {
     hostsUrl = new URL(hostsUrl);
@@ -95,14 +95,14 @@ export async function processHosts(hostsUrl: string | URL, includeAllSubDomain =
     }
   }
 
-  console.timeEnd(`   - processHosts: ${hostsUrl}`);
+  console.timeEnd(`   - processHosts: ${hostsUrl.toString()}`);
 
   return domainSets;
 }
 
 export async function processFilterRules(
   filterRulesUrl: string | URL,
-  fallbackUrls?: readonly (string | URL)[] | undefined
+  fallbackUrls?: ReadonlyArray<string | URL> | undefined
 ): Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }> {
   const runStart = performance.now();
 
@@ -167,7 +167,7 @@ export async function processFilterRules(
           addToBlackList(hostname, true);
           break;
         default:
-          throw new Error(`Unknown flag: ${flag}`);
+          throw new Error(`Unknown flag: ${flag as any}`);
       }
     }
   };
@@ -192,7 +192,7 @@ export async function processFilterRules(
       /** @type string[] */
       filterRules = (
         await Promise.any(
-          [filterRulesUrl, ...(fallbackUrls || [])].map(async url => {
+          [filterRulesUrl, ...fallbackUrls].map(async url => {
             const r = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
             const text = await r.text();
 
@@ -202,7 +202,7 @@ export async function processFilterRules(
         )
       ).split('\n');
     } catch (e) {
-      console.log(`Download Rule for [${filterRulesUrl}] failed`);
+      console.log(`Download Rule for [${filterRulesUrl.toString()}] failed`);
       throw e;
     }
     downloadTime = performance.now() - downloadStart;
@@ -212,7 +212,7 @@ export async function processFilterRules(
     }
   }
 
-  console.log(`   ┬ processFilterRules (${filterRulesUrl}): ${(performance.now() - runStart).toFixed(3)}ms`);
+  console.log(`   ┬ processFilterRules (${filterRulesUrl.toString()}): ${(performance.now() - runStart).toFixed(3)}ms`);
   console.log(`   └── download time: ${downloadTime.toFixed(3)}ms`);
 
   return {

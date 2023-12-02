@@ -14,7 +14,7 @@ const s = new Sema(3);
 const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
   .then(res => res.json() as Promise<string[]>);
 
-const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> => {
+const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
   const [topUserAgents] = await Promise.all([
     latestTopUserAgentsPromise,
     s.acquire()
@@ -42,10 +42,10 @@ const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> =>
       }
     });
     if (!res.ok) {
-      throw new Error(res.statusText + '\n' + await res.text());
+      throw new Error(`${res.statusText}\n${await res.text()}`);
     }
 
-    const json = await res.json() as { url: string; }[];
+    const json = await res.json() as Array<{ url: string }>;
     s.release();
 
     console.timeEnd(key);
@@ -60,7 +60,7 @@ const querySpeedtestApi = async (keyword: string): Promise<(string | null)[]> =>
 
 export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
   /** @type {Set<string>} */
-  const domains: Set<string> = new Set([
+  const domains = new Set<string>([
     '.speedtest.net',
     '.speedtestcustom.com',
     '.ooklaserver.net',

@@ -19,9 +19,9 @@ const traceAsync = async <T>(prefix: string, fn: () => Promise<T>): Promise<T> =
 export { traceAsync };
 
 export interface TaskResult {
-  readonly start: number;
-  readonly end: number;
-  readonly taskName: string;
+  readonly start: number,
+  readonly end: number,
+  readonly taskName: string
 }
 
 const task = <T>(importMetaPath: string, fn: () => Promise<T>, customname: string | null = null) => {
