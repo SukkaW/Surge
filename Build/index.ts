@@ -16,13 +16,14 @@ import { buildRedirectModule } from './build-redirect-module';
 import { validate } from './validate-domainset';
 
 import { buildPublicHtml } from './build-public';
-import { TaskResult } from './lib/trace-runner';
+// import type { TaskResult } from './lib/trace-runner';
 
 (async () => {
   console.log('Bun version:', Bun.version);
 
   try {
-    const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
+    // TODO: restore this once Bun has fixed their worker
+    // const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
 
     const downloadPreviousBuildPromise = downloadPreviousBuild();
     const downloadPublicSuffixListPromise = downloadPublicSuffixList();
@@ -51,17 +52,17 @@ import { TaskResult } from './lib/trace-runner';
       buildCdnConfPromise
     ]).then(() => buildInternalCDNDomains());
 
-    const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
-      const handleMessage = (e: MessageEvent<TaskResult>) => {
-        const { data } = e;
+    // const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
+    //   const handleMessage = (e: MessageEvent<TaskResult>) => {
+    //     const { data } = e;
 
-        buildInternalReverseChnCIDRWorker.postMessage('exit');
-        buildInternalReverseChnCIDRWorker.removeEventListener('message', handleMessage);
-        resolve(data);
-      };
-      buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage);
-      buildInternalReverseChnCIDRWorker.postMessage('build');
-    });
+    //     buildInternalReverseChnCIDRWorker.postMessage('exit');
+    //     buildInternalReverseChnCIDRWorker.removeEventListener('message', handleMessage);
+    //     resolve(data);
+    //   };
+    //   buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage);
+    //   buildInternalReverseChnCIDRWorker.postMessage('build');
+    // });
 
     const buildInternalChnDomainsPromise = buildInternalChnDomains();
     const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
@@ -82,7 +83,7 @@ import { TaskResult } from './lib/trace-runner';
       buildChnCidrPromise,
       buildSpeedtestDomainSetPromise,
       buildInternalCDNDomainsPromise,
-      buildInternalReverseChnCIDRPromise,
+      // buildInternalReverseChnCIDRPromise,
       buildInternalChnDomainsPromise,
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,
