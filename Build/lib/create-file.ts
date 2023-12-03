@@ -48,13 +48,25 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
     return;
   }
 
-  const writer = file.writer();
+  console.log(`Writing ${filePath}...`);
 
-  for (let i = 0; i < linesALen; i++) {
-    writer.write(`${linesA[i]}\n`);
+  const start = Bun.nanoseconds();
+
+  if (linesALen < 10000) {
+    await Bun.write(file, `${linesA.join('\n')}\n`);
+  } else {
+    const writer = file.writer();
+
+    for (let i = 0; i < linesALen; i++) {
+      writer.write(linesA[i]);
+      writer.write('\n');
+    }
+
+    writer.flush();
+    await writer.end();
   }
 
-  return writer.end();
+  console.log(`Done writing ${filePath} in ${(Bun.nanoseconds() - start) / 1e6}ms`);
 }
 
 export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {

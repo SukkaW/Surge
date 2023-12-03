@@ -9,7 +9,7 @@ import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
 import { buildInternalCDNDomains } from './build-internal-cdn-rules';
-import { buildInternalChnDomains } from './build-internal-chn-domains';
+// import { buildInternalChnDomains } from './build-internal-chn-domains';
 import { buildDomesticRuleset } from './build-domestic-ruleset';
 import { buildStreamService } from './build-stream-service';
 import { buildRedirectModule } from './build-redirect-module';
@@ -64,7 +64,7 @@ import { buildPublicHtml } from './build-public';
     //   buildInternalReverseChnCIDRWorker.postMessage('build');
     // });
 
-    const buildInternalChnDomainsPromise = buildInternalChnDomains();
+    // const buildInternalChnDomainsPromise = buildInternalChnDomains();
     const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
 
     const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
@@ -84,7 +84,7 @@ import { buildPublicHtml } from './build-public';
       buildSpeedtestDomainSetPromise,
       buildInternalCDNDomainsPromise,
       // buildInternalReverseChnCIDRPromise,
-      buildInternalChnDomainsPromise,
+      // buildInternalChnDomainsPromise,
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,
       buildStreamServicePromise
