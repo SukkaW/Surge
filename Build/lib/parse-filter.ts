@@ -37,7 +37,7 @@ const normalizeDomain = (domain: string) => {
   return null;
 };
 
-export async function processDomainLists(domainListsUrl: string | URL) {
+export async function processDomainLists(domainListsUrl: string | URL, includeAllSubDomain = false) {
   if (typeof domainListsUrl === 'string') {
     domainListsUrl = new URL(domainListsUrl);
   }
@@ -55,7 +55,11 @@ export async function processDomainLists(domainListsUrl: string | URL) {
       foundDebugDomain = true;
     }
 
-    domainSets.add(domainToAdd);
+    if (includeAllSubDomain) {
+      domainSets.add(`.${domainToAdd}`);
+    } else {
+      domainSets.add(domainToAdd);
+    }
   }
 
   return domainSets;

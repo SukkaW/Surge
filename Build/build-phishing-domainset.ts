@@ -1,4 +1,4 @@
-import { processHosts } from './lib/parse-filter';
+import { processDomainLists, processHosts } from './lib/parse-filter';
 import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { processLine } from './lib/process-line';
@@ -21,52 +21,69 @@ const WHITELIST_DOMAIN = new Set([
   'notion.site'
 ]);
 const BLACK_TLD = new Set([
-  'xyz',
-  'top',
-  'win',
-  'vip',
-  'site',
-  'space',
-  'online',
-  'icu',
-  'fun',
-  'shop',
-  'cool',
-  'cyou',
-  'id',
-  'pro',
-  'za.com',
-  'sa.com',
-  'ltd',
-  'group',
-  'rest',
-  'tech',
-  'link',
-  'ink',
+  'autos',
   'bar',
-  'tokyo',
-  'tk',
-  'cf',
-  'gq',
-  'ga',
-  'ml',
+  'biz',
+  'bond',
+  'business',
+  'buzz',
   'cc',
-  'cn',
-  'codes',
+  'cf',
+  'cfd',
+  'click',
   'cloud',
   'club',
-  'click',
-  'cfd',
+  'cn',
+  'codes',
+  'com.cn',
+  'cool',
+  'cyou',
   'fit',
+  'fun',
+  'ga',
+  'gd',
+  'gq',
+  'group',
+  'host',
+  'icu',
+  'id',
+  'info',
+  'ink',
+  'life',
+  'live',
+  'link',
+  'ltd',
+  'ml',
   'mobi',
-  'buzz',
   'one',
-  'com.cn'
+  'online',
+  'pro',
+  'pl',
+  'pw',
+  'rest',
+  'rf.gd',
+  'sa.com',
+  'sbs',
+  'shop',
+  'site',
+  'space',
+  'store',
+  'tech',
+  'tk',
+  'tokyo',
+  'top',
+  'vip',
+  'vn',
+  'website',
+  'win',
+  'xyz',
+  'za.com'
 ]);
 
 export const buildPhishingDomainSet = task(import.meta.path, async () => {
   const [domainSet, gorhill] = await Promise.all([
     processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true),
+    // processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true),
     // processFilterRules(
     //   'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
     //   [
@@ -77,6 +94,8 @@ export const buildPhishingDomainSet = task(import.meta.path, async () => {
     // ),
     getGorhillPublicSuffixPromise()
   ]);
+
+  // _domainSet2.forEach(i => domainSet.add(i));
 
   traceSync('* whitelist', () => {
     const trieForRemovingWhiteListed = createTrie(domainSet);
