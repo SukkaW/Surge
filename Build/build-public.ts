@@ -7,7 +7,7 @@ const rootPath = path.resolve(import.meta.dir, '../');
 const publicPath = path.resolve(import.meta.dir, '../public');
 
 const folderAndFilesToBeDeployed = [
-  'Assets',
+  'Mock',
   'List',
   'Clash',
   'Modules',

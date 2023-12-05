@@ -5,13 +5,13 @@
 hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesyndication.com, *.googletagservices.com, *.doubleclick.net, cdn.ampproject.org, *.addthis.com
 
 [URL Rewrite]
-^https?://.*\.google-analytics\.com/analytics\.js https://ruleset.skk.moe/Assets/www-google-analytics-com_analytics.js 302
-^https?://.*\.google-analytics\.com/ga\.js https://ruleset.skk.moe/Assets/www-google-analytics-com_ga.js 302
-^https?://.*\.googletagmanager\.com/gtm\.js https://ruleset.skk.moe/Assets/www-googletagmanager-com_gtm.js 302
-^https?://.*\.google-analytics\.com/cx/api\.js https://ruleset.skk.moe/Assets/www-google-analytics-com_cx_api.js 302
-^https?://.*\.googlesyndication\.com/adsbygoogle\.js https://ruleset.skk.moe/Assets/www-googlesyndication-com_adsbygoogle.js 302
-^https?://.*\.googletagservices\.com/gpt\.js https://ruleset.skk.moe/Assets/www-googletagservices-com_gpt.js 302
-^https?://.*\.google-analytics\.com/inpage_linkid\.js https://ruleset.skk.moe/Assets/www-google-analytics-com_inpage_linkid.js 302
-^https?://.*\.doubleclick\.net/instream/ad_status\.js https://ruleset.skk.moe/Assets/doubleclick-net_instream_ad_status.js 302
-^https?://cdn\.ampproject\.org/v0.js https://ruleset.skk.moe/Assets/ampproject-org_v0.js 302
-^https?://.*\.addthis\.com/addthis_widget.js https://ruleset.skk.moe/Assets/addthis-com_addthis_widget.js 302
+^https?://.*\.google-analytics\.com/analytics\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_analytics.js 302
+^https?://.*\.google-analytics\.com/ga\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_ga.js 302
+^https?://.*\.googletagmanager\.com/gtm\.js https://ruleset.skk.moe/Mock/www-googletagmanager-com_gtm.js 302
+^https?://.*\.google-analytics\.com/cx/api\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_cx_api.js 302
+^https?://.*\.googlesyndication\.com/adsbygoogle\.js https://ruleset.skk.moe/Mock/www-googlesyndication-com_adsbygoogle.js 302
+^https?://.*\.googletagservices\.com/gpt\.js https://ruleset.skk.moe/Mock/www-googletagservices-com_gpt.js 302
+^https?://.*\.google-analytics\.com/inpage_linkid\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_inpage_linkid.js 302
+^https?://.*\.doubleclick\.net/instream/ad_status\.js https://ruleset.skk.moe/Mock/doubleclick-net_instream_ad_status.js 302
+^https?://cdn\.ampproject\.org/v0.js https://ruleset.skk.moe/Mock/ampproject-org_v0.js 302
+^https?://.*\.addthis\.com/addthis_widget.js https://ruleset.skk.moe/Mock/addthis-com_addthis_widget.js 302

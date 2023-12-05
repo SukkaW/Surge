@@ -688,7 +688,8 @@ const TAIWAN_GOOD = {
   rules: [
     'DOMAIN,hamifans.emome.net',
     'DOMAIN-SUFFIX,skyking.com.tw',
-    'USER-AGENT,TaiwanGood*'
+    'USER-AGENT,TaiwanGood*',
+    'PROCESS-NAME,com.twgood.android'
   ]
 };
 
@@ -752,6 +753,7 @@ const VIUTV = {
     'PROCESS-NAME,com.viu.pad',
     'PROCESS-NAME,com.viu.phone',
     'PROCESS-NAME,com.vuclip.viu',
+    'PROCESS-NAME,com.hktve.viutv',
     'USER-AGENT,Viu*'
   ]
 };

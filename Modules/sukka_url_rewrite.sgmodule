@@ -63,4 +63,4 @@
 # >> eLong
 ^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/(adgateway|adv)/ - reject
 # >> NOMO
-^https?://nomo.dafork.com/api/v3/iap/ios_product_list https://ruleset.skk.moe/Assets/nomo.json 302
+^https?://nomo.dafork.com/api/v3/iap/ios_product_list https://ruleset.skk.moe/Mock/nomo.json 302

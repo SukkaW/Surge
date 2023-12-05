@@ -1,7 +1,0 @@
-#!name=[Sukka] Unlock EMBY
-
-[MITM]
-hostname = %APPEND% mb3admin.com
-
-[Script]
-unlock_emby_premium = requires-body=1,max-size=0,script-path=https://ruleset.skk.moe/Script/fuck_emby.js,script-update-interval=86400,type=http-response,pattern=^https://mb3admin.com/.*

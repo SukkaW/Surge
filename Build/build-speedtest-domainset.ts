@@ -90,7 +90,9 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     'speedtest.sits.su',
     'speedtest.tigo.cr',
     'speedtest.upp.com',
-    '.fast.com'
+    '.fast.com',
+    'speedtest.macpaw.com',
+    '.netspeedtestmaster.com'
   ]);
 
   const hostnameGroups = await Promise.all([
