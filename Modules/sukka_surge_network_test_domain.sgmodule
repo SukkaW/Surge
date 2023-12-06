@@ -1,6 +1,6 @@
 #!name=[Sukka] Change Test Url
-#!desc=设置 Surge 网络检测地址为 Vivo 和 Cloudflare 的 204
+#!desc=设置 Surge 网络检测地址为 Vivo 和 Cloudflare
 
 [General]
 internet-test-url = http://wifi.vivo.com.cn/generate_204
-proxy-test-url = http://cp.cloudflare.com/generate_204
+proxy-test-url = http://latency-test.skk.moe/endpoint
