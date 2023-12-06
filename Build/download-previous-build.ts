@@ -76,14 +76,12 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
             const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
             await fsp.mkdir(path.dirname(targetPath), { recursive: true });
 
-            const targetFile = Bun.file(targetPath);
-            const targetFileSink = targetFile.writer();
+            const targetFileSink = Bun.file(targetPath).writer();
+            const onData = (chunk: Buffer) => targetFileSink.write(chunk);
 
             // I don't know, but for some reason it is impossible to consume entry with AsyncIterator
             await new Promise<void>((resolve, reject) => {
-              entry.on('data', (chunk) => {
-                targetFileSink.write(chunk);
-              });
+              entry.on('data', onData);
               entry.on('end', resolve);
               entry.on('error', reject);
             });

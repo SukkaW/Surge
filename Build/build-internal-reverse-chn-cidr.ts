@@ -4,6 +4,8 @@ import path from 'path';
 import fsp from 'fs/promises';
 import { task } from './lib/trace-runner';
 
+import { exclude } from 'fast-cidr-tools';
+
 const RESERVED_IPV4_CIDR = [
   '0.0.0.0/8',
   '10.0.0.0/8',
@@ -22,12 +24,8 @@ const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
-// preload the module
-import('cidr-tools-wasm');
-
 export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
-  const [{ exclude }, cidr] = await Promise.all([
-    import('cidr-tools-wasm'),
+  const [cidr] = await Promise.all([
     processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
     fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
   ]);
