@@ -1,10 +1,11 @@
 export const HOSTS = [
-  // ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', false],
+  ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true],
+  ['https://someonewhocares.org/hosts/hosts', true],
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', false],
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', false],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false],
-  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', false],
+  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true],
   // Curben's UrlHaus Malicious URL Blocklist
   // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
   // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
@@ -19,7 +20,6 @@ export const HOSTS = [
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
   ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, true],
   // BarbBlock
-  // 'https://paulgb.github.io/BarbBlock/blacklists/ublock-origin.txt',
   ['https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt', true, true]
 ] as const;
 
@@ -177,7 +177,8 @@ export const PREDEFINED_WHITELIST = [
   // https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
   'vlscppe.microsoft.com',
   // OpenAI use this for A/B testing
-  'statsig.com'
+  // Fuck Peter Lowe Hosts
+  'pstmrk.it'
 ];
 
 export const PREDEFINED_ENFORCED_BACKLIST = [
