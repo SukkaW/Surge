@@ -6,6 +6,7 @@ import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import { isProbablyIpv4 } from './is-fast-ip';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -22,19 +23,16 @@ const warnOnce = (url: string, isWhite: boolean, ...message: any[]) => {
 
 const normalizeDomain = (domain: string) => {
   if (!domain) return null;
+  if (isProbablyIpv4(domain)) return null;
 
-  const parsed = tldts.parse(domain);
+  const parsed = tldts.parse2(domain);
   if (parsed.isIp) return null;
+  if (!parsed.isIcann && !parsed.isPrivate) return null;
 
-  if (parsed.isIcann || parsed.isPrivate) {
-    const h = parsed.hostname;
+  const h = parsed.hostname;
+  if (!h) return null;
 
-    if (h === null) return null;
-
-    return h[0] === '.' ? h.slice(1) : h;
-  }
-
-  return null;
+  return h[0] === '.' ? h.slice(1) : h;
 };
 
 export async function processDomainLists(domainListsUrl: string | URL, includeAllSubDomain = false) {
@@ -89,6 +87,7 @@ export async function processHosts(hostsUrl: string | URL, includeAllSubDomain =
     }
 
     const domain = skipDomainCheck ? _domain : normalizeDomain(_domain);
+
     if (domain) {
       if (includeAllSubDomain) {
         domainSets.add(`.${domain}`);
@@ -301,19 +300,15 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       // && (!filter.isRegex()) // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
-      if (!gorhill.getDomain(filter.hostname)) {
-        return null;
-      }
       const hostname = normalizeDomain(filter.hostname);
       if (!hostname) {
+        console.log('      * [parse-filter E0000] invalid domain:', filter.hostname);
         return null;
       }
 
-      // console.log({
-      //   '||': filter.isHostnameAnchor(),
-      //   '|': filter.isLeftAnchor(),
-      //   '|https://': !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
-      // });
+      //  |: filter.isHostnameAnchor(),
+      //  |: filter.isLeftAnchor(),
+      //  |https://: !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
       const isIncludeAllSubDomain = filter.isHostnameAnchor();
 
       if (filter.isException() || filter.isBadFilter()) {
