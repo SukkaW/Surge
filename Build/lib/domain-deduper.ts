@@ -1,6 +1,8 @@
 import { createTrie } from './trie';
 
-export const domainDeduper = (inputDomains: string[]): string[] => {
+export function domainDeduper(inputDomains: string[], toArray?: true): string[];
+export function domainDeduper(inputDomains: string[], toArray: false): Set<string>;
+export function domainDeduper(inputDomains: string[], toArray = true): string[] | Set<string> {
   const trie = createTrie(inputDomains);
   const sets = new Set(inputDomains);
 
@@ -19,7 +21,11 @@ export const domainDeduper = (inputDomains: string[]): string[] => {
     }
   }
 
-  return Array.from(sets);
-};
+  if (toArray) {
+    return Array.from(sets);
+  }
+
+  return sets;
+}
 
 export default domainDeduper;

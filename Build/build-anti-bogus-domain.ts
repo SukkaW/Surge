@@ -30,7 +30,8 @@ export const buildAntiBogusDomain = task(import.meta.path, async () => {
   const result = [];
   for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/ip/reject.conf'))) {
     if (line === '# --- [Anti Bogus Domain Replace Me] ---') {
-      (await bogusIpPromise).forEach(rule => result.push(rule));
+      // bogus ip is less than 200, no need to worry about "Maximum call stack size exceeded"
+      result.push(...(await bogusIpPromise));
       continue;
     } else {
       const l = processLine(line);
