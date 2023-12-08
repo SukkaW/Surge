@@ -6,6 +6,8 @@ export const HOSTS = [
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true],
+  // CoinBlockerList
+  ['https://zerodot1.gitlab.io/CoinBlockerLists/hosts_browser', true, true],
   // Curben's UrlHaus Malicious URL Blocklist
   // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
   // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
