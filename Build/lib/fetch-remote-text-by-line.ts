@@ -23,8 +23,10 @@ import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
 
 const decoder = new TextDecoder('utf-8');
 
-export async function *readFileByLine(file: string | BunFile): AsyncGenerator<string> {
+export async function *readFileByLine(file: string | URL | BunFile): AsyncGenerator<string> {
   if (typeof file === 'string') {
+    file = Bun.file(file);
+  } else if (!('writer' in file)) {
     file = Bun.file(file);
   }
 

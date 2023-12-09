@@ -94,7 +94,7 @@ const PRESET_MITM_HOSTNAMES = [
     );
   }));
 
-  let mitmDomains = new Set(PRESET_MITM_HOSTNAMES); // Special case for parsed failed
+  const mitmDomains = new Set(PRESET_MITM_HOSTNAMES); // Special case for parsed failed
   const parsedFailures = [];
 
   const dedupedUrlRegexPaths = [...new Set(urlRegexPaths)];
@@ -109,23 +109,24 @@ const PRESET_MITM_HOSTNAMES = [
     }
   });
 
-  mitmDomains = [...mitmDomains].filter(i => {
-    return i.length > 3
-      && !i.includes('.mp4') // Special Case
-      && i !== '(www.)' // Special Case
-      && !(i !== '*.meituan.net' && i.endsWith('.meituan.net'))
-      && !i.startsWith('.')
-      && !i.endsWith('.')
-      && !i.endsWith('*');
-  });
-
-  const mitmDomainsRegExpArray = mitmDomains.map(i => {
-    return new RegExp(
-      escapeRegExp(i)
-        .replaceAll('{www or not}', '(www.)?')
-        .replaceAll('\\*', '(.*)')
-    );
-  });
+  const mitmDomainsRegExpArray = mitmDomains
+    .slice()
+    .filter(i => {
+      return i.length > 3
+        && !i.includes('.mp4') // Special Case
+        && i !== '(www.)' // Special Case
+        && !(i !== '*.meituan.net' && i.endsWith('.meituan.net'))
+        && !i.startsWith('.')
+        && !i.endsWith('.')
+        && !i.endsWith('*');
+    })
+    .map(i => {
+      return new RegExp(
+        escapeRegExp(i)
+          .replaceAll('{www or not}', '(www.)?')
+          .replaceAll('\\*', '(.*)')
+      );
+    });
 
   const parsedDomainsData = [];
   dedupedUrlRegexPaths.forEach(i => {

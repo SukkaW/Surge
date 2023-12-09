@@ -108,18 +108,18 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
 
   for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
-    if (line.startsWith('DOMAIN-KEYWORD')) {
-      const [, ...keywords] = line.split(',');
-      domainKeywordsSet.add(keywords.join(',').trim());
-    } else if (line.startsWith('DOMAIN-SUFFIX')) {
-      const [, ...keywords] = line.split(',');
-      domainSuffixSet.add(keywords.join(',').trim());
+    const [type, keyword] = line.split(',');
+
+    if (type === 'DOMAIN-KEYWORD') {
+      domainKeywordsSet.add(keyword.trim());
+    } else if (type === 'DOMAIN-SUFFIX') {
+      domainSuffixSet.add(keyword.trim());
     }
   }
 
   for await (const line of readFileByLine(path.resolve(import.meta.dir, '../List/domainset/reject_phishing.conf'))) {
     const l = processLine(line);
-    if (l && l[0] === '.') {
+    if (l?.[0] === '.') {
       domainSuffixSet.add(l.slice(1));
     }
   }

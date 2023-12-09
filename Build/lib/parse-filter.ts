@@ -111,29 +111,6 @@ export async function processFilterRules(
   const whitelistDomainSets = new Set<string>();
   const blacklistDomainSets = new Set<string>();
 
-  /**
-   * @param {string} domainToBeAddedToBlack
-   * @param {boolean} isSubDomain
-   */
-  const addToBlackList = (domainToBeAddedToBlack: string, isSubDomain: boolean) => {
-    if (isSubDomain && domainToBeAddedToBlack[0] !== '.') {
-      blacklistDomainSets.add(`.${domainToBeAddedToBlack}`);
-    } else {
-      blacklistDomainSets.add(domainToBeAddedToBlack);
-    }
-  };
-  /**
-   * @param {string} domainToBeAddedToWhite
-   * @param {boolean} [isSubDomain]
-   */
-  const addToWhiteList = (domainToBeAddedToWhite: string, isSubDomain = true) => {
-    if (isSubDomain && domainToBeAddedToWhite[0] !== '.') {
-      whitelistDomainSets.add(`.${domainToBeAddedToWhite}`);
-    } else {
-      whitelistDomainSets.add(domainToBeAddedToWhite);
-    }
-  };
-
   let downloadTime = 0;
   const gorhill = await getGorhillPublicSuffixPromise();
 
@@ -142,35 +119,45 @@ export async function processFilterRules(
    */
   const lineCb = (line: string) => {
     const result = parse(line, gorhill);
-    if (result) {
-      const flag = result[1];
-      const hostname = result[0];
+    if (!result) {
+      return;
+    }
 
-      if (DEBUG_DOMAIN_TO_FIND) {
-        if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
-          foundDebugDomain = true;
+    const flag = result[1];
+    const hostname = result[0];
 
-          console.log({ result, flag });
+    if (DEBUG_DOMAIN_TO_FIND) {
+      if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
+        warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
+        foundDebugDomain = true;
+
+        console.log({ result, flag });
+      }
+    }
+
+    switch (flag) {
+      case 0:
+        if (hostname[0] !== '.') {
+          whitelistDomainSets.add(`.${hostname}`);
+        } else {
+          whitelistDomainSets.add(hostname);
         }
-      }
-
-      switch (flag) {
-        case 0:
-          addToWhiteList(hostname, true);
-          break;
-        case -1:
-          addToWhiteList(hostname, false);
-          break;
-        case 1:
-          addToBlackList(hostname, false);
-          break;
-        case 2:
-          addToBlackList(hostname, true);
-          break;
-        default:
-          throw new Error(`Unknown flag: ${flag as any}`);
-      }
+        break;
+      case -1:
+        whitelistDomainSets.add(hostname);
+        break;
+      case 1:
+        blacklistDomainSets.add(hostname);
+        break;
+      case 2:
+        if (hostname[0] !== '.') {
+          blacklistDomainSets.add(`.${hostname}`);
+        } else {
+          blacklistDomainSets.add(hostname);
+        }
+        break;
+      default:
+        throw new Error(`Unknown flag: ${flag as any}`);
     }
   };
 
@@ -302,7 +289,6 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     ) {
       const hostname = normalizeDomain(filter.hostname);
       if (!hostname) {
-        console.log('      * [parse-filter E0000] invalid domain:', filter.hostname);
         return null;
       }
 
