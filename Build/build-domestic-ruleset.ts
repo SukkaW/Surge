@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'path';
 import { DOMESTICS } from '../Source/non_ip/domestic';
-import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';

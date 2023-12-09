@@ -2,7 +2,7 @@
 
 import * as path from 'path';
 import { PathScurry } from 'path-scurry';
-import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { domainDeduper } from './lib/domain-deduper';

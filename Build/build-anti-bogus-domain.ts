@@ -2,7 +2,7 @@
 import path from 'path';
 import { isIPv4, isIPv6 } from 'net';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } from './lib/fetch-remote-text-by-line';
+import { fetchRemoteTextAndReadByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { task } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
@@ -10,7 +10,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 const getBogusNxDomainIPs = async () => {
   /** @type {string[]} */
   const result = [];
-  for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
+  for await (const line of await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
     if (line.startsWith('bogus-nxdomain=')) {
       const ip = line.slice(15).trim();
       if (isIPv4(ip)) {

@@ -3,7 +3,6 @@ import { buildCommon } from './build-common';
 import { buildAntiBogusDomain } from './build-anti-bogus-domain';
 import { buildAppleCdn } from './build-apple-cdn';
 import { buildCdnConf } from './build-cdn-conf';
-import { buildPhishingDomainSet } from './build-phishing-domainset';
 import { buildRejectDomainSet } from './build-reject-domainset';
 import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
@@ -34,14 +33,9 @@ import { buildPublicHtml } from './build-public';
       downloadPreviousBuildPromise,
       downloadPublicSuffixListPromise
     ]).then(() => buildCdnConf());
-    const buildPhilishingDomainsetPromise = Promise.all([
-      downloadPreviousBuildPromise,
-      downloadPublicSuffixListPromise
-    ]).then(() => buildPhishingDomainSet());
     const buildRejectDomainSetPromise = Promise.all([
       downloadPreviousBuildPromise,
-      downloadPublicSuffixListPromise,
-      buildPhilishingDomainsetPromise
+      downloadPublicSuffixListPromise
     ]).then(() => buildRejectDomainSet());
     const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR());
     const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr());
@@ -77,7 +71,6 @@ import { buildPublicHtml } from './build-public';
       buildAntiBogusDomainPromise,
       buildAppleCdnPromise,
       buildCdnConfPromise,
-      buildPhilishingDomainsetPromise,
       buildRejectDomainSetPromise,
       buildTelegramCIDRPromise,
       buildChnCidrPromise,

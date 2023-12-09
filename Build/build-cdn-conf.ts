@@ -1,6 +1,6 @@
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextAndCreateReadlineInterface, readFileByLine } from './lib/fetch-remote-text-by-line';
+import { fetchRemoteTextAndReadByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { task } from './lib/trace-runner';
 import { processLine } from './lib/process-line';
@@ -19,7 +19,7 @@ const getS3OSSDomains = async (): Promise<Set<string>> => {
     }
   } else {
     console.log('public_suffix_list.dat not found, fetch directly from remote.');
-    for await (const line of await fetchRemoteTextAndCreateReadlineInterface('https://publicsuffix.org/list/public_suffix_list.dat')) {
+    for await (const line of await fetchRemoteTextAndReadByLine('https://publicsuffix.org/list/public_suffix_list.dat')) {
       trie.add(line);
     }
   }

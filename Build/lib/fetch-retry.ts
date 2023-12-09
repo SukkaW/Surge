@@ -83,6 +83,7 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
         } catch (err: unknown) {
           if (err instanceof Error) {
             if (err.name === 'AbortError') {
+              console.log('[fetch abort]', url.toString());
               return bail(err);
             }
           }

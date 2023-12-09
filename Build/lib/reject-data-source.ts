@@ -11,12 +11,13 @@ export const HOSTS = [
   // Curben's UrlHaus Malicious URL Blocklist
   // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
   // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
-  // 'https://ublockorigin.github.io/uAssets/thirdparties/urlhaus-filter/urlhaus-filter-online.txt',
+  // 'https://ublockorigin.github.io/uAssetsCDN/thirdparties/urlhaus-filter/urlhaus-filter-online.txt',
   ['https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt', true, true],
   // Curben's Phishing URL Blocklist
+  // Covered by lib/get-phishing-domains.ts
   // 'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt'
   // 'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
-  ['https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true],
+  // ['https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true],
   // Curben's PUP Domains Blocklist
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
@@ -33,7 +34,7 @@ export const ADGUARD_FILTERS = [
       'https://easylist-downloads.adblockplus.org/easylist.txt',
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
       'https://secure.fanboy.co.nz/easylist.txt',
-      'https://ublockorigin.github.io/uAssets/thirdparties/easylist.txt',
+      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
       'https://ublockorigin.pages.dev/thirdparties/easylist.txt'
     ]
   ],
@@ -44,7 +45,7 @@ export const ADGUARD_FILTERS = [
       'https://secure.fanboy.co.nz/easyprivacy.txt',
       'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
       'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
-      'https://ublockorigin.github.io/uAssets/thirdparties/easyprivacy.txt',
+      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
       'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
     ]
   ],
@@ -52,7 +53,7 @@ export const ADGUARD_FILTERS = [
   [
     'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
     [
-      'https://filters.adtidy.org/extension/chromium/filters/15.txt'
+      'https://filters.adtidy.org/extension/ublock/filters/15.txt'
     ]
   ],
   // AdGuard CNAME Filter Combined
@@ -63,41 +64,36 @@ export const ADGUARD_FILTERS = [
   'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers.txt',
   // uBlock Origin Filter List
   [
-    'https://ublockorigin.github.io/uAssets/filters/filters.min.txt',
+    'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
       'https://ublockorigin.pages.dev/filters/filters.min.txt'
     ]
   ],
   // uBlock Origin Badware Risk List
   [
-    'https://ublockorigin.github.io/uAssets/filters/badware.min.txt',
+    'https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt',
       'https://ublockorigin.pages.dev/filters/badware.min.txt'
     ]
   ],
   // uBlock Origin Privacy List
   [
-    'https://ublockorigin.github.io/uAssets/filters/privacy.min.txt',
+    'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.min.txt',
       'https://ublockorigin.pages.dev/filters/privacy.min.txt'
     ]
   ],
   // uBlock Origin Resource Abuse: merged in uBlock Origin Privacy List
   // [
-  //   'https://ublockorigin.github.io/uAssets/filters/resource-abuse.txt',
+  //   'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
   //   [
-  //     'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
   //     'https://ublockorigin.pages.dev/filters/resource-abuse.txt'
   //   ]
   // ],
   // uBlock Origin Unbreak
   [
-    'https://ublockorigin.github.io/uAssets/filters/unbreak.min.txt',
+    'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt',
     [
-      'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt',
       'https://ublockorigin.pages.dev/filters/unbreak.min.txt'
     ]
   ],

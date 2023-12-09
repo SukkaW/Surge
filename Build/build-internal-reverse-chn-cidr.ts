@@ -1,4 +1,4 @@
-import { fetchRemoteTextAndCreateReadlineInterface } from './lib/fetch-remote-text-by-line';
+import { fetchRemoteTextAndReadByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import path from 'path';
 import fsp from 'fs/promises';
@@ -26,7 +26,7 @@ const RESERVED_IPV4_CIDR = [
 
 export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
   const [cidr] = await Promise.all([
-    processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
+    processLineFromReadline(await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
     fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
   ]);
 

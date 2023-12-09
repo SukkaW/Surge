@@ -1,14 +1,12 @@
-import { processDomainLists, processHosts } from './lib/parse-filter';
+import fsp from 'fs/promises';
 import path from 'path';
-import { createRuleset } from './lib/create-file';
-import { processLine } from './lib/process-line';
-import { createDomainSorter } from './lib/stable-sort-domain';
-import { traceSync, task } from './lib/trace-runner';
-import { createTrie } from './lib/trie';
-import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
-import { createCachedGorhillGetDomain } from './lib/cached-tld-parse';
+import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
+import { processHosts } from './parse-filter';
+import { traceAsync, traceSync } from './trace-runner';
 import * as tldts from 'tldts';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { createTrie } from './trie';
+import { createCachedGorhillGetDomain } from './cached-tld-parse';
+import { processLine } from './process-line';
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -80,7 +78,7 @@ const BLACK_TLD = new Set([
   'za.com'
 ]);
 
-export const buildPhishingDomainSet = task(import.meta.path, async () => {
+export const getPhishingDomains = () => traceAsync('get phishing domains', async () => {
   const [domainSet, gorhill] = await Promise.all([
     processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true),
     // processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true),
@@ -92,25 +90,26 @@ export const buildPhishingDomainSet = task(import.meta.path, async () => {
     //     // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
     //   ]
     // ),
-    getGorhillPublicSuffixPromise()
+    getGorhillPublicSuffixPromise(),
+    // Remove old files
+    fsp.rm(path.resolve(import.meta.dir, '../../List/domainset/reject_phishing.conf'), { force: true }),
+    fsp.rm(path.resolve(import.meta.dir, '../../Clash/domainset/reject_phishing.txt'), { force: true })
   ]);
 
-  // _domainSet2.forEach(i => domainSet.add(i));
-
-  traceSync('* whitelist', () => {
+  traceSync.skip('* whitelisting phishing domains', () => {
     const trieForRemovingWhiteListed = createTrie(domainSet);
     WHITELIST_DOMAIN.forEach(white => {
       trieForRemovingWhiteListed.find(`.${white}`, false).forEach(f => domainSet.delete(f));
-      if (trieForRemovingWhiteListed.has(white)) {
-        domainSet.delete(white);
-      }
+      // if (trieForRemovingWhiteListed.has(white)) {
+      domainSet.delete(white);
+      // }
     });
   });
 
   const domainCountMap: Record<string, number> = {};
   const getDomain = createCachedGorhillGetDomain(gorhill);
 
-  traceSync('* process domain set', () => {
+  traceSync.skip('* process phishing domain set', () => {
     const domainArr = Array.from(domainSet);
 
     for (let i = 0, len = domainArr.length; i < len; i++) {
@@ -171,36 +170,9 @@ export const buildPhishingDomainSet = task(import.meta.path, async () => {
     }
   });
 
-  const domainSorter = createDomainSorter(gorhill);
+  const results = traceSync.skip('* get final phishing results', () => Object.entries(domainCountMap)
+    .filter(([, count]) => count >= 5)
+    .map(([apexDomain]) => apexDomain));
 
-  const results = traceSync('* get final results', () => Object.entries(domainCountMap)
-    .reduce<string[]>((acc, [apexDomain, count]) => {
-    if (count >= 5) {
-      acc.push(`.${apexDomain}`);
-    }
-    return acc;
-  }, [])
-    .sort(domainSorter));
-
-  const description = [
-    ...SHARED_DESCRIPTION,
-    '',
-    'The domainset supports enhanced phishing protection',
-    'Build from:',
-    ' - https://gitlab.com/malware-filter/phishing-filter'
-  ];
-
-  return Promise.all(createRuleset(
-    'Sukka\'s Ruleset - Reject Phishing',
-    description,
-    new Date(),
-    results,
-    'domainset',
-    path.resolve(import.meta.dir, '../List/domainset/reject_phishing.conf'),
-    path.resolve(import.meta.dir, '../Clash/domainset/reject_phishing.txt')
-  ));
+  return [results, domainSet] as const;
 });
-
-if (import.meta.main) {
-  buildPhishingDomainSet();
-}

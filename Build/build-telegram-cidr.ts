@@ -1,6 +1,6 @@
 // @ts-check
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
-import { createReadlineInterfaceFromResponse } from './lib/fetch-remote-text-by-line';
+import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import path from 'path';
 import { isIPv4, isIPv6 } from 'net';
 import { processLine } from './lib/process-line';

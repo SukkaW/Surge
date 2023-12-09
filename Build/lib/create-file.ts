@@ -1,6 +1,7 @@
 // @ts-check
-import { readFileByLine } from './fetch-remote-text-by-line';
+import { readFileByLine } from './fetch-text-by-line';
 import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
+import { traceAsync } from './trace-runner';
 
 export async function compareAndWriteFile(linesA: string[], filePath: string) {
   let isEqual = true;
@@ -21,7 +22,7 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
       const lineA = linesA[index];
       index++;
 
-      if (typeof lineA !== 'string') {
+      if (lineA == null) {
         // The file becomes smaller
         isEqual = false;
         break;
@@ -37,7 +38,7 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
       }
     }
 
-    if (index !== linesALen) {
+    if (isEqual && index !== linesALen) {
       // The file becomes larger
       isEqual = false;
     }
@@ -48,13 +49,11 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
     return;
   }
 
-  console.log(`Writing ${filePath}...`);
+  await traceAsync(`Writing ${filePath}`, async () => {
+    if (linesALen < 10000) {
+      return Bun.write(file, `${linesA.join('\n')}\n`);
+    }
 
-  const start = Bun.nanoseconds();
-
-  if (linesALen < 10000) {
-    await Bun.write(file, `${linesA.join('\n')}\n`);
-  } else {
     const writer = file.writer();
 
     for (let i = 0; i < linesALen; i++) {
@@ -62,11 +61,9 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
       writer.write('\n');
     }
 
-    writer.flush();
-    await writer.end();
-  }
-
-  console.log(`Done writing ${filePath} in ${(Bun.nanoseconds() - start) / 1e6}ms`);
+    await writer.flush();
+    return writer.end();
+  });
 }
 
 export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {

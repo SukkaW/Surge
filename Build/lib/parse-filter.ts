@@ -1,12 +1,13 @@
 // @ts-check
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 import * as tldts from './cached-tld-parse';
-import { fetchRemoteTextAndCreateReadlineInterface } from './fetch-remote-text-by-line';
+import { fetchRemoteTextAndReadByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 import { isProbablyIpv4 } from './is-fast-ip';
+import { traceAsync } from './trace-runner';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -42,7 +43,7 @@ export async function processDomainLists(domainListsUrl: string | URL, includeAl
 
   const domainSets = new Set<string>();
 
-  for await (const line of await fetchRemoteTextAndCreateReadlineInterface(domainListsUrl)) {
+  for await (const line of await fetchRemoteTextAndReadByLine(domainListsUrl)) {
     const domainToAdd = processLine(line);
     if (!domainToAdd) {
       continue;
@@ -64,145 +65,134 @@ export async function processDomainLists(domainListsUrl: string | URL, includeAl
 }
 
 export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false, skipDomainCheck = false) {
-  console.time(`- processHosts: ${hostsUrl.toString()}`);
-
-  if (typeof hostsUrl === 'string') {
-    hostsUrl = new URL(hostsUrl);
-  }
-
-  const domainSets = new Set<string>();
-
-  for await (const l of await fetchRemoteTextAndCreateReadlineInterface(hostsUrl)) {
-    const line = processLine(l);
-    if (!line) {
-      continue;
+  return traceAsync(`- processHosts: ${hostsUrl.toString()}`, async () => {
+    if (typeof hostsUrl === 'string') {
+      hostsUrl = new URL(hostsUrl);
     }
 
-    const [, ...domains] = line.split(' ');
-    const _domain = domains.join(' ').trim();
+    const domainSets = new Set<string>();
 
-    if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-      warnOnce(hostsUrl.href, false, DEBUG_DOMAIN_TO_FIND);
-      foundDebugDomain = true;
-    }
+    for await (const l of await fetchRemoteTextAndReadByLine(hostsUrl)) {
+      const line = processLine(l);
+      if (!line) {
+        continue;
+      }
 
-    const domain = skipDomainCheck ? _domain : normalizeDomain(_domain);
+      const [, ...domains] = line.split(' ');
+      const _domain = domains.join(' ').trim();
 
-    if (domain) {
-      if (includeAllSubDomain) {
-        domainSets.add(`.${domain}`);
-      } else {
-        domainSets.add(domain);
+      if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+        warnOnce(hostsUrl.href, false, DEBUG_DOMAIN_TO_FIND);
+        foundDebugDomain = true;
+      }
+
+      const domain = skipDomainCheck ? _domain : normalizeDomain(_domain);
+
+      if (domain) {
+        if (includeAllSubDomain) {
+          domainSets.add(`.${domain}`);
+        } else {
+          domainSets.add(domain);
+        }
       }
     }
-  }
 
-  console.timeEnd(`   - processHosts: ${hostsUrl.toString()}`);
-
-  return domainSets;
+    return domainSets;
+  });
 }
 
 export async function processFilterRules(
   filterRulesUrl: string | URL,
   fallbackUrls?: ReadonlyArray<string | URL> | undefined
 ): Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }> {
-  const runStart = Bun.nanoseconds();
-
   const whitelistDomainSets = new Set<string>();
   const blacklistDomainSets = new Set<string>();
 
-  let downloadTime = 0;
-  const gorhill = await getGorhillPublicSuffixPromise();
+  await traceAsync(`- processFilterRules: ${filterRulesUrl.toString()}`, async () => {
+    const gorhill = await getGorhillPublicSuffixPromise();
 
-  /**
-   * @param {string} line
-   */
-  const lineCb = (line: string) => {
-    const result = parse(line, gorhill);
-    if (!result) {
-      return;
-    }
+    /**
+     * @param {string} line
+     */
+    const lineCb = (line: string) => {
+      const result = parse(line, gorhill);
+      if (!result) {
+        return;
+      }
 
-    const flag = result[1];
-    const hostname = result[0];
+      const flag = result[1];
+      const hostname = result[0];
 
-    if (DEBUG_DOMAIN_TO_FIND) {
-      if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-        warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
-        foundDebugDomain = true;
+      if (DEBUG_DOMAIN_TO_FIND) {
+        if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
+          warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
+          foundDebugDomain = true;
 
-        console.log({ result, flag });
+          console.log({ result, flag });
+        }
+      }
+
+      switch (flag) {
+        case 0:
+          if (hostname[0] !== '.') {
+            whitelistDomainSets.add(`.${hostname}`);
+          } else {
+            whitelistDomainSets.add(hostname);
+          }
+          break;
+        case -1:
+          whitelistDomainSets.add(hostname);
+          break;
+        case 1:
+          blacklistDomainSets.add(hostname);
+          break;
+        case 2:
+          if (hostname[0] !== '.') {
+            blacklistDomainSets.add(`.${hostname}`);
+          } else {
+            blacklistDomainSets.add(hostname);
+          }
+          break;
+        default:
+          throw new Error(`Unknown flag: ${flag as any}`);
+      }
+    };
+
+    if (!fallbackUrls || fallbackUrls.length === 0) {
+      for await (const line of await fetchRemoteTextAndReadByLine(filterRulesUrl)) {
+        // don't trim here
+        lineCb(line);
+      }
+    } else {
+      let filterRules;
+
+      try {
+        const controller = new AbortController();
+
+        /** @type string[] */
+        filterRules = (
+          await Promise.any(
+            [filterRulesUrl, ...fallbackUrls].map(async url => {
+              const r = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
+              const text = await r.text();
+
+              console.log('[fetch finish]', url.toString());
+
+              controller.abort();
+              return text;
+            })
+          )
+        ).split('\n');
+      } catch (e) {
+        console.log(`Download Rule for [${filterRulesUrl.toString()}] failed`);
+        throw e;
+      }
+
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        lineCb(filterRules[i]);
       }
     }
-
-    switch (flag) {
-      case 0:
-        if (hostname[0] !== '.') {
-          whitelistDomainSets.add(`.${hostname}`);
-        } else {
-          whitelistDomainSets.add(hostname);
-        }
-        break;
-      case -1:
-        whitelistDomainSets.add(hostname);
-        break;
-      case 1:
-        blacklistDomainSets.add(hostname);
-        break;
-      case 2:
-        if (hostname[0] !== '.') {
-          blacklistDomainSets.add(`.${hostname}`);
-        } else {
-          blacklistDomainSets.add(hostname);
-        }
-        break;
-      default:
-        throw new Error(`Unknown flag: ${flag as any}`);
-    }
-  };
-
-  if (!fallbackUrls || fallbackUrls.length === 0) {
-    downloadTime = 0;
-    let last = Bun.nanoseconds();
-    for await (const line of await fetchRemoteTextAndCreateReadlineInterface(filterRulesUrl)) {
-      const now = Bun.nanoseconds();
-      downloadTime += Bun.nanoseconds() - last;
-      last = now;
-      // don't trim here
-      lineCb(line);
-    }
-  } else {
-    let filterRules;
-
-    const downloadStart = Bun.nanoseconds();
-    try {
-      const controller = new AbortController();
-
-      /** @type string[] */
-      filterRules = (
-        await Promise.any(
-          [filterRulesUrl, ...fallbackUrls].map(async url => {
-            const r = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
-            const text = await r.text();
-
-            controller.abort();
-            return text;
-          })
-        )
-      ).split('\n');
-    } catch (e) {
-      console.log(`Download Rule for [${filterRulesUrl.toString()}] failed`);
-      throw e;
-    }
-    downloadTime = Bun.nanoseconds() - downloadStart;
-
-    for (let i = 0, len = filterRules.length; i < len; i++) {
-      lineCb(filterRules[i]);
-    }
-  }
-
-  console.log(`   ┬ processFilterRules (${filterRulesUrl.toString()}): ${((Bun.nanoseconds() - runStart) / 1e6).toFixed(3)}ms`);
-  console.log(`   └── download time: ${(downloadTime / 1e6).toFixed(3)}ms`);
+  });
 
   return {
     white: whitelistDomainSets,

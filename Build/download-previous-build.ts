@@ -5,7 +5,7 @@ import path from 'path';
 import os from 'os';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
-import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { isCI } from 'ci-info';
 import { task, traceAsync } from './lib/trace-runner';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';

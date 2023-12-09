@@ -4,7 +4,7 @@ import * as tldts from 'tldts'; // hit ratio way too low, dont cache
 import picocolors from 'picocolors';
 import path from 'path';
 import listDir from '@sukka/listdir';
-import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { task } from './lib/trace-runner';
 

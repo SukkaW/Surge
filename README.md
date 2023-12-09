@@ -19,16 +19,17 @@
 #### 广告拦截 / 隐私保护 / Malware 拦截 / Phiishing 拦截
 
 - 自动生成
-- 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.js`](Build/build-reject-domainset.js)
+- 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.ts`](Build/build-reject-domainset.ts)
 - 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）以获得更好的性能
 - 不能替代浏览器广告屏蔽扩展（如 uBlock Origin）
 
 **Surge**
 
 ```ini
-RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT
+# Non IP
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT-TINYGIF
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,REJECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT
+# IP
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 ```
 
@@ -51,13 +52,6 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/domainset/reject.txt
     path: ./sukkaw_ruleset/reject_domainset.txt
-  reject_phishing_domainset:
-    type: http
-    behavior: domain
-    format: text
-    interval: 43200
-    url: https://ruleset.skk.moe/Clash/domainset/reject_phishing.txt
-    path: ./sukkaw_ruleset/reject_phishing_domainset.txt
   reject_ip:
     type: http
     behavior: classical
@@ -70,7 +64,6 @@ rules:
   - RULE-SET,reject_non_ip,REJECT
   # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
   - RULE-SET,reject_domainset,REJECT
-  - RULE-SET,reject_phishing_domainset,REJECT
   - RULE-SET,reject_ip,REJECT
 ```
 

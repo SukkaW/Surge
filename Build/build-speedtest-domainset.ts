@@ -92,7 +92,11 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     'speedtest.upp.com',
     '.fast.com',
     'speedtest.macpaw.com',
-    '.netspeedtestmaster.com'
+    '.netspeedtestmaster.com',
+    // Google Search Result of "speedtest", powered by this
+    '.measurement-lab.org',
+    // Google Fiber legacy speedtest site (new fiber speedtest use speedtestcustom.com)
+    '.speed.googlefiber.net'
   ]);
 
   const hostnameGroups = await Promise.all([

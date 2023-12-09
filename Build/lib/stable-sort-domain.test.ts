@@ -6,4 +6,8 @@ describe('stable-sort-domain', () => {
   it('.ks.cn, .tag.unclaimedproperty.ks.gov', () => {
     expect(domainSorter('.ks.cn', '.tag.unclaimedproperty.ks.gov')).toBe(-1);
   });
+
+  it('.fgnzdb.xyz, .hub.fghtem.com', () => {
+    expect(domainSorter('.fgnzdb.xyz', '.hub.fghtem.com')).toBe(1);
+  });
 });

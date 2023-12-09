@@ -1,4 +1,4 @@
-import { fetchRemoteTextAndCreateReadlineInterface } from './lib/fetch-remote-text-by-line';
+import { fetchRemoteTextAndReadByLine } from './lib/fetch-text-by-line';
 import { resolve as pathResolve } from 'path';
 import { compareAndWriteFile, withBannerArray } from './lib/create-file';
 import { processLineFromReadline } from './lib/process-line';
@@ -17,7 +17,7 @@ const INCLUDE_CIDRS = [
 ];
 
 export const buildChnCidr = task(import.meta.path, async () => {
-  const cidr = await processLineFromReadline(await fetchRemoteTextAndCreateReadlineInterface('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
+  const cidr = await processLineFromReadline(await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
   const filteredCidr = exclude([...cidr, ...INCLUDE_CIDRS], EXCLUDE_CIDRS, true);
 
   // Can not use SHARED_DESCRIPTION here as different license

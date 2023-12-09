@@ -2,7 +2,7 @@ import fsp from 'fs/promises';
 import path from 'path';
 import * as tldts from 'tldts';
 import { processLine } from './lib/process-line';
-import { readFileByLine } from './lib/fetch-remote-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { createDomainSorter } from './lib/stable-sort-domain';
 import { task } from './lib/trace-runner';
 import { compareAndWriteFile } from './lib/create-file';
