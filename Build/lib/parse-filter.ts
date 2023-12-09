@@ -8,6 +8,7 @@ import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
 import { isProbablyIpv4 } from './is-fast-ip';
 import { traceAsync } from './trace-runner';
+import picocolors from 'picocolors';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -36,11 +37,7 @@ const normalizeDomain = (domain: string) => {
   return h[0] === '.' ? h.slice(1) : h;
 };
 
-export async function processDomainLists(domainListsUrl: string | URL, includeAllSubDomain = false) {
-  if (typeof domainListsUrl === 'string') {
-    domainListsUrl = new URL(domainListsUrl);
-  }
-
+export async function processDomainLists(domainListsUrl: string, includeAllSubDomain = false) {
   const domainSets = new Set<string>();
 
   for await (const line of await fetchRemoteTextAndReadByLine(domainListsUrl)) {
@@ -50,7 +47,7 @@ export async function processDomainLists(domainListsUrl: string | URL, includeAl
     }
 
     if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-      warnOnce(domainListsUrl.toString(), false, DEBUG_DOMAIN_TO_FIND);
+      warnOnce(domainListsUrl, false, DEBUG_DOMAIN_TO_FIND);
       foundDebugDomain = true;
     }
 
@@ -64,12 +61,8 @@ export async function processDomainLists(domainListsUrl: string | URL, includeAl
   return domainSets;
 }
 
-export async function processHosts(hostsUrl: string | URL, includeAllSubDomain = false, skipDomainCheck = false) {
-  return traceAsync(`- processHosts: ${hostsUrl.toString()}`, async () => {
-    if (typeof hostsUrl === 'string') {
-      hostsUrl = new URL(hostsUrl);
-    }
-
+export async function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false) {
+  return traceAsync(`- processHosts: ${hostsUrl}`, async () => {
     const domainSets = new Set<string>();
 
     for await (const l of await fetchRemoteTextAndReadByLine(hostsUrl)) {
@@ -82,7 +75,7 @@ export async function processHosts(hostsUrl: string | URL, includeAllSubDomain =
       const _domain = domains.join(' ').trim();
 
       if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-        warnOnce(hostsUrl.href, false, DEBUG_DOMAIN_TO_FIND);
+        warnOnce(hostsUrl, false, DEBUG_DOMAIN_TO_FIND);
         foundDebugDomain = true;
       }
 
@@ -101,14 +94,25 @@ export async function processHosts(hostsUrl: string | URL, includeAllSubDomain =
   });
 }
 
+// eslint-disable-next-line sukka-ts/no-const-enum -- bun bundler is smart, maybe?
+const enum ParseType {
+  WhiteIncludeSubdomain = 0,
+  WhiteAbsolute = -1,
+  BlackAbsolute = 1,
+  BlackIncludeSubdomain = 2,
+  ErrorMessage = 10
+}
+
 export async function processFilterRules(
-  filterRulesUrl: string | URL,
-  fallbackUrls?: ReadonlyArray<string | URL> | undefined
+  filterRulesUrl: string,
+  fallbackUrls?: readonly string[] | undefined
 ): Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }> {
   const whitelistDomainSets = new Set<string>();
   const blacklistDomainSets = new Set<string>();
 
-  await traceAsync(`- processFilterRules: ${filterRulesUrl.toString()}`, async () => {
+  const warningMessages: string[] = [];
+
+  await traceAsync(`- processFilterRules: ${filterRulesUrl}`, async () => {
     const gorhill = await getGorhillPublicSuffixPromise();
 
     /**
@@ -125,33 +129,34 @@ export async function processFilterRules(
 
       if (DEBUG_DOMAIN_TO_FIND) {
         if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl.toString(), flag === 0 || flag === -1, DEBUG_DOMAIN_TO_FIND);
+          warnOnce(filterRulesUrl, flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute, DEBUG_DOMAIN_TO_FIND);
           foundDebugDomain = true;
-
-          console.log({ result, flag });
         }
       }
 
       switch (flag) {
-        case 0:
+        case ParseType.WhiteIncludeSubdomain:
           if (hostname[0] !== '.') {
             whitelistDomainSets.add(`.${hostname}`);
           } else {
             whitelistDomainSets.add(hostname);
           }
           break;
-        case -1:
+        case ParseType.WhiteAbsolute:
           whitelistDomainSets.add(hostname);
           break;
-        case 1:
+        case ParseType.BlackAbsolute:
           blacklistDomainSets.add(hostname);
           break;
-        case 2:
+        case ParseType.BlackIncludeSubdomain:
           if (hostname[0] !== '.') {
             blacklistDomainSets.add(`.${hostname}`);
           } else {
             blacklistDomainSets.add(hostname);
           }
+          break;
+        case ParseType.ErrorMessage:
+          warningMessages.push(hostname);
           break;
         default:
           throw new Error(`Unknown flag: ${flag as any}`);
@@ -164,34 +169,22 @@ export async function processFilterRules(
         lineCb(line);
       }
     } else {
-      let filterRules;
-
-      try {
-        const controller = new AbortController();
-
-        /** @type string[] */
-        filterRules = (
-          await Promise.any(
-            [filterRulesUrl, ...fallbackUrls].map(async url => {
-              const r = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
-              const text = await r.text();
-
-              console.log('[fetch finish]', url.toString());
-
-              controller.abort();
-              return text;
-            })
-          )
-        ).split('\n');
-      } catch (e) {
-        console.log(`Download Rule for [${filterRulesUrl.toString()}] failed`);
-        throw e;
-      }
-
+      const filterRules = (await traceAsync(
+        picocolors.gray(`- download ${filterRulesUrl}`),
+        () => fetchAssets(filterRulesUrl, fallbackUrls),
+        picocolors.gray
+      )).split('\n');
       for (let i = 0, len = filterRules.length; i < len; i++) {
         lineCb(filterRules[i]);
       }
     }
+  });
+
+  warningMessages.forEach(msg => {
+    console.warn(
+      picocolors.yellow(msg),
+      picocolors.gray(picocolors.underline(filterRulesUrl))
+    );
   });
 
   return {
@@ -204,10 +197,7 @@ export async function processFilterRules(
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#%&=~]/;
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
 
-/**
- * 0 white include subdomain, 1 black abosulte, 2 black include subdomain, -1 white
- */
-function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: 0 | 1 | 2 | -1] {
+function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -288,7 +278,7 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       const isIncludeAllSubDomain = filter.isHostnameAnchor();
 
       if (filter.isException() || filter.isBadFilter()) {
-        return [hostname, isIncludeAllSubDomain ? 0 : -1];
+        return [hostname, isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute];
       }
 
       const _1p = filter.firstParty();
@@ -296,7 +286,7 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
       if (_1p) {
         if (_1p === _3p) {
-          return [hostname, isIncludeAllSubDomain ? 2 : 1];
+          return [hostname, isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute];
         }
         return null;
       }
@@ -381,11 +371,13 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
       const domain = normalizeDomain(_domain);
       if (domain) {
-        return [domain, 0];
+        return [domain, ParseType.WhiteIncludeSubdomain];
       }
 
-      console.warn('      * [parse-filter E0001] (white) invalid domain:', _domain);
-      return null;
+      return [
+        `[parse-filter E0001] (white) invalid domain: ${_domain}`,
+        ParseType.ErrorMessage
+      ];
     }
   }
 
@@ -418,11 +410,13 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
       const domain = normalizeDomain(_domain);
       if (domain) {
-        return [domain, includeAllSubDomain ? 2 : 1];
+        return [domain, includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute];
       }
-      console.warn('      * [parse-filter E0002] (black) invalid domain:', _domain);
 
-      return null;
+      return [
+        `[parse-filter E0002] (black) invalid domain: ${_domain}`,
+        ParseType.ErrorMessage
+      ];
     }
   }
 
@@ -451,11 +445,13 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
     const domain = normalizeDomain(_domain);
     if (domain) {
-      return [domain, 2];
+      return [domain, ParseType.BlackIncludeSubdomain];
     }
-    console.warn('      * [parse-filter E0003] (black) invalid domain:', _domain);
 
-    return null;
+    return [
+      `[paparse-filter E0003] (black) invalid domain: ${_domain}`,
+      ParseType.ErrorMessage
+    ];
   }
 
   /**
@@ -485,11 +481,13 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
     const domain = normalizeDomain(_domain);
     if (domain) {
-      return [domain, 1];
+      return [domain, ParseType.BlackAbsolute];
     }
 
-    console.warn('      * [parse-filter E0004] (black) invalid domain:', _domain);
-    return null;
+    return [
+      `[parse-filter E0004] (black) invalid domain: ${_domain}`,
+      ParseType.ErrorMessage
+    ];
   }
 
   /**
@@ -512,11 +510,13 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
     const domain = normalizeDomain(_domain);
     if (domain) {
-      return [domain, 1];
+      return [domain, ParseType.BlackAbsolute];
     }
 
-    console.warn('      * [parse-filter E0005] (black) invalid domain:', _domain);
-    return null;
+    return [
+      `[parse-filter E0005] (black) invalid domain: ${_domain}`,
+      ParseType.ErrorMessage
+    ];
   }
 
   if (lineStartsWithSingleDot) {
@@ -536,7 +536,7 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     const tryNormalizeDomain = normalizeDomain(_domain);
     if (tryNormalizeDomain === _domain) {
       // the entire rule is domain
-      return [line, 2];
+      return [line, ParseType.BlackIncludeSubdomain];
     }
   } else {
     /**
@@ -554,11 +554,74 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     const tryNormalizeDomain = normalizeDomain(line);
     if (tryNormalizeDomain === line) {
       // the entire rule is domain
-      return [line, 2];
+      return [line, ParseType.BlackIncludeSubdomain];
     }
   }
 
-  console.warn('      * [parse-filter E0010] can not parse:', line);
+  return [
+    `[parse-filter E0010] can not parse: ${line}`,
+    ParseType.ErrorMessage
+  ];
+}
 
-  return null;
+class CustomAbortError extends Error {
+  public readonly name = 'AbortError';
+  public readonly digest = 'AbortError';
+}
+
+function sleepWithAbort(ms: number, signal: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    signal.throwIfAborted();
+    signal.addEventListener('abort', stop);
+    Bun.sleep(ms).then(done).catch(doReject);
+
+    function done() {
+      signal.removeEventListener('abort', stop);
+      resolve();
+    }
+    function stop(this: AbortSignal) {
+      reject(this.reason);
+    }
+    function doReject(reason: unknown) {
+      signal.removeEventListener('abort', stop);
+      reject(reason);
+    }
+  });
+}
+
+async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
+  const controller = new AbortController();
+
+  const fetchMainPromise = fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit })
+    .then(r => r.text())
+    .then(text => {
+      console.log(picocolors.gray('[fetch finish]'), picocolors.gray(url));
+      controller.abort();
+      return text;
+    });
+  const createFetchFallbackPromise = async (url: string, index: number) => {
+    // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 350ms before downloading from the fallback URL.
+    try {
+      await sleepWithAbort(200 + (index + 1) * 10, controller.signal);
+    } catch {
+      console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
+      throw new CustomAbortError();
+    }
+    if (controller.signal.aborted) {
+      console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
+      throw new CustomAbortError();
+    }
+    const res = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
+    const text = await res.text();
+    controller.abort();
+    return text;
+  };
+
+  return Promise.any([
+    fetchMainPromise,
+    ...fallbackUrls.map(createFetchFallbackPromise)
+  ]).catch(e => {
+    console.log(`Download Rule for [${url}] failed`);
+    throw e;
+  });
 }
