@@ -207,11 +207,9 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
       rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
       path.resolve(import.meta.dir, '../List/internal/reject-stats.txt')
     ),
-    // Copy reject_sukka.conf for backward compatibility
-    fsp.cp(
-      path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'),
+    Bun.write(
       path.resolve(import.meta.dir, '../List/domainset/reject_sukka.conf'),
-      { force: true, recursive: true }
+      '# The file has been deprecated, its content has been merged into the main `reject` domainset.\n'
     )
   ]);
 });

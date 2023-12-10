@@ -29,6 +29,7 @@ export const buildChnCidr = task(import.meta.path, async () => {
     'Data from https://misaka.io (misakaio @ GitHub)'
   ];
 
+  // Can not use createRuleset here, as Clash support advanced ipset syntax
   return Promise.all([
     compareAndWriteFile(
       withBannerArray(

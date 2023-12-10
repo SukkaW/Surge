@@ -68,14 +68,14 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
 
 export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {
   return [
-    '########################################',
+    '#########################################',
     `# ${title}`,
     `# Last Updated: ${date.toISOString()}`,
     `# Size: ${content.length}`,
     ...description.map(line => (line ? `# ${line}` : '#')),
-    '########################################',
+    '#########################################',
     ...content,
-    '################# END ###################'
+    '################## EOF ##################'
   ];
 };
 

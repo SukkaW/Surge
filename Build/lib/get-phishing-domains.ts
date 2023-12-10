@@ -90,10 +90,7 @@ export const getPhishingDomains = () => traceAsync('get phishing domains', async
     //     // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
     //   ]
     // ),
-    getGorhillPublicSuffixPromise(),
-    // Remove old files
-    fsp.rm(path.resolve(import.meta.dir, '../../List/domainset/reject_phishing.conf'), { force: true }),
-    fsp.rm(path.resolve(import.meta.dir, '../../Clash/domainset/reject_phishing.txt'), { force: true })
+    getGorhillPublicSuffixPromise()
   ]);
 
   traceSync.skip('* whitelisting phishing domains', () => {
