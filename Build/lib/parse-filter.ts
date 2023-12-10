@@ -51,11 +51,7 @@ export async function processDomainLists(domainListsUrl: string, includeAllSubDo
       foundDebugDomain = true;
     }
 
-    if (includeAllSubDomain) {
-      domainSets.add(`.${domainToAdd}`);
-    } else {
-      domainSets.add(domainToAdd);
-    }
+    domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
   }
 
   return domainSets;
@@ -89,6 +85,8 @@ export async function processHosts(hostsUrl: string, includeAllSubDomain = false
         }
       }
     }
+
+    console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
 
     return domainSets;
   });
@@ -159,7 +157,7 @@ export async function processFilterRules(
           warningMessages.push(hostname);
           break;
         default:
-          throw new Error(`Unknown flag: ${flag as any}`);
+          break;
       }
     };
 
@@ -186,6 +184,13 @@ export async function processFilterRules(
       picocolors.gray(picocolors.underline(filterRulesUrl))
     );
   });
+
+  console.log(
+    picocolors.gray('[process filter]'),
+    picocolors.gray(filterRulesUrl),
+    picocolors.gray(`white: ${whitelistDomainSets.size}`),
+    picocolors.gray(`black: ${blacklistDomainSets.size}`)
+  );
 
   return {
     white: whitelistDomainSets,
@@ -569,25 +574,23 @@ class CustomAbortError extends Error {
   public readonly digest = 'AbortError';
 }
 
-function sleepWithAbort(ms: number, signal: AbortSignal) {
-  return new Promise<void>((resolve, reject) => {
-    signal.throwIfAborted();
-    signal.addEventListener('abort', stop);
-    Bun.sleep(ms).then(done).catch(doReject);
+const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
+  signal.throwIfAborted();
+  signal.addEventListener('abort', stop);
+  Bun.sleep(ms).then(done).catch(doReject);
 
-    function done() {
-      signal.removeEventListener('abort', stop);
-      resolve();
-    }
-    function stop(this: AbortSignal) {
-      reject(this.reason);
-    }
-    function doReject(reason: unknown) {
-      signal.removeEventListener('abort', stop);
-      reject(reason);
-    }
-  });
-}
+  function done() {
+    signal.removeEventListener('abort', stop);
+    resolve();
+  }
+  function stop(this: AbortSignal) {
+    reject(this.reason);
+  }
+  function doReject(reason: unknown) {
+    signal.removeEventListener('abort', stop);
+    reject(reason);
+  }
+});
 
 async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
   const controller = new AbortController();
@@ -602,7 +605,7 @@ async function fetchAssets(url: string, fallbackUrls: string[] | readonly string
   const createFetchFallbackPromise = async (url: string, index: number) => {
     // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 350ms before downloading from the fallback URL.
     try {
-      await sleepWithAbort(200 + (index + 1) * 10, controller.signal);
+      await sleepWithAbort(300 + (index + 1) * 20, controller.signal);
     } catch {
       console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
       throw new CustomAbortError();

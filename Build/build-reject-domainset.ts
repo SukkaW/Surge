@@ -18,15 +18,12 @@ import * as tldts from 'tldts';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
-/** Whitelists */
-const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
-/** @type {Set<string>} Dedupe domains inclued by DOMAIN-KEYWORD */
-const domainKeywordsSet = new Set<string>();
-/** @type {Set<string>} Dedupe domains included by DOMAIN-SUFFIX */
-const domainSuffixSet = new Set<string>();
-
 export const buildRejectDomainSet = task(import.meta.path, async () => {
-  /** @type Set<string> */
+  /** Whitelists */
+  const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
+  const domainKeywordsSet = new Set<string>();
+  const domainSuffixSet = new Set<string>();
+
   const domainSets = new Set<string>();
 
   // Parse from AdGuard Filters
@@ -38,9 +35,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
       // Parse from remote hosts & domain lists
       ...HOSTS.map(entry => processHosts(entry[0], entry[1]).then(hosts => {
         hosts.forEach(host => {
-          if (host) {
-            domainSets.add(host);
-          }
+          domainSets.add(host);
         });
       })),
       ...ADGUARD_FILTERS.map(input => {
@@ -61,12 +56,8 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
         'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
         'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
       ].map(input => processFilterRules(input).then(({ white, black }) => {
-        white.forEach(i => {
-          filterRuleWhitelistDomainSets.add(i);
-        });
-        black.forEach(i => {
-          filterRuleWhitelistDomainSets.add(i);
-        });
+        white.forEach(i => filterRuleWhitelistDomainSets.add(i));
+        black.forEach(i => filterRuleWhitelistDomainSets.add(i));
       }))),
       getPhishingDomains().then(([purePhishingDomains, fullDomainSet]) => {
         fullDomainSet.forEach(host => {
@@ -74,10 +65,16 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
             domainSets.add(host);
           }
         });
-        purePhishingDomains.forEach(suffix => {
-          domainSets.add(`.${suffix}`);
-        });
-      })
+        purePhishingDomains.forEach(suffix => domainSets.add(`.${suffix}`));
+      }),
+      (async () => {
+        for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
+          const l = processLine(line);
+          if (l) {
+            domainSets.add(l);
+          }
+        }
+      })()
     ]);
 
     // remove pre-defined enforced blacklist from whitelist
@@ -94,17 +91,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   }
 
   let previousSize = domainSets.size;
-  console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules!`);
-
-  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
-    const l = processLine(line);
-    if (l) {
-      domainSets.add(l);
-    }
-  }
-
-  previousSize = domainSets.size - previousSize;
-  console.log(`Import ${previousSize} rules from reject_sukka.conf!`);
+  console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
     const [type, keyword] = line.split(',');
@@ -150,11 +137,11 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
         domainSets.delete(domain);
       }
     }
+
+    console.log(`Deduped ${previousSize} - ${domainSets.size} = ${previousSize - domainSets.size} from black keywords and suffixes!`);
   });
-
-  console.log(`Deduped ${previousSize} - ${domainSets.size} = ${previousSize - domainSets.size} from black keywords and suffixes!`);
-
   previousSize = domainSets.size;
+
   // Dedupe domainSets
   const dudupedDominArray = traceSync('* Dedupe from covered subdomain', () => domainDeduper(Array.from(domainSets)));
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules!`);
@@ -180,9 +167,6 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
     })
   );
 
-  const domainSorter = createDomainSorter(gorhill);
-  const domainset = traceSync('* Sort reject domainset', () => dudupedDominArray.sort(domainSorter));
-
   const description = [
     ...SHARED_DESCRIPTION,
     '',
@@ -198,7 +182,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
       'Sukka\'s Ruleset - Reject Base',
       description,
       new Date(),
-      domainset,
+      traceSync('* Sort reject domainset', () => dudupedDominArray.sort(createDomainSorter(gorhill))),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')

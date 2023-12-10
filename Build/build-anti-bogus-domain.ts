@@ -1,21 +1,20 @@
 // @ts-check
 import path from 'path';
-import { isIPv4, isIPv6 } from 'net';
 import { createRuleset } from './lib/create-file';
 import { fetchRemoteTextAndReadByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { task } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 
 const getBogusNxDomainIPs = async () => {
-  /** @type {string[]} */
-  const result = [];
+  const result: string[] = [];
   for await (const line of await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
-    if (line.startsWith('bogus-nxdomain=')) {
+    if (line && line.startsWith('bogus-nxdomain=')) {
       const ip = line.slice(15).trim();
-      if (isIPv4(ip)) {
+      if (isProbablyIpv4(ip)) {
         result.push(`IP-CIDR,${ip}/32,no-resolve`);
-      } else if (isIPv6(ip)) {
+      } else if (isProbablyIpv6(ip)) {
         result.push(`IP-CIDR6,${ip}/128,no-resolve`);
       }
     }
@@ -26,20 +25,15 @@ const getBogusNxDomainIPs = async () => {
 export const buildAntiBogusDomain = task(import.meta.path, async () => {
   const bogusIpPromise = getBogusNxDomainIPs();
 
-  /** @type {string[]} */
-  const result = [];
+  const result: string[] = [];
   for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/ip/reject.conf'))) {
-    if (line === '# --- [Anti Bogus Domain Replace Me] ---') {
-      // bogus ip is less than 200, no need to worry about "Maximum call stack size exceeded"
-      result.push(...(await bogusIpPromise));
-      continue;
-    } else {
-      const l = processLine(line);
-      if (l) {
-        result.push(l);
-      }
+    const l = processLine(line);
+    if (l) {
+      result.push(l);
     }
   }
+
+  result.push(...(await bogusIpPromise));
 
   const description = [
     ...SHARED_DESCRIPTION,

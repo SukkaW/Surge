@@ -2,6 +2,7 @@
 import { readFileByLine } from './fetch-text-by-line';
 import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
 import { traceAsync } from './trace-runner';
+import picocolors from 'picocolors';
 
 export async function compareAndWriteFile(linesA: string[], filePath: string) {
   let isEqual = true;
@@ -45,11 +46,11 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
   }
 
   if (isEqual) {
-    console.log(`Same Content, bail out writing: ${filePath}`);
+    console.log(picocolors.gray(`Same Content, bail out writing: ${filePath}`));
     return;
   }
 
-  await traceAsync(`Writing ${filePath}`, async () => {
+  await traceAsync(picocolors.gray(`Writing ${filePath}`), async () => {
     if (linesALen < 10000) {
       return Bun.write(file, `${linesA.join('\n')}\n`);
     }
@@ -63,7 +64,7 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
 
     await writer.flush();
     return writer.end();
-  });
+  }, picocolors.gray);
 }
 
 export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {

@@ -2,14 +2,14 @@
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import path from 'path';
-import { isIPv4, isIPv6 } from 'net';
+import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
 export const buildTelegramCIDR = task(import.meta.path, async () => {
-  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
+  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit) as Response;
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 
@@ -20,10 +20,10 @@ export const buildTelegramCIDR = task(import.meta.path, async () => {
     if (!cidr) continue;
 
     const [subnet] = cidr.split('/');
-    if (isIPv4(subnet)) {
+    if (isProbablyIpv4(subnet)) {
       results.push(`IP-CIDR,${cidr},no-resolve`);
     }
-    if (isIPv6(subnet)) {
+    if (isProbablyIpv6(subnet)) {
       results.push(`IP-CIDR6,${cidr},no-resolve`);
     }
   }

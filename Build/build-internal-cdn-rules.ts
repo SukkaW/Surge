@@ -15,9 +15,6 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
   const set = new Set<string>();
   const keywords = new Set<string>();
 
-  const gorhill = await getGorhillPublicSuffixPromise();
-  const domainSorter = createDomainSorter(gorhill);
-
   const addApexDomain = (input: string) => {
     // We are including the private domains themselves
     const d = tldts.getDomain(input, { allowPrivateDomains: false });
@@ -61,7 +58,8 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
     }
   };
 
-  await Promise.all([
+  const [domainSorter] = await Promise.all([
+    getGorhillPublicSuffixPromise().then(createDomainSorter),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf')),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf')),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf')),

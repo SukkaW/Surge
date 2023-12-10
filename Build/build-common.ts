@@ -22,23 +22,25 @@ export const buildCommon = task(import.meta.path, async () => {
 
   const pw = new PathScurry(sourceDir);
   for await (const entry of pw) {
-    if (entry.isFile()) {
-      if (path.extname(entry.name) === '.js') {
-        continue;
-      }
+    if (!entry.isFile()) {
+      continue;
+    }
 
-      const relativePath = entry.relative();
-      if (relativePath.startsWith('domainset/')) {
-        promises.push(transformDomainset(entry.fullpath(), relativePath));
-        continue;
-      }
-      if (
-        relativePath.startsWith('ip/')
+    if (path.extname(entry.name) === '.js') {
+      continue;
+    }
+
+    const relativePath = entry.relative();
+    if (relativePath.startsWith('domainset/')) {
+      promises.push(transformDomainset(entry.fullpath(), relativePath));
+      continue;
+    }
+    if (
+      relativePath.startsWith('ip/')
         || relativePath.startsWith('non_ip/')
-      ) {
-        promises.push(transformRuleset(entry.fullpath(), relativePath));
-        continue;
-      }
+    ) {
+      promises.push(transformRuleset(entry.fullpath(), relativePath));
+      continue;
     }
   }
 

@@ -63,15 +63,13 @@ const buildCdnConf = task(import.meta.path, async () => {
   const getS3OSSDomainsPromise: Promise<Set<string>> = getS3OSSDomains();
 
   for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'))) {
-    if (l === '# --- [AWS S3 Replace Me] ---') {
-      (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
-      continue;
-    }
     const line = processLine(l);
     if (line) {
       cdnDomainsList.push(line);
     }
   }
+
+  (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
 
   const description: string[] = [
     ...SHARED_DESCRIPTION,

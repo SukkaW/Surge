@@ -1,4 +1,5 @@
 import retry from 'async-retry';
+import picocolors from 'picocolors';
 
 // retry settings
 const MIN_TIMEOUT = 10;
@@ -86,7 +87,7 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
               err.name === 'AbortError'
               || ('digest' in err && err.digest === 'AbortError')
             ) {
-              console.log('[fetch abort]', url.toString());
+              console.log(picocolors.gray('[fetch abort]'), picocolors.gray(url.toString()));
               return bail(err);
             }
           }
