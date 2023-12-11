@@ -10,7 +10,7 @@ import { isProbablyIpv4 } from './is-fast-ip';
 import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 
-const DEBUG_DOMAIN_TO_FIND: string | null = 'video'; // example.com | null
+const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
 const warnOnceUrl = new Set<string>();
