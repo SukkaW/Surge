@@ -3,7 +3,12 @@ export const processLine = (line: string): string | null => {
     return null;
   }
 
-  const line_0: string = line[0];
+  const trimmed: string = line.trim();
+  if (trimmed === '') {
+    return null;
+  }
+
+  const line_0: string = trimmed[0];
 
   if (
     line_0 === '#'
@@ -12,11 +17,6 @@ export const processLine = (line: string): string | null => {
     || line_0 === '\n'
     || line_0 === '!'
   ) {
-    return null;
-  }
-
-  const trimmed: string = line.trim();
-  if (trimmed === '') {
     return null;
   }
 

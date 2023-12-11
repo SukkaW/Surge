@@ -10,7 +10,7 @@ import { isProbablyIpv4 } from './is-fast-ip';
 import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 
-const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
+const DEBUG_DOMAIN_TO_FIND: string | null = 'video'; // example.com | null
 let foundDebugDomain = false;
 
 const warnOnceUrl = new Set<string>();
@@ -67,22 +67,20 @@ export async function processHosts(hostsUrl: string, includeAllSubDomain = false
         continue;
       }
 
-      const [, ...domains] = line.split(' ');
-      const _domain = domains.join(' ').trim();
+      const [, domain] = line.split(/\s/);
+      if (!domain) {
+        continue;
+      }
+      const _domain = domain.trim();
 
       if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
         warnOnce(hostsUrl, false, DEBUG_DOMAIN_TO_FIND);
         foundDebugDomain = true;
       }
 
-      const domain = skipDomainCheck ? _domain : normalizeDomain(_domain);
-
-      if (domain) {
-        if (includeAllSubDomain) {
-          domainSets.add(`.${domain}`);
-        } else {
-          domainSets.add(domain);
-        }
+      const domainToAdd = skipDomainCheck ? _domain : normalizeDomain(_domain);
+      if (domainToAdd) {
+        domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
       }
     }
 

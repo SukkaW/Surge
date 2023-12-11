@@ -133,6 +133,8 @@ export const ADGUARD_FILTERS = [
 
 export const PREDEFINED_WHITELIST = [
   'localhost',
+  'local',
+  'localhost.localdomain',
   'broadcasthost',
   'ip6-loopback',
   'ip6-localnet',
