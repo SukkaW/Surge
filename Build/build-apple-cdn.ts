@@ -2,11 +2,16 @@
 import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
-import { task } from './lib/trace-runner';
+import { task, traceAsync } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import picocolors from 'picocolors';
 
 export const buildAppleCdn = task(import.meta.path, async () => {
-  const res = await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf');
+  const res = await traceAsync(
+    picocolors.gray('download dnsmasq-china-list apple.china.conf'),
+    () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
+    picocolors.gray
+  );
 
   const description = [
     ...SHARED_DESCRIPTION,

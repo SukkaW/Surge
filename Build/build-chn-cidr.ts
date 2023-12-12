@@ -2,9 +2,10 @@ import { fetchRemoteTextAndReadByLine } from './lib/fetch-text-by-line';
 import { resolve as pathResolve } from 'path';
 import { compareAndWriteFile, withBannerArray } from './lib/create-file';
 import { processLineFromReadline } from './lib/process-line';
-import { task } from './lib/trace-runner';
+import { task, traceAsync, traceSync } from './lib/trace-runner';
 
 import { exclude } from 'fast-cidr-tools';
+import picocolors from 'picocolors';
 
 // https://github.com/misakaio/chnroutes2/issues/25
 const EXCLUDE_CIDRS = [
@@ -17,8 +18,16 @@ const INCLUDE_CIDRS = [
 ];
 
 export const buildChnCidr = task(import.meta.path, async () => {
-  const cidr = await processLineFromReadline(await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
-  const filteredCidr = exclude([...cidr, ...INCLUDE_CIDRS], EXCLUDE_CIDRS, true);
+  const cidr = await traceAsync(
+    picocolors.gray('download chnroutes2'),
+    async () => processLineFromReadline(await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
+    picocolors.gray
+  );
+  const filteredCidr = traceSync(
+    picocolors.gray('processing chnroutes2'),
+    () => exclude([...cidr, ...INCLUDE_CIDRS], EXCLUDE_CIDRS, true),
+    picocolors.gray
+  );
 
   // Can not use SHARED_DESCRIPTION here as different license
   const description = [

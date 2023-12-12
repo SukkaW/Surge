@@ -17,32 +17,38 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
     console.log(`Nothing to write to ${filePath}...`);
     isEqual = false;
   } else {
-    let index = 0;
+    isEqual = await traceAsync(
+      picocolors.gray(`Comparing ${filePath}`),
+      async () => {
+        let index = 0;
 
-    for await (const lineB of readFileByLine(file)) {
-      const lineA = linesA[index];
-      index++;
+        for await (const lineB of readFileByLine(file)) {
+          const lineA = linesA[index];
+          index++;
 
-      if (lineA == null) {
-        // The file becomes smaller
-        isEqual = false;
-        break;
-      }
+          if (lineA == null) {
+            // The file becomes smaller
+            return false;
+          }
 
-      if (lineA[0] === '#' && lineB[0] === '#') {
-        continue;
-      }
+          if (lineA[0] === '#' && lineB[0] === '#') {
+            continue;
+          }
 
-      if (lineA !== lineB) {
-        isEqual = false;
-        break;
-      }
-    }
+          if (lineA !== lineB) {
+            return false;
+          }
+        }
 
-    if (isEqual && index !== linesALen) {
-      // The file becomes larger
-      isEqual = false;
-    }
+        if (index !== linesALen) {
+          // The file becomes larger
+          return false;
+        }
+
+        return true;
+      },
+      picocolors.gray
+    );
   }
 
   if (isEqual) {
