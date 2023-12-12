@@ -21,7 +21,7 @@
 - 自动生成
 - 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.ts`](Build/build-reject-domainset.ts)
 - 仅建议在 Surge for Mac 上使用，移动平台请使用专门的工具（如 ADGuard for Android/iOS）以获得更好的性能
-- 不能替代浏览器广告屏蔽扩展（如 uBlock Origin）
+- **不能替代浏览器广告屏蔽扩展（如 AdGuard for Browser）**
 
 **Surge**
 
