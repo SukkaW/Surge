@@ -1,13 +1,14 @@
 import { domainDeduper } from './lib/domain-deduper';
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import domainSorter from './lib/stable-sort-domain';
+import { sortDomains } from './lib/stable-sort-domain';
 
 import { Sema } from 'async-sema';
 import * as tldts from 'tldts';
 import { task } from './lib/trace-runner';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 
 const s = new Sema(3);
 
@@ -140,7 +141,9 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     }
   }
 
-  const deduped = domainDeduper(Array.from(domains)).sort(domainSorter);
+  const gorhill = await getGorhillPublicSuffixPromise();
+  const deduped = sortDomains(domainDeduper(Array.from(domains)), gorhill);
+
   const description = [
     ...SHARED_DESCRIPTION,
     '',

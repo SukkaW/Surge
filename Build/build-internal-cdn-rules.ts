@@ -3,7 +3,7 @@ import path from 'path';
 import * as tldts from 'tldts';
 import { processLine } from './lib/process-line';
 import { readFileByLine } from './lib/fetch-text-by-line';
-import { createDomainSorter } from './lib/stable-sort-domain';
+import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './lib/trace-runner';
 import { compareAndWriteFile } from './lib/create-file';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
@@ -58,8 +58,8 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
     }
   };
 
-  const [domainSorter] = await Promise.all([
-    getGorhillPublicSuffixPromise().then(createDomainSorter),
+  const [gorhill] = await Promise.all([
+    getGorhillPublicSuffixPromise(),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf')),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf')),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf')),
@@ -74,7 +74,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
 
   return compareAndWriteFile(
     [
-      ...Array.from(set).sort(domainSorter).map(i => `SUFFIX,${i}`),
+      ...sortDomains(Array.from(set), gorhill).map(i => `SUFFIX,${i}`),
       ...Array.from(keywords).sort().map(i => `REGEX,${i}`)
     ],
     path.resolve(import.meta.dir, '../List/internal/cdn.txt')

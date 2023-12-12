@@ -10,18 +10,16 @@ const compare = (a: string | null, b: string | null) => {
     return -1;
   }
 
-  if (a.length !== b.length) {
-    const r = a.length - b.length;
-    if (r > 0) {
-      return 1;
-    }
-    if (r < 0) {
-      return -1;
-    }
-    return 0;
+  const aLen = a.length;
+  const r = aLen - b.length;
+  if (r > 0) {
+    return 1;
+  }
+  if (r < 0) {
+    return -1;
   }
 
-  for (let i = 0; i < a.length; i++) {
+  for (let i = 0; i < aLen; i++) {
     if (b[i] == null) {
       return 1;
     }
@@ -35,34 +33,21 @@ const compare = (a: string | null, b: string | null) => {
   return 0;
 };
 
-const createDomainSorter = (gorhill: PublicSuffixList | null = null) => {
-  if (gorhill) {
-    const getDomain = createCachedGorhillGetDomain(gorhill);
+export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
+  const getDomain = createCachedGorhillGetDomain(gorhill);
+  const domains = inputs.reduce<Record<string, string>>((acc, cur) => {
+    acc[cur] ||= getDomain(cur);
+    return acc;
+  }, {});
 
-    return (a: string, b: string) => {
-      if (a === b) return 0;
-
-      const aDomain = getDomain(a);
-      const bDomain = getDomain(b);
-
-      const resultDomain = compare(aDomain, bDomain);
-      return resultDomain !== 0 ? resultDomain : compare(a, b);
-    };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-var-requires -- fuck
-  const tldts = require('./cached-tld-parse');
-
-  return (a: string, b: string) => {
+  const sorter = (a: string, b: string) => {
     if (a === b) return 0;
 
-    const aDomain = tldts.parse(a).domain;
-    const bDomain = tldts.parse(b).domain;
+    const aDomain = domains[a];
+    const bDomain = domains[b];
 
-    const resultDomain = compare(aDomain, bDomain);
-    return resultDomain !== 0 ? resultDomain : compare(a, b);
+    return compare(aDomain, bDomain) || compare(a, b);
   };
-};
 
-export default createDomainSorter();
-export { createDomainSorter };
+  return inputs.sort(sorter);
+};

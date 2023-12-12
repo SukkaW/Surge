@@ -1,7 +1,7 @@
 import fsp from 'fs/promises';
 import path from 'path';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
-import { processHosts } from './parse-filter';
+import { processDomainLists, processHosts } from './parse-filter';
 import { traceAsync, traceSync } from './trace-runner';
 import * as tldts from 'tldts';
 import { createTrie } from './trie';
@@ -33,7 +33,12 @@ const BLACK_TLD = new Set([
   'club',
   'cn',
   'codes',
+  'co.uk',
+  'co.in',
+  'com.br',
   'com.cn',
+  'com.pl',
+  'com.vn',
   'cool',
   'cyou',
   'fit',
@@ -53,6 +58,7 @@ const BLACK_TLD = new Set([
   'ltd',
   'ml',
   'mobi',
+  'net.pl',
   'one',
   'online',
   'pro',
@@ -79,19 +85,12 @@ const BLACK_TLD = new Set([
 ]);
 
 export const getPhishingDomains = () => traceAsync('get phishing domains', async () => {
-  const [domainSet, gorhill] = await Promise.all([
+  const [domainSet, domainSet2, gorhill] = await Promise.all([
     processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true),
-    // processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true),
-    // processFilterRules(
-    //   'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt',
-    //   [
-    //     'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
-    //     // Prefer mirror, since malware-filter.gitlab.io has not been updated for a while
-    //     // 'https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt'
-    //   ]
-    // ),
+    processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true),
     getGorhillPublicSuffixPromise()
   ]);
+  domainSet2.forEach((domain) => domainSet.add(domain));
 
   traceSync.skip('* whitelisting phishing domains', () => {
     const trieForRemovingWhiteListed = createTrie(domainSet);

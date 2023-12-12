@@ -37,27 +37,27 @@ const normalizeDomain = (domain: string) => {
   return h[0] === '.' ? h.slice(1) : h;
 };
 
-export async function processDomainLists(domainListsUrl: string, includeAllSubDomain = false) {
-  const domainSets = new Set<string>();
+export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false) {
+  return traceAsync(`- processDomainLists: ${domainListsUrl}`, async () => {
+    const domainSets = new Set<string>();
 
-  for await (const line of await fetchRemoteTextAndReadByLine(domainListsUrl)) {
-    const domainToAdd = processLine(line);
-    if (!domainToAdd) {
-      continue;
+    for await (const line of await fetchRemoteTextAndReadByLine(domainListsUrl)) {
+      const domainToAdd = processLine(line);
+      if (!domainToAdd) continue;
+
+      if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
+        warnOnce(domainListsUrl, false, DEBUG_DOMAIN_TO_FIND);
+        foundDebugDomain = true;
+      }
+
+      domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
     }
 
-    if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-      warnOnce(domainListsUrl, false, DEBUG_DOMAIN_TO_FIND);
-      foundDebugDomain = true;
-    }
-
-    domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
-  }
-
-  return domainSets;
+    return domainSets;
+  });
 }
 
-export async function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false) {
+export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false) {
   return traceAsync(`- processHosts: ${hostsUrl}`, async () => {
     const domainSets = new Set<string>();
 

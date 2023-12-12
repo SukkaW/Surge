@@ -26,6 +26,11 @@ export const HOSTS = [
   ['https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt', true, true]
 ] as const;
 
+export const DOMAIN_LISTS = [
+  // DigitalSide Threat-Intel - OSINT Hub
+  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true]
+] as const;
+
 export const ADGUARD_FILTERS = [
   // EasyList
   [
