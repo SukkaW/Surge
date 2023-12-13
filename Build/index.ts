@@ -14,7 +14,7 @@ import { buildStreamService } from './build-stream-service';
 import { buildRedirectModule } from './build-redirect-module';
 import { validate } from './validate-domainset';
 
-import { buildPublicHtml } from './build-public';
+import { buildPublic } from './build-public';
 // import type { TaskResult } from './lib/trace-runner';
 
 (async () => {
@@ -84,7 +84,7 @@ import { buildPublicHtml } from './build-public';
     ]);
 
     await Promise.all([
-      buildPublicHtml(),
+      buildPublic(),
       validate()
     ]);
 

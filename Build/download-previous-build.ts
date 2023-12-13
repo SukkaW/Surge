@@ -44,7 +44,7 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
 
   if (flag & ALL_FILES_EXISTS) {
     console.log('All files exists, skip download.');
-    // return;
+    return;
   }
 
   const extractedPath = path.join(os.tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);

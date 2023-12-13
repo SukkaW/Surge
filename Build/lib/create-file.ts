@@ -68,7 +68,6 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
       writer.write('\n');
     }
 
-    await writer.flush();
     return writer.end();
   }, picocolors.gray);
 }
