@@ -1,4 +1,3 @@
-import tar from 'tar';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
@@ -9,6 +8,8 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import { isCI } from 'ci-info';
 import { task, traceAsync } from './lib/trace-runner';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
+import tarStream from 'tar-stream';
+import zlib from 'zlib';
 
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
@@ -56,40 +57,29 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
         fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit),
         fsp.mkdir(extractedPath, { recursive: true })
       ]);
-      await pipeline(
-        Readable.fromWeb(resp.body!),
-        tar.t({
-          filter(p) {
-            return filesList.some(f => p.startsWith(f));
-          },
-          // onentry is async, so we close entry manually after consumed
-          noResume: true,
-          async onentry(entry) {
-            if (entry.type !== 'File') {
-              // not a file, throw away
-              entry.resume();
-              return;
-            }
 
-            const relativeEntryPath = entry.path.replace(`ruleset.skk.moe-master${path.sep}`, '');
+      const extract = tarStream.extract();
+      Readable.fromWeb(resp.body!).pipe(zlib.createGunzip()).pipe(extract);
+      for await (const entry of extract) {
+        if (entry.header.type !== 'file') {
+          entry.resume(); // Drain the entry
+          continue;
+        }
+        // filter entry
+        if (!filesList.some(f => entry.header.name.startsWith(f))) {
+          entry.resume(); // Drain the entry
+          continue;
+        }
 
-            const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
-            await fsp.mkdir(path.dirname(targetPath), { recursive: true });
+        const relativeEntryPath = entry.header.name.replace(`ruleset.skk.moe-master${path.sep}`, '');
+        const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
 
-            const targetFileSink = Bun.file(targetPath).writer();
-            const onData = (chunk: Buffer) => targetFileSink.write(chunk);
-
-            // I don't know, but for some reason it is impossible to consume entry with AsyncIterator
-            await new Promise<void>((resolve, reject) => {
-              entry.on('data', onData);
-              entry.on('end', resolve);
-              entry.on('error', reject);
-            });
-
-            await targetFileSink.end();
-          }
-        })
-      );
+        await fsp.mkdir(path.dirname(targetPath), { recursive: true });
+        await pipeline(
+          entry,
+          fs.createWriteStream(targetPath)
+        );
+      }
     }
   );
 });
