@@ -49,7 +49,25 @@ const priorityOrder: Record<'default' | string & {}, number> = {
   LICENSE: 20,
   default: Number.MAX_VALUE
 };
-const prioritySorter = (a: TreeType, b: TreeType) => (priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default) || +(a.name > b.name) || -(a.name < b.name);
+const prioritySorter = (a: TreeType, b: TreeType) => {
+  return ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || a.name.localeCompare(b.name);
+};
+const walk = (tree: TreeTypeArray) => {
+  let result = '';
+  tree.sort(prioritySorter);
+  for (let i = 0, len = tree.length; i < len; i++) {
+    const entry = tree[i];
+    if (entry.type === 'directory') {
+      result += `<li class="folder">${entry.name}`;
+      result += '<ul>';
+      result += walk(entry.children);
+      result += '</ul>';
+    } else if (/* entry.type === 'file' && */ entry.name !== 'index.html') {
+      result += `<li><a class="file directory-list-file" href="${entry.path}">${entry.name}</a></li>`;
+    }
+  }
+  return result;
+};
 
 function generateHtml(tree: TreeTypeArray) {
   let html = `<!DOCTYPE html>
@@ -64,7 +82,7 @@ function generateHtml(tree: TreeTypeArray) {
     <link href="https://cdn.skk.moe/favicon/android-chrome-192x192.png" rel="icon" type="image/png" sizes="192x192">
     <link href="https://cdn.skk.moe/favicon/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32">
     <link href="https://cdn.skk.moe/favicon/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16">
-    <meta name="description" content="Sukka 自用的 Surge 规则组">
+    <meta name="description" content="Sukka 自用的 Surge / Clash Premium 规则组">
   
     <link rel="stylesheet" href="https://cdn.skk.moe/ruleset/css/21d8777a.css" />
   
@@ -88,22 +106,7 @@ function generateHtml(tree: TreeTypeArray) {
 
   html += '<ul class="directory-list">';
 
-  const walk = (tree: TreeTypeArray) => {
-    tree.sort(prioritySorter);
-    for (let i = 0, len = tree.length; i < len; i++) {
-      const entry = tree[i];
-      if (entry.type === 'directory') {
-        html += `<li class="folder">${entry.name}`;
-        html += '<ul>';
-        walk(entry.children);
-        html += '</ul>';
-      } else if (/* entry.type === 'file' && */ entry.name !== 'index.html') {
-        html += `<li><a class="file directory-list-file" href="${entry.path}">${entry.name}</a></li>`;
-      }
-    }
-  };
-
-  walk(tree);
+  html += walk(tree);
 
   html += '</ul>';
 
