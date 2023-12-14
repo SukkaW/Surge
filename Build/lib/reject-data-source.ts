@@ -58,7 +58,8 @@ export const ADGUARD_FILTERS = [
   [
     'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
     [
-      'https://filters.adtidy.org/extension/ublock/filters/15.txt'
+      'https://filters.adtidy.org/extension/ublock/filters/15_optimized.txt',
+      'https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt'
     ]
   ],
   // AdGuard CNAME Filter Combined

@@ -164,6 +164,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'setmeup.arubanetworks.com',
       // ASUS router
       'router.asus.com',
+      'repeater.asus.com',
       'asusrouter.com',
       // NetGear
       'routerlogin.net',
@@ -172,17 +173,51 @@ module.exports.DOMESTICS = /** @type {const} */({
       // TP-Link Router
       'tplinkwifi.net',
       'tplogin.cn',
+      'tplinkap.net',
+      'tplinkeap.net',
+      'tplinkmodem.net',
+      'tplinkplclogin.net',
+      'tplinkrepeater.net',
       // Xiaomi Router
       'miwifi.com',
       // ZTE CPE
       'zte.home',
       // Other Router
       'hiwifi.com',
+      'huaweimobilewifi.com',
       'my.router',
       'phicomm.me',
       'router.ctc',
       'peiluyou.com',
-      'my.router'
+      'airbox.home',
+      'arcor.easybox',
+      'aterm.me',
+      'bthub.home',
+      'bthomehub.home',
+      'congstar.box',
+      'connect.box',
+      'console.gl-inet.com',
+      'easy.box',
+      'etxr',
+      'fritz.box',
+      'fritz.nas',
+      'fritz.repeater',
+      'giga.cube',
+      'hi.link',
+      'hitronhub.home',
+      'homerouter.cpe',
+      'myfritz.box',
+      'mobile.hotspot',
+      'ntt.setup',
+      'pi.hole',
+      'plex.direct',
+      'app.plex.tv',
+      'routerlogin.com',
+      'samsung.router',
+      'speedport.ip',
+      'steamloopback.host',
+      'web.setup',
+      'web.setup.home'
     ]
   }
 });
