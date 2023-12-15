@@ -60,7 +60,9 @@ module.exports.DOMESTICS = /** @type {const} */({
       'tencent.com',
       'weixinbridge.com',
       'weixin.com',
-      'wechat.com'
+      'wechat.com',
+      'soso.com',
+      'sogou,cin'
     ]
   },
   BILIBILI: {
@@ -146,6 +148,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       '360tpcdn.com',
       'qhres2.com',
       'so.com',
+      'haosou.com',
       'yunpan.cn'
     ]
   },
