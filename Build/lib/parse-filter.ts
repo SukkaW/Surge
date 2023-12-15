@@ -1,14 +1,15 @@
 // @ts-check
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-import * as tldts from './cached-tld-parse';
+
 import { fetchRemoteTextAndReadByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
-import { isProbablyIpv4 } from './is-fast-ip';
+
 import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
+import { normalizeDomain } from './normalize-domain';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -21,20 +22,6 @@ const warnOnce = (url: string, isWhite: boolean, ...message: any[]) => {
   }
   warnOnceUrl.add(key);
   console.warn(url, isWhite ? '(white)' : '(black)', ...message);
-};
-
-const normalizeDomain = (domain: string) => {
-  if (!domain) return null;
-  if (isProbablyIpv4(domain)) return null;
-
-  const parsed = tldts.parse2(domain);
-  if (parsed.isIp) return null;
-  if (!parsed.isIcann && !parsed.isPrivate) return null;
-
-  const h = parsed.hostname;
-  if (!h) return null;
-
-  return h[0] === '.' ? h.slice(1) : h;
 };
 
 export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false) {
