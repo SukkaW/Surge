@@ -41,6 +41,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'xiami.net',
       'ykimg.com',
       'youku.com',
+      'cibntv.net',
       'ele.me',
       'elemecdn.com',
       'taopiaopiao.com',
@@ -111,7 +112,9 @@ module.exports.DOMESTICS = /** @type {const} */({
       'bilivideo.com',
       'bilivideo.cn',
       'hdslb.com',
-      'biliimg.com'
+      'biliimg.com',
+      'biliapi.com',
+      'biliapi.net'
     ]
   },
   XIAOMI: {
@@ -136,6 +139,9 @@ module.exports.DOMESTICS = /** @type {const} */({
     domains: [
       'bytecdn.cn',
       'toutiaoimg.com',
+      'toutiaoimg.cn',
+      'toutiaostatic.com',
+      'toutiaovod.com',
       'feiliao.com',
       'iesdouyin.com',
       'pstatp.com',
