@@ -7,7 +7,7 @@ import { createRuleset } from './lib/create-file';
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
-const createRulesetForStreamService = (fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
+export const createRulesetForStreamService = (fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
   return [
     // Domains
     ...createRuleset(

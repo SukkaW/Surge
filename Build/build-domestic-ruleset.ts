@@ -6,8 +6,9 @@ import { processLineFromReadline } from './lib/process-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import { createMemoizedPromise } from './lib/memo-promise';
 
-export const buildDomesticRuleset = task(import.meta.path, async () => {
+export const getDomesticDomainsRulesetPromise = createMemoizedPromise(async () => {
   const results = await processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf')));
 
   results.push(
@@ -17,6 +18,10 @@ export const buildDomesticRuleset = task(import.meta.path, async () => {
     }, []).map((domain) => `DOMAIN-SUFFIX,${domain}`)
   );
 
+  return results;
+});
+
+export const buildDomesticRuleset = task(import.meta.path, async () => {
   const rulesetDescription = [
     ...SHARED_DESCRIPTION,
     '',
@@ -28,7 +33,7 @@ export const buildDomesticRuleset = task(import.meta.path, async () => {
       'Sukka\'s Ruleset - Domestic Domains',
       rulesetDescription,
       new Date(),
-      results,
+      await getDomesticDomainsRulesetPromise(),
       'ruleset',
       path.resolve(import.meta.dir, '../List/non_ip/domestic.conf'),
       path.resolve(import.meta.dir, '../Clash/non_ip/domestic.txt')

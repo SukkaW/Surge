@@ -7,8 +7,9 @@ import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { task } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import { createMemoizedPromise } from './lib/memo-promise';
 
-export const buildTelegramCIDR = task(import.meta.path, async () => {
+export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit) as Response;
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
@@ -27,6 +28,12 @@ export const buildTelegramCIDR = task(import.meta.path, async () => {
       results.push(`IP-CIDR6,${cidr},no-resolve`);
     }
   }
+
+  return { date, results };
+});
+
+export const buildTelegramCIDR = task(import.meta.path, async () => {
+  const { date, results } = await getTelegramCIDRPromise();
 
   if (results.length === 0) {
     throw new Error('Failed to fetch data!');

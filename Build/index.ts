@@ -14,6 +14,8 @@ import { buildStreamService } from './build-stream-service';
 import { buildRedirectModule } from './build-redirect-module';
 import { validate } from './validate-domainset';
 
+import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
+
 import { buildPublic } from './build-public';
 // import type { TaskResult } from './lib/trace-runner';
 
@@ -64,6 +66,10 @@ import { buildPublic } from './build-public';
     const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
     const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
 
+    const buildSSPanelUIMAppProfilePromise = Promise.all([
+      downloadPreviousBuildPromise
+    ]).then(() => buildSSPanelUIMAppProfile());
+
     const stats = await Promise.all([
       downloadPreviousBuildPromise,
       downloadPublicSuffixListPromise,
@@ -80,7 +86,8 @@ import { buildPublic } from './build-public';
       // buildInternalChnDomainsPromise,
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,
-      buildStreamServicePromise
+      buildStreamServicePromise,
+      buildSSPanelUIMAppProfilePromise
     ]);
 
     await Promise.all([

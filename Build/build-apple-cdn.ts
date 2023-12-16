@@ -5,13 +5,16 @@ import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task, traceAsync } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import picocolors from 'picocolors';
+import { createMemoizedPromise } from './lib/memo-promise';
+
+export const getAppleCdnDomainsPromise = createMemoizedPromise(() => traceAsync(
+  picocolors.gray('download dnsmasq-china-list apple.china.conf'),
+  () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
+  picocolors.gray
+));
 
 export const buildAppleCdn = task(import.meta.path, async () => {
-  const res = await traceAsync(
-    picocolors.gray('download dnsmasq-china-list apple.china.conf'),
-    () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
-    picocolors.gray
-  );
+  const res = await getAppleCdnDomainsPromise();
 
   const description = [
     ...SHARED_DESCRIPTION,
