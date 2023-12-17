@@ -1,8 +1,8 @@
 import path from 'path';
 import fsp from 'fs/promises';
 import { task } from './lib/trace-runner';
-import { listDir } from './lib/list-dir';
-import type { TreeType, TreeTypeArray } from './lib/list-dir';
+import { treeDir } from './lib/tree-dir';
+import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
 const rootPath = path.resolve(import.meta.dir, '../');
 const publicPath = path.resolve(import.meta.dir, '../public');
@@ -24,9 +24,7 @@ export const buildPublic = task(import.meta.path, async () => {
     { force: true, recursive: true }
   )));
 
-  const tree = await listDir(publicPath);
-
-  const html = generateHtml(tree);
+  const html = generateHtml(await treeDir(publicPath));
 
   return Bun.write(path.join(publicPath, 'index.html'), html);
 });

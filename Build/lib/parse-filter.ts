@@ -5,23 +5,13 @@ import { processLine } from './process-line';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 
-import { traceAsync, traceSync } from './trace-runner';
+import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
-
-const warnOnceUrl = new Set<string>();
-const warnOnce = (url: string, isWhite: boolean, ...message: string[]) => {
-  const key = `${url}${isWhite ? 'white' : 'black'}`;
-  if (warnOnceUrl.has(key)) {
-    return;
-  }
-  warnOnceUrl.add(key);
-  console.warn(url, isWhite ? '(white)' : '(black)', ...message);
-};
 
 export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false) {
   return traceAsync(`- processDomainLists: ${domainListsUrl}`, async () => {
@@ -32,7 +22,7 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
       if (!domainToAdd) continue;
 
       if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-        warnOnce(domainListsUrl, false, DEBUG_DOMAIN_TO_FIND);
+        console.warn(picocolors.red(domainListsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
         foundDebugDomain = true;
       }
 
@@ -60,7 +50,7 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, skip
       const _domain = domain.trim();
 
       if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-        warnOnce(hostsUrl, false, DEBUG_DOMAIN_TO_FIND);
+        console.warn(picocolors.red(hostsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
         foundDebugDomain = true;
       }
 
@@ -111,7 +101,13 @@ export async function processFilterRules(
 
       if (DEBUG_DOMAIN_TO_FIND) {
         if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-          warnOnce(filterRulesUrl, flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute, DEBUG_DOMAIN_TO_FIND);
+          console.warn(
+            picocolors.red(filterRulesUrl),
+            flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
+              ? '(white)'
+              : '(black)',
+            picocolors.bold(DEBUG_DOMAIN_TO_FIND)
+          );
           foundDebugDomain = true;
         }
       }
@@ -585,7 +581,6 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
    */
   if (!suffix || !gorhill.suffixInPSL(suffix)) {
     // This exclude domain-like resource like `.gatracking.js`, `.beacon.min.js` and `.cookielaw.js`
-    console.log({ line, suffix });
     return null;
   }
 

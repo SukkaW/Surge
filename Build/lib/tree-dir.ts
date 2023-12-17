@@ -19,7 +19,7 @@ export type TreeTypeArray = TreeType[];
 
 type VoidOrVoidArray = void | VoidOrVoidArray[];
 
-export const listDir = async (path: string): Promise<TreeTypeArray> => {
+export const treeDir = async (path: string): Promise<TreeTypeArray> => {
   const pw = new PathScurry(path);
 
   const tree: TreeTypeArray = [];
