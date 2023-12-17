@@ -2,7 +2,7 @@ import { toASCII } from 'punycode';
 import path from 'path';
 import { traceAsync } from './trace-runner';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 
 const publicSuffixPath = path.resolve(import.meta.dir, '../../node_modules/.cache/public_suffix_list_dat.txt');
 
@@ -18,7 +18,7 @@ const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix in
         console.log('public_suffix_list.dat not found, fetch directly from remote.');
         return r.text();
       }),
-    import('gorhill-publicsuffixlist')
+    import('@gorhill/publicsuffixlist')
   ]);
 
   gorhill.parse(publicSuffixListDat, toASCII);

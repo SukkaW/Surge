@@ -53,10 +53,10 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
   await traceAsync(
     'Download and extract previous build',
     async () => {
-      const [resp] = await Promise.all([
+      const resp = (await Promise.all([
         fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit),
         fsp.mkdir(extractedPath, { recursive: true })
-      ]);
+      ]))[0];
 
       const extract = tarStream.extract();
       Readable.fromWeb(resp.body!).pipe(zlib.createGunzip()).pipe(extract);
@@ -88,10 +88,10 @@ export const downloadPublicSuffixList = task(import.meta.path, async () => {
   const publicSuffixDir = path.resolve(import.meta.dir, '../node_modules/.cache');
   const publicSuffixPath = path.join(publicSuffixDir, 'public_suffix_list_dat.txt');
 
-  const [resp] = await Promise.all([
+  const resp = (await Promise.all([
     fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat', defaultRequestInit),
     fsp.mkdir(publicSuffixDir, { recursive: true })
-  ]);
+  ]))[0];
 
   return Bun.write(publicSuffixPath, resp as Response);
 }, 'download-publicsuffixlist');

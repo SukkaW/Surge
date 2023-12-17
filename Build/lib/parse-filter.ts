@@ -1,21 +1,20 @@
 // @ts-check
-import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-
 import { fetchRemoteTextAndReadByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
-import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 
 import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
+import { fetchAssets } from './fetch-assets';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
 const warnOnceUrl = new Set<string>();
-const warnOnce = (url: string, isWhite: boolean, ...message: any[]) => {
+const warnOnce = (url: string, isWhite: boolean, ...message: string[]) => {
   const key = `${url}${isWhite ? 'white' : 'black'}`;
   if (warnOnceUrl.has(key)) {
     return;
@@ -54,7 +53,7 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, skip
         continue;
       }
 
-      const [, domain] = line.split(/\s/);
+      const domain = line.split(/\s/)[1];
       if (!domain) {
         continue;
       }
@@ -185,7 +184,9 @@ export async function processFilterRules(
 }
 
 const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#%&=~]/;
-const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder)/;
+const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder|\$cname)/;
+// cname exceptional filter can not be parsed by NetworkFilter
+// Surge / Clash can't handle CNAME either, so we just ignore them
 
 function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: ParseType] {
   if (
@@ -213,15 +214,15 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     return null;
   }
 
-  const firstChar = line[0];
-  const lastChar = line[len - 1];
+  const firstCharCode = line[0].charCodeAt(0);
+  const lastCharCode = line[len - 1].charCodeAt(0);
 
   if (
-    firstChar === '/'
+    firstCharCode === 47 // 47 `/`
     // ends with
-    || lastChar === '.' // || line.endsWith('.')
-    || lastChar === '-' // || line.endsWith('-')
-    || lastChar === '_' // || line.endsWith('_')
+    || lastCharCode === 46 // 46 `.`, line.endsWith('.')
+    || lastCharCode === 45 // 45 `-`, line.endsWith('-')
+    || lastCharCode === 95 // 95 `_`, line.endsWith('_')
     // special modifier
     || R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2.test(line)
     // || line.includes('$popup')
@@ -238,6 +239,8 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
   const filter = NetworkFilter.parse(line);
   if (filter) {
     if (
+      // filter.isCosmeticFilter() // always false
+      // filter.isNetworkFilter() // always true
       filter.isElemHide()
       || filter.isGenericHide()
       || filter.isSpecificHide()
@@ -253,8 +256,7 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
     if (
       filter.hostname // filter.hasHostname() // must have
-      && filter.isPlain()
-      // && (!filter.isRegex()) // isPlain() === !isRegex()
+      && filter.isPlain() // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
       const hostname = normalizeDomain(filter.hostname);
@@ -286,95 +288,106 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     }
   }
 
-  /**
-   * abnormal filter that can not be parsed by NetworkFilter
-   */
+  // After NetworkFilter.parse, it means the line can not be parsed by cliqz NetworkFilter
+  // We now need to "salvage" the line as much as possible
 
+  /*
+   * From now on, we are mostly facing non-standard domain rules (some are regex like)
+   * We first skip third-party and frame rules, as Surge / Clash can't handle them
+   *
+   * `.sharecounter.$third-party`
+   * `.bbelements.com^$third-party`
+   * `://o0e.ru^$third-party`
+   * `.1.1.1.l80.js^$third-party`
+   */
   if (line.includes('$third-party') || line.includes('$frame')) {
-    /*
-     * `.bbelements.com^$third-party`
-     * `://o0e.ru^$third-party`
-     */
     return null;
   }
 
   /** @example line.endsWith('^') */
-  const linedEndsWithCaret = lastChar === '^';
+  const linedEndsWithCaret = lastCharCode === 94; // lastChar === '^';
   /** @example line.endsWith('^|') */
-  const lineEndsWithCaretVerticalBar = lastChar === '|' && line[len - 2] === '^';
+  const lineEndsWithCaretVerticalBar = (lastCharCode === 124 /** lastChar === '|' */) && line[len - 2] === '^';
   /** @example line.endsWith('^') || line.endsWith('^|') */
   const lineEndsWithCaretOrCaretVerticalBar = linedEndsWithCaret || lineEndsWithCaretVerticalBar;
 
   // whitelist (exception)
-  if (firstChar === '@' && line[1] === '@') {
-    /**
-     * cname exceptional filter can not be parsed by NetworkFilter
-     *
-     * `@@||m.faz.net^$cname`
-     *
-     * Surge / Clash can't handle CNAME either, so we just ignore them
-     */
-    if (line.endsWith('$cname')) {
-      return null;
-    }
-
+  if (
+    firstCharCode === 64 // 64 `@`
+    && line[1] === '@'
+  ) {
     /**
      * Some "malformed" regex-based filters can not be parsed by NetworkFilter
-     * "$genericblock`" is also not supported by NetworkFilter
+     * "$genericblock`" is also not supported by NetworkFilter, see:
+     *  https://github.com/ghostery/adblocker/blob/62caf7786ba10ef03beffecd8cd4eec111bcd5ec/packages/adblocker/test/parsing.test.ts#L950
      *
      * `@@||cmechina.net^$genericblock`
      * `@@|ftp.bmp.ovh^|`
      * `@@|adsterra.com^|`
+     * `@@.atlassian.net$document`
+     * `@@||ad.alimama.com^$genericblock`
      */
-    if (
-      (
-        // line.startsWith('@@|')
-        line[2] === '|'
-        // line.startsWith('@@.')
-        || line[2] === '.'
-        /**
-         * line.startsWith('@@://')
-         *
-         * `@@://googleadservices.com^|`
-         * `@@://www.googleadservices.com^|`
-         */
-        || (line[2] === ':' && line[3] === '/' && line[4] === '/')
-      )
-      && (
-        lineEndsWithCaretOrCaretVerticalBar
-        || line.endsWith('$genericblock')
-        || line.endsWith('$document')
-      )
-    ) {
-      const _domain = line
-        .replace('@@||', '')
-        .replace('@@://', '')
-        .replace('@@|', '')
-        .replace('@@.', '')
-        .replace('^|', '')
-        .replace('^$genericblock', '')
-        .replace('$genericblock', '')
-        .replace('^$document', '')
-        .replace('$document', '')
-        .replaceAll('^', '')
-        .trim();
 
-      const domain = normalizeDomain(_domain);
+    let sliceStart = 0;
+    let sliceEnd: number | undefined;
+
+    // line.startsWith('@@|') || line.startsWith('@@.')
+    if (line[2] === '|' || line[2] === '.') {
+      sliceStart = 3;
+      // line.startsWith('@@||')
+      if (line[3] === '|') {
+        sliceStart = 4;
+      }
+    }
+
+    /**
+     * line.startsWith('@@://')
+     *
+     * `@@://googleadservices.com^|`
+     * `@@://www.googleadservices.com^|`
+     */
+    if (line[2] === ':' && line[3] === '/' && line[4] === '/') {
+      sliceStart = 5;
+    }
+
+    if (lineEndsWithCaretOrCaretVerticalBar) {
+      sliceEnd = -2;
+    } else if (line.endsWith('$genericblock')) {
+      sliceEnd = -13;
+      if (line[len - 14] === '^') { // line.endsWith('^$genericblock')
+        sliceEnd = -14;
+      }
+    } else if (line.endsWith('$document')) {
+      sliceEnd = -9;
+      if (line[len - 10] === '^') { // line.endsWith('^$document')
+        sliceEnd = -10;
+      }
+    }
+
+    if (sliceStart !== 0 || sliceEnd !== undefined) {
+      const sliced = line.slice(sliceStart, sliceEnd);
+      const domain = normalizeDomain(sliced);
       if (domain) {
         return [domain, ParseType.WhiteIncludeSubdomain];
       }
-
       return [
-        `[parse-filter E0001] (white) invalid domain: ${_domain}`,
+        `[parse-filter E0001] (white) invalid domain: ${JSON.stringify({
+          line, sliced, sliceStart, sliceEnd
+        })}`,
         ParseType.ErrorMessage
       ];
     }
+
+    return [
+      `[parse-filter E0006] (white) failed to parse: ${JSON.stringify({
+        line, sliceStart, sliceEnd
+      })}`,
+      ParseType.ErrorMessage
+    ];
   }
 
-  if (firstChar === '|') {
-    const lineEndswithCname = line.endsWith('$cname');
-
-    if (lineEndsWithCaretOrCaretVerticalBar || lineEndswithCname) {
+  if (firstCharCode === 124) { // 124 `|`
+    if (lineEndsWithCaretOrCaretVerticalBar) {
       /**
        * Some malformed filters can not be parsed by NetworkFilter:
        *
@@ -387,12 +400,11 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       const includeAllSubDomain = line[1] === '|';
 
       const sliceStart = includeAllSubDomain ? 2 : 1;
-      const sliceEnd = lastChar === '^'
+      const sliceEnd = lastCharCode === 94 // lastChar === '^'
         ? -1
-        : lineEndsWithCaretOrCaretVerticalBar
+        : (lineEndsWithCaretVerticalBar
           ? -2
-          // eslint-disable-next-line sukka/unicorn/no-nested-ternary -- speed
-          : (lineEndswithCname ? -6 : 0);
+          : undefined);
 
       const _domain = line
         .slice(sliceStart, sliceEnd) // we already make sure line startsWith "|"
@@ -410,7 +422,7 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     }
   }
 
-  const lineStartsWithSingleDot = firstChar === '.';
+  const lineStartsWithSingleDot = firstCharCode === 46; // 46 `.`
   if (
     lineStartsWithSingleDot
     && lineEndsWithCaretOrCaretVerticalBar
@@ -489,7 +501,10 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
  * `-logging.nextmedia.com`
  * `_social_tracking.js^`
  */
-  if (firstChar !== '|' && lastChar === '^') {
+  if (
+    firstCharCode !== 124 // 124 `|`
+    && lastCharCode === 94 // 94 `^`
+  ) {
     const _domain = line.slice(0, -1);
 
     const suffix = gorhill.getPublicSuffix(_domain);
@@ -552,64 +567,4 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     `[parse-filter E0010] can not parse: ${line}`,
     ParseType.ErrorMessage
   ];
-}
-
-class CustomAbortError extends Error {
-  public readonly name = 'AbortError';
-  public readonly digest = 'AbortError';
-}
-
-const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
-  signal.throwIfAborted();
-  signal.addEventListener('abort', stop);
-  Bun.sleep(ms).then(done).catch(doReject);
-
-  function done() {
-    signal.removeEventListener('abort', stop);
-    resolve();
-  }
-  function stop(this: AbortSignal) {
-    reject(this.reason);
-  }
-  function doReject(reason: unknown) {
-    signal.removeEventListener('abort', stop);
-    reject(reason);
-  }
-});
-
-async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
-  const controller = new AbortController();
-
-  const fetchMainPromise = fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit })
-    .then(r => r.text())
-    .then(text => {
-      console.log(picocolors.gray('[fetch finish]'), picocolors.gray(url));
-      controller.abort();
-      return text;
-    });
-  const createFetchFallbackPromise = async (url: string, index: number) => {
-    // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 350ms before downloading from the fallback URL.
-    try {
-      await sleepWithAbort(300 + (index + 1) * 20, controller.signal);
-    } catch {
-      console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
-      throw new CustomAbortError();
-    }
-    if (controller.signal.aborted) {
-      console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
-      throw new CustomAbortError();
-    }
-    const res = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
-    const text = await res.text();
-    controller.abort();
-    return text;
-  };
-
-  return Promise.any([
-    fetchMainPromise,
-    ...fallbackUrls.map(createFetchFallbackPromise)
-  ]).catch(e => {
-    console.log(`Download Rule for [${url}] failed`);
-    throw e;
-  });
 }

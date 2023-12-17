@@ -58,7 +58,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
     }
   };
 
-  const [gorhill] = await Promise.all([
+  const gorhill = (await Promise.all([
     getGorhillPublicSuffixPromise(),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf')),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf')),
@@ -70,7 +70,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
     processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/download.conf')),
 
     fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
-  ]);
+  ]))[0];
 
   return compareAndWriteFile(
     [

@@ -1,4 +1,4 @@
-declare module 'gorhill-publicsuffixlist' {
+declare module '@gorhill/publicsuffixlist' {
   type Selfie =
     | string
     | {

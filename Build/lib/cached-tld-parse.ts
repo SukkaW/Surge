@@ -1,6 +1,6 @@
 import * as tldts from 'tldts';
 import { createCache } from './cache-apply';
-import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 
 const cache = createCache('cached-tld-parse', true);
 

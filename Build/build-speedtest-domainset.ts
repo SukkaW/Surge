@@ -16,10 +16,10 @@ const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-ag
   .then(res => res.json() as Promise<string[]>);
 
 const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
-  const [topUserAgents] = await Promise.all([
+  const topUserAgents = (await Promise.all([
     latestTopUserAgentsPromise,
     s.acquire()
-  ]);
+  ]))[0];
 
   const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 

@@ -5,10 +5,10 @@ import { task } from './lib/trace-runner';
 import { compareAndWriteFile } from './lib/create-file';
 
 export const buildInternalChnDomains = task(import.meta.path, async () => {
-  const [result] = await Promise.all([
+  const result = (await Promise.all([
     parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'),
     fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
-  ]);
+  ]))[0];
 
   return compareAndWriteFile(
     result.map(line => `SUFFIX,${line}`),

@@ -1,4 +1,4 @@
-import type { PublicSuffixList } from 'gorhill-publicsuffixlist';
+import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 import { createCachedGorhillGetDomain } from './cached-tld-parse';
 
 const compare = (a: string | null, b: string | null) => {
