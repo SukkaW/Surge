@@ -22,8 +22,11 @@ module.exports.DOMESTICS = /** @type {const} */({
       'aliyundrive.net',
       'cainiao.com',
       'cainiao.com.cn',
+      'cainiaoyizhan.com',
+      'guoguo-app.com',
       'etao.com',
       '1688.com',
+      '16888.com',
       'amap.com',
       'gaode.com',
       'autonavi.com',
@@ -44,6 +47,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'cibntv.net',
       'ele.me',
       'elemecdn.com',
+      'feizhu.com',
       'taopiaopiao.com',
       'fliggy.com',
       'koubei.com',
@@ -75,6 +79,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'igamecj.com',
       'myapp.com',
       'myqcloud.com',
+      'dnspod.com',
       'qpic.cn',
       'qlogo.cn',
       'qq.com',
@@ -91,6 +96,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'wechat.com',
       'weiyun.com',
       'soso.com',
+      'sogo.com',
       'sogou.com',
       'sogoucdn.com',
       'roblox.cn',
@@ -111,10 +117,16 @@ module.exports.DOMESTICS = /** @type {const} */({
       'bilibili.tv',
       'bilivideo.com',
       'bilivideo.cn',
+      'bilivideo.net',
       'hdslb.com',
       'biliimg.com',
       'biliapi.com',
-      'biliapi.net'
+      'biliapi.net',
+      'biligame.cn',
+      'biligame.com',
+      'bilicomics.com',
+      'bilibilipay.cn',
+      'bilibilipay.com'
     ]
   },
   XIAOMI: {
@@ -148,6 +160,9 @@ module.exports.DOMESTICS = /** @type {const} */({
       'snssdk.com',
       'toutiao.com',
       'feishu.cn',
+      'feishu.net',
+      'feishucdn.com',
+      'feishupkg.com',
       'douyin.com',
       'douyinpic.com',
       'douyinstatic.com',
@@ -199,6 +214,9 @@ module.exports.DOMESTICS = /** @type {const} */({
       'qhimgs6.com',
       'qhres.com',
       'qhmsg.com',
+      'qhstatic.com',
+      'qhupdate.com',
+      'qihucdn.com',
       '360.com',
       '360.cn',
       '360.net',
@@ -207,7 +225,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'qhres2.com',
       'so.com',
       'haosou.com',
-      'yunpan.cn'
+      'yunpan.cn',
+      'yunpan.com'
     ]
   },
   SYSTEM: {

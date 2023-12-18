@@ -63,7 +63,7 @@ const AMAZON_PRIME_VIDEO = {
     'DOMAIN-SUFFIX,fls-na.amazon.com',
 
     'USER-AGENT,InstantVideo.US*',
-    'USER-AGENT,Prime%20Video*',
+    'USER-AGENT,Prime Video*',
     'PROCESS-NAME,com.amazon.avod.thirdpartyclient'
 
   ]
@@ -263,7 +263,7 @@ const FOX_NOW = {
     'DOMAIN-SUFFIX,foxdcg.com',
     'DOMAIN-SUFFIX,uplynk.com',
 
-    'USER-AGENT,FOX%20NOW*'
+    'USER-AGENT,FOX NOW*'
   ]
 };
 
@@ -289,7 +289,7 @@ const HBO = {
     'DOMAIN-SUFFIX,hbogo.com',
     'DOMAIN-SUFFIX,hbonow.com',
 
-    'USER-AGENT,HBO%20NOW*',
+    'USER-AGENT,HBO NOW*',
     'USER-AGENT,HBOMAX*',
 
     'DOMAIN-SUFFIX,hbomax.com',
@@ -323,7 +323,7 @@ const HBO_ASIA = {
     'DOMAIN,hbounify-prod.evergent.com',
     'DOMAIN,hbolb.onwardsmg.com',
 
-    'USER-AGENT,HBO%20GO%20PROD%20HKG*',
+    'USER-AGENT,HBO GO PROD HKG*',
 
     'USER-AGENT,HBO*'
   ]
@@ -440,7 +440,7 @@ const LINE_TV = {
   rules: [
     'DOMAIN,d3c7rimkq79yfu.cloudfront.net',
     'DOMAIN-SUFFIX,linetv.tw',
-    'USER-AGENT,LINE%20TV*',
+    'USER-AGENT,LINE TV*',
     'PROCESS-NAME,com.linecorp.linetv'
   ]
 };
@@ -495,7 +495,7 @@ const MYTV_SUPER = {
 const NAVER_TV = {
   name: 'Naver TV',
   rules: [
-    'USER-AGENT,Naver%20TV*',
+    'USER-AGENT,Naver TV*',
     'DOMAIN-SUFFIX,tv.naver.com',
     'DOMAIN-SUFFIX,smartmediarep.com'
   ]
