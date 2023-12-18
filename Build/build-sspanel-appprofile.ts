@@ -31,6 +31,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
   const [
     domesticDomains,
     appleCdnDomains,
+    microsoftCdnDomains,
     appleCnDomains,
     neteaseMusicDomains,
     microsoftDomains,
@@ -46,10 +47,11 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
     // domestic - domains
     getDomesticDomainsRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
     getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
+    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/microsoft_cdn.conf'))),
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/apple_cn.conf'))),
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/neteasemusic.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
     // microsoft & apple - domains
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/internal_microsoft.conf'))),
+    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/microsoft.conf'))),
     (processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/apple_services.conf')))).then(surgeRulesetToClashClassicalTextRuleset),
     // stream - domains
     surgeRulesetToClashClassicalTextRuleset(AllStreamServices.flatMap((i) => i.rules)),
@@ -77,6 +79,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
     [
       ...domesticDomains,
       ...appleCdnDomains,
+      ...microsoftCdnDomains,
       ...appleCnDomains,
       ...neteaseMusicDomains
     ],

@@ -382,6 +382,59 @@ rules:
   - RULE-SET,apple_services,[Replace with your policy]
 ```
 
+#### Microsoft CDN
+
+- 人工维护
+- 规则组包含 Microsoft 在中华人民共和国完成工信部 ICP 备案和公安网备、且在中华人民共和国境内提供 HTTP 服务的域名，如果由于某些原因需要代理其中部分域名，请自行针对域名编写规则、并添加到当前规则组之前。
+
+**Surge**
+
+```ini
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  microsoft_cdn_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt
+    path: ./sukkaw_ruleset/microsoft_cdn_non_ip.txt
+
+rules:
+  - RULE-SET,microsoft_cdn_non_ip,[Replace with your policy]
+```
+
+#### Microsoft
+
+- 人工维护
+
+**Surge**
+
+```ini
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  microsoft_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/microsoft.txt
+    path: ./sukkaw_ruleset/microsoft_non_ip.txt
+
+rules:
+  - RULE-SET,microsoft_non_ip,[Replace with your policy]
+```
+
 #### 网易云音乐
 
 - 人工维护
