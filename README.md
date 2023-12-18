@@ -27,6 +27,7 @@
 
 ```ini
 # Non IP
+RULE-SET,https://ruleset.skk.moe/List/ip/reject-drop.conf,REJECT-DROP
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT-TINYGIF
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT
 # IP
@@ -37,6 +38,13 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 
 ```yaml
 rule-providers:
+  reject_non_ip_drop:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/reject-drop.txt
+    path: ./sukkaw_ruleset/reject_non_ip_drop.txt
   reject_non_ip:
     type: http
     behavior: classical
@@ -61,6 +69,7 @@ rule-providers:
     path: ./sukkaw_ruleset/reject_ip.txt
 
 rules:
+  - RULE-SET,reject_non_ip_drop,REJECT-DROP
   - RULE-SET,reject_non_ip,REJECT
   # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
   - RULE-SET,reject_domainset,REJECT

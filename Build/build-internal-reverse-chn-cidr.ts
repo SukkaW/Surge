@@ -4,8 +4,9 @@ import path from 'path';
 import fsp from 'fs/promises';
 import { task } from './lib/trace-runner';
 
-import { exclude } from 'fast-cidr-tools';
+import { exclude, merge } from 'fast-cidr-tools';
 
+// https://en.wikipedia.org/wiki/Reserved_IP_addresses
 const RESERVED_IPV4_CIDR = [
   '0.0.0.0/8',
   '10.0.0.0/8',
@@ -15,6 +16,7 @@ const RESERVED_IPV4_CIDR = [
   '172.16.0.0/12',
   '192.0.0.0/24',
   '192.0.2.0/24',
+  // 192.88.99.0 // is currently being broadcast by HE and Comcast
   '192.168.0.0/16',
   '198.18.0.0/15',
   '198.51.100.0/24',
@@ -30,15 +32,16 @@ export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
     fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
   ]))[0];
 
-  const reversedCidr = exclude(
-    [
-      '0.0.0.0/0',
+  const reversedCidr = merge(
+    exclude(
+      ['0.0.0.0/0'],
+      RESERVED_IPV4_CIDR.concat(cidr),
+      true
+    ).concat([
       // https://github.com/misakaio/chnroutes2/issues/25
       '223.118.0.0/15',
       '223.120.0.0/15'
-    ],
-    RESERVED_IPV4_CIDR.concat(cidr),
-    true
+    ])
   );
 
   return Bun.write(path.resolve(import.meta.dir, '../List/internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
