@@ -97,8 +97,9 @@ import { buildPublic } from './build-public';
 
     printStats(stats);
   } catch (e) {
-    console.error(e);
+    console.trace(e);
     console.error('Something went wrong!');
+    process.exit(1);
   }
 })();
 
