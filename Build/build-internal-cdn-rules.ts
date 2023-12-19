@@ -1,4 +1,3 @@
-import fsp from 'fs/promises';
 import path from 'path';
 import * as tldts from 'tldts';
 import { processLine } from './lib/process-line';
@@ -67,9 +66,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/stream.conf')),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/telegram.conf')),
     processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/cdn.conf')),
-    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/download.conf')),
-
-    fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true })
+    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/download.conf'))
   ]))[0];
 
   return compareAndWriteFile(

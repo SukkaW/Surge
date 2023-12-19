@@ -47,19 +47,20 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
     return;
   }
 
-  const extractedPath = path.join(os.tmpdir(), `sukka-surge-last-build-extracted-${Date.now()}`);
   const filesList = buildOutputList.map(f => path.join('ruleset.skk.moe-master', f));
 
   await traceAsync(
     'Download and extract previous build',
     async () => {
-      const resp = (await Promise.all([
-        fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit),
-        fsp.mkdir(extractedPath, { recursive: true })
-      ]))[0];
+      const resp = await fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit);
+
+      if (!resp.body) {
+        throw new Error('Download previous build failed! No body found');
+      }
 
       const extract = tarStream.extract();
-      Readable.fromWeb(resp.body!).pipe(zlib.createGunzip()).pipe(extract);
+      Readable.fromWeb(resp.body).pipe(zlib.createGunzip()).pipe(extract);
+
       for await (const entry of extract) {
         if (entry.header.type !== 'file') {
           entry.resume(); // Drain the entry
@@ -85,13 +86,8 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
 });
 
 export const downloadPublicSuffixList = task(import.meta.path, async () => {
-  const publicSuffixDir = path.resolve(import.meta.dir, '../node_modules/.cache');
-  const publicSuffixPath = path.join(publicSuffixDir, 'public_suffix_list_dat.txt');
-
-  const resp = (await Promise.all([
-    fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat', defaultRequestInit),
-    fsp.mkdir(publicSuffixDir, { recursive: true })
-  ]))[0];
+  const publicSuffixPath = path.resolve(import.meta.dir, '../node_modules/.cache/public_suffix_list_dat.txt');
+  const resp = await fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat', defaultRequestInit);
 
   return Bun.write(publicSuffixPath, resp as Response);
 }, 'download-publicsuffixlist');

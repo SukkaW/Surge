@@ -1,31 +1,37 @@
 import path from 'path';
-import fsp from 'fs/promises';
 import { task } from './lib/trace-runner';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
+import listDir from '@sukka/listdir';
 
 const rootPath = path.resolve(import.meta.dir, '../');
 const publicPath = path.resolve(import.meta.dir, '../public');
 
 const folderAndFilesToBeDeployed = [
-  'Mock',
-  'List',
-  'Clash',
-  'Modules',
-  'Script',
+  `Mock${path.sep}`,
+  `List${path.sep}`,
+  `Clash${path.sep}`,
+  `Modules${path.sep}`,
+  `Script${path.sep}`,
   'LICENSE'
 ];
 
 export const buildPublic = task(import.meta.path, async () => {
-  await fsp.mkdir(publicPath, { recursive: true });
-  await Promise.all(folderAndFilesToBeDeployed.map(dir => fsp.cp(
-    path.resolve(rootPath, dir),
-    path.resolve(publicPath, dir),
-    { force: true, recursive: true }
-  )));
+  const filesToBeCopied = (await listDir(
+    rootPath, {
+      ignoreHidden: true,
+      ignorePattern: /node_modules|Build|public/
+    }
+  )).filter(file => folderAndFilesToBeDeployed.some(folderOrFile => file.startsWith(folderOrFile)));
+
+  await Promise.all(filesToBeCopied.map(file => {
+    const src = path.resolve(rootPath, file);
+    const dest = path.resolve(publicPath, file);
+
+    return Bun.write(dest, Bun.file(src));
+  }));
 
   const html = generateHtml(await treeDir(publicPath));
-
   return Bun.write(path.join(publicPath, 'index.html'), html);
 });
 
@@ -99,7 +105,7 @@ function generateHtml(tree: TreeTypeArray) {
     <p>
       Made by <a href="https://skk.moe">Sukka</a> | <a href="https://github.com/SukkaW/Surge/">Source @ GitHub</a> | Licensed under <a href="/LICENSE" target="_blank">AGPL-3.0</a>
     </p>
-    <p>Last Build: 2023-12-03T16:54:15.820Z</p>
+    <p>Last Build: ${new Date().toISOString()}</p>
     <br>`;
 
   html += '<ul class="directory-list">';

@@ -101,8 +101,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
     ]
   );
 
-  await fsp.mkdir(path.resolve(import.meta.dir, '../List/internal'), { recursive: true });
-
   await compareAndWriteFile(
     output,
     path.resolve(import.meta.dir, '../List/internal/appprofile.php')
