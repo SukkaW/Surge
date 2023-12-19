@@ -129,6 +129,8 @@ function generateAppProfile(
   result.push(
     '<?php',
     '',
+    `// Build ${new Date().toISOString()}`,
+    '',
     'declare(strict_types=1);',
     '',
     '$_ENV[\'Clash_Config\'] = [',
