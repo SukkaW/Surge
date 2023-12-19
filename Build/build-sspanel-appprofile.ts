@@ -129,7 +129,7 @@ function generateAppProfile(
   result.push(
     '<?php',
     '',
-    `// Build ${new Date().toISOString()}`,
+    `// # Build ${new Date().toISOString()}`,
     '',
     'declare(strict_types=1);',
     '',

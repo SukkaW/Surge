@@ -34,6 +34,16 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
           if (lineA[0] === '#' && lineB[0] === '#') {
             continue;
           }
+          if (
+            lineA[0] === '/'
+            && lineA[1] === '/'
+            && lineA[3] === '#'
+            && lineB[0] === '/'
+            && lineB[1] === '/'
+            && lineB[3] === '#'
+          ) {
+            continue;
+          }
 
           if (lineA !== lineB) {
             return false;
