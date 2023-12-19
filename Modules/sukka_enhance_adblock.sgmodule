@@ -6,8 +6,8 @@ hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesynd
 
 [URL Rewrite]
 ^https?://.*\.google-analytics\.com/analytics\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_analytics.js 302
+^https?://.*\.googletagmanager\.com/gtm\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_analytics.js 302
 ^https?://.*\.google-analytics\.com/ga\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_ga.js 302
-^https?://.*\.googletagmanager\.com/gtm\.js https://ruleset.skk.moe/Mock/www-googletagmanager-com_gtm.js 302
 ^https?://.*\.google-analytics\.com/cx/api\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_cx_api.js 302
 ^https?://.*\.googlesyndication\.com/adsbygoogle\.js https://ruleset.skk.moe/Mock/www-googlesyndication-com_adsbygoogle.js 302
 ^https?://.*\.googletagservices\.com/gpt\.js https://ruleset.skk.moe/Mock/www-googletagservices-com_gpt.js 302

@@ -17,6 +17,7 @@ import { validate } from './validate-domainset';
 import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
 
 import { buildPublic } from './build-public';
+import { downloadMockAssets } from './download-mock-assets';
 // import type { TaskResult } from './lib/trace-runner';
 
 (async () => {
@@ -70,6 +71,8 @@ import { buildPublic } from './build-public';
       downloadPreviousBuildPromise
     ]).then(() => buildSSPanelUIMAppProfile());
 
+    const downloadMockAssetsPromise = downloadMockAssets();
+
     const stats = await Promise.all([
       downloadPreviousBuildPromise,
       downloadPublicSuffixListPromise,
@@ -87,7 +90,9 @@ import { buildPublic } from './build-public';
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,
       buildStreamServicePromise,
-      buildSSPanelUIMAppProfilePromise
+      buildSSPanelUIMAppProfilePromise,
+
+      downloadMockAssetsPromise
     ]);
 
     await Promise.all([
