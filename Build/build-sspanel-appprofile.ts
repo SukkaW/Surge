@@ -12,6 +12,7 @@ import { ALL as AllStreamServices } from '../Source/stream';
 import { getChnCidrPromise } from './build-chn-cidr';
 import { getTelegramCIDRPromise } from './build-telegram-cidr';
 import { compareAndWriteFile } from './lib/create-file';
+import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
 
 const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: boolean]> = [
   ['Default Proxy', true, false],
@@ -47,7 +48,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
     // domestic - domains
     getDomesticDomainsRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
     getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/microsoft_cdn.conf'))),
+    getMicrosoftCdnRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/apple_cn.conf'))),
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/neteasemusic.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
     // microsoft & apple - domains

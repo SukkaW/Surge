@@ -2,7 +2,7 @@ import { toASCII } from 'punycode';
 import path from 'path';
 import { traceAsync } from './trace-runner';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
+import { createMemoizedPromise } from './memo-promise';
 
 const publicSuffixPath = path.resolve(import.meta.dir, '../../node_modules/.cache/public_suffix_list_dat.txt');
 
@@ -27,8 +27,4 @@ const getGorhillPublicSuffix = () => traceAsync('create gorhill public suffix in
   return gorhill;
 });
 
-let gorhillPublicSuffixPromise: Promise<PublicSuffixList> | null = null;
-export const getGorhillPublicSuffixPromise = () => {
-  gorhillPublicSuffixPromise ||= getGorhillPublicSuffix();
-  return gorhillPublicSuffixPromise;
-};
+export const getGorhillPublicSuffixPromise = createMemoizedPromise(getGorhillPublicSuffix);
