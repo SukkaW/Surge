@@ -198,7 +198,9 @@ module.exports.DOMESTICS = /** @type {const} */({
       'baidubcr.com',
       'yunjiasu-cdn.net',
       'tieba.com',
-      'xiaodutv.com'
+      'xiaodutv.com',
+      'shifen.com',
+      'jomodns.com'
     ]
   },
   QIHOO360: {
