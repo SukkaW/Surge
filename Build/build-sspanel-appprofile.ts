@@ -171,13 +171,13 @@ function generateAppProfile(
     ...streamDomains.map(line => `        '${line},Stream',`),
     // global - domains
     ...globalDomains.map(line => `        '${line},Global',`),
-    // domestic - ip cidr
-    ...directCidrs.map(line => `        '${line},Domestic,no-resolve',`),
     // microsoft & apple - ip cidr (nope)
     // stream - ip cidr
-    ...streamCidrs.map(line => `        '${line},Stream,no-resolve',`),
+    ...streamCidrs.map(line => `        '${line},Stream',`),
     // global - ip cidr
-    ...globalCidrs.map(line => `        '${line},Global,no-resolve',`),
+    ...globalCidrs.map(line => `        '${line},Global',`),
+    // domestic - ip cidr
+    ...directCidrs.map(line => `        '${line},Domestic',`),
     // match
     '        \'MATCH,Final Match\',',
     '    ],',
