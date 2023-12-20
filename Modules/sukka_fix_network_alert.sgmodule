@@ -1,5 +1,5 @@
 #!name=[Sukka] Fix No Network Alert Plus
-#!desc=Windows / Firefox / Some linux system depends on the DNS resolution result to determine the network availability. Use Surge as the gateway will break the behavior. Turn on this module to fix it.
+#!desc=Deprecated, use https://ruleset.skk.moe/Modules/sukka_common_always_realip.sgmodule instead.
 #!system=mac
 
 [General]

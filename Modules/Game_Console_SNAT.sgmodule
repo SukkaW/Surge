@@ -1,5 +1,5 @@
 #!name=Game Console SNAT
-#!desc=Let Surge handle SNAT conversation properly for PlayStation, Xbox, and Nintendo Switch. Only useful if Surge Mac acts the router for these devices.
+#!desc=Deprecated, use https://ruleset.skk.moe/Modules/sukka_common_always_realip.sgmodule instead.
 #!system=mac
 
 [General]
