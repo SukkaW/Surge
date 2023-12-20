@@ -2,7 +2,7 @@ export const HOSTS = [
   ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true],
   ['https://someonewhocares.org/hosts/hosts', true],
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', false],
-  ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', false],
+  ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', true],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true],

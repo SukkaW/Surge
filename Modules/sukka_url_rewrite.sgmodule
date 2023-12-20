@@ -46,14 +46,10 @@
 ^https?://(www.)?xshellcn\.com/ https://www.netsarang.com/products/xsh_overview.html 302
 ^https?://(www.)?yuanchengxiezuo\.com/ https://www.teamviewer.com/zhcn/ 302
 ^https?://(www.)?zbrushcn\.com/ http://pixologic.com/ 302
-^https://aweme-eagle(.*)\.snssdk\.com/aweme/v2/ https://aweme-eagle$1.snssdk.com/aweme/v1/ 302
+
 # JD Protection
 ^https?://union\.click\.jd\.com/jda? http://union.click.jd.com/jda?adblock= header
 ^https?://union\.click\.jd\.com/sem.php? http://union.click.jd.com/sem.php?adblock= header
-# TikTok Internation
-(?<=(carrier|account|sys|sim)_region=)CN JP 307
-# Resso
-(?<=(carrier|account|sys|sim)_region=)cn in 307
 
 # Special AD Block Section
 
