@@ -16,10 +16,23 @@ const CLASH_SUPPORTED_RULE_TYPE = [
   'PROCESS-PATH'
 ];
 
+const REQUIRE_REWRITE = {
+  'DEST-PORT': 'DST-PORT',
+  'IN-PORT': 'SRC-PORT'
+} as const;
+
 export const surgeRulesetToClashClassicalTextRuleset = (rules: string[] | Set<string>) => {
   const trie = Trie.from(rules);
+
   return CLASH_SUPPORTED_RULE_TYPE.flatMap(
     type => trie.find(`${type},`)
+  ).concat(
+    Object.keys(REQUIRE_REWRITE).flatMap(
+      (type) => {
+        const found = trie.find(`${type},`);
+        return found.map(line => `${REQUIRE_REWRITE[type as keyof typeof REQUIRE_REWRITE]}${line.slice(type.length)}`);
+      }
+    )
   );
 };
 

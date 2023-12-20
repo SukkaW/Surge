@@ -14,6 +14,7 @@ import { buildStreamService } from './build-stream-service';
 import { buildRedirectModule } from './build-redirect-module';
 import { validate } from './validate-domainset';
 
+import { buildMicrosoftCdn } from './build-microsoft-cdn';
 import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
 
 import { buildPublic } from './build-public';
@@ -67,6 +68,8 @@ import { downloadMockAssets } from './download-mock-assets';
     const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
     const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
 
+    const buildMicrosoftCdnPromise = downloadPreviousBuildPromise.then(() => buildMicrosoftCdn());
+
     const buildSSPanelUIMAppProfilePromise = Promise.all([
       downloadPreviousBuildPromise
     ]).then(() => buildSSPanelUIMAppProfile());
@@ -90,6 +93,7 @@ import { downloadMockAssets } from './download-mock-assets';
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,
       buildStreamServicePromise,
+      buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
 
       downloadMockAssetsPromise
