@@ -215,6 +215,13 @@ module.exports.DOMESTICS = /** @type {const} */({
       'qhimgs5.com',
       'qhimgs6.com',
       'qhres.com',
+      'qhres0.com',
+      'qhres1.com',
+      'qhres2.com',
+      'qhres3.com',
+      'qhres4.com',
+      'qhres5.com',
+      'qhres6.com',
       'qhmsg.com',
       'qhstatic.com',
       'qhupdate.com',
@@ -224,11 +231,12 @@ module.exports.DOMESTICS = /** @type {const} */({
       '360.net',
       '360safe.com',
       '360tpcdn.com',
-      'qhres2.com',
+      '360webcache.com',
       'so.com',
       'haosou.com',
       'yunpan.cn',
-      'yunpan.com'
+      'yunpan.com',
+      'yunpan.com.cn'
     ]
   },
   SYSTEM: {
@@ -265,6 +273,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       // ZTE CPE
       'zte.home',
       // Other Router
+      'ui.direct',
       'hiwifi.com',
       'huaweimobilewifi.com',
       'my.router',
@@ -299,7 +308,28 @@ module.exports.DOMESTICS = /** @type {const} */({
       'speedport.ip',
       'steamloopback.host',
       'web.setup',
-      'web.setup.home'
+      'web.setup.home',
+      // AS112
+      '168.192.in-addr.arpa',
+      '10.in-addr.arpa',
+      '16.172.in-addr.arpa',
+      '17.172.in-addr.arpa',
+      '18.172.in-addr.arpa',
+      '19.172.in-addr.arpa',
+      '20.172.in-addr.arpa',
+      '21.172.in-addr.arpa',
+      '22.172.in-addr.arpa',
+      '23.172.in-addr.arpa',
+      '24.172.in-addr.arpa',
+      '25.172.in-addr.arpa',
+      '26.172.in-addr.arpa',
+      '27.172.in-addr.arpa',
+      '28.172.in-addr.arpa',
+      '29.172.in-addr.arpa',
+      '30.172.in-addr.arpa',
+      '31.172.in-addr.arpa',
+      '168.192.in-addr.arpa',
+      '254.169.in-addr.arpa'
     ]
   }
 });
