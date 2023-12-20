@@ -12,7 +12,7 @@ function escapeRegExp(string = '') {
     : string;
 }
 
-const REDIRECT = /** @type {const} */ ([
+const REDIRECT = [
   // Gravatar
   ['gravatar.neworld.org/', 'https://secure.gravatar.com/'],
   ['cdn.v2ex.com/gravatar/', 'https://secure.gravatar.com/avatar/'],
@@ -69,7 +69,7 @@ const REDIRECT = /** @type {const} */ ([
   ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/'],
   ['googlefonts.wp-china-yes.net/', 'https://fonts.googleapis.com/'],
   ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
-]);
+] as const;
 
 export const buildRedirectModule = task(import.meta.path, async () => {
   const domains = Array.from(new Set(REDIRECT.map(([from]) => tldts.getHostname(from, { detectIp: false })))).filter(Boolean);

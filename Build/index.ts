@@ -11,7 +11,10 @@ import { buildInternalCDNDomains } from './build-internal-cdn-rules';
 // import { buildInternalChnDomains } from './build-internal-chn-domains';
 import { buildDomesticRuleset } from './build-domestic-ruleset';
 import { buildStreamService } from './build-stream-service';
-import { buildRedirectModule } from './build-redirect-module';
+
+import { buildRedirectModule } from './build-sgmodule-redirect';
+import { buildAlwaysRealIPModule } from './build-sgmodule-always-realip';
+
 import { validate } from './validate-domainset';
 
 import { buildMicrosoftCdn } from './build-microsoft-cdn';
@@ -19,10 +22,11 @@ import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
 
 import { buildPublic } from './build-public';
 import { downloadMockAssets } from './download-mock-assets';
-// import type { TaskResult } from './lib/trace-runner';
+
+import type { TaskResult } from './lib/trace-runner';
 
 (async () => {
-  console.log('Bun version:', Bun.version);
+  console.log('Bun version:', Bun.version, Bun.revision);
 
   try {
     // TODO: restore this once Bun has fixed their worker
@@ -66,6 +70,8 @@ import { downloadMockAssets } from './download-mock-assets';
     const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
 
     const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
+    const buildAlwaysRealIPModulePromise = downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule());
+
     const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
 
     const buildMicrosoftCdnPromise = downloadPreviousBuildPromise.then(() => buildMicrosoftCdn());
@@ -92,6 +98,7 @@ import { downloadMockAssets } from './download-mock-assets';
       // buildInternalChnDomainsPromise,
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,
+      buildAlwaysRealIPModulePromise,
       buildStreamServicePromise,
       buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
@@ -112,7 +119,7 @@ import { downloadMockAssets } from './download-mock-assets';
   }
 })();
 
-function printStats(stats: Array<{ start: number, end: number, taskName: string }>): void {
+function printStats(stats: TaskResult[]): void {
   stats.sort((a, b) => a.start - b.start);
 
   const longestTaskName = Math.max(...stats.map(i => i.taskName.length));
