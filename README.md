@@ -27,7 +27,7 @@
 
 ```ini
 # Non IP
-RULE-SET,https://ruleset.skk.moe/List/ip/reject-drop.conf,REJECT-DROP
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT-TINYGIF
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT
 # IP
