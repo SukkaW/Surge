@@ -1,4 +1,4 @@
-import { fetchRemoteTextAndReadByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { Readable } from 'stream';
 import { parse } from 'csv-parse';
 import { createTrie } from './lib/trie';
@@ -7,7 +7,7 @@ import { processLine } from './lib/process-line';
 
 export const parseDomesticList = async () => {
   const set = new Set<string>();
-  for await (const line of await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
+  for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
     if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
       const domain = line.slice(8, -16);
       set.add(domain);

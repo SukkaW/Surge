@@ -21,9 +21,8 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     s.acquire()
   ]))[0];
 
-  const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
-
   try {
+    const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
     const key = `fetch speedtest endpoints: ${keyword}`;
     console.time(key);
 
@@ -47,6 +46,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     }
 
     const json = await res.json() as Array<{ url: string }>;
+
     s.release();
 
     console.timeEnd(key);

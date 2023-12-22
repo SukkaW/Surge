@@ -1,4 +1,4 @@
-import { fetchRemoteTextAndReadByLine } from './fetch-text-by-line';
+import { fetchRemoteTextByLine } from './fetch-text-by-line';
 import { parse } from 'tldts';
 
 const isDomainLoose = (domain: string): boolean => {
@@ -8,7 +8,7 @@ const isDomainLoose = (domain: string): boolean => {
 
 export const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
   const res: string[] = [];
-  for await (const line of await fetchRemoteTextAndReadByLine(url)) {
+  for await (const line of await fetchRemoteTextByLine(url)) {
     if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
       const domain = line.replace('server=/', '').replace('/114.114.114.114', '');
       if (isDomainLoose(domain)) {

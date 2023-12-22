@@ -1,7 +1,6 @@
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
-import os from 'os';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { readFileByLine } from './lib/fetch-text-by-line';
@@ -85,16 +84,6 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
   );
 });
 
-export const downloadPublicSuffixList = task(import.meta.path, async () => {
-  const publicSuffixPath = path.resolve(import.meta.dir, '../node_modules/.cache/public_suffix_list_dat.txt');
-  const resp = await fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat', defaultRequestInit);
-
-  return Bun.write(publicSuffixPath, resp as Response);
-}, 'download-publicsuffixlist');
-
 if (import.meta.main) {
-  Promise.all([
-    downloadPreviousBuild(),
-    downloadPublicSuffixList()
-  ]);
+  downloadPreviousBuild();
 }

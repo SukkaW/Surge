@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextAndReadByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { task } from './lib/trace-runner';
 import { SHARED_DESCRIPTION } from './lib/constants';
@@ -9,7 +9,7 @@ import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 
 const getBogusNxDomainIPs = async () => {
   const result: string[] = [];
-  for await (const line of await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
+  for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
     if (line && line.startsWith('bogus-nxdomain=')) {
       const ip = line.slice(15).trim();
       if (isProbablyIpv4(ip)) {

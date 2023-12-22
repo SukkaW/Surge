@@ -1,7 +1,7 @@
 import path from 'path';
 import { task, traceAsync } from './lib/trace-runner';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextAndReadByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
@@ -22,7 +22,7 @@ const BLACKLIST = [
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   const set = await traceAsync('fetch accelerated-domains.china.conf', async () => {
     const trie = createTrie();
-    for await (const line of await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
+    for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
       if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
         const domain = line.slice(8, -16);
         trie.add(domain);

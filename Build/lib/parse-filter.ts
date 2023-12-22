@@ -1,5 +1,5 @@
 // @ts-check
-import { fetchRemoteTextAndReadByLine } from './fetch-text-by-line';
+import { fetchRemoteTextByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
@@ -9,61 +9,79 @@ import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
+import { deserializeSet, fsCache, serializeSet } from './cache-filesystem';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
-export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false) {
-  return traceAsync(`- processDomainLists: ${domainListsUrl}`, async () => {
-    const domainSets = new Set<string>();
+export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+  return traceAsync(`- processDomainLists: ${domainListsUrl}`, () => fsCache.apply(
+    domainListsUrl,
+    async () => {
+      const domainSets = new Set<string>();
 
-    for await (const line of await fetchRemoteTextAndReadByLine(domainListsUrl)) {
-      const domainToAdd = processLine(line);
-      if (!domainToAdd) continue;
+      for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
+        const domainToAdd = processLine(line);
+        if (!domainToAdd) continue;
 
-      if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-        console.warn(picocolors.red(domainListsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
-        foundDebugDomain = true;
-      }
+        if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.warn(picocolors.red(domainListsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
+          foundDebugDomain = true;
+        }
 
-      domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
-    }
-
-    return domainSets;
-  });
-}
-
-export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false) {
-  return traceAsync(`- processHosts: ${hostsUrl}`, async () => {
-    const domainSets = new Set<string>();
-
-    for await (const l of await fetchRemoteTextAndReadByLine(hostsUrl)) {
-      const line = processLine(l);
-      if (!line) {
-        continue;
-      }
-
-      const domain = line.split(/\s/)[1];
-      if (!domain) {
-        continue;
-      }
-      const _domain = domain.trim();
-
-      if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-        console.warn(picocolors.red(hostsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
-        foundDebugDomain = true;
-      }
-
-      const domainToAdd = skipDomainCheck ? _domain : normalizeDomain(_domain);
-      if (domainToAdd) {
         domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
       }
+
+      return domainSets;
+    },
+    {
+      ttl,
+      temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
+      serializer: serializeSet,
+      deserializer: deserializeSet
     }
+  ));
+}
+export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, ttl: number | null = null) {
+  return traceAsync(`- processHosts: ${hostsUrl}`, () => fsCache.apply(
+    hostsUrl,
+    async () => {
+      const domainSets = new Set<string>();
 
-    console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
+      for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
+        const line = processLine(l);
+        if (!line) {
+          continue;
+        }
 
-    return domainSets;
-  });
+        const domain = line.split(/\s/)[1];
+        if (!domain) {
+          continue;
+        }
+        const _domain = domain.trim();
+
+        if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.warn(picocolors.red(hostsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
+          foundDebugDomain = true;
+        }
+
+        const domainToAdd = skipDomainCheck ? _domain : normalizeDomain(_domain);
+        if (domainToAdd) {
+          domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        }
+      }
+
+      console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
+
+      return domainSets;
+    },
+    {
+      ttl,
+      temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
+      serializer: serializeSet,
+      deserializer: deserializeSet
+    }
+  ));
 }
 
 // eslint-disable-next-line sukka-ts/no-const-enum -- bun bundler is smart, maybe?
@@ -77,90 +95,111 @@ const enum ParseType {
 
 export async function processFilterRules(
   filterRulesUrl: string,
-  fallbackUrls?: readonly string[] | undefined
-): Promise<{ white: Set<string>, black: Set<string>, foundDebugDomain: boolean }> {
-  const whitelistDomainSets = new Set<string>();
-  const blacklistDomainSets = new Set<string>();
+  fallbackUrls?: readonly string[] | undefined | null,
+  ttl: number | null = null
+): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
+  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, () => fsCache.apply<[
+    white: string[],
+    black: string[],
+    warningMessages: string[]
+  ]>(
+    filterRulesUrl,
+    async () => {
+      const whitelistDomainSets = new Set<string>();
+      const blacklistDomainSets = new Set<string>();
 
-  const warningMessages: string[] = [];
+      const warningMessages: string[] = [];
 
-  await traceAsync(`- processFilterRules: ${filterRulesUrl}`, async () => {
-    const gorhill = await getGorhillPublicSuffixPromise();
+      const gorhill = await getGorhillPublicSuffixPromise();
 
-    /**
+      /**
      * @param {string} line
      */
-    const lineCb = (line: string) => {
-      const result = parse(line, gorhill);
-      if (!result) {
-        return;
-      }
-
-      const flag = result[1];
-      const hostname = result[0];
-
-      if (DEBUG_DOMAIN_TO_FIND) {
-        if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(
-            picocolors.red(filterRulesUrl),
-            flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
-              ? '(white)'
-              : '(black)',
-            picocolors.bold(DEBUG_DOMAIN_TO_FIND)
-          );
-          foundDebugDomain = true;
+      const lineCb = (line: string) => {
+        const result = parse(line, gorhill);
+        if (!result) {
+          return;
         }
-      }
 
-      switch (flag) {
-        case ParseType.WhiteIncludeSubdomain:
-          if (hostname[0] !== '.') {
-            whitelistDomainSets.add(`.${hostname}`);
-          } else {
+        const flag = result[1];
+        const hostname = result[0];
+
+        if (DEBUG_DOMAIN_TO_FIND) {
+          if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
+            console.warn(
+              picocolors.red(filterRulesUrl),
+              flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
+                ? '(white)'
+                : '(black)',
+              picocolors.bold(DEBUG_DOMAIN_TO_FIND)
+            );
+            foundDebugDomain = true;
+          }
+        }
+
+        switch (flag) {
+          case ParseType.WhiteIncludeSubdomain:
+            if (hostname[0] !== '.') {
+              whitelistDomainSets.add(`.${hostname}`);
+            } else {
+              whitelistDomainSets.add(hostname);
+            }
+            break;
+          case ParseType.WhiteAbsolute:
             whitelistDomainSets.add(hostname);
-          }
-          break;
-        case ParseType.WhiteAbsolute:
-          whitelistDomainSets.add(hostname);
-          break;
-        case ParseType.BlackAbsolute:
-          blacklistDomainSets.add(hostname);
-          break;
-        case ParseType.BlackIncludeSubdomain:
-          if (hostname[0] !== '.') {
-            blacklistDomainSets.add(`.${hostname}`);
-          } else {
+            break;
+          case ParseType.BlackAbsolute:
             blacklistDomainSets.add(hostname);
-          }
-          break;
-        case ParseType.ErrorMessage:
-          warningMessages.push(hostname);
-          break;
-        default:
-          break;
-      }
-    };
+            break;
+          case ParseType.BlackIncludeSubdomain:
+            if (hostname[0] !== '.') {
+              blacklistDomainSets.add(`.${hostname}`);
+            } else {
+              blacklistDomainSets.add(hostname);
+            }
+            break;
+          case ParseType.ErrorMessage:
+            warningMessages.push(hostname);
+            break;
+          default:
+            break;
+        }
+      };
 
-    if (!fallbackUrls || fallbackUrls.length === 0) {
-      for await (const line of await fetchRemoteTextAndReadByLine(filterRulesUrl)) {
+      // TODO-SUKKA: add cache here
+      if (!fallbackUrls || fallbackUrls.length === 0) {
+        for await (const line of await fetchRemoteTextByLine(filterRulesUrl)) {
         // don't trim here
-        lineCb(line);
-      }
-    } else {
-      const filterRules = (await traceAsync(
-        picocolors.gray(`- download ${filterRulesUrl}`),
-        () => fetchAssets(filterRulesUrl, fallbackUrls),
-        picocolors.gray
-      )).split('\n');
+          lineCb(line);
+        }
+      } else {
+        const filterRules = (await traceAsync(
+          picocolors.gray(`- download ${filterRulesUrl}`),
+          () => fetchAssets(filterRulesUrl, fallbackUrls),
+          picocolors.gray
+        )).split('\n');
 
-      const key = picocolors.gray(`- parse adguard filter ${filterRulesUrl}`);
-      console.time(key);
-      for (let i = 0, len = filterRules.length; i < len; i++) {
-        lineCb(filterRules[i]);
+        const key = picocolors.gray(`- parse adguard filter ${filterRulesUrl}`);
+        console.time(key);
+        for (let i = 0, len = filterRules.length; i < len; i++) {
+          lineCb(filterRules[i]);
+        }
+        console.timeEnd(key);
       }
-      console.timeEnd(key);
+
+      return [
+        Array.from(whitelistDomainSets),
+        Array.from(blacklistDomainSets),
+        warningMessages
+      ];
+    },
+    {
+      ttl,
+      temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
+      serializer: JSON.stringify,
+      deserializer: JSON.parse
     }
-  });
+  ));
 
   warningMessages.forEach(msg => {
     console.warn(
@@ -172,13 +211,13 @@ export async function processFilterRules(
   console.log(
     picocolors.gray('[process filter]'),
     picocolors.gray(filterRulesUrl),
-    picocolors.gray(`white: ${whitelistDomainSets.size}`),
-    picocolors.gray(`black: ${blacklistDomainSets.size}`)
+    picocolors.gray(`white: ${white.length}`),
+    picocolors.gray(`black: ${black.length}`)
   );
 
   return {
-    white: whitelistDomainSets,
-    black: blacklistDomainSets,
+    white,
+    black,
     foundDebugDomain
   };
 }

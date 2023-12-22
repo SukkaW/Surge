@@ -1,4 +1,4 @@
-import { fetchRemoteTextAndReadByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { resolve as pathResolve } from 'path';
 import { compareAndWriteFile, withBannerArray } from './lib/create-file';
 import { processLineFromReadline } from './lib/process-line';
@@ -21,7 +21,7 @@ const INCLUDE_CIDRS = [
 export const getChnCidrPromise = createMemoizedPromise(async () => {
   const cidr = await traceAsync(
     picocolors.gray('download chnroutes2'),
-    async () => processLineFromReadline(await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
+    async () => processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
     picocolors.gray
   );
   return traceSync(

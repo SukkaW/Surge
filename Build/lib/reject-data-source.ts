@@ -7,11 +7,11 @@ export const HOSTS = [
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true],
   // CoinBlockerList
-  ['https://zerodot1.gitlab.io/CoinBlockerLists/hosts_browser', true, true],
+  // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 10 days cache ttl
+  ['https://zerodot1.gitlab.io/CoinBlockerLists/hosts_browser', true, true, 10 * 24 * 60 * 60 * 1000],
   // Curben's UrlHaus Malicious URL Blocklist
   // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
   // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
-  // 'https://ublockorigin.github.io/uAssetsCDN/thirdparties/urlhaus-filter/urlhaus-filter-online.txt',
   ['https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt', true, true],
   // Curben's Phishing URL Blocklist
   // Covered by lib/get-phishing-domains.ts
@@ -21,14 +21,24 @@ export const HOSTS = [
   // Curben's PUP Domains Blocklist
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
-  ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, true],
+  // The PUP filter has paused the update since 2023-05, so we set a 7 days cache ttl
+  ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, true, 7 * 24 * 60 * 60 * 1000],
   // BarbBlock
-  ['https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt', true, true]
+  // The barbblock list has never been updated since 2019-05, so we set a 10 days cache ttl
+  ['https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt', true, true, 10 * 24 * 60 * 60 * 1000]
 ] as const;
 
 export const DOMAIN_LISTS = [
   // DigitalSide Threat-Intel - OSINT Hub
-  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true]
+  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true],
+
+  // AdGuard CNAME Filter Combined
+  // Update on a 7 days basis, so we add a 36 hours cache ttl
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', true, 36 * 60 * 60 * 1000],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', true, 36 * 60 * 60 * 1000],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', true, 36 * 60 * 60 * 1000],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', true, 36 * 60 * 60 * 1000],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', true, 36 * 60 * 60 * 1000]
 ] as const;
 
 export const ADGUARD_FILTERS = [
@@ -41,7 +51,8 @@ export const ADGUARD_FILTERS = [
       'https://secure.fanboy.co.nz/easylist.txt',
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
       'https://ublockorigin.pages.dev/thirdparties/easylist.txt'
-    ]
+    ],
+    12 * 60 * 60 * 1000
   ],
   // EasyPrivacy
   [
@@ -52,7 +63,8 @@ export const ADGUARD_FILTERS = [
       'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
       'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
-    ]
+    ],
+    12 * 60 * 60 * 1000
   ],
   // AdGuard DNS Filter
   [
@@ -62,12 +74,6 @@ export const ADGUARD_FILTERS = [
       'https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt'
     ]
   ],
-  // AdGuard CNAME Filter Combined
-  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads.txt',
-  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt',
-  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs.txt',
-  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites.txt',
-  'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers.txt',
   // uBlock Origin Filter List
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
