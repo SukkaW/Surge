@@ -1,7 +1,5 @@
 import type { BunFile } from 'bun';
 import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
-import { fsCache } from './cache-filesystem';
-import picocolors from 'picocolors';
 // import { TextLineStream } from './text-line-transform-stream';
 // import { PolyfillTextDecoderStream } from './text-decoder-stream';
 

@@ -121,9 +121,16 @@ export class Cache {
     }
     return value;
   }
+
+  destroy() {
+    this.db.close();
+  }
 }
 
-export const fsCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
+// export const fsCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
+// process.on('exit', () => {
+//   fsCache.destroy();
+// });
 
 const separator = String.fromCharCode(0);
 
