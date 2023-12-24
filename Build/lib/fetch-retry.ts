@@ -42,11 +42,16 @@ interface FetchRetryOpt {
   factor?: number,
   maxRetryAfter?: number,
   retry?: number,
-  onRetry?: (err: Error) => void
+  onRetry?: (err: Error) => void,
+  retryOnAborted?: boolean
 }
 
-function createFetchRetry($fetch: typeof fetch): typeof fetch {
-  const fetchRetry = async (url: string | URL, opts: RequestInit & { retry?: FetchRetryOpt } = {}) => {
+interface FetchWithRetry {
+  (url: string | URL | Request, opts?: RequestInit & { retry?: FetchRetryOpt }): Promise<Response>
+}
+
+function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
+  const fetchRetry: FetchWithRetry = async (url, opts = {}) => {
     const retryOpts = Object.assign(
       {
         // timeouts will be [10, 60, 360, 2160, 12960]
@@ -54,13 +59,14 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
         minTimeout: MIN_TIMEOUT,
         retries: MAX_RETRIES,
         factor: FACTOR,
-        maxRetryAfter: MAX_RETRY_AFTER
+        maxRetryAfter: MAX_RETRY_AFTER,
+        retryOnAborted: false
       },
       opts.retry
     );
 
     try {
-      return await retry(async (bail) => {
+      return await retry<Response>(async (bail) => {
         try {
           // this will be retried
           const res = (await $fetch(url, opts)) as Response;
@@ -87,13 +93,17 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
               err.name === 'AbortError'
               || ('digest' in err && err.digest === 'AbortError')
             ) {
-              console.log(picocolors.gray('[fetch abort]'), picocolors.gray(url.toString()));
-              return bail(err);
+              if (!retryOpts.retryOnAborted) {
+                console.log(picocolors.gray('[fetch abort]'), url);
+                return bail(err) as never;
+              }
             }
           }
           if (isClientError(err)) {
-            return bail(err);
+            return bail(err) as never;
           }
+
+          console.log(picocolors.gray('[fetch fail]'), url);
           throw err;
         }
       }, retryOpts);
@@ -110,7 +120,7 @@ function createFetchRetry($fetch: typeof fetch): typeof fetch {
     fetchRetry[key] = $fetch[key];
   }
 
-  return fetchRetry as typeof fetch;
+  return fetchRetry;
 }
 
 export const defaultRequestInit: RequestInit = {
