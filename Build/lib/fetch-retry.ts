@@ -60,7 +60,8 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
         retries: MAX_RETRIES,
         factor: FACTOR,
         maxRetryAfter: MAX_RETRY_AFTER,
-        retryOnAborted: false
+        retryOnAborted: false,
+        retryOnNon2xx: true
       },
       opts.retry
     );
@@ -85,6 +86,9 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             }
             throw new ResponseError(res);
           } else {
+            if (!res.ok && retryOpts.retryOnNon2xx) {
+              throw new ResponseError(res);
+            }
             return res;
           }
         } catch (err: unknown) {

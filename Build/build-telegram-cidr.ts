@@ -10,7 +10,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 
 export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
-  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit) as Response;
+  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 

@@ -1,5 +1,3 @@
-import fsp from 'fs/promises';
-
 import { getAppleCdnDomainsPromise } from './build-apple-cdn';
 import { getDomesticDomainsRulesetPromise } from './build-domestic-ruleset';
 import { surgeRulesetToClashClassicalTextRuleset } from './lib/clash';

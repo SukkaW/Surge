@@ -24,6 +24,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
     const key = `fetch speedtest endpoints: ${keyword}`;
+    console.log(key);
     console.time(key);
 
     const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
