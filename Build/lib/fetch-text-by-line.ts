@@ -78,6 +78,6 @@ export async function *createReadlineInterfaceFromResponse(resp: Response): Asyn
   }
 }
 
-export function fetchRemoteTextAndReadByLine(url: string | URL) {
+export function fetchRemoteTextByLine(url: string | URL) {
   return fetchWithRetry(url, defaultRequestInit).then(res => createReadlineInterfaceFromResponse(res as Response));
 }

@@ -4,7 +4,7 @@ export const processLine = (line: string): string | null => {
   }
 
   const trimmed: string = line.trim();
-  if (trimmed === '') {
+  if (trimmed.length === 0) {
     return null;
   }
 

@@ -13,7 +13,7 @@ import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 const s = new Sema(3);
 
 const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
-  .then(res => res.json() as Promise<string[]>);
+  .then(res => res.json<string[]>());
 
 const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
   const topUserAgents = (await Promise.all([
@@ -21,9 +21,8 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     s.acquire()
   ]))[0];
 
-  const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
-
   try {
+    const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
     const key = `fetch speedtest endpoints: ${keyword}`;
     console.time(key);
 
@@ -40,13 +39,18 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
         'Sec-Gpc': '1'
-      }
+      },
+      retry: {
+        retryOnAborted: true
+      },
+      signal: AbortSignal.timeout(4000)
     });
     if (!res.ok) {
       throw new Error(`${res.statusText}\n${await res.text()}`);
     }
 
-    const json = await res.json() as Array<{ url: string }>;
+    const json = await res.json<Array<{ url: string }>>();
+
     s.release();
 
     console.timeEnd(key);

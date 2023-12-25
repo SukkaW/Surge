@@ -2,6 +2,7 @@
 node_modules
 .clinic
 .wireit
+.cache
 public
 
 # $ build output

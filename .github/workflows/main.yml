@@ -17,7 +17,12 @@ jobs:
           persist-credentials: false
       - uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: canary
+      - name: Cache cache.db
+        uses: actions/cache@v3
+        with:
+          path: .cache
+          key: ${{ runner.os }}-v1
       - run: bun install
       - run: bun run build
       - name: Deploy

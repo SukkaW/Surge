@@ -1,27 +1,15 @@
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextAndReadByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { task } from './lib/trace-runner';
 import { processLine } from './lib/process-line';
 import { SHARED_DESCRIPTION } from './lib/constants';
-
-const publicSuffixPath: string = path.resolve(import.meta.dir, '../node_modules/.cache/public_suffix_list_dat.txt');
-
+import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
 const getS3OSSDomains = async (): Promise<Set<string>> => {
   const trie = createTrie();
-
-  const publicSuffixFile = Bun.file(publicSuffixPath);
-
-  if (await publicSuffixFile.exists()) {
-    for await (const line of readFileByLine(publicSuffixFile)) {
-      trie.add(line);
-    }
-  } else {
-    console.log('public_suffix_list.dat not found, fetch directly from remote.');
-    for await (const line of await fetchRemoteTextAndReadByLine('https://publicsuffix.org/list/public_suffix_list.dat')) {
-      trie.add(line);
-    }
+  for await (const line of (await getPublicSuffixListTextPromise()).split('\n')) {
+    trie.add(line);
   }
 
   /**

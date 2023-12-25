@@ -1,4 +1,4 @@
-import { downloadPreviousBuild, downloadPublicSuffixList } from './download-previous-build';
+import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
 import { buildAntiBogusDomain } from './build-anti-bogus-domain';
 import { buildAppleCdn } from './build-apple-cdn';
@@ -33,23 +33,15 @@ import type { TaskResult } from './lib/trace-runner';
     // const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
 
     const downloadPreviousBuildPromise = downloadPreviousBuild();
-    const downloadPublicSuffixListPromise = downloadPublicSuffixList();
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon());
     const buildAntiBogusDomainPromise = downloadPreviousBuildPromise.then(() => buildAntiBogusDomain());
     const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn());
-    const buildCdnConfPromise = Promise.all([
-      downloadPreviousBuildPromise,
-      downloadPublicSuffixListPromise
-    ]).then(() => buildCdnConf());
-    const buildRejectDomainSetPromise = Promise.all([
-      downloadPreviousBuildPromise,
-      downloadPublicSuffixListPromise
-    ]).then(() => buildRejectDomainSet());
+    const buildCdnConfPromise = downloadPreviousBuildPromise.then(() => buildCdnConf());
+    const buildRejectDomainSetPromise = downloadPreviousBuildPromise.then(() => buildRejectDomainSet());
     const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR());
     const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr());
     const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet());
     const buildInternalCDNDomainsPromise = Promise.all([
-      downloadPublicSuffixListPromise,
       buildCommonPromise,
       buildCdnConfPromise
     ]).then(() => buildInternalCDNDomains());
@@ -84,7 +76,6 @@ import type { TaskResult } from './lib/trace-runner';
 
     const stats = await Promise.all([
       downloadPreviousBuildPromise,
-      downloadPublicSuffixListPromise,
       buildCommonPromise,
       buildAntiBogusDomainPromise,
       buildAppleCdnPromise,

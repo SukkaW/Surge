@@ -32,16 +32,16 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
     const [gorhill] = await Promise.all([
       getGorhillPublicSuffixPromise(),
       // Parse from remote hosts & domain lists
-      ...HOSTS.map(entry => processHosts(entry[0], entry[1]).then(hosts => {
+      ...HOSTS.map(entry => processHosts(entry[0], entry[1], entry[2], entry[3]).then(hosts => {
         hosts.forEach(host => {
           domainSets.add(host);
         });
       })),
-      ...DOMAIN_LISTS.map(entry => processDomainLists(entry[0], entry[1])),
+      ...DOMAIN_LISTS.map(entry => processDomainLists(entry[0], entry[1], entry[2])),
       ...ADGUARD_FILTERS.map(input => {
         const promise = typeof input === 'string'
           ? processFilterRules(input)
-          : processFilterRules(input[0], input[1]);
+          : processFilterRules(input[0], input[1], input[2]);
 
         return promise.then(({ white, black, foundDebugDomain }) => {
           if (foundDebugDomain) {

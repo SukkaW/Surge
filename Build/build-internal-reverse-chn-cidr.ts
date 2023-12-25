@@ -1,4 +1,4 @@
-import { fetchRemoteTextAndReadByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import path from 'path';
 import { task } from './lib/trace-runner';
@@ -26,7 +26,7 @@ const RESERVED_IPV4_CIDR = [
 ];
 
 export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
-  const cidr = await processLineFromReadline(await fetchRemoteTextAndReadByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
+  const cidr = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
 
   const reversedCidr = merge(
     exclude(
