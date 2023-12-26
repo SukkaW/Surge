@@ -27,6 +27,10 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     console.log(key);
     console.time(key);
 
+    // AbortSignal.timeout() is not supported by bun.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+
     const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
       headers: {
         dnt: '1',
@@ -44,8 +48,11 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
       retry: {
         retryOnAborted: true
       },
-      signal: AbortSignal.timeout(4000)
+      signal: controller.signal
     });
+
+    clearTimeout(timer);
+
     if (!res.ok) {
       throw new Error(`${res.statusText}\n${await res.text()}`);
     }
