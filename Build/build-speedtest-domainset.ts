@@ -10,7 +10,7 @@ import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 
-const s = new Sema(3);
+const s = new Sema(2);
 
 const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
   .then(res => res.json<string[]>());
