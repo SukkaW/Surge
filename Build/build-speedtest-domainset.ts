@@ -10,7 +10,7 @@ import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 
-const s = new Sema(3);
+const s = new Sema(2);
 
 const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
   .then(res => res.json<string[]>());
@@ -24,7 +24,12 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
     const key = `fetch speedtest endpoints: ${keyword}`;
+    console.log(key);
     console.time(key);
+
+    // AbortSignal.timeout() is not supported by bun.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
 
     const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
       headers: {
@@ -43,8 +48,11 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
       retry: {
         retryOnAborted: true
       },
-      signal: AbortSignal.timeout(4000)
+      signal: controller.signal
     });
+
+    clearTimeout(timer);
+
     if (!res.ok) {
       throw new Error(`${res.statusText}\n${await res.text()}`);
     }

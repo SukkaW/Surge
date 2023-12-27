@@ -1,5 +1,3 @@
-import fsp from 'fs/promises';
-import path from 'path';
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists, processHosts } from './parse-filter';
 import { traceAsync, traceSync } from './trace-runner';

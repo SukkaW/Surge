@@ -18,7 +18,7 @@ export const downloadMockAssets = task(import.meta.path, () => Promise.all(Objec
   const key = picocolors.gray(`Download ${filename}`);
   console.time(key);
   const res = await fetchWithRetry(url);
-  await Bun.write(targetPath, res as Response);
+  await Bun.write(targetPath, res);
   console.timeEnd(key);
 })));
 

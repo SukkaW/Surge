@@ -48,40 +48,37 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
 
   const filesList = buildOutputList.map(f => path.join('ruleset.skk.moe-master', f));
 
-  await traceAsync(
-    'Download and extract previous build',
-    async () => {
-      const resp = await fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit);
+  const resp = await fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit);
 
-      if (!resp.body) {
-        throw new Error('Download previous build failed! No body found');
-      }
+  if (!resp.body) {
+    throw new Error('Download previous build failed! No body found');
+  }
 
-      const extract = tarStream.extract();
-      Readable.fromWeb(resp.body).pipe(zlib.createGunzip()).pipe(extract);
+  const extract = tarStream.extract();
+  Readable.fromWeb(resp.body as any).pipe(zlib.createGunzip()).pipe(extract);
 
-      for await (const entry of extract) {
-        if (entry.header.type !== 'file') {
-          entry.resume(); // Drain the entry
-          continue;
-        }
-        // filter entry
-        if (!filesList.some(f => entry.header.name.startsWith(f))) {
-          entry.resume(); // Drain the entry
-          continue;
-        }
+  const pathPrefix = `ruleset.skk.moe-master${path.sep}`;
 
-        const relativeEntryPath = entry.header.name.replace(`ruleset.skk.moe-master${path.sep}`, '');
-        const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
-
-        await fsp.mkdir(path.dirname(targetPath), { recursive: true });
-        await pipeline(
-          entry,
-          fs.createWriteStream(targetPath)
-        );
-      }
+  for await (const entry of extract) {
+    if (entry.header.type !== 'file') {
+      entry.resume(); // Drain the entry
+      continue;
     }
-  );
+    // filter entry
+    if (!filesList.some(f => entry.header.name.startsWith(f))) {
+      entry.resume(); // Drain the entry
+      continue;
+    }
+
+    const relativeEntryPath = entry.header.name.replace(pathPrefix, '');
+    const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
+
+    await fsp.mkdir(path.dirname(targetPath), { recursive: true });
+    await pipeline(
+      entry,
+      fs.createWriteStream(targetPath)
+    );
+  }
 });
 
 if (import.meta.main) {

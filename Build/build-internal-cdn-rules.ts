@@ -10,69 +10,69 @@ import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 
 const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
+const addApexDomain = (input: string, set: Set<string>) => {
+  // We are including the private domains themselves
+  const d = tldts.getDomain(input, { allowPrivateDomains: false });
+  if (d) {
+    set.add(d);
+  }
+};
+
+const processLocalDomainSet = async (domainSetPath: string, set: Set<string>) => {
+  for await (const line of readFileByLine(domainSetPath)) {
+    // console.log({ line });
+
+    const parsed = tldts.parse(line, { allowPrivateDomains: true, detectIp: false });
+    if (parsed.isIp) continue;
+    if (parsed.isIcann || parsed.isPrivate) {
+      if (parsed.domain) {
+        set.add(parsed.domain);
+      }
+      continue;
+    }
+
+    if (processLine(line)) {
+      console.warn('[drop line from domainset]', line);
+    }
+  }
+};
+
+const processLocalRuleSet = async (ruleSetPath: string, set: Set<string>, keywords: Set<string>) => {
+  for await (const line of readFileByLine(ruleSetPath)) {
+    if (line.startsWith('DOMAIN-SUFFIX,')) {
+      addApexDomain(line.replace('DOMAIN-SUFFIX,', ''), set);
+    } else if (line.startsWith('DOMAIN,')) {
+      addApexDomain(line.replace('DOMAIN,', ''), set);
+    } else if (line.startsWith('DOMAIN-KEYWORD')) {
+      keywords.add(escapeRegExp(line.replace('DOMAIN-KEYWORD,', '')));
+    } else if (line.startsWith('USER-AGENT,') || line.startsWith('PROCESS-NAME,') || line.startsWith('URL-REGEX,')) {
+      // do nothing
+    } else if (processLine(line)) {
+      console.warn('[drop line from ruleset]', line);
+    }
+  }
+};
+
 export const buildInternalCDNDomains = task(import.meta.path, async () => {
-  const set = new Set<string>();
-  const keywords = new Set<string>();
-
-  const addApexDomain = (input: string) => {
-    // We are including the private domains themselves
-    const d = tldts.getDomain(input, { allowPrivateDomains: false });
-    if (d) {
-      set.add(d);
-    }
-  };
-
-  const processLocalDomainSet = async (domainSetPath: string) => {
-    for await (const line of readFileByLine(domainSetPath)) {
-      // console.log({ line });
-
-      const parsed = tldts.parse(line, { allowPrivateDomains: true, detectIp: false });
-      if (parsed.isIp) continue;
-      if (parsed.isIcann || parsed.isPrivate) {
-        if (parsed.domain) {
-          set.add(parsed.domain);
-        }
-        continue;
-      }
-
-      if (processLine(line)) {
-        console.warn('[drop line from domainset]', line);
-      }
-    }
-  };
-
-  const processLocalRuleSet = async (ruleSetPath: string) => {
-    for await (const line of readFileByLine(ruleSetPath)) {
-      if (line.startsWith('DOMAIN-SUFFIX,')) {
-        addApexDomain(line.replace('DOMAIN-SUFFIX,', ''));
-      } else if (line.startsWith('DOMAIN,')) {
-        addApexDomain(line.replace('DOMAIN,', ''));
-      } else if (line.startsWith('DOMAIN-KEYWORD')) {
-        keywords.add(escapeRegExp(line.replace('DOMAIN-KEYWORD,', '')));
-      } else if (line.startsWith('USER-AGENT,') || line.startsWith('PROCESS-NAME,') || line.startsWith('URL-REGEX,')) {
-        // do nothing
-      } else if (processLine(line)) {
-        console.warn('[drop line from ruleset]', line);
-      }
-    }
-  };
+  const proxySet = new Set<string>();
+  const proxyKeywords = new Set<string>();
 
   const gorhill = (await Promise.all([
     getGorhillPublicSuffixPromise(),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf')),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf')),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf')),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_proxy.conf')),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/stream.conf')),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/telegram.conf')),
-    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/cdn.conf')),
-    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/download.conf'))
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'), proxySet, proxyKeywords),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf'), proxySet, proxyKeywords),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf'), proxySet, proxyKeywords),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_proxy.conf'), proxySet, proxyKeywords),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/stream.conf'), proxySet, proxyKeywords),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/telegram.conf'), proxySet, proxyKeywords),
+    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/cdn.conf'), proxySet),
+    processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/download.conf'), proxySet)
   ]))[0];
 
   return compareAndWriteFile(
     [
-      ...sortDomains(Array.from(set), gorhill).map(i => `SUFFIX,${i}`),
-      ...Array.from(keywords).sort().map(i => `REGEX,${i}`)
+      ...sortDomains(Array.from(proxySet), gorhill).map(i => `SUFFIX,${i}`),
+      ...Array.from(proxyKeywords).sort().map(i => `REGEX,${i}`)
     ],
     path.resolve(import.meta.dir, '../List/internal/cdn.txt')
   );
