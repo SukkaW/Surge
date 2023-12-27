@@ -22,16 +22,15 @@ export const HOSTS = [
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
   // The PUP filter has paused the update since 2023-05, so we set a 7 days cache ttl
-  ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, true, 7 * 24 * 60 * 60 * 1000],
-  // BarbBlock
-  // The barbblock list has never been updated since 2019-05, so we set a 10 days cache ttl
-  ['https://paulgb.github.io/BarbBlock/blacklists/hosts-file.txt', true, true, 10 * 24 * 60 * 60 * 1000]
+  ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, true, 7 * 24 * 60 * 60 * 1000]
 ] as const;
 
 export const DOMAIN_LISTS = [
+  // BarbBlock
+  // The barbblock list has never been updated since 2019-05, so we set a 10 days cache ttl
+  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', true, 10 * 24 * 60 * 60 * 1000],
   // DigitalSide Threat-Intel - OSINT Hub
   ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true],
-
   // AdGuard CNAME Filter Combined
   // Update on a 7 days basis, so we add a 36 hours cache ttl
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', true, 36 * 60 * 60 * 1000],
