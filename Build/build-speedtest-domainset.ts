@@ -21,6 +21,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     s.acquire()
   ]))[0];
 
+  let timer = null;
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
     const key = `fetch speedtest endpoints: ${keyword}`;
@@ -29,7 +30,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
 
     // AbortSignal.timeout() is not supported by bun.
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
+    timer = setTimeout(() => controller.abort(), 4000);
 
     const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
       headers: {
@@ -50,24 +51,23 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
       },
       signal: controller.signal
     });
-
-    clearTimeout(timer);
-
     if (!res.ok) {
       throw new Error(`${res.statusText}\n${await res.text()}`);
     }
 
     const json = await res.json<Array<{ url: string }>>();
 
-    s.release();
-
     console.timeEnd(key);
 
     return json.map(({ url }) => tldts.getHostname(url, { detectIp: false }));
   } catch (e) {
-    s.release();
     console.log(e);
     return [];
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    s.release();
   }
 };
 
