@@ -10,6 +10,8 @@ import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import picocolors from 'picocolors';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
+import { processLine } from './lib/process-line';
 
 const s = new Sema(2);
 
@@ -65,6 +67,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
 };
 
 export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
+  // Predefined domainset
   /** @type {Set<string>} */
   const domains = new Set<string>([
     '.speedtest.net',
@@ -129,6 +132,14 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     // librespeed
     '.backend.librespeed.org'
   ]);
+
+  // Download previous speedtest domainset
+  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
+    const line = processLine(l);
+    if (line) {
+      domains.add(line);
+    }
+  }
 
   let timer;
 

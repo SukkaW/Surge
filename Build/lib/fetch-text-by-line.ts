@@ -23,16 +23,10 @@ import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
 
 const decoder = new TextDecoder('utf-8');
 
-export async function *readFileByLine(file: string | URL | BunFile): AsyncGenerator<string> {
-  if (typeof file === 'string') {
-    file = Bun.file(file);
-  } else if (!('writer' in file)) {
-    file = Bun.file(file);
-  }
-
+async function *createTextLineAsyncGeneratorFromStreamSource(stream: ReadableStream<Uint8Array>): AsyncGenerator<string> {
   let buf = '';
 
-  for await (const chunk of file.stream()) {
+  for await (const chunk of stream) {
     const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
     for (let i = 0, len = chunkStr.length; i < len; i++) {
       const char = chunkStr[i];
@@ -50,7 +44,17 @@ export async function *readFileByLine(file: string | URL | BunFile): AsyncGenera
   }
 }
 
-export async function *createReadlineInterfaceFromResponse(resp: Response): AsyncGenerator<string> {
+export function readFileByLine(file: string | URL | BunFile): AsyncGenerator<string> {
+  if (typeof file === 'string') {
+    file = Bun.file(file);
+  } else if (!('writer' in file)) {
+    file = Bun.file(file);
+  }
+
+  return createTextLineAsyncGeneratorFromStreamSource(file.stream());
+}
+
+export function createReadlineInterfaceFromResponse(resp: Response): AsyncGenerator<string> {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }
@@ -58,24 +62,7 @@ export async function *createReadlineInterfaceFromResponse(resp: Response): Asyn
     throw new Error('Body has already been consumed.');
   }
 
-  let buf = '';
-
-  for await (const chunk of resp.body) {
-    const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
-    for (let i = 0, len = chunkStr.length; i < len; i++) {
-      const char = chunkStr[i];
-      if (char === '\n') {
-        yield buf;
-        buf = '';
-      } else {
-        buf += char;
-      }
-    }
-  }
-
-  if (buf) {
-    yield buf;
-  }
+  return createTextLineAsyncGeneratorFromStreamSource(resp.body);
 }
 
 export function fetchRemoteTextByLine(url: string | URL) {
