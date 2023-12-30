@@ -39,6 +39,7 @@
     "eslint": "^8.56.0",
     "eslint-config-sukka": "4.1.10-beta.2",
     "eslint-formatter-sukka": "4.1.9",
+    "mitata": "^0.1.6",
     "typescript": "^5.3.3"
   },
   "resolutions": {

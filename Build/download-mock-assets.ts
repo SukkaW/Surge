@@ -4,10 +4,10 @@ import path from 'path';
 import { fetchWithRetry } from './lib/fetch-retry';
 
 const ASSETS_LIST = {
-  'www-google-analytics-com_ga.js': 'https://unpkg.com/@adguard/scriptlets@1/dist/redirect-files/google-analytics-ga.js',
-  'www-googletagservices-com_gpt.js': 'https://unpkg.com/@adguard/scriptlets@1/dist/redirect-files/googletagservices-gpt.js',
-  'www-google-analytics-com_analytics.js': 'https://unpkg.com/@adguard/scriptlets@1/dist/redirect-files/google-analytics.js',
-  'www-googlesyndication-com_adsbygoogle.js': 'https://unpkg.com/@adguard/scriptlets@1/dist/redirect-files/googlesyndication-adsbygoogle.js'
+  'www-google-analytics-com_ga.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/google-analytics-ga.js',
+  'www-googletagservices-com_gpt.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/googletagservices-gpt.js',
+  'www-google-analytics-com_analytics.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/google-analytics.js',
+  'www-googlesyndication-com_adsbygoogle.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/googlesyndication-adsbygoogle.js'
 } as const;
 
 const mockDir = path.resolve(import.meta.dir, '../Mock');

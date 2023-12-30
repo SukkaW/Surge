@@ -12,17 +12,17 @@ import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import picocolors from 'picocolors';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
+import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
 
 const s = new Sema(2);
 
 const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
-  .then(res => res.json<string[]>());
+  .then(res => res.json<string[]>()).then(userAgents => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
 const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
-  const topUserAgents = (await Promise.all([
-    latestTopUserAgentsPromise,
-    s.acquire()
-  ]))[0];
+  const topUserAgents = await latestTopUserAgentsPromise;
+
+  const url = `https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`;
 
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
@@ -30,39 +30,51 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     console.log(key);
     console.time(key);
 
-    const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
-      headers: {
-        dnt: '1',
-        Referer: 'https://www.speedtest.net/',
-        accept: 'application/json, text/plain, */*',
-        'User-Agent': randomUserAgent,
-        'Accept-Language': 'en-US,en;q=0.9',
-        ...(randomUserAgent.includes('Chrome')
-          ? {
-            'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-Gpc': '1'
+    const json = await fsCache.apply(
+      url,
+      () => s.acquire().then(() => fetchWithRetry(url, {
+        headers: {
+          dnt: '1',
+          Referer: 'https://www.speedtest.net/',
+          accept: 'application/json, text/plain, */*',
+          'User-Agent': randomUserAgent,
+          'Accept-Language': 'en-US,en;q=0.9',
+          ...(randomUserAgent.includes('Chrome')
+            ? {
+              'Sec-Ch-Ua-Mobile': '?0',
+              'Sec-Fetch-Dest': 'empty',
+              'Sec-Fetch-Mode': 'cors',
+              'Sec-Fetch-Site': 'same-origin',
+              'Sec-Gpc': '1'
+            }
+            : {})
+        },
+        signal: AbortSignal.timeout(1000 * 4),
+        retry: {
+          retries: 2
+        }
+      })).then(r => r.json<Array<{ url: string }>>()).then(data => data.reduce<string[]>(
+        (prev, cur) => {
+          const hn = tldts.getHostname(cur.url, { detectIp: false });
+          if (hn) {
+            prev.push(hn);
           }
-          : {})
-      },
-      signal: AbortSignal.timeout(1000 * 4),
-      retry: {
-        retries: 2
+          return prev;
+        }, []
+      )).finally(() => s.release()),
+      {
+        ttl: TTL.ONE_WEEK(),
+        serializer: serializeArray,
+        deserializer: deserializeArray
       }
-    });
-
-    const json = await res.json<Array<{ url: string }>>();
+    );
 
     console.timeEnd(key);
 
-    return json.map(({ url }) => tldts.getHostname(url, { detectIp: false }));
+    return json;
   } catch (e) {
     console.log(e);
     return [];
-  } finally {
-    s.release();
   }
 };
 

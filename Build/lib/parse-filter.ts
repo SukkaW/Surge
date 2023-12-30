@@ -9,14 +9,15 @@ import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
+import { deserializeSet, fsCache, serializeSet } from './cache-filesystem';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
-export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, _ttl: number | null = null) {
-  return traceAsync(`- processDomainLists: ${domainListsUrl}`, /*  () => fsCache.apply(
+export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+  return traceAsync(`- processDomainLists: ${domainListsUrl}`, () => fsCache.apply(
     domainListsUrl,
-     */async () => {
+    async () => {
       const domainSets = new Set<string>();
 
       for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
@@ -32,19 +33,19 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
       }
 
       return domainSets;
-    });/* ,
+    },
     {
       ttl,
       temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
       serializer: serializeSet,
       deserializer: deserializeSet
     }
-  )); */
+  ));
 }
-export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, _ttl: number | null = null) {
-  return traceAsync(`- processHosts: ${hostsUrl}`, /* () => fsCache.apply(
+export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, ttl: number | null = null) {
+  return traceAsync(`- processHosts: ${hostsUrl}`, () => fsCache.apply(
     hostsUrl,
-     */async () => {
+    async () => {
       const domainSets = new Set<string>();
 
       for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
@@ -73,14 +74,14 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, skip
       console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
 
       return domainSets;
-    });
-  /* {
+    },
+    {
       ttl,
       temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
       serializer: serializeSet,
       deserializer: deserializeSet
     }
-  ) */
+  ));
 }
 
 // eslint-disable-next-line sukka-ts/no-const-enum -- bun bundler is smart, maybe?
@@ -95,15 +96,15 @@ const enum ParseType {
 export async function processFilterRules(
   filterRulesUrl: string,
   fallbackUrls?: readonly string[] | undefined | null,
-  _ttl: number | null = null
+  ttl: number | null = null
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, /* () => fsCache.apply<[
+  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, () => fsCache.apply<[
     white: string[],
     black: string[],
     warningMessages: string[]
   ]>(
     filterRulesUrl,
-     */async () => {
+    async () => {
       const whitelistDomainSets = new Set<string>();
       const blacklistDomainSets = new Set<string>();
 
@@ -168,7 +169,7 @@ export async function processFilterRules(
       // TODO-SUKKA: add cache here
       if (!fallbackUrls || fallbackUrls.length === 0) {
         for await (const line of await fetchRemoteTextByLine(filterRulesUrl)) {
-        // don't trim here
+          // don't trim here
           lineCb(line);
         }
       } else {
@@ -191,14 +192,14 @@ export async function processFilterRules(
         Array.from(blacklistDomainSets),
         warningMessages
       ];
-    });
-    /* {
+    },
+    {
       ttl,
       temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
       serializer: JSON.stringify,
       deserializer: JSON.parse
     }
-  ) */
+  ));
 
   warningMessages.forEach(msg => {
     console.warn(
