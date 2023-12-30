@@ -7,7 +7,11 @@ class CustomAbortError extends Error {
 }
 
 const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
-  signal.throwIfAborted();
+  if (signal.aborted) {
+    reject(signal.reason);
+    return;
+  }
+
   signal.addEventListener('abort', stop);
   Bun.sleep(ms).then(done).catch(doReject);
 

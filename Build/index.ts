@@ -93,7 +93,6 @@ import type { TaskResult } from './lib/trace-runner';
       buildStreamServicePromise,
       buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
-
       downloadMockAssetsPromise
     ]);
 
