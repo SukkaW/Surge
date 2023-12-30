@@ -141,65 +141,62 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     }
   }
 
-  let timer;
-
-  const pMap = ([
-    'Hong Kong',
-    'Taiwan',
-    'China Telecom',
-    'China Mobile',
-    'China Unicom',
-    'Japan',
-    'Tokyo',
-    'Singapore',
-    'Korea',
-    'Canada',
-    'Toronto',
-    'Montreal',
-    'Los Ang',
-    'San Jos',
-    'Seattle',
-    'New York',
-    'Dallas',
-    'Miami',
-    'Berlin',
-    'Frankfurt',
-    'London',
-    'Paris',
-    'Amsterdam',
-    'Moscow',
-    'Australia',
-    'Sydney',
-    'Brazil',
-    'Turkey'
-  ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
-    pMap[keyword] = querySpeedtestApi(keyword).then(hostnameGroup => {
-      hostnameGroup.forEach(hostname => {
-        if (hostname) {
-          domains.add(hostname);
-        }
+  await new Promise<void>((resolve) => {
+    const pMap = ([
+      'Hong Kong',
+      'Taiwan',
+      'China Telecom',
+      'China Mobile',
+      'China Unicom',
+      'Japan',
+      'Tokyo',
+      'Singapore',
+      'Korea',
+      'Canada',
+      'Toronto',
+      'Montreal',
+      'Los Ang',
+      'San Jos',
+      'Seattle',
+      'New York',
+      'Dallas',
+      'Miami',
+      'Berlin',
+      'Frankfurt',
+      'London',
+      'Paris',
+      'Amsterdam',
+      'Moscow',
+      'Australia',
+      'Sydney',
+      'Brazil',
+      'Turkey'
+    ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
+      pMap[keyword] = querySpeedtestApi(keyword).then(hostnameGroup => {
+        hostnameGroup.forEach(hostname => {
+          if (hostname) {
+            domains.add(hostname);
+          }
+        });
       });
-    });
 
-    return pMap;
-  }, {});
+      return pMap;
+    }, {});
 
-  try {
-    timer = setTimeout(() => {
+    const timer = setTimeout(() => {
       console.error(picocolors.red('Task timeout!'));
       Object.entries(pMap).forEach(([name, p]) => {
         console.log(`[${name}]`, Bun.peek.status(p));
       });
 
-      throw new Error('timeout');
+      resolve();
     }, 1000 * 60 * 2);
 
-    await Promise.all(Object.values(pMap));
-  } finally {
-    if (timer) {
+    Promise.all(Object.values(pMap)).then(() => {
       clearTimeout(timer);
-    }
-  }
+      resolve();
+    });
+  });
 
   const gorhill = await getGorhillPublicSuffixPromise();
   const deduped = sortDomains(domainDeduper(Array.from(domains)), gorhill);
