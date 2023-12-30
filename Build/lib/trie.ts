@@ -5,36 +5,35 @@
 export const SENTINEL = '\u0000';
 
 type TrieNode = {
-  [SENTINEL]?: true
+  [SENTINEL]: boolean
 } & {
   [key: string & {}]: TrieNode | undefined
 };
 
-// type TrieNode = Map<typeof SENTINEL | string & {}, TrieNode | true | undefined>;
+const createNode = (): TrieNode => ({
+  [SENTINEL]: false
+}) as TrieNode;
 
-/**
- * @param {string[] | Set<string>} [from]
- */
 export const createTrie = (from?: string[] | Set<string>) => {
   let size = 0;
-  const root: TrieNode = {};
+  const root: TrieNode = createNode();
 
   /**
    * Method used to add the given prefix to the trie.
-   *
-   * @param  {string} suffix - Prefix to follow.
    */
   const add = (suffix: string): void => {
     let node: TrieNode = root;
     let token: string;
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
-      node[token] ||= {};
-      node = node[token]!;
+      if (!(token in node)) {
+        node[token] = createNode();
+      }
+      node = node[token]!; // we know it is defined
     }
 
     // Do we need to increase size?
-    if (!(SENTINEL in node)) {
+    if (!node[SENTINEL]) {
       size++;
     }
     node[SENTINEL] = true;
@@ -50,21 +49,14 @@ export const createTrie = (from?: string[] | Set<string>) => {
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
 
-      const n = node[token];
-      if (n === undefined) return false;
-      // if (n === true) return false;
-
-      node = n;
+      if (!(token in node)) return false;
+      node = node[token]!; // we know it is defined
     }
 
     return true;
   };
   /**
    * Method used to retrieve every item in the trie with the given prefix.
-   *
-   * @param  {string} suffix - Prefix to query.
-   * @param  {boolean} [includeEqualWithSuffix]
-   * @return {string[]}
    */
   const find = (suffix: string, includeEqualWithSuffix = true): string[] => {
     let node: TrieNode = root;
@@ -73,11 +65,8 @@ export const createTrie = (from?: string[] | Set<string>) => {
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
 
-      const n = node[token];
-      if (n === undefined) return [];
-      // if (n === true) return [];
-
-      node = n;
+      if (!(token in node)) return [];
+      node = node[token]!;
     }
 
     const matches: string[] = [];
@@ -94,16 +83,14 @@ export const createTrie = (from?: string[] | Set<string>) => {
       $suffix = suffixStack.pop()!;
       node = nodeStack.pop()!;
 
-      // eslint-disable-next-line guard-for-in -- plain object
-      for (k in node) {
-        if (k === SENTINEL) {
-          if (includeEqualWithSuffix || $suffix !== suffix) {
-            matches.push($suffix);
-          }
-
-          continue;
+      if (node[SENTINEL]) {
+        if (includeEqualWithSuffix || $suffix !== suffix) {
+          matches.push($suffix);
         }
+      }
 
+      for (k in node) {
+        if (k === SENTINEL) continue;
         nodeStack.push(node[k]!);
         suffixStack.push(k + $suffix);
       }
@@ -114,9 +101,6 @@ export const createTrie = (from?: string[] | Set<string>) => {
 
   /**
    * Method used to delete a prefix from the trie.
-   *
-   * @param  {string} suffix - Prefix to delete.
-   * @return {boolean}
    */
   const remove = (suffix: string): boolean => {
     let node: TrieNode = root;
@@ -129,12 +113,10 @@ export const createTrie = (from?: string[] | Set<string>) => {
       token = suffix[i];
       parent = node;
 
-      const n = node[token];
       // Prefix does not exist
-      if (n === undefined) return false;
+      if (!(token in node)) return false;
       // if (n === true) return false
-
-      node = n;
+      node = node[token]!; // we know it is defined
 
       // Keeping track of a potential branch to prune
       // If the node is to be pruned, but they are more than one token child in it, we can't prune it
@@ -159,14 +141,14 @@ export const createTrie = (from?: string[] | Set<string>) => {
       }
     }
 
-    if (!(SENTINEL in node)) return false;
+    if (!node[SENTINEL]) return false;
 
     size--;
 
     if (tokenToPrune && toPrune) {
       delete toPrune[tokenToPrune];
     } else {
-      delete node[SENTINEL];
+      node[SENTINEL] = false;
     }
 
     return true;
@@ -174,24 +156,17 @@ export const createTrie = (from?: string[] | Set<string>) => {
 
   /**
    * Method used to assert whether the given prefix exists in the Trie.
-   *
-   * @param  {string} suffix - Prefix to check.
-   * @return {boolean}
    */
   const has = (suffix: string): boolean => {
     let node: TrieNode = root;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
-      const n = node[suffix[i]];
-      if (n === undefined) {
-        return false;
-      }
-      // if (n === true) return false;
-
-      node = n;
+      const token = suffix[i];
+      if (!(token in node)) return false;
+      node = node[token]!; // we know it is defined
     }
 
-    return SENTINEL in node;
+    return node[SENTINEL];
   };
 
   if (from) {
@@ -207,6 +182,9 @@ export const createTrie = (from?: string[] | Set<string>) => {
     has,
     get size() {
       return size;
+    },
+    get root() {
+      return root;
     }
   };
 };
