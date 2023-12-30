@@ -143,7 +143,7 @@ export const TTL = {
   TEN_DAYS: () => randomInt(9, 11) * 24 * 60 * 60 * 1000
 };
 
-const separator = String.fromCharCode(0);
+const separator = '\u0000';
 // const textEncoder = new TextEncoder();
 // const textDecoder = new TextDecoder();
 // export const serializeString = (str: string) => textEncoder.encode(str);

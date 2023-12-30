@@ -7,8 +7,8 @@ export const HOSTS = [
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', false, false, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', true, false, TTL.TWO_WEEKS()],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-Extension.txt', false],
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false, false, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', false, false, TTL.THREE_DAYS()],
   // ad-wars is not actively maintained, so we set a 7 days cache ttl
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false, false, TTL.ONE_WEEK()],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true],
@@ -58,7 +58,7 @@ export const ADGUARD_FILTERS = [
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
       'https://ublockorigin.pages.dev/thirdparties/easylist.txt'
     ],
-    12 * 60 * 60 * 1000
+    TTL.TWLVE_HOURS()
   ],
   // EasyPrivacy
   [
@@ -70,7 +70,7 @@ export const ADGUARD_FILTERS = [
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
       'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
     ],
-    12 * 60 * 60 * 1000
+    TTL.TWLVE_HOURS()
   ],
   // AdGuard DNS Filter
   [
@@ -78,7 +78,8 @@ export const ADGUARD_FILTERS = [
     [
       'https://filters.adtidy.org/extension/ublock/filters/15_optimized.txt',
       'https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt'
-    ]
+    ],
+    TTL.TWLVE_HOURS()
   ],
   // uBlock Origin Filter List
   [
