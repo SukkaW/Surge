@@ -18,12 +18,15 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: canary
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
       - name: Cache cache.db
         uses: actions/cache@v3
         with:
           path: |
             .cache
-          key: ${{ runner.os }}-v1-${{ github.sha }}
+          key: ${{ runner.os }}-v1-${{ steps.date.outputs.date }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-v1
