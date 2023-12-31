@@ -173,6 +173,9 @@ export async function processFilterRules(
           lineCb(line);
         }
       } else {
+        // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
+        await Promise.resolve();
+
         const filterRules = (await traceAsync(
           picocolors.gray(`- download ${filterRulesUrl}`),
           () => fetchAssets(filterRulesUrl, fallbackUrls),
@@ -191,7 +194,7 @@ export async function processFilterRules(
         Array.from(whitelistDomainSets),
         Array.from(blacklistDomainSets),
         warningMessages
-      ];
+      ] as const;
     },
     {
       ttl,

@@ -7,10 +7,7 @@ import { processLine } from './lib/process-line';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
 const getS3OSSDomains = async (): Promise<Set<string>> => {
-  const trie = createTrie();
-  for await (const line of (await getPublicSuffixListTextPromise()).split('\n')) {
-    trie.add(line);
-  }
+  const trie = createTrie((await getPublicSuffixListTextPromise()).split('\n'));
 
   /**
    * Extract OSS domain from publicsuffix list
