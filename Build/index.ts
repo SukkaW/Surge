@@ -93,7 +93,6 @@ import type { TaskResult } from './lib/trace-runner';
       buildStreamServicePromise,
       buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
-
       downloadMockAssetsPromise
     ]);
 
@@ -103,6 +102,9 @@ import type { TaskResult } from './lib/trace-runner';
     ]);
 
     printStats(stats);
+
+    // Finish the build to avoid leaking timer/fetch ref
+    process.exit(0);
   } catch (e) {
     console.trace(e);
     console.error('Something went wrong!');

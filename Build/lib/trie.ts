@@ -2,31 +2,38 @@
  * Suffix Trie based on Mnemonist Trie
  */
 
-export const SENTINEL: string = String.fromCodePoint(0);
+export const SENTINEL = '\u0000';
 
-/**
- * @param {string[] | Set<string>} [from]
- */
+type TrieNode = {
+  [SENTINEL]: boolean
+} & {
+  [key: string & {}]: TrieNode | undefined
+};
+
+const createNode = (): TrieNode => ({
+  [SENTINEL]: false
+}) as TrieNode;
+
 export const createTrie = (from?: string[] | Set<string>) => {
   let size = 0;
-  const root: any = {};
+  const root: TrieNode = createNode();
 
   /**
    * Method used to add the given prefix to the trie.
-   *
-   * @param  {string} suffix - Prefix to follow.
    */
   const add = (suffix: string): void => {
-    let node: any = root;
+    let node: TrieNode = root;
     let token: string;
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
-      node[token] ||= {};
-      node = node[token];
+      if (!(token in node)) {
+        node[token] = createNode();
+      }
+      node = node[token]!; // we know it is defined
     }
 
     // Do we need to increase size?
-    if (!(SENTINEL in node)) {
+    if (!node[SENTINEL]) {
       size++;
     }
     node[SENTINEL] = true;
@@ -36,41 +43,36 @@ export const createTrie = (from?: string[] | Set<string>) => {
    * @param {string} suffix
    */
   const contains = (suffix: string): boolean => {
-    let node: any = root;
+    let node: TrieNode = root;
     let token: string;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
 
-      node = node[token];
-
-      if (node == null) return false;
+      if (!(token in node)) return false;
+      node = node[token]!; // we know it is defined
     }
 
     return true;
   };
   /**
    * Method used to retrieve every item in the trie with the given prefix.
-   *
-   * @param  {string} suffix - Prefix to query.
-   * @param  {boolean} [includeEqualWithSuffix]
-   * @return {string[]}
    */
   const find = (suffix: string, includeEqualWithSuffix = true): string[] => {
-    let node: any = root;
-    const matches: string[] = [];
+    let node: TrieNode = root;
     let token: string;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
 
-      node = node[token];
-
-      if (node == null) return matches;
+      if (!(token in node)) return [];
+      node = node[token]!;
     }
 
+    const matches: string[] = [];
+
     // Performing DFS from prefix
-    const nodeStack: any[] = [node];
+    const nodeStack: TrieNode[] = [node];
 
     const suffixStack: string[] = [suffix];
     let k: string;
@@ -79,19 +81,17 @@ export const createTrie = (from?: string[] | Set<string>) => {
 
     while (nodeStack.length) {
       $suffix = suffixStack.pop()!;
-      node = nodeStack.pop();
+      node = nodeStack.pop()!;
 
-      // eslint-disable-next-line guard-for-in -- plain object
-      for (k in node) {
-        if (k === SENTINEL) {
-          if (includeEqualWithSuffix || $suffix !== suffix) {
-            matches.push($suffix);
-          }
-
-          continue;
+      if (node[SENTINEL]) {
+        if (includeEqualWithSuffix || $suffix !== suffix) {
+          matches.push($suffix);
         }
+      }
 
-        nodeStack.push(node[k]);
+      for (k in node) {
+        if (k === SENTINEL) continue;
+        nodeStack.push(node[k]!);
         suffixStack.push(k + $suffix);
       }
     }
@@ -101,47 +101,54 @@ export const createTrie = (from?: string[] | Set<string>) => {
 
   /**
    * Method used to delete a prefix from the trie.
-   *
-   * @param  {string} suffix - Prefix to delete.
-   * @return {boolean}
    */
   const remove = (suffix: string): boolean => {
-    let node: any = root;
-    let toPrune: any = null;
+    let node: TrieNode = root;
+    let toPrune: TrieNode | null = null;
     let tokenToPrune: string | null = null;
-    let parent: any;
+    let parent: TrieNode = node;
     let token: string;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
       parent = node;
-      node = node[token];
 
       // Prefix does not exist
-      if (typeof node === 'undefined') {
-        return false;
-      }
+      if (!(token in node)) return false;
+      // if (n === true) return false
+      node = node[token]!; // we know it is defined
 
       // Keeping track of a potential branch to prune
+      // If the node is to be pruned, but they are more than one token child in it, we can't prune it
+      // If there is only one token child, or no child at all, we can prune it safely
+
+      let onlyChild = true;
+      for (const k in node) {
+        if (k !== token) {
+          onlyChild = false;
+          break;
+        }
+      }
+
       if (toPrune !== null) {
-        if (Object.keys(node).length > 1) {
+        if (!onlyChild) {
           toPrune = null;
           tokenToPrune = null;
         }
-      } else if (Object.keys(node).length < 2) {
+      } else if (onlyChild) {
         toPrune = parent;
         tokenToPrune = token;
       }
     }
 
-    if (!(SENTINEL in node)) return false;
+    if (!node[SENTINEL]) return false;
 
     size--;
 
-    if (tokenToPrune) {
+    if (tokenToPrune && toPrune) {
       delete toPrune[tokenToPrune];
     } else {
-      delete node[SENTINEL];
+      node[SENTINEL] = false;
     }
 
     return true;
@@ -149,22 +156,17 @@ export const createTrie = (from?: string[] | Set<string>) => {
 
   /**
    * Method used to assert whether the given prefix exists in the Trie.
-   *
-   * @param  {string} suffix - Prefix to check.
-   * @return {boolean}
    */
   const has = (suffix: string): boolean => {
-    let node: any = root;
+    let node: TrieNode = root;
 
     for (let i = suffix.length - 1; i >= 0; i--) {
-      node = node[suffix[i]];
-
-      if (typeof node === 'undefined') {
-        return false;
-      }
+      const token = suffix[i];
+      if (!(token in node)) return false;
+      node = node[token]!; // we know it is defined
     }
 
-    return SENTINEL in node;
+    return node[SENTINEL];
   };
 
   if (from) {
@@ -180,269 +182,11 @@ export const createTrie = (from?: string[] | Set<string>) => {
     has,
     get size() {
       return size;
+    },
+    get root() {
+      return root;
     }
   };
 };
-
-// class Trie {
-//   size = 0;
-//   root = {};
-
-//   /**
-//    * @param {string} suffix
-//    */
-//   contains(suffix) {
-//     let node = this.root;
-//     let token;
-
-//     for (let i = suffix.length - 1; i >= 0; i--) {
-//       token = suffix[i];
-
-//       node = node[token];
-
-//       if (node == null) return false;
-//     }
-
-//     return true;
-//   }
-
-//   /**
-//    * Method used to retrieve every item in the trie with the given prefix.
-//    *
-//    * @param  {string} suffix - Prefix to query.
-//    * @param  {boolean} [includeEqualWithSuffix]
-//    * @return {string[]}
-//    */
-//   find(suffix, includeEqualWithSuffix = true) {
-//     let node = this.root;
-//     const matches = [];
-//     let token;
-
-//     for (let i = suffix.length - 1; i >= 0; i--) {
-//       token = suffix[i];
-
-//       node = node[token];
-
-//       if (node == null) return matches;
-//     }
-
-//     // Performing DFS from prefix
-//     const nodeStack = [node];
-
-//     const suffixStack = [suffix];
-//     let k;
-
-//     let $suffix = suffix;
-
-//     while (nodeStack.length) {
-//       $suffix = suffixStack.pop();
-//       node = nodeStack.pop();
-
-//       // eslint-disable-next-line guard-for-in -- plain object
-//       for (k in node) {
-//         if (k === SENTINEL) {
-//           if (includeEqualWithSuffix) {
-//             matches.push($suffix);
-//           } else if ($suffix !== suffix) {
-//             matches.push($suffix);
-//           }
-
-//           continue;
-//         }
-
-//         nodeStack.push(node[k]);
-//         suffixStack.push(k + $suffix);
-//       }
-//     }
-
-//     return matches;
-//   }
-
-//   // toJSON() {
-//   //   return this.root;
-//   // }
-
-//   /**
-//    * Method used to clear the trie.
-//    *
-//    * @return {void}
-//    */
-//   // clear() {
-//   //   // Properties
-//   //   this.root = {};
-//   //   this.size = 0;
-//   // }
-
-//   /**
-//    * Method used to update the value of the given prefix in the trie.
-//    *
-//    * @param  {string|array} prefix - Prefix to follow.
-//    * @param  {(oldValue: any | undefined) => any} updateFunction - Update value visitor callback.
-//    * @return {Trie}
-//    */
-//   // update(prefix, updateFunction) {
-//   //   let node = this.root;
-//   //   let token;
-
-//   //   for (let i = 0, l = prefix.length; i < l; i++) {
-//   //     token = prefix[i];
-
-//   //     node = node[token] || (node[token] = {});
-//   //   }
-
-//   //   // Do we need to increase size?
-//   //   if (!(SENTINEL in node))
-//   //     this.size++;
-
-//   //   node[SENTINEL] = updateFunction(node[SENTINEL]);
-
-//   //   return this;
-//   // }
-
-//   /**
-//    * Method used to delete a prefix from the trie.
-//    *
-//    * @param  {string} suffix - Prefix to delete.
-//    * @return {boolean}
-//    */
-//   delete(suffix) {
-//     let node = this.root;
-//     let toPrune = null;
-//     let tokenToPrune = null;
-//     let parent;
-//     let token;
-
-//     for (let i = suffix.length - 1; i >= 0; i--) {
-//       token = suffix[i];
-//       parent = node;
-//       node = node[token];
-
-//       // Prefix does not exist
-//       if (typeof node === 'undefined') {
-//         return false;
-//       }
-
-//       // Keeping track of a potential branch to prune
-//       if (toPrune !== null) {
-//         if (Object.keys(node).length > 1) {
-//           toPrune = null;
-//           tokenToPrune = null;
-//         }
-//       } else if (Object.keys(node).length < 2) {
-//         toPrune = parent;
-//         tokenToPrune = token;
-//       }
-//     }
-
-//     if (!(SENTINEL in node)) return false;
-
-//     this.size--;
-
-//     if (toPrune) {
-//       delete toPrune[tokenToPrune];
-//     } else {
-//       delete node[SENTINEL];
-//     }
-
-//     return true;
-//   }
-
-//   /**
-//    * Method used to assert whether the given prefix exists in the Trie.
-//    *
-//    * @param  {string} suffix - Prefix to check.
-//    * @return {boolean}
-//    */
-//   has(suffix) {
-//     let node = this.root;
-//     let token;
-
-//     for (let i = suffix.length - 1; i >= 0; i--) {
-//       token = suffix[i];
-//       node = node[token];
-
-//       if (typeof node === 'undefined') {
-//         return false;
-//       }
-//     }
-
-//     return SENTINEL in node;
-//   }
-
-//   /**
-//    * @return {string[]}
-//    */
-//   // dump() {
-//   //   const node = this.root;
-//   //   const nodeStack = [];
-//   //   const prefixStack = [];
-//   //   // Resolving initial prefix
-//   //   const prefix = '';
-
-//   //   nodeStack.push(node);
-//   //   prefixStack.push(prefix);
-
-//   //   /** @type {string[]} */
-//   //   const results = [];
-
-//   //   let currentNode;
-//   //   let currentPrefix;
-//   //   let hasValue = false;
-//   //   let k;
-
-//   //   while (nodeStack.length) {
-//   //     currentNode = nodeStack.pop();
-//   //     currentPrefix = prefixStack.pop();
-
-//   //     // eslint-disable-next-line guard-for-in -- plain object
-//   //     for (k in currentNode) {
-//   //       if (k === SENTINEL) {
-//   //         hasValue = true;
-//   //         continue;
-//   //       }
-
-//   //       nodeStack.push(currentNode[k]);
-//   //       prefixStack.push(k + currentPrefix);
-//   //     }
-
-//   //     if (hasValue) results.push(currentPrefix);
-//   //   }
-
-//   //   return results;
-//   // }
-
-//   /**
-//    * Convenience known methods.
-//    */
-//   // inspect() {
-//   //   const proxy = new Set();
-
-//   //   const iterator = this.prefixes();
-//   //   let step;
-
-//   //   while ((step = iterator.next(), !step.done))
-//   //     proxy.add(step.value);
-
-//   //   // Trick so that node displays the name of the constructor
-//   //   Object.defineProperty(proxy, 'constructor', {
-//   //     value: Trie,
-//   //     enumerable: false
-//   //   });
-
-//   //   return proxy;
-//   // }
-//   /**
-//    * Static .from function taking an arbitrary iterable & converting it into
-//    * a trie.
-//    *
-//    * @param  {string[] | Set<string>} iterable   - Target iterable.
-//    * @return {Trie}
-//    */
-//   static from = iterable => {
-//     const trie = new Trie();
-//     iterable.forEach(i => trie.add(i));
-//     return trie;
-//   };
-// }
 
 export default createTrie;

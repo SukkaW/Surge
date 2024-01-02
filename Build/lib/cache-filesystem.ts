@@ -127,12 +127,28 @@ export class Cache {
   }
 }
 
-// export const fsCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
+export const fsCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
 // process.on('exit', () => {
 //   fsCache.destroy();
 // });
 
-const separator = String.fromCharCode(0);
+const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
+// Add some randomness to the cache ttl to avoid thundering herd
+export const TTL = {
+  TWLVE_HOURS: () => randomInt(9, 14) * 60 * 60 * 1000,
+  THREE_DAYS: () => randomInt(2, 4) * 24 * 60 * 60 * 1000,
+  ONE_WEEK: () => randomInt(5, 8) * 24 * 60 * 60 * 1000,
+  TWO_WEEKS: () => randomInt(12, 16) * 24 * 60 * 60 * 1000,
+  TEN_DAYS: () => randomInt(9, 11) * 24 * 60 * 60 * 1000
+};
+
+const separator = '\u0000';
+// const textEncoder = new TextEncoder();
+// const textDecoder = new TextDecoder();
+// export const serializeString = (str: string) => textEncoder.encode(str);
+// export const deserializeString = (str: string) => textDecoder.decode(new Uint8Array(str.split(separator).map(Number)));
 export const serializeSet = (set: Set<string>) => Array.from(set).join(separator);
 export const deserializeSet = (str: string) => new Set(str.split(separator));
+export const serializeArray = (arr: string[]) => arr.join(separator);
+export const deserializeArray = (str: string) => str.split(separator);

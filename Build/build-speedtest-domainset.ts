@@ -9,69 +9,77 @@ import { task } from './lib/trace-runner';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
+import picocolors from 'picocolors';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
+import { processLine } from './lib/process-line';
+import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
 
 const s = new Sema(2);
 
 const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
-  .then(res => res.json<string[]>());
+  .then(res => res.json<string[]>()).then(userAgents => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
 const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
-  const topUserAgents = (await Promise.all([
-    latestTopUserAgentsPromise,
-    s.acquire()
-  ]))[0];
+  const topUserAgents = await latestTopUserAgentsPromise;
 
-  let timer = null;
+  const url = `https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`;
+
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
     const key = `fetch speedtest endpoints: ${keyword}`;
     console.log(key);
     console.time(key);
 
-    // AbortSignal.timeout() is not supported by bun.
-    const controller = new AbortController();
-    timer = setTimeout(() => controller.abort(), 4000);
-
-    const res = await fetchWithRetry(`https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`, {
-      headers: {
-        dnt: '1',
-        Referer: 'https://www.speedtest.net/',
-        accept: 'application/json, text/plain, */*',
-        'User-Agent': randomUserAgent,
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Sec-Ch-Ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Gpc': '1'
-      },
-      retry: {
-        retryOnAborted: true
-      },
-      signal: controller.signal
-    });
-    if (!res.ok) {
-      throw new Error(`${res.statusText}\n${await res.text()}`);
-    }
-
-    const json = await res.json<Array<{ url: string }>>();
+    const json = await fsCache.apply(
+      url,
+      () => s.acquire().then(() => fetchWithRetry(url, {
+        headers: {
+          dnt: '1',
+          Referer: 'https://www.speedtest.net/',
+          accept: 'application/json, text/plain, */*',
+          'User-Agent': randomUserAgent,
+          'Accept-Language': 'en-US,en;q=0.9',
+          ...(randomUserAgent.includes('Chrome')
+            ? {
+              'Sec-Ch-Ua-Mobile': '?0',
+              'Sec-Fetch-Dest': 'empty',
+              'Sec-Fetch-Mode': 'cors',
+              'Sec-Fetch-Site': 'same-origin',
+              'Sec-Gpc': '1'
+            }
+            : {})
+        },
+        signal: AbortSignal.timeout(1000 * 4),
+        retry: {
+          retries: 2
+        }
+      })).then(r => r.json<Array<{ url: string }>>()).then(data => data.reduce<string[]>(
+        (prev, cur) => {
+          const hn = tldts.getHostname(cur.url, { detectIp: false });
+          if (hn) {
+            prev.push(hn);
+          }
+          return prev;
+        }, []
+      )).finally(() => s.release()),
+      {
+        ttl: TTL.ONE_WEEK(),
+        serializer: serializeArray,
+        deserializer: deserializeArray
+      }
+    );
 
     console.timeEnd(key);
 
-    return json.map(({ url }) => tldts.getHostname(url, { detectIp: false }));
+    return json;
   } catch (e) {
     console.log(e);
     return [];
-  } finally {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    s.release();
   }
 };
 
 export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
+  // Predefined domainset
   /** @type {Set<string>} */
   const domains = new Set<string>([
     '.speedtest.net',
@@ -116,55 +124,91 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     '.speedtest.leaptel.com.au',
     '.speedtest.windstream.net',
     '.speedtest.vodafone.com.au',
+    '.speedtest.rascom.ru',
+    '.speedtest.dchost.com',
+    '.speedtest.highnet.com',
+    '.speedtest.seattle.wa.limewave.net',
+    '.speedtest.optitel.com.au',
+    '.speednet.net.tr',
+    '.speedtest.angolacables.co.ao',
+    // Fast.com
     '.fast.com',
+    // MacPaw
     'speedtest.macpaw.com',
+    // speedtestmaster
     '.netspeedtestmaster.com',
     // Google Search Result of "speedtest", powered by this
     '.measurement-lab.org',
     // Google Fiber legacy speedtest site (new fiber speedtest use speedtestcustom.com)
-    '.speed.googlefiber.net'
+    '.speed.googlefiber.net',
+    // librespeed
+    '.backend.librespeed.org'
   ]);
 
-  const hostnameGroups = await Promise.all([
-    'Hong Kong',
-    'Taiwan',
-    'China Telecom',
-    'China Mobile',
-    'China Unicom',
-    'Japan',
-    'Tokyo',
-    'Singapore',
-    'Korea',
-    'Canada',
-    'Toronto',
-    'Montreal',
-    'Los Ang',
-    'San Jos',
-    'Seattle',
-    'New York',
-    'Dallas',
-    'Miami',
-    'Berlin',
-    'Frankfurt',
-    'London',
-    'Paris',
-    'Amsterdam',
-    'Moscow',
-    'Australia',
-    'Sydney',
-    'Brazil',
-    'Turkey'
-  ].map(querySpeedtestApi));
-
-  for (const hostnames of hostnameGroups) {
-    if (Array.isArray(hostnames)) {
-      for (const hostname of hostnames) {
-        if (hostname) {
-          domains.add(hostname);
-        }
-      }
+  // Download previous speedtest domainset
+  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
+    const line = processLine(l);
+    if (line) {
+      domains.add(line);
     }
   }
+
+  await new Promise<void>((resolve) => {
+    const pMap = ([
+      'Hong Kong',
+      'Taiwan',
+      'China Telecom',
+      'China Mobile',
+      'China Unicom',
+      'Japan',
+      'Tokyo',
+      'Singapore',
+      'Korea',
+      'Canada',
+      'Toronto',
+      'Montreal',
+      'Los Ang',
+      'San Jos',
+      'Seattle',
+      'New York',
+      'Dallas',
+      'Miami',
+      'Berlin',
+      'Frankfurt',
+      'London',
+      'Paris',
+      'Amsterdam',
+      'Moscow',
+      'Australia',
+      'Sydney',
+      'Brazil',
+      'Turkey'
+    ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
+      pMap[keyword] = querySpeedtestApi(keyword).then(hostnameGroup => {
+        hostnameGroup.forEach(hostname => {
+          if (hostname) {
+            domains.add(hostname);
+          }
+        });
+      });
+
+      return pMap;
+    }, {});
+
+    const timer = setTimeout(() => {
+      console.error(picocolors.red('Task timeout!'));
+      Object.entries(pMap).forEach(([name, p]) => {
+        console.log(`[${name}]`, Bun.peek.status(p));
+      });
+
+      resolve();
+    }, 1000 * 60 * 2);
+
+    Promise.all(Object.values(pMap)).then(() => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
 
   const gorhill = await getGorhillPublicSuffixPromise();
   const deduped = sortDomains(domainDeduper(Array.from(domains)), gorhill);
