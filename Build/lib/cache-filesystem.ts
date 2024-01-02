@@ -136,7 +136,9 @@ const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max 
 
 // Add some randomness to the cache ttl to avoid thundering herd
 export const TTL = {
+  THREE_HOURS: () => randomInt(2, 4) * 60 * 60 * 1000,
   TWLVE_HOURS: () => randomInt(9, 14) * 60 * 60 * 1000,
+  ONE_DAY: () => randomInt(23, 25) * 60 * 60 * 1000,
   THREE_DAYS: () => randomInt(2, 4) * 24 * 60 * 60 * 1000,
   ONE_WEEK: () => randomInt(5, 8) * 24 * 60 * 60 * 1000,
   TWO_WEEKS: () => randomInt(12, 16) * 24 * 60 * 60 * 1000,
