@@ -7,6 +7,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'ucweb.com',
       'alibaba.com',
       'alicdn.com',
+      'alidns.com',
       'aliimg.com',
       'aliyun.com',
       'aliyuncs.com',
@@ -200,7 +201,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'tieba.com',
       'xiaodutv.com',
       'shifen.com',
-      'jomodns.com'
+      'jomodns.com',
+      'bdydns.com'
     ]
   },
   QIHOO360: {
