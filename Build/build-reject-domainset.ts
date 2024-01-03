@@ -68,10 +68,10 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
         purePhishingDomains.forEach(suffix => domainSets.add(`.${suffix}`));
       }),
       (async () => {
-        for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
-          const l = processLine(line);
-          if (l) {
-            domainSets.add(l);
+        for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
+          const line = processLine(l);
+          if (line) {
+            domainSets.add(line);
           }
         }
       })()
