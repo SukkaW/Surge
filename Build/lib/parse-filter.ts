@@ -25,7 +25,7 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
         if (!domainToAdd) continue;
 
         if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(picocolors.red(domainListsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
+          console.warn(picocolors.red(domainListsUrl), '(black)', domainToAdd.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
           foundDebugDomain = true;
         }
 
@@ -61,7 +61,7 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, skip
         const _domain = domain.trim();
 
         if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(picocolors.red(hostsUrl), '(black)', picocolors.bold(DEBUG_DOMAIN_TO_FIND));
+          console.warn(picocolors.red(hostsUrl), '(black)', _domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
           foundDebugDomain = true;
         }
 
@@ -131,7 +131,7 @@ export async function processFilterRules(
               flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
                 ? '(white)'
                 : '(black)',
-              picocolors.bold(DEBUG_DOMAIN_TO_FIND)
+              hostname.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND))
             );
             foundDebugDomain = true;
           }
