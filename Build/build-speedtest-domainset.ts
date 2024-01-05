@@ -16,7 +16,7 @@ import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-file
 
 const s = new Sema(2);
 
-const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/index.json')
+const latestTopUserAgentsPromise = fetchWithRetry('https://unpkg.com/top-user-agents@latest/src/desktop.json')
   .then(res => res.json<string[]>()).then(userAgents => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
 const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
