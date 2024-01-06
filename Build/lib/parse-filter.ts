@@ -11,17 +11,23 @@ import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
 import { deserializeSet, fsCache, serializeSet } from './cache-filesystem';
 
-const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
+const DEBUG_DOMAIN_TO_FIND: string | null = '.j3.4z0vc.chileinsumos.cl'; // example.com | null
 let foundDebugDomain = false;
 
-export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, ttl: number | null = null) {
   return traceAsync(`- processDomainLists: ${domainListsUrl}`, () => fsCache.apply(
     domainListsUrl,
     async () => {
       const domainSets = new Set<string>();
 
       for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
-        const domainToAdd = processLine(line);
+        let domainToAdd = processLine(line);
+        if (!domainToAdd) continue;
+
+        if (!skipDomainCheck) {
+          domainToAdd = normalizeDomain(domainToAdd);
+        }
+
         if (!domainToAdd) continue;
 
         if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
@@ -123,6 +129,9 @@ export async function processFilterRules(
 
         const flag = result[1];
         const hostname = result[0];
+        // if (hostname.endsWith('.')) {
+        //   hostname = hostname.slice(0, -1);
+        // }
 
         if (DEBUG_DOMAIN_TO_FIND) {
           if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {

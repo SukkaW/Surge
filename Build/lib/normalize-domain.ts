@@ -5,11 +5,14 @@ export const normalizeDomain = (domain: string) => {
   if (isProbablyIpv4(domain)) return null;
 
   const parsed = tldts.parse2(domain);
-  if (parsed.isIp) return null;
+  // if (parsed.isIp) return null;
+  if (!parsed.hostname) return null;
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
-  const h = parsed.hostname;
-  if (!h) return null;
+  let h = parsed.hostname;
+  if (h[0] === '.') h = h.slice(1);
+  if (h.endsWith('.')) h = h.slice(0, -1);
 
-  return h[0] === '.' ? h.slice(1) : h;
+  if (h) return h;
+  return null;
 };

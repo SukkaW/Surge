@@ -31,20 +31,20 @@ export const HOSTS = [
 export const DOMAIN_LISTS = [
   // CoinBlockerList
   // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 14 days cache ttl
-  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', true, TTL.TWO_WEEKS()],
+  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', true, true, TTL.TWO_WEEKS()],
   // BarbBlock
   // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
-  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', true, TTL.TWO_WEEKS()],
+  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', true, true, TTL.TWO_WEEKS()],
   // DigitalSide Threat-Intel - OSINT Hub
   // Update once per day
-  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true, TTL.ONE_DAY()],
+  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true, true, TTL.ONE_DAY()],
   // AdGuard CNAME Filter Combined
   // Update on a 7 days basis, so we add a 3 hours cache ttl
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', true, TTL.THREE_DAYS()]
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', true, true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', true, true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', true, true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', true, true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', true, true, TTL.THREE_DAYS()]
 ] as const;
 
 export const ADGUARD_FILTERS = [

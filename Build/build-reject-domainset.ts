@@ -37,7 +37,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
           domainSets.add(host);
         });
       })),
-      ...DOMAIN_LISTS.map(entry => processDomainLists(entry[0], entry[1], entry[2])),
+      ...DOMAIN_LISTS.map(entry => processDomainLists(entry[0], entry[1], entry[2], entry[3])),
       ...ADGUARD_FILTERS.map(input => {
         const promise = typeof input === 'string'
           ? processFilterRules(input)

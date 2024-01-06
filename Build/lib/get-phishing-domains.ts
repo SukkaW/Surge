@@ -85,8 +85,8 @@ const BLACK_TLD = new Set([
 
 export const getPhishingDomains = () => traceAsync('get phishing domains', async () => {
   const [domainSet, domainSet2, gorhill] = await Promise.all([
-    processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true, TTL.THREE_HOURS()),
-    processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS()),
+    processDomainLists('https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, false, TTL.THREE_HOURS()),
+    processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true, true, TTL.THREE_HOURS()),
     getGorhillPublicSuffixPromise()
   ]);
   domainSet2.forEach((domain) => domainSet.add(domain));
