@@ -5,6 +5,7 @@ import * as tldts from 'tldts';
 import { createTrie } from './trie';
 import { createCachedGorhillGetDomain } from './cached-tld-parse';
 import { processLine } from './process-line';
+import { TTL } from './cache-filesystem';
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -84,8 +85,8 @@ const BLACK_TLD = new Set([
 
 export const getPhishingDomains = () => traceAsync('get phishing domains', async () => {
   const [domainSet, domainSet2, gorhill] = await Promise.all([
-    processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true),
-    processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true),
+    processHosts('https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true, TTL.THREE_HOURS()),
+    processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS()),
     getGorhillPublicSuffixPromise()
   ]);
   domainSet2.forEach((domain) => domainSet.add(domain));
