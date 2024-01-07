@@ -11,10 +11,10 @@ import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
 import { deserializeSet, fsCache, serializeSet } from './cache-filesystem';
 
-const DEBUG_DOMAIN_TO_FIND: string | null = '.j3.4z0vc.chileinsumos.cl'; // example.com | null
+const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
-export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, ttl: number | null = null) {
+export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
   return traceAsync(`- processDomainLists: ${domainListsUrl}`, () => fsCache.apply(
     domainListsUrl,
     async () => {
@@ -23,11 +23,7 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
       for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
         let domainToAdd = processLine(line);
         if (!domainToAdd) continue;
-
-        if (!skipDomainCheck) {
-          domainToAdd = normalizeDomain(domainToAdd);
-        }
-
+        domainToAdd = normalizeDomain(domainToAdd);
         if (!domainToAdd) continue;
 
         if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
@@ -48,7 +44,7 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
     }
   ));
 }
-export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, ttl: number | null = null) {
+export function processHosts(hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
   return traceAsync(`- processHosts: ${hostsUrl}`, () => fsCache.apply(
     hostsUrl,
     async () => {
@@ -71,10 +67,12 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, skip
           foundDebugDomain = true;
         }
 
-        const domainToAdd = skipDomainCheck ? _domain : normalizeDomain(_domain);
-        if (domainToAdd) {
-          domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        const domainToAdd = normalizeDomain(_domain);
+        if (!domainToAdd) {
+          continue;
         }
+
+        domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
       }
 
       console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));

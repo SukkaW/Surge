@@ -6,6 +6,7 @@ import { createTrie } from './trie';
 import { createCachedGorhillGetDomain } from './cached-tld-parse';
 import { processLine } from './process-line';
 import { TTL } from './cache-filesystem';
+import { isCI } from 'ci-info';
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -85,11 +86,13 @@ const BLACK_TLD = new Set([
 
 export const getPhishingDomains = () => traceAsync('get phishing domains', async () => {
   const [domainSet, domainSet2, gorhill] = await Promise.all([
-    processDomainLists('https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, false, TTL.THREE_HOURS()),
-    processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true, true, TTL.THREE_HOURS()),
+    processDomainLists('https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
+    isCI
+      ? processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
+      : null,
     getGorhillPublicSuffixPromise()
   ]);
-  domainSet2.forEach((domain) => domainSet.add(domain));
+  domainSet2?.forEach((domain) => domainSet.add(domain));
 
   traceSync.skip('* whitelisting phishing domains', () => {
     const trieForRemovingWhiteListed = createTrie(domainSet);
