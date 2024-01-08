@@ -32,7 +32,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
     const [gorhill] = await Promise.all([
       getGorhillPublicSuffixPromise(),
       // Parse from remote hosts & domain lists
-      ...HOSTS.map(entry => processHosts(entry[0], entry[1], entry[2], entry[3]).then(hosts => {
+      ...HOSTS.map(entry => processHosts(entry[0], entry[1], entry[2]).then(hosts => {
         hosts.forEach(host => {
           domainSets.add(host);
         });
@@ -154,7 +154,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
       dudupedDominArray.reduce<Record<string, number>>((acc, cur) => {
         const suffix = tldts.getDomain(cur, { allowPrivateDomains: false, detectIp: false, validateHostname: false });
         if (suffix) {
-          acc[suffix] = (acc[suffix] ?? 0) + 1;
+          acc[suffix] = (acc[suffix] || 0) + 1;
         }
         return acc;
       }, {})

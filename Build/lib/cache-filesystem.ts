@@ -33,6 +33,27 @@ interface CacheApplyStringOption {
 
 type CacheApplyOption<T> = T extends string ? CacheApplyStringOption : CacheApplyNonStringOption<T>;
 
+const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+// Add some randomness to the cache ttl to avoid thundering herd
+export const TTL = {
+  humanReadable(ttl: number) {
+    if (ttl >= 24 * 60 * 60 * 1000) {
+      return `${Math.round(ttl / 24 / 60 / 60 / 1000)}d`;
+    }
+    if (ttl >= 60 * 60 * 1000) {
+      return `${Math.round(ttl / 60 / 60 / 1000)}h`;
+    }
+    return `${Math.round(ttl / 1000)}s`;
+  },
+  THREE_HOURS: () => randomInt(1, 3) * 60 * 60 * 1000,
+  TWLVE_HOURS: () => randomInt(8, 12) * 60 * 60 * 1000,
+  ONE_DAY: () => randomInt(23, 25) * 60 * 60 * 1000,
+  THREE_DAYS: () => randomInt(1, 3) * 24 * 60 * 60 * 1000,
+  ONE_WEEK: () => randomInt(5, 7) * 24 * 60 * 60 * 1000,
+  TWO_WEEKS: () => randomInt(10, 14) * 24 * 60 * 60 * 1000,
+  TEN_DAYS: () => randomInt(7, 10) * 24 * 60 * 60 * 1000
+};
+
 export class Cache {
   db: Database;
   tbd = 60 * 1000; // time before deletion
@@ -100,7 +121,7 @@ export class Cache {
     if (temporaryBypass) {
       return fn();
     }
-    if (ttl === null) {
+    if (ttl == null) {
       this.del(key);
       return fn();
     }
@@ -108,7 +129,7 @@ export class Cache {
     const cached = this.get(key);
     let value: T;
     if (cached == null) {
-      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(key));
+      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
       value = await fn();
 
       const serializer = 'serializer' in opt ? opt.serializer : identity;
@@ -131,19 +152,6 @@ export const fsCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../
 // process.on('exit', () => {
 //   fsCache.destroy();
 // });
-
-const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-// Add some randomness to the cache ttl to avoid thundering herd
-export const TTL = {
-  THREE_HOURS: () => randomInt(2, 4) * 60 * 60 * 1000,
-  TWLVE_HOURS: () => randomInt(9, 14) * 60 * 60 * 1000,
-  ONE_DAY: () => randomInt(23, 25) * 60 * 60 * 1000,
-  THREE_DAYS: () => randomInt(2, 4) * 24 * 60 * 60 * 1000,
-  ONE_WEEK: () => randomInt(5, 8) * 24 * 60 * 60 * 1000,
-  TWO_WEEKS: () => randomInt(12, 16) * 24 * 60 * 60 * 1000,
-  TEN_DAYS: () => randomInt(9, 11) * 24 * 60 * 60 * 1000
-};
 
 const separator = '\u0000';
 // const textEncoder = new TextEncoder();

@@ -21,7 +21,9 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
       const domainSets = new Set<string>();
 
       for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
-        const domainToAdd = processLine(line);
+        let domainToAdd = processLine(line);
+        if (!domainToAdd) continue;
+        domainToAdd = normalizeDomain(domainToAdd);
         if (!domainToAdd) continue;
 
         if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
@@ -42,7 +44,7 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
     }
   ));
 }
-export function processHosts(hostsUrl: string, includeAllSubDomain = false, skipDomainCheck = false, ttl: number | null = null) {
+export function processHosts(hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
   return traceAsync(`- processHosts: ${hostsUrl}`, () => fsCache.apply(
     hostsUrl,
     async () => {
@@ -65,10 +67,12 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, skip
           foundDebugDomain = true;
         }
 
-        const domainToAdd = skipDomainCheck ? _domain : normalizeDomain(_domain);
-        if (domainToAdd) {
-          domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        const domainToAdd = normalizeDomain(_domain);
+        if (!domainToAdd) {
+          continue;
         }
+
+        domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
       }
 
       console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
@@ -123,6 +127,9 @@ export async function processFilterRules(
 
         const flag = result[1];
         const hostname = result[0];
+        // if (hostname.endsWith('.')) {
+        //   hostname = hostname.slice(0, -1);
+        // }
 
         if (DEBUG_DOMAIN_TO_FIND) {
           if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
