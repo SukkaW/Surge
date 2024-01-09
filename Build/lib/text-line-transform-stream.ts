@@ -4,14 +4,13 @@
 
 interface TextLineStreamOptions {
   /** Allow splitting by solo \r */
-  allowCR: boolean
+  allowCR?: boolean
 }
 
 /** Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
  * ```ts
- * import { TextLineStream } from 'https://deno.land/std@$STD_VERSION/streams/text_line_stream.ts';
  * const res = await fetch('https://example.com');
  * const lines = res.body!
  *   .pipeThrough(new TextDecoderStream())
@@ -20,9 +19,9 @@ interface TextLineStreamOptions {
  */
 export class TextLineStream extends TransformStream<string, string> {
   // private __buf = '';
-  constructor(options?: TextLineStreamOptions) {
-    const allowCR = options?.allowCR ?? false;
-
+  constructor({
+    allowCR = false
+  }: TextLineStreamOptions = {}) {
     let __buf = '';
 
     super({

@@ -49,7 +49,7 @@ export const TTL = {
   TWLVE_HOURS: () => randomInt(8, 12) * 60 * 60 * 1000,
   ONE_DAY: () => randomInt(23, 25) * 60 * 60 * 1000,
   THREE_DAYS: () => randomInt(1, 3) * 24 * 60 * 60 * 1000,
-  ONE_WEEK: () => randomInt(5, 7) * 24 * 60 * 60 * 1000,
+  ONE_WEEK: () => randomInt(4, 7) * 24 * 60 * 60 * 1000,
   TWO_WEEKS: () => randomInt(10, 14) * 24 * 60 * 60 * 1000,
   TEN_DAYS: () => randomInt(7, 10) * 24 * 60 * 60 * 1000
 };
