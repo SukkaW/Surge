@@ -127,9 +127,6 @@ export async function processFilterRules(
 
         const flag = result[1];
         const hostname = result[0];
-        // if (hostname.endsWith('.')) {
-        //   hostname = hostname.slice(0, -1);
-        // }
 
         if (DEBUG_DOMAIN_TO_FIND) {
           if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
