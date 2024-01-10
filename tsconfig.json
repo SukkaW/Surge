@@ -17,6 +17,7 @@
   },
   "include": [
     "./Source/**/*.js",
-    "./Build/**/*.ts"
+    "./Build/**/*.ts",
+    "Source/**/*.ts"
   ]
 }
