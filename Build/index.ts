@@ -24,6 +24,7 @@ import { buildPublic } from './build-public';
 import { downloadMockAssets } from './download-mock-assets';
 
 import type { TaskResult } from './lib/trace-runner';
+import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
 (async () => {
   console.log('Bun version:', Bun.version, Bun.revision);
@@ -74,6 +75,8 @@ import type { TaskResult } from './lib/trace-runner';
 
     const downloadMockAssetsPromise = downloadMockAssets();
 
+    const buildCloudMounterRulesPromise = downloadPreviousBuildPromise.then(() => buildCloudMounterRules());
+
     const stats = await Promise.all([
       downloadPreviousBuildPromise,
       buildCommonPromise,
@@ -93,6 +96,7 @@ import type { TaskResult } from './lib/trace-runner';
       buildStreamServicePromise,
       buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
+      buildCloudMounterRulesPromise,
       downloadMockAssetsPromise
     ]);
 

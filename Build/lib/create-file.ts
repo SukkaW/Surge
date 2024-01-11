@@ -82,7 +82,7 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
   }, picocolors.gray);
 }
 
-export const withBannerArray = (title: string, description: string[], date: Date, content: string[]) => {
+export const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {
   return [
     '#########################################',
     `# ${title}`,
@@ -96,7 +96,7 @@ export const withBannerArray = (title: string, description: string[], date: Date
 };
 
 export const createRuleset = (
-  title: string, description: string[], date: Date, content: string[],
+  title: string, description: string[] | readonly string[], date: Date, content: string[],
   type: 'ruleset' | 'domainset', surgePath: string, clashPath: string
 ) => {
   const surgeContent = withBannerArray(title, description, date, content);
