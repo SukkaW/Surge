@@ -26,7 +26,8 @@ export const buildCommon = task(import.meta.path, async () => {
       continue;
     }
 
-    if (path.extname(entry.name) === '.js') {
+    const extname = path.extname(entry.name);
+    if (extname === '.js' || extname === '.ts') {
       continue;
     }
 
