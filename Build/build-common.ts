@@ -26,7 +26,8 @@ export const buildCommon = task(import.meta.path, async () => {
       continue;
     }
 
-    if (path.extname(entry.name) === '.js') {
+    const extname = path.extname(entry.name);
+    if (extname === '.js' || extname === '.ts') {
       continue;
     }
 
@@ -37,7 +38,7 @@ export const buildCommon = task(import.meta.path, async () => {
     }
     if (
       relativePath.startsWith('ip/')
-        || relativePath.startsWith('non_ip/')
+      || relativePath.startsWith('non_ip/')
     ) {
       promises.push(transformRuleset(entry.fullpath(), relativePath));
       continue;

@@ -34,10 +34,13 @@ interface CacheApplyStringOption {
 type CacheApplyOption<T> = T extends string ? CacheApplyStringOption : CacheApplyNonStringOption<T>;
 
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const ONE_HOUR = 60 * 60 * 1000;
+const ONE_DAY = 24 * ONE_HOUR;
 // Add some randomness to the cache ttl to avoid thundering herd
 export const TTL = {
   humanReadable(ttl: number) {
-    if (ttl >= 24 * 60 * 60 * 1000) {
+    if (ttl >= ONE_DAY) {
       return `${Math.round(ttl / 24 / 60 / 60 / 1000)}d`;
     }
     if (ttl >= 60 * 60 * 1000) {
@@ -45,13 +48,13 @@ export const TTL = {
     }
     return `${Math.round(ttl / 1000)}s`;
   },
-  THREE_HOURS: () => randomInt(1, 3) * 60 * 60 * 1000,
-  TWLVE_HOURS: () => randomInt(8, 12) * 60 * 60 * 1000,
-  ONE_DAY: () => randomInt(23, 25) * 60 * 60 * 1000,
-  THREE_DAYS: () => randomInt(1, 3) * 24 * 60 * 60 * 1000,
-  ONE_WEEK: () => randomInt(4, 7) * 24 * 60 * 60 * 1000,
-  TWO_WEEKS: () => randomInt(10, 14) * 24 * 60 * 60 * 1000,
-  TEN_DAYS: () => randomInt(7, 10) * 24 * 60 * 60 * 1000
+  THREE_HOURS: () => randomInt(1, 3) * ONE_HOUR,
+  TWLVE_HOURS: () => randomInt(8, 12) * ONE_HOUR,
+  ONE_DAY: () => randomInt(23, 25) * ONE_HOUR,
+  THREE_DAYS: () => randomInt(1, 3) * ONE_DAY,
+  ONE_WEEK: () => randomInt(4, 7) * ONE_DAY,
+  TEN_DAYS: () => randomInt(7, 10) * ONE_DAY,
+  TWO_WEEKS: () => randomInt(10, 14) * ONE_DAY
 };
 
 export class Cache {

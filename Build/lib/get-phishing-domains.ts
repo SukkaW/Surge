@@ -8,6 +8,8 @@ import { processLine } from './process-line';
 import { TTL } from './cache-filesystem';
 import { isCI } from 'ci-info';
 
+import { add as SetAdd } from 'mnemonist/set';
+
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
   'dweb.link',
@@ -92,16 +94,19 @@ export const getPhishingDomains = () => traceAsync('get phishing domains', async
       : null,
     getGorhillPublicSuffixPromise()
   ]);
-  domainSet2?.forEach((domain) => domainSet.add(domain));
+  if (domainSet2) {
+    SetAdd(domainSet, domainSet2);
+  }
 
   traceSync.skip('* whitelisting phishing domains', () => {
     const trieForRemovingWhiteListed = createTrie(domainSet);
-    WHITELIST_DOMAIN.forEach(white => {
-      trieForRemovingWhiteListed.find(`.${white}`, false).forEach(f => domainSet.delete(f));
-      // if (trieForRemovingWhiteListed.has(white)) {
+    for (const white of WHITELIST_DOMAIN) {
+      const found = trieForRemovingWhiteListed.find(`.${white}`, false);
+      for (let i = 0, len = found.length; i < len; i++) {
+        domainSet.delete(found[i]);
+      }
       domainSet.delete(white);
-      // }
-    });
+    }
   });
 
   const domainCountMap: Record<string, number> = {};

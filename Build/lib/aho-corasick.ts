@@ -73,9 +73,7 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
     }
   };
 
-  keys.forEach(k => {
-    put(k, k.length);
-  });
+  keys.forEach(k => put(k, k.length));
 
   build();
 
