@@ -12,7 +12,7 @@ export const buildCloudMounterRules = task(import.meta.path, async () => {
 
   const results = DOMAINS.flatMap(domain => {
     return PROCESS_NAMES.map(process => {
-      return `AND,((DOMAIN-SUFFIX,${domain}), (PROCESS-NAME, ${process}))`;
+      return `AND,((${domain}),(PROCESS-NAME,${process}))`;
     });
   });
 
