@@ -93,15 +93,6 @@ export const parseGfwList = async () => {
     runAgainstRuleset(path.resolve(import.meta.dir, '../List/non_ip/stream.conf'))
   ]);
 
-  // for await (const l of readFileByLine(path.resolve(import.meta.dir, '../List/non_ip/stream.conf'))) {
-  //   const line = processLine(l);
-  //   if (!line) continue;
-  //   const domain = line[0] === '.' ? line.slice(1) : line;
-  //   if (top500Gfwed.has(domain)) {
-  //     notIncludedTop500Gfwed.delete(domain);
-  //   }
-  // }
-
   console.log(notIncludedTop500Gfwed);
 
   return [

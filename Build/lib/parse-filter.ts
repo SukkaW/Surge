@@ -208,12 +208,12 @@ export async function processFilterRules(
     }
   ));
 
-  warningMessages.forEach(msg => {
+  for (let i = 0, len = warningMessages.length; i < len; i++) {
     console.warn(
-      picocolors.yellow(msg),
+      picocolors.yellow(warningMessages[i]),
       picocolors.gray(picocolors.underline(filterRulesUrl))
     );
-  });
+  }
 
   console.log(
     picocolors.gray('[process filter]'),

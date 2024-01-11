@@ -15,17 +15,12 @@ export const HOSTS = [
   // Curben's UrlHaus Malicious URL Blocklist
   // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
   // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
-  ['https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt', true, TTL.THREE_HOURS()],
+  ['https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt', true, TTL.THREE_HOURS()]
   // Curben's Phishing URL Blocklist
   // Covered by lib/get-phishing-domains.ts
   // 'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt'
   // 'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
   // ['https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true],
-  // Curben's PUP Domains Blocklist
-  // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
-  // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
-  // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl
-  ['https://curbengh.github.io/pup-filter/pup-filter-hosts.txt', true, TTL.TWO_WEEKS()]
 ] as const;
 
 export const DOMAIN_LISTS = [
@@ -38,6 +33,11 @@ export const DOMAIN_LISTS = [
   // DigitalSide Threat-Intel - OSINT Hub
   // Update once per day
   ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true, TTL.ONE_DAY()],
+  // Curben's PUP Domains Blocklist
+  // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
+  // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
+  // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl
+  ['https://curbengh.github.io/pup-filter/pup-filter-domains.txt', true, TTL.TWO_WEEKS()],
   // AdGuard CNAME Filter Combined
   // Update on a 7 days basis, so we add a 3 hours cache ttl
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', true, TTL.THREE_DAYS()],

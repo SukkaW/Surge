@@ -32,7 +32,10 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   });
 
   const trie2 = createTrie(set);
-  BLACKLIST.flatMap(domain => trie2.find(domain, true)).forEach(d => set.delete(d));
+  const black = BLACKLIST.flatMap(domain => trie2.find(domain, true));
+  for (let i = 0, len = black.length; i < len; i++) {
+    set.delete(black[i]);
+  }
 
   return Array.from(set).map(d => `DOMAIN-SUFFIX,${d}`).concat(WHITELIST);
 });
