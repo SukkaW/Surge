@@ -6,22 +6,19 @@ export function domainDeduper(inputDomains: string[], toArray = true): string[] 
   const trie = createTrie(inputDomains);
   const sets = new Set(inputDomains);
 
-  for (let i = 0, len = inputDomains.length; i < len; i++) {
+  for (let i = 0, len1 = inputDomains.length; i < len1; i++) {
     const d = inputDomains[i];
     if (d[0] !== '.') {
       continue;
     }
 
-    const found = trie.find(d, true);
-    for (let j = 0, len = found.length; j < len; j++) {
+    const found = trie.find(d, false);
+
+    for (let j = 0, len2 = found.length; j < len2; j++) {
       sets.delete(found[j]);
     }
 
-    const a: string = d.slice(1);
-
-    if (sets.has(a)) {
-      sets.delete(a);
-    }
+    sets.delete(d.slice(1));
   }
 
   if (toArray) {

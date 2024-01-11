@@ -11,13 +11,13 @@ export const normalizeDomain = (domain: string) => {
 
   let h = parsed.hostname;
 
-  let sliceStart = 0;
-  let sliceEnd = h.length;
+  let sliceStart: number | undefined;
+  let sliceEnd: number | undefined;
 
   if (h[0] === '.') sliceStart = 1;
   if (h.endsWith('.')) sliceEnd = -1;
 
-  if (sliceStart !== 0 || sliceEnd !== h.length) {
+  if (sliceStart !== undefined || sliceEnd !== undefined) {
     h = h.slice(sliceStart, sliceEnd);
   }
 
