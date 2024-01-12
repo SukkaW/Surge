@@ -5,7 +5,7 @@ import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { isCI } from 'ci-info';
-import { task, traceAsync } from './lib/trace-runner';
+import { task } from './lib/trace-runner';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import tarStream from 'tar-stream';
 import zlib from 'zlib';
@@ -55,7 +55,12 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
   }
 
   const extract = tarStream.extract();
-  Readable.fromWeb(resp.body as any).pipe(zlib.createGunzip()).pipe(extract);
+  const gunzip = zlib.createGunzip();
+  pipeline(
+    resp.body as any,
+    gunzip,
+    extract
+  );
 
   const pathPrefix = `ruleset.skk.moe-master${path.sep}`;
 
@@ -75,7 +80,7 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
 
     await fsp.mkdir(path.dirname(targetPath), { recursive: true });
     await pipeline(
-      entry,
+      entry as any,
       fs.createWriteStream(targetPath)
     );
   }
