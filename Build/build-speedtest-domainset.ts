@@ -148,6 +148,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     '.netspeedtestmaster.com',
     // Google Search Result of "speedtest", powered by this
     '.measurement-lab.org',
+    '.measurementlab.net',
     // Google Fiber legacy speedtest site (new fiber speedtest use speedtestcustom.com)
     '.speed.googlefiber.net',
     // librespeed
