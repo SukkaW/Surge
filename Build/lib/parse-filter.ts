@@ -56,23 +56,20 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, ttl:
           continue;
         }
 
-        const domain = line.split(/\s/)[1];
+        const _domain = line.split(/\s/)[1]?.trim();
+        if (!_domain) {
+          continue;
+        }
+        const domain = normalizeDomain(_domain);
         if (!domain) {
           continue;
         }
-        const _domain = domain.trim();
-
-        if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(picocolors.red(hostsUrl), '(black)', _domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.warn(picocolors.red(hostsUrl), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
           foundDebugDomain = true;
         }
 
-        const domainToAdd = normalizeDomain(_domain);
-        if (!domainToAdd) {
-          continue;
-        }
-
-        domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        domainSets.add(includeAllSubDomain ? `.${domain}` : domain);
       }
 
       console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
@@ -102,11 +99,11 @@ export async function processFilterRules(
   fallbackUrls?: readonly string[] | undefined | null,
   ttl: number | null = null
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, () => fsCache.apply<[
+  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, () => fsCache.apply<Readonly<[
     white: string[],
     black: string[],
     warningMessages: string[]
-  ]>(
+  ]>>(
     filterRulesUrl,
     async () => {
       const whitelistDomainSets = new Set<string>();

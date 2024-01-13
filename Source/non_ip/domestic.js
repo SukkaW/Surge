@@ -12,6 +12,7 @@ module.exports.DOMESTICS = /** @type {const} */({
       'aliyun.com',
       'aliyuncs.com',
       'alikunlun.com',
+      'cdngslb.com',
       'alipay.com',
       'alipay.cn',
       'alipay.com.cn',
@@ -130,6 +131,18 @@ module.exports.DOMESTICS = /** @type {const} */({
       'bilibilipay.com'
     ]
   },
+  BILIBILI_ALI: {
+    dns: 'quic://223.5.5.5:853',
+    domains: [
+      'upos-sz-mirrorali.bilivideo.com'
+    ]
+  },
+  BILIBILI_BD: {
+    dns: '180.76.76.76',
+    domains: [
+      'upos-sz-mirrorbos.bilivideo.com'
+    ]
+  },
   XIAOMI: {
     dns: 'https://120.53.53.53/dns-query',
     domains: [
@@ -155,6 +168,8 @@ module.exports.DOMESTICS = /** @type {const} */({
       'toutiaoimg.cn',
       'toutiaostatic.com',
       'toutiaovod.com',
+      'toutiaocloud.com',
+      'toutiaopage.com',
       'feiliao.com',
       'iesdouyin.com',
       'pstatp.com',

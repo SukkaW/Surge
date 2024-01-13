@@ -4,7 +4,7 @@ export const HOSTS = [
   ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true, TTL.THREE_HOURS()],
   ['https://someonewhocares.org/hosts/hosts', true, TTL.THREE_HOURS()],
   // no coin list is not actively maintained, but it updates daily when being maintained, so we set a 3 days cache ttl
-  ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', false, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', true, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', true, TTL.TWO_WEEKS()],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false, TTL.THREE_DAYS()],

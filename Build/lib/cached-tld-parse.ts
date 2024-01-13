@@ -12,6 +12,7 @@ const sharedConfig2 = { allowPrivateDomains: true, detectIp: false };
 export const parse = (domain: string) => cache.sync(domain, () => tldts.parse(domain, sharedConfig));
 /** { allowPrivateDomains: true, detectIp: false } */
 export const parse2 = (domain: string) => cache2.sync(domain, () => tldts.parse(domain, sharedConfig2));
+export const parseWithoutDetectIp = parse2;
 
 let gothillGetDomainCache: ReturnType<typeof createCache> | null = null;
 export const createCachedGorhillGetDomain = (gorhill: PublicSuffixList) => {

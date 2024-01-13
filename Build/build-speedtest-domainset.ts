@@ -24,7 +24,7 @@ const latestTopUserAgentsPromise = fsCache.apply(
   {
     serializer: serializeArray,
     deserializer: deserializeArray,
-    ttl: TTL.ONE_DAY()
+    ttl: TTL.THREE_DAYS()
   }
 );
 

@@ -23,8 +23,6 @@ import { setAddFromArray } from './lib/set-add-from-array';
 export const buildRejectDomainSet = task(import.meta.path, async () => {
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
-  const domainKeywordsSet = new Set<string>();
-  const domainSuffixSet = new Set<string>();
 
   const domainSets = new Set<string>();
 
@@ -95,21 +93,23 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
-  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
-    const [type, keyword] = line.split(',');
-
-    if (type === 'DOMAIN-KEYWORD') {
-      domainKeywordsSet.add(keyword.trim());
-    } else if (type === 'DOMAIN-SUFFIX') {
-      domainSuffixSet.add(keyword.trim());
-    }
-  }
-
-  console.log(`Import ${domainKeywordsSet.size} black keywords and ${domainSuffixSet.size} black suffixes!`);
-
-  previousSize = domainSets.size;
   // Dedupe domainSets
-  traceSync('* Dedupe from black keywords/suffixes', () => {
+  await traceAsync('* Dedupe from black keywords/suffixes', async () => {
+  /** Collect DOMAIN-SUFFIX from non_ip/reject.conf for deduplication */
+    const domainSuffixSet = new Set<string>();
+    /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
+    const domainKeywordsSet = new Set<string>();
+
+    for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
+      const [type, keyword] = line.split(',');
+
+      if (type === 'DOMAIN-KEYWORD') {
+        domainKeywordsSet.add(keyword.trim());
+      } else if (type === 'DOMAIN-SUFFIX') {
+        domainSuffixSet.add(keyword.trim());
+      }
+    }
+
     const trie1 = createTrie(domainSets);
 
     domainSuffixSet.forEach(suffix => {

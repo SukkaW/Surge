@@ -1,7 +1,6 @@
-import fs from 'fs';
-import fsp from 'fs/promises';
+import { existsSync, createWriteStream } from 'fs';
+import { mkdir } from 'fs/promises';
 import path from 'path';
-import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { isCI } from 'ci-info';
@@ -9,6 +8,7 @@ import { task } from './lib/trace-runner';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import tarStream from 'tar-stream';
 import zlib from 'zlib';
+import { Readable } from 'stream';
 
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
@@ -31,7 +31,7 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
 
     if (!isCI) {
       // Bun.file().exists() doesn't check directory
-      if (!fs.existsSync(path.join(import.meta.dir, '..', line))) {
+      if (!existsSync(path.join(import.meta.dir, '..', line))) {
         flag = flag & ~ALL_FILES_EXISTS;
       }
     }
@@ -57,7 +57,7 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
   const extract = tarStream.extract();
   const gunzip = zlib.createGunzip();
   pipeline(
-    resp.body as any,
+    Readable.fromWeb(resp.body) as any,
     gunzip,
     extract
   );
@@ -78,10 +78,10 @@ export const downloadPreviousBuild = task(import.meta.path, async () => {
     const relativeEntryPath = entry.header.name.replace(pathPrefix, '');
     const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
 
-    await fsp.mkdir(path.dirname(targetPath), { recursive: true });
+    await mkdir(path.dirname(targetPath), { recursive: true });
     await pipeline(
       entry as any,
-      fs.createWriteStream(targetPath)
+      createWriteStream(targetPath)
     );
   }
 });

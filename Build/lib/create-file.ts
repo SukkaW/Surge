@@ -18,7 +18,7 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
     isEqual = false;
   } else {
     isEqual = await traceAsync(
-      picocolors.gray(`Comparing ${filePath}`),
+      picocolors.gray(`comparing ${filePath}`),
       async () => {
         let index = 0;
 
@@ -62,11 +62,11 @@ export async function compareAndWriteFile(linesA: string[], filePath: string) {
   }
 
   if (isEqual) {
-    console.log(picocolors.gray(`Same Content, bail out writing: ${filePath}`));
+    console.log(picocolors.dim(`same content, bail out writing: ${filePath}`));
     return;
   }
 
-  await traceAsync(picocolors.gray(`Writing ${filePath}`), async () => {
+  await traceAsync(picocolors.gray(`writing ${filePath}`), async () => {
     if (linesALen < 10000) {
       return Bun.write(file, `${linesA.join('\n')}\n`);
     }
