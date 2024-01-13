@@ -1,5 +1,5 @@
 import picocolors from 'picocolors';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import path from 'path';
 import { fetchWithRetry } from './lib/fetch-retry';
 

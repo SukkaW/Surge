@@ -3,7 +3,7 @@ import { getDomesticDomainsRulesetPromise } from './build-domestic-ruleset';
 import { surgeRulesetToClashClassicalTextRuleset } from './lib/clash';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import path from 'path';
 
 import { ALL as AllStreamServices } from '../Source/stream';

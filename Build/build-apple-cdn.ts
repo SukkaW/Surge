@@ -2,7 +2,8 @@
 import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
-import { task, traceAsync } from './lib/trace-runner';
+import { traceAsync } from './lib/trace-runner';
+import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import picocolors from 'picocolors';
 import { createMemoizedPromise } from './lib/memo-promise';

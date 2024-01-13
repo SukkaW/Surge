@@ -1,5 +1,5 @@
 import path from 'path';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 import listDir from '@sukka/listdir';

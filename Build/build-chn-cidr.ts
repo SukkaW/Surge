@@ -2,7 +2,8 @@ import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { resolve as pathResolve } from 'path';
 import { compareAndWriteFile, withBannerArray } from './lib/create-file';
 import { processLineFromReadline } from './lib/process-line';
-import { task, traceAsync, traceSync } from './lib/trace-runner';
+import { traceAsync, traceSync } from './lib/trace-runner';
+import { task } from './trace';
 
 import { exclude } from 'fast-cidr-tools';
 import picocolors from 'picocolors';

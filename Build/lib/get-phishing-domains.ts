@@ -9,6 +9,7 @@ import { TTL } from './cache-filesystem';
 import { isCI } from 'ci-info';
 
 import { add as SetAdd } from 'mnemonist/set';
+import type { Span } from '../trace';
 
 const WHITELIST_DOMAIN = new Set([
   'w3s.link',
@@ -86,11 +87,11 @@ const BLACK_TLD = new Set([
   'za.com'
 ]);
 
-export const getPhishingDomains = () => traceAsync('get phishing domains', async () => {
+export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const [domainSet, domainSet2, gorhill] = await Promise.all([
-    processDomainLists('https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
+    processDomainLists(span, 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
     isCI
-      ? processDomainLists('https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
+      ? processDomainLists(span, 'https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
       : null,
     getGorhillPublicSuffixPromise()
   ]);
@@ -98,7 +99,7 @@ export const getPhishingDomains = () => traceAsync('get phishing domains', async
     SetAdd(domainSet, domainSet2);
   }
 
-  traceSync.skip('* whitelisting phishing domains', () => {
+  span.traceChild('whitelisting phishing domains').traceSyncFn(() => {
     const trieForRemovingWhiteListed = createTrie(domainSet);
     for (const white of WHITELIST_DOMAIN) {
       const found = trieForRemovingWhiteListed.find(`.${white}`, false);
@@ -112,7 +113,7 @@ export const getPhishingDomains = () => traceAsync('get phishing domains', async
   const domainCountMap: Record<string, number> = {};
   const getDomain = createCachedGorhillGetDomain(gorhill);
 
-  traceSync.skip('* process phishing domain set', () => {
+  span.traceChild('process phishing domain set').traceSyncFn(() => {
     const domainArr = Array.from(domainSet);
 
     for (let i = 0, len = domainArr.length; i < len; i++) {
@@ -173,7 +174,7 @@ export const getPhishingDomains = () => traceAsync('get phishing domains', async
     }
   });
 
-  const results = traceSync.skip('* get final phishing results', () => Object.entries(domainCountMap)
+  const results = span.traceChild('get final phishing results').traceSyncFn(() => Object.entries(domainCountMap)
     .filter(([, count]) => count >= 5)
     .map(([apexDomain]) => apexDomain));
 

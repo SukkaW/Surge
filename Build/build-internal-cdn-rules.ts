@@ -2,7 +2,7 @@ import path from 'path';
 import { processLine } from './lib/process-line';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 

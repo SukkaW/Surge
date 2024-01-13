@@ -1,5 +1,5 @@
 import path from 'path';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import * as tldts from 'tldts';
 

@@ -5,7 +5,7 @@ import path from 'path';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 

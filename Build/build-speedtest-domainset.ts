@@ -5,7 +5,7 @@ import { sortDomains } from './lib/stable-sort-domain';
 
 import { Sema } from 'async-sema';
 import * as tldts from 'tldts';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
@@ -35,11 +35,8 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
 
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
-    const key = `fetch speedtest endpoints: ${keyword}`;
-    console.log(key);
-    console.time(key);
 
-    const json = await fsCache.apply(
+    return await fsCache.apply(
       url,
       () => s.acquire().then(() => fetchWithRetry(url, {
         headers: {
@@ -77,17 +74,13 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         deserializer: deserializeArray
       }
     );
-
-    console.timeEnd(key);
-
-    return json;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return [];
   }
 };
 
-export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
+export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
   // Predefined domainset
   /** @type {Set<string>} */
   const domains = new Set<string>([
@@ -197,7 +190,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
       'Brazil',
       'Turkey'
     ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
-      pMap[keyword] = querySpeedtestApi(keyword).then(hostnameGroup => {
+      pMap[keyword] = span.traceChild(`fetch speedtest endpoints: ${keyword}`).traceAsyncFn(() => querySpeedtestApi(keyword)).then(hostnameGroup => {
         hostnameGroup.forEach(hostname => {
           if (hostname) {
             domains.add(hostname);
@@ -224,7 +217,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
   });
 
   const gorhill = await getGorhillPublicSuffixPromise();
-  const deduped = sortDomains(domainDeduper(Array.from(domains)), gorhill);
+  const deduped = span.traceChild('sort result').traceSyncFn(() => sortDomains(domainDeduper(Array.from(domains)), gorhill));
 
   const description = [
     ...SHARED_DESCRIPTION,

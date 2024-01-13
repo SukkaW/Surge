@@ -1,7 +1,7 @@
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import path from 'path';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 
 import { exclude, merge } from 'fast-cidr-tools';
 

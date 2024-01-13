@@ -6,7 +6,7 @@ import path from 'path';
 import listDir from '@sukka/listdir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 
 const SPECIAL_SUFFIXES = new Set([
   'linodeobjects.com', // only *.linodeobjects.com are public suffix

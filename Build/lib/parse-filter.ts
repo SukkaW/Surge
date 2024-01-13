@@ -10,12 +10,13 @@ import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
 import { deserializeSet, fsCache, serializeSet } from './cache-filesystem';
+import type { Span } from '../trace';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
-export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
-  return traceAsync(`- processDomainLists: ${domainListsUrl}`, () => fsCache.apply(
+export function processDomainLists(span: Span, domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn(() => fsCache.apply(
     domainListsUrl,
     async () => {
       const domainSets = new Set<string>();
@@ -44,8 +45,8 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
     }
   ));
 }
-export function processHosts(hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
-  return traceAsync(`- processHosts: ${hostsUrl}`, () => fsCache.apply(
+export function processHosts(span: Span, hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn(() => fsCache.apply(
     hostsUrl,
     async () => {
       const domainSets = new Set<string>();
@@ -95,11 +96,12 @@ const enum ParseType {
 }
 
 export async function processFilterRules(
+  span: Span,
   filterRulesUrl: string,
   fallbackUrls?: readonly string[] | undefined | null,
   ttl: number | null = null
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, () => fsCache.apply<Readonly<[
+  const [white, black, warningMessages] = await span.traceChild('process filter rules: domainListsUrl').traceAsyncFn(() => fsCache.apply<Readonly<[
     white: string[],
     black: string[],
     warningMessages: string[]

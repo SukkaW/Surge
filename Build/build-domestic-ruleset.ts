@@ -4,7 +4,7 @@ import { DOMESTICS } from '../Source/non_ip/domestic';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 

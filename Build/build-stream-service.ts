@@ -1,5 +1,5 @@
 // @ts-check
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 
 import path from 'path';
 import { createRuleset } from './lib/create-file';

@@ -6,7 +6,7 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { domainDeduper } from './lib/domain-deduper';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';

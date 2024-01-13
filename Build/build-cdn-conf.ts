@@ -2,7 +2,7 @@ import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { processLine } from './lib/process-line';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';

@@ -2,7 +2,7 @@ import path from 'path';
 import { DOMAINS, PROCESS_NAMES } from '../Source/non_ip/cloudmounter';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createRuleset } from './lib/create-file';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
