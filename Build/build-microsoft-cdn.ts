@@ -7,6 +7,8 @@ import { createTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 
+const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];
+
 const WHITELIST = [
   'DOMAIN-SUFFIX,download.prss.microsoft.com',
   'DOMAIN,res.cdn.office.net'
@@ -29,7 +31,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
         trie.add(domain);
       }
     }
-    return new Set(['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'].flatMap(domain => trie.find(domain, false)));
+    return new Set(PROBE_DOMAINS.flatMap(domain => trie.find(domain, false)));
   });
 
   const trie2 = createTrie(set);

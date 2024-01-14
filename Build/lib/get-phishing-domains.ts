@@ -11,7 +11,7 @@ import { isCI } from 'ci-info';
 import { add as SetAdd } from 'mnemonist/set';
 import type { Span } from '../trace';
 
-const WHITELIST_DOMAIN = new Set([
+const WHITELIST_DOMAIN = [
   'w3s.link',
   'dweb.link',
   'nftstorage.link',
@@ -20,7 +20,7 @@ const WHITELIST_DOMAIN = new Set([
   'page.link', // Firebase URL Shortener
   'fleek.cool',
   'notion.site'
-]);
+];
 const BLACK_TLD = new Set([
   'autos',
   'bar',
@@ -101,12 +101,15 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
 
   span.traceChild('whitelisting phishing domains').traceSyncFn(() => {
     const trieForRemovingWhiteListed = createTrie(domainSet);
-    for (const white of WHITELIST_DOMAIN) {
-      const found = trieForRemovingWhiteListed.find(`.${white}`, false);
-      for (let i = 0, len = found.length; i < len; i++) {
-        domainSet.delete(found[i]);
-      }
-      domainSet.delete(white);
+
+    const needToBeWhite = WHITELIST_DOMAIN.flatMap(white => {
+      const found = trieForRemovingWhiteListed.find(`.${white}`, true);
+      found.push(white);
+      return found;
+    });
+
+    for (let i = 0, len = needToBeWhite.length; i < len; i++) {
+      domainSet.delete(needToBeWhite[i]);
     }
   });
 
