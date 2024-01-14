@@ -26,7 +26,7 @@ const removeNoResolved = (line: string) => line.replace(',no-resolve', '');
 /**
  * This only generates a simplified version, for under-used users only.
  */
-export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
+export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => {
   const [
     domesticDomains,
     appleCdnDomains,
@@ -108,6 +108,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
   );
 
   await compareAndWriteFile(
+    span,
     output,
     path.resolve(import.meta.dir, '../List/internal/appprofile.php')
   );

@@ -47,7 +47,9 @@ export const DOMAIN_LISTS = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', true, TTL.THREE_DAYS()]
 ] as const;
 
-export const ADGUARD_FILTERS = [
+type AdGuardFilterSource = string | [main: string, mirrors: string[] | null, ttl: number];
+
+export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // EasyList
   [
     'https://easylist.to/easylist/easylist.txt',
@@ -156,7 +158,7 @@ export const ADGUARD_FILTERS = [
   // Not actively maintained, let's use a 10 days cache ttl
   ['https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt', null, TTL.TEN_DAYS()],
   // Brave First Party & First Party CNAME
-  'https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt'
+  ['https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt', null, TTL.ONE_DAY()]
 ] as const;
 
 export const PREDEFINED_WHITELIST = [

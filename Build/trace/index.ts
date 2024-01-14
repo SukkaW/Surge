@@ -114,17 +114,45 @@ export const universalify = <A extends any[], R>(taskname: string, fn: (this: vo
   };
 };
 
-export const printTraceResult = (traceResult: TraceResult = rootTraceResult, level = 0, isLast = false) => {
-  if (level === 0) {
-    printStats(traceResult.children);
+export const printTraceResult = (traceResult: TraceResult = rootTraceResult) => {
+  printStats(traceResult.children);
+  printTree(traceResult, node => `${node.name} ${picocolors.bold(`${(node.end - node.start).toFixed(3)}ms`)}`);
+};
+
+function printTree(initialTree: TraceResult, printNode: (node: TraceResult, branch: string) => string) {
+  function printBranch(tree: TraceResult, branch: string) {
+    const isGraphHead = branch.length === 0;
+    const children = tree.children;
+
+    let branchHead = '';
+
+    if (!isGraphHead) {
+      branchHead = children.length > 0 ? '┬ ' : '─ ';
+    }
+
+    const toPrint = printNode(tree, `${branch}${branchHead}`);
+
+    if (typeof toPrint === 'string') {
+      console.log(`${branch}${branchHead}${toPrint}`);
+    }
+
+    let baseBranch = branch;
+
+    if (!isGraphHead) {
+      const isChildOfLastBranch = branch.endsWith('└─');
+      baseBranch = branch.slice(0, -2) + (isChildOfLastBranch ? '  ' : '│ ');
+    }
+
+    const nextBranch = `${baseBranch}├─`;
+    const lastBranch = `${baseBranch}└─`;
+
+    children.forEach((child, index) => {
+      printBranch(child, children.length - 1 === index ? lastBranch : nextBranch);
+    });
   }
 
-  const prefix = (level > 0 ? `  ${'│  '.repeat(level - 1)}` : '') + (level > 0 ? (isLast ? '└─' : '├─') : '');
-
-  console.log(`${prefix} ${traceResult.name} ${picocolors.bold(`${(traceResult.end - traceResult.start).toFixed(2)}ms`)}`);
-
-  traceResult.children.forEach((child, index, arr) => printTraceResult(child, level + 1, index === arr.length - 1));
-};
+  printBranch(initialTree, '');
+}
 
 function printStats(stats: TraceResult[]): void {
   stats.sort((a, b) => a.start - b.start);

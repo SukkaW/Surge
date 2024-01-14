@@ -41,7 +41,7 @@ const getS3OSSDomains = async (): Promise<Set<string>> => {
   return S3OSSDomains;
 };
 
-const buildCdnConf = task(import.meta.path, async () => {
+const buildCdnConf = task(import.meta.path, async (span) => {
   /** @type {string[]} */
   const cdnDomainsList: string[] = [];
 
@@ -62,7 +62,8 @@ const buildCdnConf = task(import.meta.path, async () => {
     'This file contains object storage and static assets CDN domains.'
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - CDN Domains',
     description,
     new Date(),
@@ -70,7 +71,7 @@ const buildCdnConf = task(import.meta.path, async () => {
     'ruleset',
     path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'),
     path.resolve(import.meta.dir, '../Clash/non_ip/cdn.txt')
-  ));
+  );
 });
 
 export { buildCdnConf };

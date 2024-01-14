@@ -151,13 +151,14 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     '.backend.librespeed.org'
   ]);
 
-  // Download previous speedtest domainset
-  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
-    const line = processLine(l);
-    if (line) {
-      domains.add(line);
+  await span.traceChild('fetch previous speedtest domainset').traceAsyncFn(async () => {
+    for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
+      const line = processLine(l);
+      if (line) {
+        domains.add(line);
+      }
     }
-  }
+  });
 
   await new Promise<void>((resolve) => {
     const pMap = ([
@@ -225,7 +226,8 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     'This file contains common speedtest endpoints.'
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - Speedtest Domains',
     description,
     new Date(),
@@ -233,7 +235,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     'domainset',
     path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'),
     path.resolve(import.meta.dir, '../Clash/domainset/speedtest.txt')
-  ));
+  );
 });
 
 if (import.meta.main) {

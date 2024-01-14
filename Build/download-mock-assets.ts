@@ -12,15 +12,11 @@ const ASSETS_LIST = {
 
 const mockDir = path.resolve(import.meta.dir, '../Mock');
 
-export const downloadMockAssets = task(import.meta.path, () => Promise.all(Object.entries(ASSETS_LIST).map(async ([filename, url]) => {
-  const targetPath = path.join(mockDir, filename);
-
-  const key = picocolors.gray(`Download ${filename}`);
-  console.time(key);
-  const res = await fetchWithRetry(url);
-  await Bun.write(targetPath, res);
-  console.timeEnd(key);
-})));
+export const downloadMockAssets = task(import.meta.path, (span) => Promise.all(Object.entries(ASSETS_LIST).map(
+  ([filename, url]) => span
+    .traceChild(url)
+    .traceAsyncFn(() => fetchWithRetry(url).then(res => Bun.write(path.join(mockDir, filename), res)))
+)));
 
 if (import.meta.main) {
   downloadMockAssets();

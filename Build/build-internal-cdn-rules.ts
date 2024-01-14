@@ -33,7 +33,7 @@ const processLocalRuleSet = async (ruleSetPath: string, set: Set<string>, keywor
   }
 };
 
-export const buildInternalCDNDomains = task(import.meta.path, async () => {
+export const buildInternalCDNDomains = task(import.meta.path, async (span) => {
   const proxySet = new Set<string>();
   const proxyKeywords = new Set<string>();
 
@@ -50,6 +50,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
   ]))[0];
 
   return compareAndWriteFile(
+    span,
     [
       ...sortDomains(Array.from(proxySet), gorhill).map(i => `SUFFIX,${i}`),
       ...Array.from(proxyKeywords).sort().map(i => `REGEX,${i}`)

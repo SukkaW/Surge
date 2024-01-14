@@ -23,7 +23,7 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => traceAsync(
   picocolors.gray
 ));
 
-export const buildAppleCdn = task(import.meta.path, async () => {
+export const buildAppleCdn = task(import.meta.path, async (span) => {
   const res = await getAppleCdnDomainsPromise();
 
   const description = [
@@ -39,7 +39,8 @@ export const buildAppleCdn = task(import.meta.path, async () => {
   const domainset = res.map(i => `.${i}`);
 
   return Promise.all([
-    ...createRuleset(
+    createRuleset(
+      span,
       'Sukka\'s Ruleset - Apple CDN',
       description,
       new Date(),
@@ -48,7 +49,8 @@ export const buildAppleCdn = task(import.meta.path, async () => {
       path.resolve(import.meta.dir, '../List/non_ip/apple_cdn.conf'),
       path.resolve(import.meta.dir, '../Clash/non_ip/apple_cdn.txt')
     ),
-    ...createRuleset(
+    createRuleset(
+      span,
       'Sukka\'s Ruleset - Apple CDN',
       description,
       new Date(),

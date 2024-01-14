@@ -7,7 +7,7 @@ import { task } from './trace';
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
-export const buildCloudMounterRules = task(import.meta.path, async () => {
+export const buildCloudMounterRules = task(import.meta.path, async (span) => {
   // AND,((SRC-IP,192.168.1.110), (DOMAIN, example.com))
 
   const results = DOMAINS.flatMap(domain => {
@@ -18,7 +18,8 @@ export const buildCloudMounterRules = task(import.meta.path, async () => {
 
   const description = SHARED_DESCRIPTION;
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - CloudMounter / RaiDrive',
     description,
     new Date(),
@@ -26,7 +27,7 @@ export const buildCloudMounterRules = task(import.meta.path, async () => {
     'domainset',
     path.resolve(outputSurgeDir, 'non_ip', 'cloudmounter.conf'),
     path.resolve(outputClashDir, 'non_ip', 'cloudmounter.txt')
-  ));
+  );
 });
 
 if (import.meta.main) {

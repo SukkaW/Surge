@@ -32,7 +32,7 @@ export const getChnCidrPromise = createMemoizedPromise(async () => {
   );
 });
 
-export const buildChnCidr = task(import.meta.path, async () => {
+export const buildChnCidr = task(import.meta.path, async (span) => {
   const filteredCidr = await getChnCidrPromise();
 
   // Can not use SHARED_DESCRIPTION here as different license
@@ -47,6 +47,7 @@ export const buildChnCidr = task(import.meta.path, async () => {
   // Can not use createRuleset here, as Clash support advanced ipset syntax
   return Promise.all([
     compareAndWriteFile(
+      span,
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
         description,
@@ -56,6 +57,7 @@ export const buildChnCidr = task(import.meta.path, async () => {
       pathResolve(import.meta.dir, '../List/ip/china_ip.conf')
     ),
     compareAndWriteFile(
+      span,
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
         description,

@@ -32,7 +32,7 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   return { date, results };
 });
 
-export const buildTelegramCIDR = task(import.meta.path, async () => {
+export const buildTelegramCIDR = task(import.meta.path, async (span) => {
   const { date, results } = await getTelegramCIDRPromise();
 
   if (results.length === 0) {
@@ -45,7 +45,8 @@ export const buildTelegramCIDR = task(import.meta.path, async () => {
     ' - https://core.telegram.org/resources/cidr.txt'
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - Telegram IP CIDR',
     description,
     date,
@@ -53,7 +54,7 @@ export const buildTelegramCIDR = task(import.meta.path, async () => {
     'ruleset',
     path.resolve(import.meta.dir, '../List/ip/telegram.conf'),
     path.resolve(import.meta.dir, '../Clash/ip/telegram.txt')
-  ));
+  );
 });
 
 if (import.meta.main) {

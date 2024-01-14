@@ -41,7 +41,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   return Array.from(set).map(d => `DOMAIN-SUFFIX,${d}`).concat(WHITELIST);
 });
 
-export const buildMicrosoftCdn = task(import.meta.path, async () => {
+export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
   const description = [
     ...SHARED_DESCRIPTION,
     '',
@@ -51,7 +51,8 @@ export const buildMicrosoftCdn = task(import.meta.path, async () => {
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - Microsoft CDN',
     description,
     new Date(),
@@ -59,7 +60,7 @@ export const buildMicrosoftCdn = task(import.meta.path, async () => {
     'ruleset',
     path.resolve(import.meta.dir, '../List/non_ip/microsoft_cdn.conf'),
     path.resolve(import.meta.dir, '../Clash/non_ip/microsoft_cdn.txt')
-  ));
+  );
 });
 
 if (import.meta.main) {

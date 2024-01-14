@@ -71,10 +71,11 @@ const REDIRECT = [
   ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
 ] as const;
 
-export const buildRedirectModule = task(import.meta.path, async () => {
+export const buildRedirectModule = task(import.meta.path, async (span) => {
   const domains = Array.from(new Set(REDIRECT.map(([from]) => tldts.getHostname(from, { detectIp: false })))).filter(Boolean);
 
   return compareAndWriteFile(
+    span,
     [
       '#!name=[Sukka] URL Redirect',
       `#!desc=Last Updated: ${new Date().toISOString()}`,

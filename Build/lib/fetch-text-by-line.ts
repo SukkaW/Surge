@@ -41,17 +41,16 @@ export function readFileByLine(file: string | URL | BunFile) {
   return createTextLineAsyncGeneratorFromStreamSource(file.stream());
 }
 
-export function createReadlineInterfaceFromResponse(resp: Response) {
+export function createReadlineInterfaceFromResponse(this: void, resp: Response) {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }
   if (resp.bodyUsed) {
     throw new Error('Body has already been consumed.');
   }
-
   return createTextLineAsyncGeneratorFromStreamSource(resp.body);
 }
 
 export function fetchRemoteTextByLine(url: string | URL) {
-  return fetchWithRetry(url, defaultRequestInit).then(res => createReadlineInterfaceFromResponse(res));
+  return fetchWithRetry(url, defaultRequestInit).then(createReadlineInterfaceFromResponse);
 }

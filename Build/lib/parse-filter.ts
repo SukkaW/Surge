@@ -96,12 +96,12 @@ const enum ParseType {
 }
 
 export async function processFilterRules(
-  span: Span,
+  parentSpan: Span,
   filterRulesUrl: string,
   fallbackUrls?: readonly string[] | undefined | null,
   ttl: number | null = null
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await span.traceChild('process filter rules: domainListsUrl').traceAsyncFn(() => fsCache.apply<Readonly<[
+  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsCache.apply<Readonly<[
     white: string[],
     black: string[],
     warningMessages: string[]
@@ -179,18 +179,15 @@ export async function processFilterRules(
         // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
         await Promise.resolve();
 
-        const filterRules = (await traceAsync(
-          picocolors.gray(`- download ${filterRulesUrl}`),
-          () => fetchAssets(filterRulesUrl, fallbackUrls),
-          picocolors.gray
-        )).split('\n');
+        const filterRules = await span.traceChild('download adguard filter').traceAsyncFn(() => {
+          return fetchAssets(filterRulesUrl, fallbackUrls).then(text => text.split('\n'));
+        });
 
-        const key = picocolors.gray(`- parse adguard filter ${filterRulesUrl}`);
-        console.time(key);
-        for (let i = 0, len = filterRules.length; i < len; i++) {
-          lineCb(filterRules[i]);
-        }
-        console.timeEnd(key);
+        span.traceChild('parse adguard filter').traceSyncFn(() => {
+          for (let i = 0, len = filterRules.length; i < len; i++) {
+            lineCb(filterRules[i]);
+          }
+        });
       }
 
       return [

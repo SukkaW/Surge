@@ -35,7 +35,7 @@ const getBogusNxDomainIPs = async () => {
   );
 };
 
-export const buildAntiBogusDomain = task(import.meta.path, async () => {
+export const buildAntiBogusDomain = task(import.meta.path, async (span) => {
   const bogusIpPromise = getBogusNxDomainIPs();
 
   const result: string[] = [];
@@ -57,7 +57,8 @@ export const buildAntiBogusDomain = task(import.meta.path, async () => {
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - Anti Bogus Domain',
     description,
     new Date(),
@@ -65,7 +66,7 @@ export const buildAntiBogusDomain = task(import.meta.path, async () => {
     'ruleset',
     path.resolve(import.meta.dir, '../List/ip/reject.conf'),
     path.resolve(import.meta.dir, '../Clash/ip/reject.txt')
-  ));
+  );
 });
 
 if (import.meta.main) {
