@@ -13,6 +13,9 @@ import picocolors from 'picocolors';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
+import { createMemoizedPromise } from './lib/memo-promise';
+
+import * as SetHelpers from 'mnemonist/set';
 
 const s = new Sema(2);
 
@@ -80,15 +83,26 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   }
 };
 
+const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
+  const domains = new Set<string>();
+  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
+    const line = processLine(l);
+    if (line) {
+      domains.add(line);
+    }
+  }
+  return domains;
+});
+
 export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
   // Predefined domainset
   /** @type {Set<string>} */
   const domains = new Set<string>([
+    // speedtest.net
     '.speedtest.net',
     '.speedtestcustom.com',
     '.ooklaserver.net',
     '.speed.misaka.one',
-    '.speed.cloudflare.com',
     '.speedtest.rt.ru',
     '.speedtest.aptg.com.tw',
     '.speedtest.gslnetworks.com',
@@ -133,6 +147,13 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     '.speedtest.optitel.com.au',
     '.speednet.net.tr',
     '.speedtest.angolacables.co.ao',
+    '.ookla-speedtest.fsr.com',
+    '.speedtest.comnet.com.tr',
+    '.speedtest.gslnetworks.com.au',
+    '.speedtest.gslnetworks.com',
+    '.speedtestunonet.com.br',
+    // Cloudflare
+    '.speed.cloudflare.com',
     // Wi-Fi Man
     '.wifiman.com',
     '.wifiman.me',
@@ -152,12 +173,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
   ]);
 
   await span.traceChild('fetch previous speedtest domainset').traceAsyncFn(async () => {
-    for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
-      const line = processLine(l);
-      if (line) {
-        domains.add(line);
-      }
-    }
+    SetHelpers.add(domains, await getPreviousSpeedtestDomainsPromise());
   });
 
   await new Promise<void>((resolve) => {

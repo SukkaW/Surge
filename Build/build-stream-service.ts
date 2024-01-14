@@ -9,8 +9,7 @@ import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
 export const createRulesetForStreamService = (span: Span, fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
-  const childSpan = span.traceChild(fileId);
-  return [
+  return span.traceChild(fileId).traceAsyncFn(async (childSpan) => Promise.all([
     // Domains
     createRuleset(
       childSpan,
@@ -48,20 +47,20 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
       path.resolve(import.meta.dir, `../List/ip/${fileId}.conf`),
       path.resolve(import.meta.dir, `../Clash/ip/${fileId}.txt`)
     )
-  ];
+  ]));
 };
 
 export const buildStreamService = task(import.meta.path, async (span) => {
   return Promise.all([
-    ...createRulesetForStreamService(span, 'stream', 'All', ALL),
-    ...createRulesetForStreamService(span, 'stream_us', 'North America', NORTH_AMERICA),
-    ...createRulesetForStreamService(span, 'stream_eu', 'Europe', EU),
-    ...createRulesetForStreamService(span, 'stream_hk', 'Hong Kong', HK),
-    ...createRulesetForStreamService(span, 'stream_tw', 'Taiwan', TW),
-    ...createRulesetForStreamService(span, 'stream_jp', 'Japan', JP),
-    // ...createRulesetForStreamService('stream_au', 'Oceania', AU),
-    ...createRulesetForStreamService(span, 'stream_kr', 'Korean', KR)
-    // ...createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
+    createRulesetForStreamService(span, 'stream', 'All', ALL),
+    createRulesetForStreamService(span, 'stream_us', 'North America', NORTH_AMERICA),
+    createRulesetForStreamService(span, 'stream_eu', 'Europe', EU),
+    createRulesetForStreamService(span, 'stream_hk', 'Hong Kong', HK),
+    createRulesetForStreamService(span, 'stream_tw', 'Taiwan', TW),
+    createRulesetForStreamService(span, 'stream_jp', 'Japan', JP),
+    // createRulesetForStreamService('stream_au', 'Oceania', AU),
+    createRulesetForStreamService(span, 'stream_kr', 'Korean', KR)
+    // createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
   ]);
 });
 

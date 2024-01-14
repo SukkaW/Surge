@@ -16,8 +16,9 @@ export const parseWithoutDetectIp = parse2;
 
 let gothillGetDomainCache: ReturnType<typeof createCache> | null = null;
 export const createCachedGorhillGetDomain = (gorhill: PublicSuffixList) => {
+  gothillGetDomainCache ??= createCache('cached-gorhill-get-domain', true);
   return (domain: string) => {
-    gothillGetDomainCache ??= createCache('cached-gorhill-get-domain', true);
-    return gothillGetDomainCache.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
+    // we do know gothillGetDomainCache exists here
+    return gothillGetDomainCache!.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
   };
 };
