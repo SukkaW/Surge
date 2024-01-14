@@ -8,36 +8,32 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
 
-const getBogusNxDomainIPs = async () => {
-  const url = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
+const URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 
-  return fsCache.apply(
-    url,
-    async () => {
-      const result: string[] = [];
-      for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf')) {
-        if (line && line.startsWith('bogus-nxdomain=')) {
-          const ip = line.slice(15).trim();
-          if (isProbablyIpv4(ip)) {
-            result.push(`IP-CIDR,${ip}/32,no-resolve`);
-          } else if (isProbablyIpv6(ip)) {
-            result.push(`IP-CIDR6,${ip}/128,no-resolve`);
-          }
+const getBogusNxDomainIPsPromise = fsCache.apply(
+  URL,
+  async () => {
+    const result: string[] = [];
+    for await (const line of await fetchRemoteTextByLine(URL)) {
+      if (line && line.startsWith('bogus-nxdomain=')) {
+        const ip = line.slice(15).trim();
+        if (isProbablyIpv4(ip)) {
+          result.push(`IP-CIDR,${ip}/32,no-resolve`);
+        } else if (isProbablyIpv6(ip)) {
+          result.push(`IP-CIDR6,${ip}/128,no-resolve`);
         }
       }
-      return result;
-    },
-    {
-      ttl: TTL.ONE_WEEK(),
-      serializer: serializeArray,
-      deserializer: deserializeArray
     }
-  );
-};
+    return result;
+  },
+  {
+    ttl: TTL.ONE_WEEK(),
+    serializer: serializeArray,
+    deserializer: deserializeArray
+  }
+);
 
 export const buildAntiBogusDomain = task(import.meta.path, async (span) => {
-  const bogusIpPromise = getBogusNxDomainIPs();
-
   const result: string[] = [];
   for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/ip/reject.conf'))) {
     const l = processLine(line);
@@ -46,7 +42,7 @@ export const buildAntiBogusDomain = task(import.meta.path, async (span) => {
     }
   }
 
-  result.push(...(await bogusIpPromise));
+  result.push(...(await getBogusNxDomainIPsPromise));
 
   const description = [
     ...SHARED_DESCRIPTION,

@@ -16,22 +16,29 @@ const folderAndFilesToBeDeployed = [
   'LICENSE'
 ];
 
-export const buildPublic = task(import.meta.path, async () => {
-  const filesToBeCopied = (await listDir(
-    rootPath, {
-      ignoreHidden: true,
-      ignorePattern: /node_modules|Build|public/
-    }
-  )).filter(file => folderAndFilesToBeDeployed.some(folderOrFile => file.startsWith(folderOrFile)));
+export const buildPublic = task(import.meta.path, async (span) => {
+  await span
+    .traceChild('copy public files')
+    .traceAsyncFn(async () => {
+      const filesToBeCopied = (await listDir(
+        rootPath, {
+          ignoreHidden: true,
+          ignorePattern: /node_modules|Build|public/
+        }
+      )).filter(file => folderAndFilesToBeDeployed.some(folderOrFile => file.startsWith(folderOrFile)));
 
-  await Promise.all(filesToBeCopied.map(file => {
-    const src = path.resolve(rootPath, file);
-    const dest = path.resolve(publicPath, file);
+      return Promise.all(filesToBeCopied.map(file => {
+        const src = path.resolve(rootPath, file);
+        const dest = path.resolve(publicPath, file);
 
-    return Bun.write(dest, Bun.file(src));
-  }));
+        return Bun.write(dest, Bun.file(src));
+      }));
+    });
 
-  const html = generateHtml(await treeDir(publicPath));
+  const html = await span
+    .traceChild('generate index.html')
+    .traceAsyncFn(() => treeDir(publicPath).then(generateHtml));
+
   return Bun.write(path.join(publicPath, 'index.html'), html);
 });
 

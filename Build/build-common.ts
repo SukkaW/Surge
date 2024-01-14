@@ -125,30 +125,32 @@ async function transformDomainset(parentSpan: Span, sourcePath: string, relative
  * Output Surge RULE-SET and Clash classical text format
  */
 async function transformRuleset(parentSpan: Span, sourcePath: string, relativePath: string) {
-  const span = parentSpan.traceChild(`transform ruleset: ${path.basename(sourcePath, path.extname(sourcePath))}`);
+  return parentSpan
+    .traceChild(`transform ruleset: ${path.basename(sourcePath, path.extname(sourcePath))}`)
+    .traceAsyncFn(async (span) => {
+      const res = await processFile(span, sourcePath);
+      if (!res) return null;
 
-  const res = await processFile(span, sourcePath);
-  if (!res) return null;
+      const [title, descriptions, lines] = res;
 
-  const [title, descriptions, lines] = res;
+      const description = [
+        ...SHARED_DESCRIPTION,
+        ...(
+          descriptions.length
+            ? ['', ...descriptions]
+            : []
+        )
+      ];
 
-  const description = [
-    ...SHARED_DESCRIPTION,
-    ...(
-      descriptions.length
-        ? ['', ...descriptions]
-        : []
-    )
-  ];
-
-  return createRuleset(
-    span,
-    title,
-    description,
-    new Date(),
-    lines,
-    'ruleset',
-    path.resolve(outputSurgeDir, relativePath),
-    path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-  );
+      return createRuleset(
+        span,
+        title,
+        description,
+        new Date(),
+        lines,
+        'ruleset',
+        path.resolve(outputSurgeDir, relativePath),
+        path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+      );
+    });
 }

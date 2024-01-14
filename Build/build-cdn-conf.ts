@@ -6,7 +6,8 @@ import { task } from './trace';
 import { processLine } from './lib/process-line';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
-const getS3OSSDomains = async (): Promise<Set<string>> => {
+
+const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   const trie = createTrie((await getPublicSuffixListTextPromise()).split('\n'));
 
   /**
@@ -39,13 +40,11 @@ const getS3OSSDomains = async (): Promise<Set<string>> => {
   });
 
   return S3OSSDomains;
-};
+})();
 
 const buildCdnConf = task(import.meta.path, async (span) => {
   /** @type {string[]} */
   const cdnDomainsList: string[] = [];
-
-  const getS3OSSDomainsPromise: Promise<Set<string>> = getS3OSSDomains();
 
   for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'))) {
     const line = processLine(l);

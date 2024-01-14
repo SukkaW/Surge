@@ -2,25 +2,19 @@
 import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
-import { traceAsync } from './lib/trace-runner';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import picocolors from 'picocolors';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
 
-export const getAppleCdnDomainsPromise = createMemoizedPromise(() => traceAsync(
-  picocolors.gray('download dnsmasq-china-list apple.china.conf'),
-  () => fsCache.apply(
-    'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf',
-    () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
-    {
-      ttl: TTL.THREE_DAYS(),
-      serializer: serializeArray,
-      deserializer: deserializeArray
-    }
-  ),
-  picocolors.gray
+export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsCache.apply(
+  'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf',
+  () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
+  {
+    ttl: TTL.THREE_DAYS(),
+    serializer: serializeArray,
+    deserializer: deserializeArray
+  }
 ));
 
 export const buildAppleCdn = task(import.meta.path, async (span) => {
