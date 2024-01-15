@@ -1,10 +1,10 @@
-import * as tldts from './cached-tld-parse';
+import * as tldts from 'tldts';
 import { isProbablyIpv4 } from './is-fast-ip';
 export const normalizeDomain = (domain: string) => {
   if (!domain) return null;
   if (isProbablyIpv4(domain)) return null;
 
-  const parsed = tldts.parse2(domain);
+  const parsed = tldts.parse(domain, { allowPrivateDomains: true, detectIp: false });
   // if (parsed.isIp) return null;
   if (!parsed.hostname) return null;
   if (!parsed.isIcann && !parsed.isPrivate) return null;
