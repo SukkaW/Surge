@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine, readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
@@ -34,14 +34,7 @@ const getBogusNxDomainIPsPromise = fsCache.apply(
 );
 
 export const buildAntiBogusDomain = task(import.meta.path, async (span) => {
-  const result: string[] = [];
-  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/ip/reject.conf'))) {
-    const l = processLine(line);
-    if (l) {
-      result.push(l);
-    }
-  }
-
+  const result: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/ip/reject.conf'));
   result.push(...(await getBogusNxDomainIPsPromise));
 
   const description = [

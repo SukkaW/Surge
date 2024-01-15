@@ -1,15 +1,14 @@
 // @ts-check
 import path from 'path';
 import { DOMESTICS } from '../Source/non_ip/domestic';
-import { readFileByLine } from './lib/fetch-text-by-line';
-import { processLineFromReadline } from './lib/process-line';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 
 export const getDomesticDomainsRulesetPromise = createMemoizedPromise(async () => {
-  const results = await processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf')));
+  const results = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf'));
 
   results.push(
     ...Object.entries(DOMESTICS).reduce<string[]>((acc, [key, { domains }]) => {

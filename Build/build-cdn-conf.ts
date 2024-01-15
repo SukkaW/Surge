@@ -1,9 +1,8 @@
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import { readFileByLine } from './lib/fetch-text-by-line';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { task } from './trace';
-import { processLine } from './lib/process-line';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
 
@@ -44,15 +43,7 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
 
 const buildCdnConf = task(import.meta.path, async (span) => {
   /** @type {string[]} */
-  const cdnDomainsList: string[] = [];
-
-  for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'))) {
-    const line = processLine(l);
-    if (line) {
-      cdnDomainsList.push(line);
-    }
-  }
-
+  const cdnDomainsList: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'));
   (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
 
   const description: string[] = [

@@ -3,6 +3,7 @@ import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
 
 import { TextLineStream } from './text-line-transform-stream';
 import { PolyfillTextDecoderStream } from './text-decoder-stream';
+import { processLine } from './process-line';
 // function createTextLineStreamFromStreamSource(stream: ReadableStream<Uint8Array>) {
 //   return stream
 //     .pipeThrough(new PolyfillTextDecoderStream())
@@ -53,4 +54,15 @@ export function createReadlineInterfaceFromResponse(this: void, resp: Response) 
 
 export function fetchRemoteTextByLine(url: string | URL) {
   return fetchWithRetry(url, defaultRequestInit).then(createReadlineInterfaceFromResponse);
+}
+
+export async function readFileIntoProcessedArray(file: string | URL | BunFile) {
+  if (typeof file === 'string') {
+    file = Bun.file(file);
+  } else if (!('writer' in file)) {
+    file = Bun.file(file);
+  }
+
+  const content = await file.text();
+  return content.split('\n').filter(processLine);
 }
