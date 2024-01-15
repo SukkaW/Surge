@@ -10,12 +10,13 @@ import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
 import { deserializeSet, fsCache, serializeSet } from './cache-filesystem';
+import type { Span } from '../trace';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 
-export function processDomainLists(domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
-  return traceAsync(`- processDomainLists: ${domainListsUrl}`, () => fsCache.apply(
+export function processDomainLists(span: Span, domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn(() => fsCache.apply(
     domainListsUrl,
     async () => {
       const domainSets = new Set<string>();
@@ -44,8 +45,8 @@ export function processDomainLists(domainListsUrl: string, includeAllSubDomain =
     }
   ));
 }
-export function processHosts(hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
-  return traceAsync(`- processHosts: ${hostsUrl}`, () => fsCache.apply(
+export function processHosts(span: Span, hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
+  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn(() => fsCache.apply(
     hostsUrl,
     async () => {
       const domainSets = new Set<string>();
@@ -56,23 +57,20 @@ export function processHosts(hostsUrl: string, includeAllSubDomain = false, ttl:
           continue;
         }
 
-        const domain = line.split(/\s/)[1];
+        const _domain = line.split(/\s/)[1]?.trim();
+        if (!_domain) {
+          continue;
+        }
+        const domain = normalizeDomain(_domain);
         if (!domain) {
           continue;
         }
-        const _domain = domain.trim();
-
-        if (DEBUG_DOMAIN_TO_FIND && _domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(picocolors.red(hostsUrl), '(black)', _domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.warn(picocolors.red(hostsUrl), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
           foundDebugDomain = true;
         }
 
-        const domainToAdd = normalizeDomain(_domain);
-        if (!domainToAdd) {
-          continue;
-        }
-
-        domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        domainSets.add(includeAllSubDomain ? `.${domain}` : domain);
       }
 
       console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
@@ -98,15 +96,16 @@ const enum ParseType {
 }
 
 export async function processFilterRules(
+  parentSpan: Span,
   filterRulesUrl: string,
   fallbackUrls?: readonly string[] | undefined | null,
   ttl: number | null = null
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await traceAsync(`- processFilterRules: ${filterRulesUrl}`, () => fsCache.apply<[
+  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsCache.apply<Readonly<[
     white: string[],
     black: string[],
     warningMessages: string[]
-  ]>(
+  ]>>(
     filterRulesUrl,
     async () => {
       const whitelistDomainSets = new Set<string>();
@@ -180,18 +179,15 @@ export async function processFilterRules(
         // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
         await Promise.resolve();
 
-        const filterRules = (await traceAsync(
-          picocolors.gray(`- download ${filterRulesUrl}`),
-          () => fetchAssets(filterRulesUrl, fallbackUrls),
-          picocolors.gray
-        )).split('\n');
+        const filterRules = await span.traceChild('download adguard filter').traceAsyncFn(() => {
+          return fetchAssets(filterRulesUrl, fallbackUrls).then(text => text.split('\n'));
+        });
 
-        const key = picocolors.gray(`- parse adguard filter ${filterRulesUrl}`);
-        console.time(key);
-        for (let i = 0, len = filterRules.length; i < len; i++) {
-          lineCb(filterRules[i]);
-        }
-        console.timeEnd(key);
+        span.traceChild('parse adguard filter').traceSyncFn(() => {
+          for (let i = 0, len = filterRules.length; i < len; i++) {
+            lineCb(filterRules[i]);
+          }
+        });
       }
 
       return [

@@ -3,7 +3,7 @@ import { getDomesticDomainsRulesetPromise } from './build-domestic-ruleset';
 import { surgeRulesetToClashClassicalTextRuleset } from './lib/clash';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import path from 'path';
 
 import { ALL as AllStreamServices } from '../Source/stream';
@@ -26,7 +26,7 @@ const removeNoResolved = (line: string) => line.replace(',no-resolve', '');
 /**
  * This only generates a simplified version, for under-used users only.
  */
-export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
+export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => {
   const [
     domesticDomains,
     appleCdnDomains,
@@ -39,9 +39,11 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
     globalDomains,
     globalPlusDomains,
     telegramDomains,
+    lanDomains,
     domesticCidrs,
     streamCidrs,
-    { results: rawTelegramCidrs }
+    { results: rawTelegramCidrs },
+    lanCidrs
   ] = await Promise.all([
     // domestic - domains
     getDomesticDomainsRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
@@ -58,6 +60,8 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/global.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/global_plus.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
     processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/telegram.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
+    // lan - domains
+    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/lan.conf'))),
     // domestic - ip cidr
     getChnCidrPromise().then(cidrs => cidrs.map(cidr => `IP-CIDR,${cidr}`)),
     AllStreamServices.flatMap((i) => (
@@ -69,7 +73,9 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
         : []
     )),
     // global - ip cidr
-    getTelegramCIDRPromise()
+    getTelegramCIDRPromise(),
+    // lan - ip cidr
+    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/ip/lan.conf')))
   ] as const);
 
   const telegramCidrs = rawTelegramCidrs.map(removeNoResolved);
@@ -92,14 +98,17 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async () => {
       ...globalPlusDomains,
       ...telegramDomains
     ],
+    lanDomains,
     domesticCidrs,
     streamCidrs,
     [
       ...telegramCidrs
-    ]
+    ],
+    lanCidrs
   );
 
   await compareAndWriteFile(
+    span,
     output,
     path.resolve(import.meta.dir, '../List/internal/appprofile.php')
   );
@@ -116,9 +125,11 @@ function generateAppProfile(
   microsoftAppleDomains: string[],
   streamDomains: string[],
   globalDomains: string[],
+  lanDomains: string[],
   directCidrs: string[],
   streamCidrs: string[],
-  globalCidrs: string[]
+  globalCidrs: string[],
+  lanCidrs: string[]
 ) {
   const result: string[] = [];
 
@@ -183,12 +194,16 @@ function generateAppProfile(
     // global - domains
     ...globalDomains.map(line => `        '${line},Global',`),
     // microsoft & apple - ip cidr (nope)
+    // lan - domains
+    ...lanDomains.map(line => `        '${line},DIRECT',`),
     // stream - ip cidr
     ...streamCidrs.map(line => `        '${line},Stream',`),
     // global - ip cidr
     ...globalCidrs.map(line => `        '${line},Global',`),
     // domestic - ip cidr
     ...directCidrs.map(line => `        '${line},Domestic',`),
+    // lan - ip cidr
+    ...lanCidrs.map(line => `        '${line},DIRECT',`),
     // match
     '        \'MATCH,Final Match\',',
     '    ],',

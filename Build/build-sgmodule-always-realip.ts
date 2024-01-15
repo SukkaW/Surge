@@ -1,5 +1,5 @@
 import path from 'path';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 
 const HOSTNAMES = [
@@ -38,8 +38,9 @@ const HOSTNAMES = [
   'GC._msDCS.*.*'
 ] as const;
 
-export const buildAlwaysRealIPModule = task(import.meta.path, async () => {
+export const buildAlwaysRealIPModule = task(import.meta.path, async (span) => {
   return compareAndWriteFile(
+    span,
     [
       '#!name=[Sukka] Always Real IP Plus',
       `#!desc=Last Updated: ${new Date().toISOString()}`,

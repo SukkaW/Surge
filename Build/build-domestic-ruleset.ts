@@ -4,7 +4,7 @@ import { DOMESTICS } from '../Source/non_ip/domestic';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 
@@ -21,7 +21,7 @@ export const getDomesticDomainsRulesetPromise = createMemoizedPromise(async () =
   return results;
 });
 
-export const buildDomesticRuleset = task(import.meta.path, async () => {
+export const buildDomesticRuleset = task(import.meta.path, async (span) => {
   const rulesetDescription = [
     ...SHARED_DESCRIPTION,
     '',
@@ -29,7 +29,8 @@ export const buildDomesticRuleset = task(import.meta.path, async () => {
   ];
 
   return Promise.all([
-    ...createRuleset(
+    createRuleset(
+      span,
       'Sukka\'s Ruleset - Domestic Domains',
       rulesetDescription,
       new Date(),
@@ -39,6 +40,7 @@ export const buildDomesticRuleset = task(import.meta.path, async () => {
       path.resolve(import.meta.dir, '../Clash/non_ip/domestic.txt')
     ),
     compareAndWriteFile(
+      span,
       [
         '#!name=[Sukka] Local DNS Mapping',
         `#!desc=Last Updated: ${new Date().toISOString()}`,

@@ -58,7 +58,7 @@ export const createTrie = (from?: string[] | Set<string>) => {
   /**
    * Method used to retrieve every item in the trie with the given prefix.
    */
-  const find = (suffix: string, includeEqualWithSuffix = true): string[] => {
+  const find = (suffix: string, /** @default true */ includeEqualWithSuffix = true): string[] => {
     let node: TrieNode = root;
     let token: string;
 

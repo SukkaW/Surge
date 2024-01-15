@@ -5,7 +5,7 @@ import { sortDomains } from './lib/stable-sort-domain';
 
 import { Sema } from 'async-sema';
 import * as tldts from 'tldts';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
@@ -13,6 +13,9 @@ import picocolors from 'picocolors';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
+import { createMemoizedPromise } from './lib/memo-promise';
+
+import * as SetHelpers from 'mnemonist/set';
 
 const s = new Sema(2);
 
@@ -24,7 +27,7 @@ const latestTopUserAgentsPromise = fsCache.apply(
   {
     serializer: serializeArray,
     deserializer: deserializeArray,
-    ttl: TTL.ONE_DAY()
+    ttl: TTL.THREE_DAYS()
   }
 );
 
@@ -35,11 +38,8 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
 
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
-    const key = `fetch speedtest endpoints: ${keyword}`;
-    console.log(key);
-    console.time(key);
 
-    const json = await fsCache.apply(
+    return await fsCache.apply(
       url,
       () => s.acquire().then(() => fetchWithRetry(url, {
         headers: {
@@ -77,25 +77,32 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         deserializer: deserializeArray
       }
     );
-
-    console.timeEnd(key);
-
-    return json;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return [];
   }
 };
 
-export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
+const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
+  const domains = new Set<string>();
+  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
+    const line = processLine(l);
+    if (line) {
+      domains.add(line);
+    }
+  }
+  return domains;
+});
+
+export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
   // Predefined domainset
   /** @type {Set<string>} */
   const domains = new Set<string>([
+    // speedtest.net
     '.speedtest.net',
     '.speedtestcustom.com',
     '.ooklaserver.net',
     '.speed.misaka.one',
-    '.speed.cloudflare.com',
     '.speedtest.rt.ru',
     '.speedtest.aptg.com.tw',
     '.speedtest.gslnetworks.com',
@@ -140,6 +147,16 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     '.speedtest.optitel.com.au',
     '.speednet.net.tr',
     '.speedtest.angolacables.co.ao',
+    '.ookla-speedtest.fsr.com',
+    '.speedtest.comnet.com.tr',
+    '.speedtest.gslnetworks.com.au',
+    '.speedtest.gslnetworks.com',
+    '.speedtestunonet.com.br',
+    // Cloudflare
+    '.speed.cloudflare.com',
+    // Wi-Fi Man
+    '.wifiman.com',
+    '.wifiman.me',
     // Fast.com
     '.fast.com',
     // MacPaw
@@ -155,13 +172,9 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     '.backend.librespeed.org'
   ]);
 
-  // Download previous speedtest domainset
-  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
-    const line = processLine(l);
-    if (line) {
-      domains.add(line);
-    }
-  }
+  await span.traceChild('fetch previous speedtest domainset').traceAsyncFn(async () => {
+    SetHelpers.add(domains, await getPreviousSpeedtestDomainsPromise());
+  });
 
   await new Promise<void>((resolve) => {
     const pMap = ([
@@ -194,7 +207,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
       'Brazil',
       'Turkey'
     ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
-      pMap[keyword] = querySpeedtestApi(keyword).then(hostnameGroup => {
+      pMap[keyword] = span.traceChild(`fetch speedtest endpoints: ${keyword}`).traceAsyncFn(() => querySpeedtestApi(keyword)).then(hostnameGroup => {
         hostnameGroup.forEach(hostname => {
           if (hostname) {
             domains.add(hostname);
@@ -221,7 +234,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
   });
 
   const gorhill = await getGorhillPublicSuffixPromise();
-  const deduped = sortDomains(domainDeduper(Array.from(domains)), gorhill);
+  const deduped = span.traceChild('sort result').traceSyncFn(() => sortDomains(domainDeduper(Array.from(domains)), gorhill));
 
   const description = [
     ...SHARED_DESCRIPTION,
@@ -229,7 +242,8 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     'This file contains common speedtest endpoints.'
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     'Sukka\'s Ruleset - Speedtest Domains',
     description,
     new Date(),
@@ -237,7 +251,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async () => {
     'domainset',
     path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'),
     path.resolve(import.meta.dir, '../Clash/domainset/speedtest.txt')
-  ));
+  );
 });
 
 if (import.meta.main) {

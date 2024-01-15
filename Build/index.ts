@@ -23,29 +23,33 @@ import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
 import { buildPublic } from './build-public';
 import { downloadMockAssets } from './download-mock-assets';
 
-import type { TaskResult } from './lib/trace-runner';
 import { buildCloudMounterRules } from './build-cloudmounter-rules';
+
+import { createSpan, printTraceResult } from './trace';
 
 (async () => {
   console.log('Bun version:', Bun.version, Bun.revision);
+
+  const rootSpan = createSpan('root');
 
   try {
     // TODO: restore this once Bun has fixed their worker
     // const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
 
-    const downloadPreviousBuildPromise = downloadPreviousBuild();
-    const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon());
-    const buildAntiBogusDomainPromise = downloadPreviousBuildPromise.then(() => buildAntiBogusDomain());
-    const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn());
-    const buildCdnConfPromise = downloadPreviousBuildPromise.then(() => buildCdnConf());
-    const buildRejectDomainSetPromise = downloadPreviousBuildPromise.then(() => buildRejectDomainSet());
-    const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR());
-    const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr());
-    const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet());
+    const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
+
+    const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
+    const buildAntiBogusDomainPromise = downloadPreviousBuildPromise.then(() => buildAntiBogusDomain(rootSpan));
+    const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn(rootSpan));
+    const buildCdnConfPromise = downloadPreviousBuildPromise.then(() => buildCdnConf(rootSpan));
+    const buildRejectDomainSetPromise = downloadPreviousBuildPromise.then(() => buildRejectDomainSet(rootSpan));
+    const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR(rootSpan));
+    const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan));
+    const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan));
     const buildInternalCDNDomainsPromise = Promise.all([
       buildCommonPromise,
       buildCdnConfPromise
-    ]).then(() => buildInternalCDNDomains());
+    ]).then(() => buildInternalCDNDomains(rootSpan));
 
     // const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
     //   const handleMessage = (e: MessageEvent<TaskResult>) => {
@@ -60,24 +64,24 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
     // });
 
     // const buildInternalChnDomainsPromise = buildInternalChnDomains();
-    const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset());
+    const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan));
 
-    const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule());
-    const buildAlwaysRealIPModulePromise = downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule());
+    const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule(rootSpan));
+    const buildAlwaysRealIPModulePromise = downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan));
 
-    const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService());
+    const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService(rootSpan));
 
-    const buildMicrosoftCdnPromise = downloadPreviousBuildPromise.then(() => buildMicrosoftCdn());
+    const buildMicrosoftCdnPromise = downloadPreviousBuildPromise.then(() => buildMicrosoftCdn(rootSpan));
 
     const buildSSPanelUIMAppProfilePromise = Promise.all([
       downloadPreviousBuildPromise
-    ]).then(() => buildSSPanelUIMAppProfile());
+    ]).then(() => buildSSPanelUIMAppProfile(rootSpan));
 
-    const downloadMockAssetsPromise = downloadMockAssets();
+    const downloadMockAssetsPromise = downloadMockAssets(rootSpan);
 
-    const buildCloudMounterRulesPromise = downloadPreviousBuildPromise.then(() => buildCloudMounterRules());
+    const buildCloudMounterRulesPromise = downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan));
 
-    const stats = await Promise.all([
+    await Promise.all([
       downloadPreviousBuildPromise,
       buildCommonPromise,
       buildAntiBogusDomainPromise,
@@ -101,11 +105,13 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
     ]);
 
     await Promise.all([
-      buildPublic(),
-      validate()
+      buildPublic(rootSpan),
+      validate(rootSpan)
     ]);
 
-    printStats(stats);
+    rootSpan.stop();
+
+    printTraceResult(rootSpan.traceResult);
 
     // Finish the build to avoid leaking timer/fetch ref
     process.exit(0);
@@ -115,21 +121,3 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
     process.exit(1);
   }
 })();
-
-function printStats(stats: TaskResult[]): void {
-  stats.sort((a, b) => a.start - b.start);
-
-  const longestTaskName = Math.max(...stats.map(i => i.taskName.length));
-  const realStart = Math.min(...stats.map(i => i.start));
-  const realEnd = Math.max(...stats.map(i => i.end));
-
-  const statsStep = ((realEnd - realStart) / 160) | 0;
-
-  stats.forEach(stat => {
-    console.log(
-      `[${stat.taskName}]${' '.repeat(longestTaskName - stat.taskName.length)}`,
-      ' '.repeat(((stat.start - realStart) / statsStep) | 0),
-      '='.repeat(Math.max(((stat.end - stat.start) / statsStep) | 0, 1))
-    );
-  });
-}

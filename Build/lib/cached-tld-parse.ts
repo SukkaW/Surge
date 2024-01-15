@@ -12,11 +12,13 @@ const sharedConfig2 = { allowPrivateDomains: true, detectIp: false };
 export const parse = (domain: string) => cache.sync(domain, () => tldts.parse(domain, sharedConfig));
 /** { allowPrivateDomains: true, detectIp: false } */
 export const parse2 = (domain: string) => cache2.sync(domain, () => tldts.parse(domain, sharedConfig2));
+export const parseWithoutDetectIp = parse2;
 
 let gothillGetDomainCache: ReturnType<typeof createCache> | null = null;
 export const createCachedGorhillGetDomain = (gorhill: PublicSuffixList) => {
+  gothillGetDomainCache ??= createCache('cached-gorhill-get-domain', true);
   return (domain: string) => {
-    gothillGetDomainCache ??= createCache('cached-gorhill-get-domain', true);
-    return gothillGetDomainCache.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
+    // we do know gothillGetDomainCache exists here
+    return gothillGetDomainCache!.sync(domain, () => gorhill.getDomain(domain[0] === '.' ? domain.slice(1) : domain));
   };
 };

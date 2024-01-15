@@ -6,7 +6,8 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
 import { domainDeduper } from './lib/domain-deduper';
-import { task } from './lib/trace-runner';
+import type { Span } from './trace';
+import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
@@ -17,7 +18,7 @@ const sourceDir = path.resolve(import.meta.dir, '../Source');
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
-export const buildCommon = task(import.meta.path, async () => {
+export const buildCommon = task(import.meta.path, async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
   const pw = new PathScurry(sourceDir);
@@ -33,14 +34,14 @@ export const buildCommon = task(import.meta.path, async () => {
 
     const relativePath = entry.relative();
     if (relativePath.startsWith('domainset/')) {
-      promises.push(transformDomainset(entry.fullpath(), relativePath));
+      promises.push(transformDomainset(span, entry.fullpath(), relativePath));
       continue;
     }
     if (
       relativePath.startsWith('ip/')
       || relativePath.startsWith('non_ip/')
     ) {
-      promises.push(transformRuleset(entry.fullpath(), relativePath));
+      promises.push(transformRuleset(span, entry.fullpath(), relativePath));
       continue;
     }
   }
@@ -52,46 +53,50 @@ if (import.meta.main) {
   buildCommon();
 }
 
-const processFile = async (sourcePath: string) => {
-  console.log('Processing', sourcePath);
+const processFile = (span: Span, sourcePath: string) => {
+  // console.log('Processing', sourcePath);
+  return span.traceChild(`process file: ${sourcePath}`).traceAsyncFn(async () => {
+    const lines: string[] = [];
 
-  const lines: string[] = [];
+    let title = '';
+    const descriptions: string[] = [];
 
-  let title = '';
-  const descriptions: string[] = [];
+    try {
+      for await (const line of readFileByLine(sourcePath)) {
+        if (line === MAGIC_COMMAND_SKIP) {
+          return null;
+        }
 
-  try {
-    for await (const line of readFileByLine(sourcePath)) {
-      if (line === MAGIC_COMMAND_SKIP) {
-        return;
+        if (line.startsWith(MAGIC_COMMAND_TITLE)) {
+          title = line.slice(MAGIC_COMMAND_TITLE.length).trim();
+          continue;
+        }
+
+        if (line.startsWith(MAGIC_COMMAND_DESCRIPTION)) {
+          descriptions.push(line.slice(MAGIC_COMMAND_DESCRIPTION.length).trim());
+          continue;
+        }
+
+        const l = processLine(line);
+        if (l) {
+          lines.push(l);
+        }
       }
-
-      if (line.startsWith(MAGIC_COMMAND_TITLE)) {
-        title = line.slice(MAGIC_COMMAND_TITLE.length).trim();
-        continue;
-      }
-
-      if (line.startsWith(MAGIC_COMMAND_DESCRIPTION)) {
-        descriptions.push(line.slice(MAGIC_COMMAND_DESCRIPTION.length).trim());
-        continue;
-      }
-
-      const l = processLine(line);
-      if (l) {
-        lines.push(l);
-      }
+    } catch (e) {
+      console.error('Error processing', sourcePath);
+      console.trace(e);
     }
-  } catch (e) {
-    console.error('Error processing', sourcePath);
-    console.trace(e);
-  }
 
-  return [title, descriptions, lines] as const;
+    return [title, descriptions, lines] as const;
+  });
 };
 
-async function transformDomainset(sourcePath: string, relativePath: string) {
-  const res = await processFile(sourcePath);
+async function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: string) {
+  const span = parentSpan.traceChild(`transform domainset: ${path.basename(sourcePath, path.extname(sourcePath))}`);
+
+  const res = await processFile(span, sourcePath);
   if (!res) return;
+
   const [title, descriptions, lines] = res;
 
   const deduped = domainDeduper(lines);
@@ -104,7 +109,8 @@ async function transformDomainset(sourcePath: string, relativePath: string) {
     )
   ];
 
-  return Promise.all(createRuleset(
+  return createRuleset(
+    span,
     title,
     description,
     new Date(),
@@ -112,33 +118,39 @@ async function transformDomainset(sourcePath: string, relativePath: string) {
     'domainset',
     path.resolve(outputSurgeDir, relativePath),
     path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-  ));
+  );
 }
 
 /**
  * Output Surge RULE-SET and Clash classical text format
  */
-async function transformRuleset(sourcePath: string, relativePath: string) {
-  const res = await processFile(sourcePath);
-  if (!res) return;
-  const [title, descriptions, lines] = res;
+async function transformRuleset(parentSpan: Span, sourcePath: string, relativePath: string) {
+  return parentSpan
+    .traceChild(`transform ruleset: ${path.basename(sourcePath, path.extname(sourcePath))}`)
+    .traceAsyncFn(async (span) => {
+      const res = await processFile(span, sourcePath);
+      if (!res) return null;
 
-  const description = [
-    ...SHARED_DESCRIPTION,
-    ...(
-      descriptions.length
-        ? ['', ...descriptions]
-        : []
-    )
-  ];
+      const [title, descriptions, lines] = res;
 
-  return Promise.all(createRuleset(
-    title,
-    description,
-    new Date(),
-    lines,
-    'ruleset',
-    path.resolve(outputSurgeDir, relativePath),
-    path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-  ));
+      const description = [
+        ...SHARED_DESCRIPTION,
+        ...(
+          descriptions.length
+            ? ['', ...descriptions]
+            : []
+        )
+      ];
+
+      return createRuleset(
+        span,
+        title,
+        description,
+        new Date(),
+        lines,
+        'ruleset',
+        path.resolve(outputSurgeDir, relativePath),
+        path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+      );
+    });
 }

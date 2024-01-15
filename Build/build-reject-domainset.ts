@@ -11,7 +11,7 @@ import { domainDeduper } from './lib/domain-deduper';
 import createKeywordFilter from './lib/aho-corasick';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
-import { traceSync, task, traceAsync } from './lib/trace-runner';
+import { task } from './trace';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import * as tldts from 'tldts';
 import { SHARED_DESCRIPTION } from './lib/constants';
@@ -20,73 +20,70 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 import * as SetHelpers from 'mnemonist/set';
 import { setAddFromArray } from './lib/set-add-from-array';
 
-export const buildRejectDomainSet = task(import.meta.path, async () => {
+export const buildRejectDomainSet = task(import.meta.path, async (span) => {
+  const gorhill = await getGorhillPublicSuffixPromise();
+
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
-  const domainKeywordsSet = new Set<string>();
-  const domainSuffixSet = new Set<string>();
 
   const domainSets = new Set<string>();
 
+  let shouldStop = false;
   // Parse from AdGuard Filters
-  const [gorhill, shouldStop] = await traceAsync('* Download and process Hosts / AdBlock Filter Rules', async () => {
-    let shouldStop = false;
+  await span
+    .traceChild('download and process hosts / adblock filter rules')
+    .traceAsyncFn(async (childSpan) => {
+      await Promise.all([
+        // Parse from remote hosts & domain lists
+        ...HOSTS.map(entry => processHosts(childSpan, entry[0], entry[1], entry[2]).then(hosts => SetHelpers.add(domainSets, hosts))),
 
-    const [gorhill] = await Promise.all([
-      getGorhillPublicSuffixPromise(),
-      // Parse from remote hosts & domain lists
-      ...HOSTS.map(entry => processHosts(entry[0], entry[1], entry[2]).then(hosts => {
-        SetHelpers.add(domainSets, hosts);
-      })),
-      ...DOMAIN_LISTS.map(entry => processDomainLists(entry[0], entry[1], entry[2])),
-      ...ADGUARD_FILTERS.map(input => {
-        const promise = typeof input === 'string'
-          ? processFilterRules(input)
-          : processFilterRules(input[0], input[1], input[2]);
+        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, entry[0], entry[1], entry[2]).then(hosts => SetHelpers.add(domainSets, hosts))),
 
-        return promise.then(({ white, black, foundDebugDomain }) => {
+        ...ADGUARD_FILTERS.map(input => (
+          typeof input === 'string'
+            ? processFilterRules(childSpan, input)
+            : processFilterRules(childSpan, input[0], input[1], input[2])
+        ).then(({ white, black, foundDebugDomain }) => {
           if (foundDebugDomain) {
             shouldStop = true;
             // we should not break here, as we want to see full matches from all data source
           }
           setAddFromArray(filterRuleWhitelistDomainSets, white);
           setAddFromArray(domainSets, black);
-        });
-      }),
-      ...([
-        'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
-        'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
-      ].map(input => processFilterRules(input).then(({ white, black }) => {
-        setAddFromArray(filterRuleWhitelistDomainSets, white);
-        setAddFromArray(filterRuleWhitelistDomainSets, black);
-      }))),
-      getPhishingDomains().then(([purePhishingDomains, fullPhishingDomainSet]) => {
-        SetHelpers.add(domainSets, fullPhishingDomainSet);
-        setAddFromArray(domainSets, purePhishingDomains);
-      }),
-      (async () => {
-        for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
-          const line = processLine(l);
-          if (line) {
+        })),
+        ...([
+          'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
+          'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
+        ].map(input => processFilterRules(childSpan, input).then(({ white, black }) => {
+          setAddFromArray(filterRuleWhitelistDomainSets, white);
+          setAddFromArray(filterRuleWhitelistDomainSets, black);
+        }))),
+        getPhishingDomains(childSpan).then(([purePhishingDomains, fullPhishingDomainSet]) => {
+          SetHelpers.add(domainSets, fullPhishingDomainSet);
+          setAddFromArray(domainSets, purePhishingDomains);
+        }),
+        childSpan.traceChild('process reject_sukka.conf').traceAsyncFn(async () => {
+          for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
+            const line = processLine(l);
+            if (!line) continue;
             domainSets.add(line);
           }
+        })
+      ]);
+
+      // remove pre-defined enforced blacklist from whitelist
+      const trie0 = createTrie(filterRuleWhitelistDomainSets);
+
+      for (let i = 0, len1 = PREDEFINED_ENFORCED_BACKLIST.length; i < len1; i++) {
+        const enforcedBlack = PREDEFINED_ENFORCED_BACKLIST[i];
+        const found = trie0.find(enforcedBlack);
+        for (let j = 0, len2 = found.length; j < len2; j++) {
+          filterRuleWhitelistDomainSets.delete(found[j]);
         }
-      })()
-    ]);
-
-    // remove pre-defined enforced blacklist from whitelist
-    const trie0 = createTrie(filterRuleWhitelistDomainSets);
-
-    for (let i = 0, len1 = PREDEFINED_ENFORCED_BACKLIST.length; i < len1; i++) {
-      const enforcedBlack = PREDEFINED_ENFORCED_BACKLIST[i];
-      const found = trie0.find(enforcedBlack);
-      for (let j = 0, len2 = found.length; j < len2; j++) {
-        filterRuleWhitelistDomainSets.delete(found[j]);
       }
-    }
 
-    return [gorhill, shouldStop] as const;
-  });
+      return shouldStop;
+    });
 
   if (shouldStop) {
     process.exit(1);
@@ -95,21 +92,23 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   let previousSize = domainSets.size;
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
-  for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
-    const [type, keyword] = line.split(',');
-
-    if (type === 'DOMAIN-KEYWORD') {
-      domainKeywordsSet.add(keyword.trim());
-    } else if (type === 'DOMAIN-SUFFIX') {
-      domainSuffixSet.add(keyword.trim());
-    }
-  }
-
-  console.log(`Import ${domainKeywordsSet.size} black keywords and ${domainSuffixSet.size} black suffixes!`);
-
-  previousSize = domainSets.size;
   // Dedupe domainSets
-  traceSync('* Dedupe from black keywords/suffixes', () => {
+  await span.traceChild('dedupe from black keywords/suffixes').traceAsyncFn(async () => {
+  /** Collect DOMAIN-SUFFIX from non_ip/reject.conf for deduplication */
+    const domainSuffixSet = new Set<string>();
+    /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
+    const domainKeywordsSet = new Set<string>();
+
+    for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
+      const [type, keyword] = line.split(',');
+
+      if (type === 'DOMAIN-KEYWORD') {
+        domainKeywordsSet.add(keyword.trim());
+      } else if (type === 'DOMAIN-SUFFIX') {
+        domainSuffixSet.add(keyword.trim());
+      }
+    }
+
     const trie1 = createTrie(domainSets);
 
     domainSuffixSet.forEach(suffix => {
@@ -122,15 +121,14 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
     // remove pre-defined enforced blacklist from whitelist
     const kwfilter = createKeywordFilter(domainKeywordsSet);
 
-    // Build whitelist trie, to handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
-    const trieWhite = createTrie(filterRuleWhitelistDomainSets);
+    // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
     for (const domain of domainSets) {
       if (domain[0] === '.') {
-        if (trieWhite.contains(domain)) {
+        if (filterRuleWhitelistDomainSets.has(domain)) {
           domainSets.delete(domain);
           continue;
         }
-      } else if (trieWhite.has(`.${domain}`)) {
+      } else if (filterRuleWhitelistDomainSets.has(`.${domain}`)) {
         domainSets.delete(domain);
         continue;
       }
@@ -146,14 +144,15 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   previousSize = domainSets.size;
 
   // Dedupe domainSets
-  const dudupedDominArray = traceSync('* Dedupe from covered subdomain', () => domainDeduper(Array.from(domainSets)));
+  const dudupedDominArray = span.traceChild('dedupe from covered subdomain').traceSyncFn(() => domainDeduper(Array.from(domainSets)));
+
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules from covered subdomain!`);
   console.log(`Final size ${dudupedDominArray.length}`);
 
   // Create reject stats
-  const rejectDomainsStats: Array<[string, number]> = traceSync(
-    '* Collect reject domain stats',
-    () => Object.entries(
+  const rejectDomainsStats: Array<[string, number]> = span
+    .traceChild('create reject stats')
+    .traceSyncFn(() => Object.entries(
       dudupedDominArray.reduce<Record<string, number>>((acc, cur) => {
         const suffix = tldts.getDomain(cur, { allowPrivateDomains: false, detectIp: false, validateHostname: false });
         if (suffix) {
@@ -161,15 +160,7 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
         }
         return acc;
       }, {})
-    ).filter(a => a[1] > 10).sort((a, b) => {
-      const t = b[1] - a[1];
-      if (t !== 0) {
-        return t;
-      }
-
-      return a[0].localeCompare(b[0]);
-    })
-  );
+    ).filter(a => a[1] > 5).sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0])));
 
   const description = [
     ...SHARED_DESCRIPTION,
@@ -185,16 +176,18 @@ export const buildRejectDomainSet = task(import.meta.path, async () => {
   ];
 
   return Promise.all([
-    ...createRuleset(
+    createRuleset(
+      span,
       'Sukka\'s Ruleset - Reject Base',
       description,
       new Date(),
-      traceSync('* Sort reject domainset', () => sortDomains(dudupedDominArray, gorhill)),
+      span.traceChild('sort reject domainset').traceSyncFn(() => sortDomains(dudupedDominArray, gorhill)),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')
     ),
     compareAndWriteFile(
+      span,
       rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
       path.resolve(import.meta.dir, '../List/internal/reject-stats.txt')
     ),

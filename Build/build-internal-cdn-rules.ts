@@ -1,38 +1,18 @@
 import path from 'path';
-import * as tldts from 'tldts';
 import { processLine } from './lib/process-line';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
-import { task } from './lib/trace-runner';
+import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
-// const { createCachedGorhillGetDomain } = require('./lib/cached-tld-parse');
 
 const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
-const addApexDomain = (input: string, set: Set<string>) => {
-  // We are including the private domains themselves
-  const d = tldts.getDomain(input, { allowPrivateDomains: false });
-  if (d) {
-    set.add(d);
-  }
-};
-
 const processLocalDomainSet = async (domainSetPath: string, set: Set<string>) => {
-  for await (const line of readFileByLine(domainSetPath)) {
-    // console.log({ line });
-
-    const parsed = tldts.parse(line, { allowPrivateDomains: true, detectIp: false });
-    if (parsed.isIp) continue;
-    if (parsed.isIcann || parsed.isPrivate) {
-      if (parsed.domain) {
-        set.add(parsed.domain);
-      }
-      continue;
-    }
-
-    if (processLine(line)) {
-      console.warn('[drop line from domainset]', line);
+  for await (const l of readFileByLine(domainSetPath)) {
+    const line = processLine(l);
+    if (line) {
+      set.add(line[0] === '.' ? line.slice(1) : line);
     }
   }
 };
@@ -40,12 +20,12 @@ const processLocalDomainSet = async (domainSetPath: string, set: Set<string>) =>
 const processLocalRuleSet = async (ruleSetPath: string, set: Set<string>, keywords: Set<string>) => {
   for await (const line of readFileByLine(ruleSetPath)) {
     if (line.startsWith('DOMAIN-SUFFIX,')) {
-      addApexDomain(line.replace('DOMAIN-SUFFIX,', ''), set);
+      set.add(line.replace('DOMAIN-SUFFIX,', ''));
     } else if (line.startsWith('DOMAIN,')) {
-      addApexDomain(line.replace('DOMAIN,', ''), set);
+      set.add(line.replace('DOMAIN,', ''));
     } else if (line.startsWith('DOMAIN-KEYWORD')) {
       keywords.add(escapeRegExp(line.replace('DOMAIN-KEYWORD,', '')));
-    } else if (line.startsWith('USER-AGENT,') || line.startsWith('PROCESS-NAME,') || line.startsWith('URL-REGEX,')) {
+    } else if (line.includes('USER-AGENT,') || line.includes('PROCESS-NAME,') || line.includes('URL-REGEX,')) {
       // do nothing
     } else if (processLine(line)) {
       console.warn('[drop line from ruleset]', line);
@@ -53,7 +33,7 @@ const processLocalRuleSet = async (ruleSetPath: string, set: Set<string>, keywor
   }
 };
 
-export const buildInternalCDNDomains = task(import.meta.path, async () => {
+export const buildInternalCDNDomains = task(import.meta.path, async (span) => {
   const proxySet = new Set<string>();
   const proxyKeywords = new Set<string>();
 
@@ -70,6 +50,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async () => {
   ]))[0];
 
   return compareAndWriteFile(
+    span,
     [
       ...sortDomains(Array.from(proxySet), gorhill).map(i => `SUFFIX,${i}`),
       ...Array.from(proxyKeywords).sort().map(i => `REGEX,${i}`)

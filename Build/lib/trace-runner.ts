@@ -25,16 +25,3 @@ export interface TaskResult {
   readonly end: number,
   readonly taskName: string
 }
-
-export const task = <T>(importMetaPath: string, fn: () => Promise<T>, customname: string | null = null) => {
-  const taskName = customname ?? path.basename(importMetaPath, path.extname(importMetaPath));
-  return async () => {
-    console.log(`🏃 [${taskName}] Start executing`);
-    const start = Bun.nanoseconds();
-    await fn();
-    const end = Bun.nanoseconds();
-    console.log(`✅ [${taskName}] ${picocolors.blue(`[${((end - start) / 1e6).toFixed(3)}ms]`)} Executed successfully`);
-
-    return { start, end, taskName } as TaskResult;
-  };
-};

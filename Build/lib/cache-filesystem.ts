@@ -2,8 +2,9 @@
 import { Database } from 'bun:sqlite';
 import os from 'os';
 import path from 'path';
-import fs from 'fs';
+import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
+import { traceSync } from './trace-runner';
 
 const identity = (x: any) => x;
 
@@ -64,7 +65,7 @@ export class Cache {
 
   constructor({ cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'), tbd }: CacheOptions = {}) {
     this.cachePath = cachePath;
-    fs.mkdirSync(this.cachePath, { recursive: true });
+    mkdirSync(this.cachePath, { recursive: true });
     if (tbd != null) this.tbd = tbd;
 
     const db = new Database(path.join(this.cachePath, 'cache.db'));
@@ -151,7 +152,7 @@ export class Cache {
   }
 }
 
-export const fsCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
+export const fsCache = traceSync('initializing filesystem cache', () => new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') }));
 // process.on('exit', () => {
 //   fsCache.destroy();
 // });

@@ -1,5 +1,6 @@
 // @ts-check
-import { task } from './lib/trace-runner';
+import type { Span } from './trace';
+import { task } from './trace';
 
 import path from 'path';
 import { createRuleset } from './lib/create-file';
@@ -7,10 +8,11 @@ import { createRuleset } from './lib/create-file';
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
-export const createRulesetForStreamService = (fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
-  return [
+export const createRulesetForStreamService = (span: Span, fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
+  return span.traceChild(fileId).traceAsyncFn(async (childSpan) => Promise.all([
     // Domains
-    ...createRuleset(
+    createRuleset(
+      childSpan,
       `Sukka's Ruleset - Stream Services: ${title}`,
       [
         ...SHARED_DESCRIPTION,
@@ -24,7 +26,8 @@ export const createRulesetForStreamService = (fileId: string, title: string, str
       path.resolve(import.meta.dir, `../Clash/non_ip/${fileId}.txt`)
     ),
     // IP
-    ...createRuleset(
+    createRuleset(
+      childSpan,
       `Sukka's Ruleset - Stream Services' IPs: ${title}`,
       [
         ...SHARED_DESCRIPTION,
@@ -44,20 +47,20 @@ export const createRulesetForStreamService = (fileId: string, title: string, str
       path.resolve(import.meta.dir, `../List/ip/${fileId}.conf`),
       path.resolve(import.meta.dir, `../Clash/ip/${fileId}.txt`)
     )
-  ];
+  ]));
 };
 
-export const buildStreamService = task(import.meta.path, async () => {
+export const buildStreamService = task(import.meta.path, async (span) => {
   return Promise.all([
-    ...createRulesetForStreamService('stream', 'All', ALL),
-    ...createRulesetForStreamService('stream_us', 'North America', NORTH_AMERICA),
-    ...createRulesetForStreamService('stream_eu', 'Europe', EU),
-    ...createRulesetForStreamService('stream_hk', 'Hong Kong', HK),
-    ...createRulesetForStreamService('stream_tw', 'Taiwan', TW),
-    ...createRulesetForStreamService('stream_jp', 'Japan', JP),
-    // ...createRulesetForStreamService('stream_au', 'Oceania', AU),
-    ...createRulesetForStreamService('stream_kr', 'Korean', KR)
-    // ...createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
+    createRulesetForStreamService(span, 'stream', 'All', ALL),
+    createRulesetForStreamService(span, 'stream_us', 'North America', NORTH_AMERICA),
+    createRulesetForStreamService(span, 'stream_eu', 'Europe', EU),
+    createRulesetForStreamService(span, 'stream_hk', 'Hong Kong', HK),
+    createRulesetForStreamService(span, 'stream_tw', 'Taiwan', TW),
+    createRulesetForStreamService(span, 'stream_jp', 'Japan', JP),
+    // createRulesetForStreamService('stream_au', 'Oceania', AU),
+    createRulesetForStreamService(span, 'stream_kr', 'Korean', KR)
+    // createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
   ]);
 });
 
