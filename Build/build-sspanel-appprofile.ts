@@ -1,8 +1,7 @@
 import { getAppleCdnDomainsPromise } from './build-apple-cdn';
 import { getDomesticDomainsRulesetPromise } from './build-domestic-ruleset';
 import { surgeRulesetToClashClassicalTextRuleset } from './lib/clash';
-import { readFileByLine } from './lib/fetch-text-by-line';
-import { processLineFromReadline } from './lib/process-line';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import path from 'path';
 
@@ -49,19 +48,19 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     getDomesticDomainsRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
     getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
     getMicrosoftCdnRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/apple_cn.conf'))),
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/neteasemusic.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/apple_cn.conf')),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/neteasemusic.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // microsoft & apple - domains
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/microsoft.conf'))),
-    (processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/apple_services.conf')))).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/microsoft.conf')),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/apple_services.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // stream - domains
     surgeRulesetToClashClassicalTextRuleset(AllStreamServices.flatMap((i) => i.rules)),
     // global - domains
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/global.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/global_plus.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/telegram.conf'))).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global_plus.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // lan - domains
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/lan.conf'))),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/lan.conf')),
     // domestic - ip cidr
     getChnCidrPromise().then(cidrs => cidrs.map(cidr => `IP-CIDR,${cidr}`)),
     AllStreamServices.flatMap((i) => (
@@ -75,7 +74,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     // global - ip cidr
     getTelegramCIDRPromise(),
     // lan - ip cidr
-    processLineFromReadline(readFileByLine(path.resolve(import.meta.dir, '../Source/ip/lan.conf')))
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/ip/lan.conf'))
   ] as const);
 
   const telegramCidrs = rawTelegramCidrs.map(removeNoResolved);

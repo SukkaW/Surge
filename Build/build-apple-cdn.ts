@@ -18,7 +18,7 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsCache.app
 ));
 
 export const buildAppleCdn = task(import.meta.path, async (span) => {
-  const res = await getAppleCdnDomainsPromise();
+  const res = await span.traceChild('get apple cdn domains').traceAsyncFn(getAppleCdnDomainsPromise);
 
   const description = [
     ...SHARED_DESCRIPTION,
