@@ -1,5 +1,5 @@
 // @ts-check
-module.exports.DOMESTICS = /** @type {const} */({
+export const DOMESTICS = {
   ALIBABA: {
     dns: 'quic://223.6.6.6:853',
     domains: [
@@ -349,4 +349,4 @@ module.exports.DOMESTICS = /** @type {const} */({
       '254.169.in-addr.arpa'
     ]
   }
-});
+} as const;
