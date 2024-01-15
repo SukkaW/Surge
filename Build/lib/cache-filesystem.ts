@@ -69,18 +69,33 @@ export class Cache {
     if (tbd != null) this.tbd = tbd;
 
     const db = new Database(path.join(this.cachePath, 'cache.db'));
-    db.exec('PRAGMA journal_mode = WAL');
+
+    db.exec('PRAGMA journal_mode = WAL;');
+    db.exec('PRAGMA synchronous = normal;');
+    db.exec('PRAGMA temp_store = memory;');
+    db.exec('PRAGMA optimize;');
 
     db.prepare('CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, value TEXT, ttl REAL NOT NULL);').run();
     db.prepare('CREATE INDEX IF NOT EXISTS cache_ttl ON cache (ttl);').run();
 
+    const date = new Date();
+
     // perform purge on startup
 
     // ttl + tbd < now => ttl < now - tbd
-    const now = Date.now() - this.tbd;
+    const now = date.getTime() - this.tbd;
     db.prepare('DELETE FROM cache WHERE ttl < ?').run(now);
 
     this.db = db;
+
+    const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const lastVaccum = this.get('__LAST_VACUUM');
+    if (lastVaccum === undefined || (lastVaccum !== dateString && date.getUTCDay() === 6)) {
+      console.log(picocolors.magenta('[cache] vacuuming'));
+
+      this.set('__LAST_VACUUM', dateString, 10 * 365 * 60 * 60 * 24 * 1000);
+      this.db.exec('VACUUM;');
+    }
   }
 
   set(key: string, value: string, ttl = 60 * 1000): void {
