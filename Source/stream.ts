@@ -1,16 +1,13 @@
-// @ts-check
+interface StreamService {
+  name: string,
+  rules: string[],
+  ip?: {
+    v4: string[],
+    v6: string[]
+  }
+}
 
-/**
- * @typedef {Object} StreamService
- * @property {string} name
- * @property {Object} [ip]
- * @property {string[]} ip.v4
- * @property {string[]} ip.v6
- * @property {string[]} rules
- */
-
-/** @type {StreamService} */
-const $4GTV = {
+const $4GTV: StreamService = {
   name: '4gtv',
   rules: [
     'DOMAIN-SUFFIX,4gtv.tv',
@@ -18,8 +15,7 @@ const $4GTV = {
   ]
 };
 
-/** @type {StreamService} */
-const ALL4 = {
+const ALL4: StreamService = {
   name: 'All4',
   rules: [
     'DOMAIN-SUFFIX,c4assets.com',
@@ -29,8 +25,7 @@ const ALL4 = {
   ]
 };
 
-/** @type {StreamService} */
-const AMAZON_PRIME_VIDEO = {
+const AMAZON_PRIME_VIDEO: StreamService = {
   name: 'Amazon Prime Video',
   rules: [
     'DOMAIN,avodmp4s3ww-a.akamaihd.net',
@@ -69,8 +64,7 @@ const AMAZON_PRIME_VIDEO = {
   ]
 };
 
-/** @type {StreamService} */
-const ABEMA_TV = {
+const ABEMA_TV: StreamService = {
   name: 'AbemaTV',
   rules: [
     'DOMAIN-KEYWORD,abematv.akamaized.net',
@@ -92,8 +86,7 @@ const ABEMA_TV = {
   ]
 };
 
-/** @type {StreamService} */
-const APPLE_TV = {
+const APPLE_TV: StreamService = {
   name: 'Apple TV',
   rules: [
     'DOMAIN,ocvideo.apple.com',
@@ -110,8 +103,7 @@ const APPLE_TV = {
   ]
 };
 
-/** @type {StreamService} */
-const APPLE_MUSIC_TV = {
+const APPLE_MUSIC_TV: StreamService = {
   name: 'Apple Music TV',
   rules: [
     'DOMAIN-SUFFIX,applemusic.com',
@@ -119,8 +111,7 @@ const APPLE_MUSIC_TV = {
   ]
 };
 
-/** @type {StreamService} */
-const BAHAMUT = {
+const BAHAMUT: StreamService = {
   name: 'Bahamut',
   rules: [
     'DOMAIN,bahamut.akamaized.net',
@@ -136,8 +127,7 @@ const BAHAMUT = {
   ]
 };
 
-/** @type {StreamService} */
-const BBC = {
+const BBC: StreamService = {
   name: 'BBC',
   rules: [
     'DOMAIN-KEYWORD,bbcfmt',
@@ -150,8 +140,7 @@ const BBC = {
   ]
 };
 
-/** @type {StreamService} */
-const BILIBILI_INTL = {
+const BILIBILI_INTL: StreamService = {
   name: 'Bilibili International',
   rules: [
     'DOMAIN-SUFFIX,biliintl.com',
@@ -165,8 +154,7 @@ const BILIBILI_INTL = {
   ]
 };
 
-/** @type {StreamService} */
-const DAZN = {
+const DAZN: StreamService = {
   name: 'DAZN',
   rules: [
     'DOMAIN,d151l6v8er5bdm.cloudfront.net',
@@ -188,8 +176,7 @@ const DAZN = {
   ]
 };
 
-/** @type {StreamService} */
-const DEEZER = {
+const DEEZER: StreamService = {
   name: 'Deezer',
   rules: [
     'DOMAIN-SUFFIX,deezer.com',
@@ -198,8 +185,7 @@ const DEEZER = {
   ]
 };
 
-/** @type {StreamService} */
-const DISNEY_PLUS = {
+const DISNEY_PLUS: StreamService = {
   name: 'Disney+',
   rules: [
     'DOMAIN,cdn.registerdisney.go.com',
@@ -214,8 +200,7 @@ const DISNEY_PLUS = {
   ]
 };
 
-/** @type {StreamService} */
-const DISCOVERY_PLUS = {
+const DISCOVERY_PLUS: StreamService = {
   name: 'Discovery+',
   rules: [
     'USER-AGENT,DPlus*',
@@ -228,8 +213,7 @@ const DISCOVERY_PLUS = {
   ]
 };
 
-/** @type {StreamService} */
-const DMM = {
+const DMM: StreamService = {
   name: 'DMM',
   rules: [
     'DOMAIN-SUFFIX,dmm.co.jp',
@@ -238,8 +222,7 @@ const DMM = {
   ]
 };
 
-/** @type {StreamService} */
-const ENCORE_TVB = {
+const ENCORE_TVB: StreamService = {
   name: 'encoreTVB',
   rules: [
     'DOMAIN,bcbolt446c5271-a.akamaihd.net',
@@ -255,8 +238,7 @@ const ENCORE_TVB = {
   ]
 };
 
-/** @type {StreamService} */
-const FOX_NOW = {
+const FOX_NOW: StreamService = {
   name: 'Fox Now',
   rules: [
     'DOMAIN-SUFFIX,fox.com',
@@ -267,8 +249,7 @@ const FOX_NOW = {
   ]
 };
 
-/** @type {StreamService} */
-const FOX_PLUS = {
+const FOX_PLUS: StreamService = {
   name: 'Fox+',
   rules: [
     'DOMAIN,dashasiafox.akamaized.netflix',
@@ -281,8 +262,7 @@ const FOX_PLUS = {
   ]
 };
 
-/** @type {StreamService} */
-const HBO = {
+const HBO: StreamService = {
   name: 'HBO Go / HBO Now / HBO Max',
   rules: [
     'DOMAIN-SUFFIX,hbo.com',
@@ -297,8 +277,7 @@ const HBO = {
   ]
 };
 
-/** @type {StreamService} */
-const HBO_ASIA = {
+const HBO_ASIA: StreamService = {
   name: 'HBO Asia',
   rules: [
     'DOMAIN-SUFFIX,hboasia.com',
@@ -329,8 +308,7 @@ const HBO_ASIA = {
   ]
 };
 
-/** @type {StreamService} */
-const HIMALAYA_FM = {
+const HIMALAYA_FM: StreamService = {
   name: 'Himalaya FM',
   rules: [
     'USER-AGENT,Himalaya*',
@@ -338,8 +316,7 @@ const HIMALAYA_FM = {
   ]
 };
 
-/** @type {StreamService} */
-const HULU = {
+const HULU: StreamService = {
   name: 'Hulu',
   rules: [
     'DOMAIN-SUFFIX,happyon.jp',
@@ -356,8 +333,7 @@ const HULU = {
   ]
 };
 
-/** @type {StreamService} */
-const HWTV = {
+const HWTV: StreamService = {
   name: 'HWTV',
   rules: [
     'USER-AGENT,HWTVMobile*',
@@ -366,8 +342,7 @@ const HWTV = {
   ]
 };
 
-/** @type {StreamService} */
-const ITV = {
+const ITV: StreamService = {
   name: 'ITV',
   rules: [
     'DOMAIN,itvpnpmobile-a.akamaihd.net',
@@ -379,8 +354,7 @@ const ITV = {
   ]
 };
 
-/** @type {StreamService} */
-const IQIYI_GLOBAL = {
+const IQIYI_GLOBAL: StreamService = {
   name: 'iQiYi Global',
   rules: [
     'DOMAIN-SUFFIX,iq.com',
@@ -395,8 +369,7 @@ const IQIYI_GLOBAL = {
   ]
 };
 
-/** @type {StreamService} */
-const JOOX = {
+const JOOX: StreamService = {
   name: 'JOOX',
   rules: [
     'DOMAIN-SUFFIX,joox.com',
@@ -408,8 +381,7 @@ const JOOX = {
   ]
 };
 
-/** @type {StreamService} */
-const KKBOX = {
+const KKBOX: StreamService = {
   name: 'KKBOX',
   rules: [
     'DOMAIN-SUFFIX,kfs.io',
@@ -420,8 +392,7 @@ const KKBOX = {
   ]
 };
 
-/** @type {StreamService} */
-const KKTV = {
+const KKTV: StreamService = {
   name: 'KKTV',
   rules: [
     'DOMAIN-SUFFIX,kk.stream',
@@ -434,8 +405,7 @@ const KKTV = {
   ]
 };
 
-/** @type {StreamService} */
-const LINE_TV = {
+const LINE_TV: StreamService = {
   name: 'Line TV',
   rules: [
     'DOMAIN,d3c7rimkq79yfu.cloudfront.net',
@@ -445,8 +415,7 @@ const LINE_TV = {
   ]
 };
 
-/** @type {StreamService} */
-const LITV = {
+const LITV: StreamService = {
   name: 'LiTV',
   rules: [
     'DOMAIN,litvfreemobile-hichannel.cdn.hinet.net',
@@ -454,8 +423,7 @@ const LITV = {
   ]
 };
 
-/** @type {StreamService} */
-const MAX = {
+const MAX: StreamService = {
   name: 'Max',
   rules: [
     'USER-AGENT,Max*',
@@ -465,8 +433,7 @@ const MAX = {
   ]
 };
 
-/** @type {StreamService} */
-const MY5 = {
+const MY5: StreamService = {
   name: 'My5',
   rules: [
     'DOMAIN,d349g9zuie06uo.cloudfront.net',
@@ -477,8 +444,7 @@ const MY5 = {
   ]
 };
 
-/** @type {StreamService} */
-const MYTV_SUPER = {
+const MYTV_SUPER: StreamService = {
   name: 'myTV Super',
   rules: [
     'DOMAIN-SUFFIX,mytvsuper.com',
@@ -491,8 +457,7 @@ const MYTV_SUPER = {
   ]
 };
 
-/** @type {StreamService} */
-const NAVER_TV = {
+const NAVER_TV: StreamService = {
   name: 'Naver TV',
   rules: [
     'USER-AGENT,Naver TV*',
@@ -501,8 +466,7 @@ const NAVER_TV = {
   ]
 };
 
-/** @type {StreamService} */
-const NICONICO = {
+const NICONICO: StreamService = {
   name: 'niconico',
   rules: [
     'DOMAIN-SUFFIX,dmc.nico',
@@ -514,8 +478,7 @@ const NICONICO = {
   ]
 };
 
-/** @type {StreamService} */
-const NETFLIX = {
+const NETFLIX: StreamService = {
   name: 'Netflix',
   ip: {
     v4: [
@@ -561,16 +524,14 @@ const NETFLIX = {
   ]
 };
 
-/** @type {StreamService} */
-const NOW_E = {
+const NOW_E: StreamService = {
   name: 'Now E',
   rules: [
     'DOMAIN-SUFFIX,nowe.com'
   ]
 };
 
-/** @type {StreamService} */
-const OVERCAST_FM = {
+const OVERCAST_FM: StreamService = {
   name: 'Overcast FM',
   rules: [
     'USER-AGENT,Overcast*',
@@ -578,8 +539,7 @@ const OVERCAST_FM = {
   ]
 };
 
-/** @type {StreamService} */
-const PARAMOUNT = {
+const PARAMOUNT: StreamService = {
   name: 'Paramount+',
   rules: [
     'USER-AGENT,PPlus*',
@@ -594,8 +554,7 @@ const PARAMOUNT = {
   ]
 };
 
-/** @type {StreamService} */
-const PBS = {
+const PBS: StreamService = {
   name: 'PBS',
   rules: [
     'USER-AGENT,PBS*',
@@ -603,8 +562,7 @@ const PBS = {
   ]
 };
 
-/** @type {StreamService} */
-const PEACOCK = {
+const PEACOCK: StreamService = {
   name: 'Peacock',
   rules: [
     'USER-AGENT,PeacockMobile*',
@@ -612,8 +570,7 @@ const PEACOCK = {
   ]
 };
 
-/** @type {StreamService} */
-const PANDORA = {
+const PANDORA: StreamService = {
   name: 'Pandora',
   rules: [
     'DOMAIN-SUFFIX,pandora.com',
@@ -621,8 +578,7 @@ const PANDORA = {
   ]
 };
 
-/** @type {StreamService} */
-const PORNHUB = {
+const PORNHUB: StreamService = {
   name: 'Pornhub',
   rules: [
     'DOMAIN-SUFFIX,phprcdn.com',
@@ -631,8 +587,7 @@ const PORNHUB = {
   ]
 };
 
-/** @type {StreamService} */
-const SOUNDCLOUD = {
+const SOUNDCLOUD: StreamService = {
   name: 'SoundCloud',
   rules: [
     'DOMAIN-SUFFIX,sndcdn.com',
@@ -642,8 +597,7 @@ const SOUNDCLOUD = {
   ]
 };
 
-/** @type {StreamService} */
-const SPOTIFY = {
+const SPOTIFY: StreamService = {
   name: 'Spotify',
   ip: {
     v4: ['35.186.224.47/32'],
@@ -674,16 +628,14 @@ const SPOTIFY = {
   ]
 };
 
-/** @type {StreamService} */
-const TVB_ANYWHERE = {
+const TVB_ANYWHERE: StreamService = {
   name: 'TVB Anywhere',
   rules: [
     'DOMAIN-KEYWORD,tvbanywhere'
   ]
 };
 
-/** @type {StreamService} */
-const TAIWAN_GOOD = {
+const TAIWAN_GOOD: StreamService = {
   name: 'TaiwanGood',
   rules: [
     'DOMAIN,hamifans.emome.net',
@@ -693,8 +645,7 @@ const TAIWAN_GOOD = {
   ]
 };
 
-/** @type {StreamService} */
-const TIDAL = {
+const TIDAL: StreamService = {
   name: 'TIDAL',
   rules: [
     'USER-AGENT,TIDAL*',
@@ -703,8 +654,7 @@ const TIDAL = {
   ]
 };
 
-/** @type {StreamService} */
-const TIKTOK = {
+const TIKTOK: StreamService = {
   name: 'TikTok',
   rules: [
     'DOMAIN-SUFFIX,byteoversea.com',
@@ -724,8 +674,7 @@ const TIKTOK = {
   ]
 };
 
-/** @type {StreamService} */
-const TWITCH = {
+const TWITCH: StreamService = {
   name: 'Twitch',
   rules: [
     'DOMAIN-SUFFIX,jtvnw.net',
@@ -738,8 +687,7 @@ const TWITCH = {
   ]
 };
 
-/** @type {StreamService} */
-const VIUTV = {
+const VIUTV: StreamService = {
   name: 'ViuTV',
   rules: [
     'DOMAIN,api.viu.now.com',
@@ -758,8 +706,7 @@ const VIUTV = {
   ]
 };
 
-/** @type {StreamService} */
-const YOUTUBE = {
+const YOUTUBE: StreamService = {
   name: 'YouTube',
   rules: [
     'DOMAIN,youtubei.googleapis.com',
@@ -778,8 +725,7 @@ const YOUTUBE = {
   ]
 };
 
-/** @type {StreamService} */
-const YOUTUBE_MUSIC = {
+const YOUTUBE_MUSIC: StreamService = {
   name: 'YouTube Music',
   rules: [
     'USER-AGENT,com.google.ios.youtubemusic*',
@@ -787,8 +733,7 @@ const YOUTUBE_MUSIC = {
   ]
 };
 
-/** @type {StreamService} */
-const SHOWTIME = {
+const SHOWTIME: StreamService = {
   name: 'SHOWTIME',
   rules: [
     'DOMAIN-SUFFIX,sho.com',
@@ -796,8 +741,7 @@ const SHOWTIME = {
   ]
 };
 
-/** @type {StreamService} */
-const WETV = {
+const WETV: StreamService = {
   name: 'WeTV',
   ip: {
     v4: ['150.109.28.51/32'],
@@ -810,8 +754,7 @@ const WETV = {
   ]
 };
 
-/** @type {StreamService[]} */
-module.exports.ALL = [
+export const ALL = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
   BAHAMUT, BBC, BILIBILI_INTL,
@@ -836,8 +779,7 @@ module.exports.ALL = [
   SHOWTIME
 ];
 
-/** @type {StreamService[]} */
-module.exports.NORTH_AMERICA = [
+export const NORTH_AMERICA = [
   FOX_NOW,
   FOX_PLUS,
   HULU, // Hulu US
@@ -875,8 +817,7 @@ module.exports.NORTH_AMERICA = [
   // Crave
 ];
 
-/** @type {StreamService[]} */
-module.exports.EU = [
+export const EU = [
   // RakutenTV
   // Funimation
   // SkyShowTime
@@ -905,8 +846,7 @@ module.exports.EU = [
   // Amediateka
 ];
 
-/** @type {StreamService[]} */
-module.exports.HK = [
+export const HK = [
   NOW_E,
   VIUTV,
   MYTV_SUPER,
@@ -914,8 +854,7 @@ module.exports.HK = [
   BILIBILI_INTL
 ];
 
-/** @type {StreamService[]} */
-module.exports.TW = [
+export const TW = [
   KKTV,
   LITV,
   // MyVideo
@@ -929,8 +868,7 @@ module.exports.TW = [
   BILIBILI_INTL
 ];
 
-/** @type {StreamService[]} */
-module.exports.JP = [
+export const JP = [
   DMM,
   // DMMTV
   ABEMA_TV,
@@ -953,8 +891,7 @@ module.exports.JP = [
   // Konosuba Fantastic Days
 ];
 
-/** @type {StreamService[]} */
-module.exports.AU = [
+export const AU = [
   // Stan
   // Binge
   // 7plus
@@ -969,8 +906,7 @@ module.exports.AU = [
   // MaoriTV
 ];
 
-/** @type {StreamService[]} */
-module.exports.KR = [
+export const KR = [
   // WAVEE
   // Tving
   // CoupangPlay
@@ -980,8 +916,7 @@ module.exports.KR = [
   // KOCOWA
 ];
 
-/** @type {StreamService[]} */
-module.exports.SOUTH_EAST_ASIA = [
+export const SOUTH_EAST_ASIA = [
   // HBO
   // B-Global SouthEastAsia
   // MeWatch SG
