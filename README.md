@@ -292,16 +292,48 @@ rules:
   - RULE-SET,stream_ip,[Replace with your policy]
 ```
 
+### AI
+
+- 域名规则 人工维护
+- 包含 OpenAI、Bard、Claude、Perplexity 等
+
+**Surge**
+
+```ini
+RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  ai_non_ip:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/ai.txt
+    path: ./sukkaw_ruleset/ai_non_ip.txt
+
+rules:
+  - RULE-SET,ai_non_ip,[Replace with your policy]
+```
+
 #### Telegram
 
 - 域名规则 人工维护
 - IP CIDR 规则 自动生成（数据来源：[`https://core.telegram.org/resources/cidr.txt`](https://core.telegram.org/resources/cidr.txt)）
+- ASN 规则 人工维护
+
+> 推荐仅使用 IP CIDR 规则。IP CIDR 规则数据完全来自 Telegram 官方发布的 CIDR 列表，不包含 Telegram 尚未启用的 CDN、数据中心的 IP。
+> ASN 规则仅 Surge 支持，且仅作为补充。在使用非官方 MaxMind 数据库（例如 GeoIP2-CN）时可能会受到影响。
 
 **Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,[Replace with your policy]
 ```
 
 **Clash Premium**
@@ -469,6 +501,43 @@ rule-providers:
 rules:
   - RULE-SET,neteasemusic_non_ip,[Replace with your policy]
   - RULE-SET,neteasemusic_ip,[Replace with your policy]
+```
+
+#### 软件更新、操作系统等大文件下载
+
+- 人工维护
+- 这部分域名可能包含 Microsoft 和 Apple 的国内 CDN 节点。你可以使用前文的 Microsoft CDN 和 Apple CDN 规则组、并分配直连策略。
+- 如果你正在使用商业性质的公共代理服务、且你的服务商提供按低倍率结算流量消耗的节点，可使用上述规则组将流量分配给这部分节点
+
+**Surge**
+
+```ini
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,[Replace with your policy]
+```
+
+**Clash Premium**
+
+```yaml
+rule-providers:
+  download_domainset:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/download.txt
+    path: ./sukkaw_ruleset/download_domainset.txt
+  download_non_ip:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/download.txt
+    path: ./sukkaw_ruleset/download_non_ip.txt
+
+rules:
+  - RULE-SET,download_domainset,[Replace with your policy]
+  - RULE-SET,download_non_ip,[Replace with your policy]
 ```
 
 #### Misc
