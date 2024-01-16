@@ -292,7 +292,7 @@ rules:
   - RULE-SET,stream_ip,[Replace with your policy]
 ```
 
-### AI
+#### AI
 
 - 域名规则 人工维护
 - 包含 OpenAI、Bard、Claude、Perplexity 等
