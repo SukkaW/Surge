@@ -27,8 +27,8 @@ export function isProbablyIpv4(hostname: string): boolean {
 
   return (
     numberOfDots === 3
-    && hostname.charCodeAt(0) !== 46
-    && /* '.' */ hostname.charCodeAt(hostname.length - 1) !== 46 /* '.' */
+    && hostname.charCodeAt(0) !== 46 /* '.' */
+    && hostname.charCodeAt(hostname.length - 1) !== 46 /* '.' */
   );
 }
 

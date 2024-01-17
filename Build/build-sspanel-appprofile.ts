@@ -1,6 +1,6 @@
 import { getAppleCdnDomainsPromise } from './build-apple-cdn';
 import { getDomesticDomainsRulesetPromise } from './build-domestic-ruleset';
-import { surgeRulesetToClashClassicalTextRuleset } from './lib/clash';
+import { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashRuleset } from './lib/clash';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import path from 'path';
@@ -16,6 +16,7 @@ const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: bo
   ['Global', true, true],
   ['Microsoft & Apple', true, true],
   ['Stream', true, false],
+  ['Steam Download', true, true],
   ['Domestic', false, true],
   ['Final Match', true, true]
 ];
@@ -35,6 +36,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     microsoftDomains,
     appleDomains,
     streamDomains,
+    steamDomains,
     globalDomains,
     globalPlusDomains,
     telegramDomains,
@@ -55,6 +57,8 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/apple_services.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // stream - domains
     surgeRulesetToClashClassicalTextRuleset(AllStreamServices.flatMap((i) => i.rules)),
+    // steam - domains
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf')).then(surgeDomainsetToClashRuleset),
     // global - domains
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global_plus.conf')).then(surgeRulesetToClashClassicalTextRuleset),
@@ -92,6 +96,7 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
       ...appleDomains
     ],
     streamDomains,
+    steamDomains,
     [
       ...globalDomains,
       ...globalPlusDomains,
@@ -123,16 +128,16 @@ function generateAppProfile(
   directDomains: string[],
   microsoftAppleDomains: string[],
   streamDomains: string[],
+  steamDomains: string[],
   globalDomains: string[],
+
   lanDomains: string[],
   directCidrs: string[],
   streamCidrs: string[],
   globalCidrs: string[],
   lanCidrs: string[]
 ) {
-  const result: string[] = [];
-
-  result.push(
+  return [
     '<?php',
     '',
     `// # Build ${new Date().toISOString()}`,
@@ -190,6 +195,8 @@ function generateAppProfile(
     ...microsoftAppleDomains.map(line => `        '${line},Microsoft & Apple',`),
     // stream - domains
     ...streamDomains.map(line => `        '${line},Stream',`),
+    // steam download - domains
+    ...steamDomains.map(line => `        '${line},Steam Download',`),
     // global - domains
     ...globalDomains.map(line => `        '${line},Global',`),
     // microsoft & apple - ip cidr (nope)
@@ -207,7 +214,5 @@ function generateAppProfile(
     '        \'MATCH,Final Match\',',
     '    ],',
     '];'
-  );
-
-  return result;
+  ];
 }

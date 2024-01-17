@@ -39,3 +39,7 @@ export const surgeRulesetToClashClassicalTextRuleset = (rules: string[] | Set<st
 export const surgeDomainsetToClashDomainset = (domainset: string[]) => {
   return domainset.map(i => (i[0] === '.' ? `+${i}` : i));
 };
+
+export const surgeDomainsetToClashRuleset = (domainset: string[]) => {
+  return domainset.map(i => (i[0] === '.' ? `DOMAIN-SUFFIX,${i.slice(1)}` : `DOMAIN,${i}`));
+};

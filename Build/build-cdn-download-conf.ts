@@ -41,31 +41,49 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   return S3OSSDomains;
 })();
 
-const buildCdnConf = task(import.meta.path, async (span) => {
+export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
   /** @type {string[]} */
   const cdnDomainsList: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'));
   (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
 
-  const description: string[] = [
-    ...SHARED_DESCRIPTION,
-    '',
-    'This file contains object storage and static assets CDN domains.'
-  ];
+  const downloadDomainSet: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/download.conf'));
+  const steamDomainSet: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'));
 
-  return createRuleset(
-    span,
-    'Sukka\'s Ruleset - CDN Domains',
-    description,
-    new Date(),
-    cdnDomainsList,
-    'ruleset',
-    path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'),
-    path.resolve(import.meta.dir, '../Clash/non_ip/cdn.txt')
-  );
+  return Promise.all([
+    createRuleset(
+      span,
+      'Sukka\'s Ruleset - CDN Domains',
+      [
+        ...SHARED_DESCRIPTION,
+        '',
+        'This file contains object storage and static assets CDN domains.'
+      ],
+      new Date(),
+      cdnDomainsList,
+      'ruleset',
+      path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'),
+      path.resolve(import.meta.dir, '../Clash/non_ip/cdn.txt')
+    ),
+    createRuleset(
+      span,
+      'Sukka\'s Ruleset - Large Files Hosting Domains',
+      [
+        ...SHARED_DESCRIPTION,
+        '',
+        'This file contains domains for software updating & large file hosting.'
+      ],
+      new Date(),
+      [
+        ...downloadDomainSet,
+        ...steamDomainSet
+      ],
+      'domainset',
+      path.resolve(import.meta.dir, '../List/domainset/download.conf'),
+      path.resolve(import.meta.dir, '../Clash/domainset/download.txt')
+    )
+  ]);
 });
 
-export { buildCdnConf };
-
 if (import.meta.main) {
-  buildCdnConf();
+  buildCdnDownloadConf();
 }
