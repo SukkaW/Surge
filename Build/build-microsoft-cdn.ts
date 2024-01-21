@@ -19,7 +19,8 @@ const BLACKLIST = [
   'learn.microsoft.com',
   'devblogs.microsoft.com',
   'docs.microsoft.com',
-  'developer.microsoft.com'
+  'developer.microsoft.com',
+  'windowsupdate.com'
 ];
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
