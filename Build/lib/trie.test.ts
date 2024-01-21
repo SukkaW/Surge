@@ -56,7 +56,7 @@ describe('Trie', () => {
 
     expect(trie.delete('rate')).toBeTrue();
     expect(trie.size).toBe(1);
-    expect(trie.delete('tar')).toBe(true);
+    expect(trie.delete('tar')).toBeTrue();
     expect(trie.size).toBe(0);
   });
 
