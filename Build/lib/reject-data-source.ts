@@ -211,10 +211,6 @@ export const PREDEFINED_WHITELIST = [
   'pstmrk.it'
 ];
 
-export const PREDEFINED_ENFORCED_BACKLIST = [
-  'telemetry.mozilla.org'
-];
-
 export const PREDEFINED_ENFORCED_WHITELIST = [
   'godaddysites.com',
   'web.app',

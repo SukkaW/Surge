@@ -109,7 +109,7 @@ async function transformDomainset(parentSpan: Span, sourcePath: string, relative
     )
   ];
 
-  return createRuleset(
+  return span.traceAsyncFn(() => createRuleset(
     span,
     title,
     description,
@@ -118,7 +118,7 @@ async function transformDomainset(parentSpan: Span, sourcePath: string, relative
     'domainset',
     path.resolve(outputSurgeDir, relativePath),
     path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-  );
+  ));
 }
 
 /**

@@ -77,7 +77,7 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
 
   build();
 
-  const search = (text: string) => {
+  return (text: string) => {
     let node: Node | undefined = root;
 
     for (let i = 0, textLen = text.length; i < textLen; i++) {
@@ -95,10 +95,6 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
     }
 
     return false;
-  };
-
-  return {
-    search
   };
 };
 

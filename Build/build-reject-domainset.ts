@@ -4,12 +4,12 @@ import path from 'path';
 import { processHosts, processFilterRules, processDomainLists } from './lib/parse-filter';
 import { createTrie } from './lib/trie';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, PREDEFINED_ENFORCED_BACKLIST, DOMAIN_LISTS } from './lib/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS } from './lib/reject-data-source';
 import { createRuleset, compareAndWriteFile } from './lib/create-file';
 import { processLine } from './lib/process-line';
 import { domainDeduper } from './lib/domain-deduper';
 import createKeywordFilter from './lib/aho-corasick';
-import { readFileByLine } from './lib/fetch-text-by-line';
+import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './trace';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
@@ -63,24 +63,9 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
           setAddFromArray(domainSets, purePhishingDomains);
         }),
         childSpan.traceChild('process reject_sukka.conf').traceAsyncFn(async () => {
-          for await (const l of readFileByLine(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))) {
-            const line = processLine(l);
-            if (!line) continue;
-            domainSets.add(line);
-          }
+          setAddFromArray(domainSets, await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf')));
         })
       ]);
-
-      // remove pre-defined enforced blacklist from whitelist
-      const trie0 = createTrie(filterRuleWhitelistDomainSets);
-
-      for (let i = 0, len1 = PREDEFINED_ENFORCED_BACKLIST.length; i < len1; i++) {
-        const enforcedBlack = PREDEFINED_ENFORCED_BACKLIST[i];
-        const found = trie0.find(enforcedBlack);
-        for (let j = 0, len2 = found.length; j < len2; j++) {
-          filterRuleWhitelistDomainSets.delete(found[j]);
-        }
-      }
 
       return shouldStop;
     });
@@ -116,25 +101,22 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     });
     filterRuleWhitelistDomainSets.forEach(suffix => {
       trie1.find(suffix, true).forEach(f => domainSets.delete(f));
+
+      if (suffix[0] === '.') {
+        // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
+        domainSets.delete(suffix.slice(1));
+      } else {
+        // If `g.msn.com` is whitelisted, then `.g.msn.com` should be removed from domain set
+        domainSets.delete(`.${suffix}`);
+      }
     });
 
     // remove pre-defined enforced blacklist from whitelist
     const kwfilter = createKeywordFilter(domainKeywordsSet);
 
-    // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
     for (const domain of domainSets) {
-      if (domain[0] === '.') {
-        if (filterRuleWhitelistDomainSets.has(domain)) {
-          domainSets.delete(domain);
-          continue;
-        }
-      } else if (filterRuleWhitelistDomainSets.has(`.${domain}`)) {
-        domainSets.delete(domain);
-        continue;
-      }
-
       // Remove keyword
-      if (kwfilter.search(domain)) {
+      if (kwfilter(domain)) {
         domainSets.delete(domain);
       }
     }
