@@ -1,8 +1,7 @@
 // @ts-check
 import path from 'path';
 import { createRuleset } from './lib/create-file';
-import { fetchRemoteTextByLine, readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
-import { processLine } from './lib/process-line';
+import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';

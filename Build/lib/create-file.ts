@@ -1,7 +1,6 @@
 // @ts-check
 import { readFileByLine } from './fetch-text-by-line';
 import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
-import { traceAsync } from './trace-runner';
 import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';

@@ -1,4 +1,3 @@
-import picocolors from 'picocolors';
 import { task } from './trace';
 import path from 'path';
 import { fetchWithRetry } from './lib/fetch-retry';

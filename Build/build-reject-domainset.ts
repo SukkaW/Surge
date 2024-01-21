@@ -6,7 +6,6 @@ import { createTrie } from './lib/trie';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS } from './lib/reject-data-source';
 import { createRuleset, compareAndWriteFile } from './lib/create-file';
-import { processLine } from './lib/process-line';
 import { domainDeduper } from './lib/domain-deduper';
 import createKeywordFilter from './lib/aho-corasick';
 import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';

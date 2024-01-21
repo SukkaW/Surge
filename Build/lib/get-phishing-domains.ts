@@ -1,6 +1,5 @@
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
-import { processDomainLists, processHosts } from './parse-filter';
-import { traceAsync, traceSync } from './trace-runner';
+import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts';
 import { createTrie } from './trie';
 import { createCachedGorhillGetDomain } from './cached-tld-parse';
@@ -182,8 +181,8 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   const results = span.traceChild('get final phishing results').traceSyncFn(() => {
     const results: string[] = [];
     for (const domain in domainCountMap) {
-      if (domainCountMap[domain] > 5) {
-        results.push(domain);
+      if (domainCountMap[domain] >= 5) {
+        results.push(`.${domain}`);
       }
     }
     return results;

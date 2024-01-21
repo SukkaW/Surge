@@ -1,4 +1,3 @@
-import path from 'path';
 import picocolors from 'picocolors';
 
 type Formatter = (result: string) => string;
