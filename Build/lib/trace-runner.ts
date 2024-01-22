@@ -9,7 +9,7 @@ export function traceSync<T>(prefix: string, fn: () => T, timeFormatter: Formatt
   console.log(`${timeFormatter(`[${((end - start) / 1e6).toFixed(3)}ms]`)} ${prefix}`);
   return result;
 }
-traceSync.skip = <T>(_prefix: string, fn: () => T): T => fn();
+// traceSync.skip = <T>(_prefix: string, fn: () => T): T => fn();
 
 export const traceAsync = async <T>(prefix: string, fn: () => Promise<T>, timeFormatter: Formatter = picocolors.blue): Promise<T> => {
   const start = Bun.nanoseconds();
@@ -18,9 +18,3 @@ export const traceAsync = async <T>(prefix: string, fn: () => Promise<T>, timeFo
   console.log(`${timeFormatter(`[${((end - start) / 1e6).toFixed(3)}ms]`)} ${prefix}`);
   return result;
 };
-
-export interface TaskResult {
-  readonly start: number,
-  readonly end: number,
-  readonly taskName: string
-}

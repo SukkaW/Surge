@@ -1,21 +1,34 @@
 import { TTL } from './cache-filesystem';
 
-export const HOSTS = [
-  ['https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext', true, TTL.THREE_HOURS()],
-  ['https://someonewhocares.org/hosts/hosts', true, TTL.THREE_HOURS()],
+type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean, ttl: number];
+
+export const HOSTS: HostsSource[] = [
+  [
+    'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext',
+    ['https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/pgl.yoyo.org/as/serverlist'],
+    true,
+    TTL.THREE_HOURS()
+  ],
+  ['https://someonewhocares.org/hosts/hosts', null, true, TTL.THREE_HOURS()],
   // no coin list is not actively maintained, but it updates daily when being maintained, so we set a 3 days cache ttl
-  ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', null, true, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl
-  ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', true, TTL.TWO_WEEKS()],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', false, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', false, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', null, true, TTL.TWO_WEEKS()],
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.THREE_DAYS()],
   // ad-wars is not actively maintained, so we set a 7 days cache ttl
-  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', false, TTL.ONE_WEEK()],
-  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true, TTL.THREE_HOURS()],
+  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.ONE_WEEK()],
+  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()],
   // Curben's UrlHaus Malicious URL Blocklist
-  // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-agh-online.txt',
-  // 'https://urlhaus-filter.pages.dev/urlhaus-filter-agh-online.txt',
-  ['https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt', true, TTL.THREE_HOURS()]
+  [
+    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt',
+    [
+      'https://urlhaus-filter.pages.dev/urlhaus-filter-hosts.txt',
+      'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-hosts.txt'
+    ],
+    true,
+    TTL.THREE_HOURS()
+  ]
   // Curben's Phishing URL Blocklist
   // Covered by lib/get-phishing-domains.ts
   // 'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt'

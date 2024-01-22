@@ -52,7 +52,7 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
 
   const stop = (time?: number) => {
     if (status === SPAN_STATUS_END) {
-      throw new Error('span already stopped');
+      throw new Error(`span already stopped: ${name}`);
     }
     const end = time ?? Bun.nanoseconds();
 

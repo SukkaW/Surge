@@ -27,14 +27,15 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
 
   const domainSets = new Set<string>();
 
-  let shouldStop = false;
   // Parse from AdGuard Filters
-  await span
+  const shouldStop = await span
     .traceChild('download and process hosts / adblock filter rules')
     .traceAsyncFn(async (childSpan) => {
+      // eslint-disable-next-line sukka/no-single-return -- not single return
+      let shouldStop = false;
       await Promise.all([
         // Parse from remote hosts & domain lists
-        ...HOSTS.map(entry => processHosts(childSpan, entry[0], entry[1], entry[2]).then(hosts => SetHelpers.add(domainSets, hosts))),
+        ...HOSTS.map(entry => processHosts(childSpan, entry[0], entry[1], entry[2], entry[3]).then(hosts => SetHelpers.add(domainSets, hosts))),
 
         ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, entry[0], entry[1], entry[2]).then(hosts => SetHelpers.add(domainSets, hosts))),
 
@@ -44,6 +45,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
             : processFilterRules(childSpan, input[0], input[1], input[2])
         ).then(({ white, black, foundDebugDomain }) => {
           if (foundDebugDomain) {
+            // eslint-disable-next-line sukka/no-single-return -- not single return
             shouldStop = true;
             // we should not break here, as we want to see full matches from all data source
           }
@@ -65,7 +67,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
           setAddFromArray(domainSets, await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf')));
         })
       ]);
-
+      // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;
     });
 

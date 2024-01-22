@@ -44,25 +44,25 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
     }
   ));
 }
-export function processHosts(span: Span, hostsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
-  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn(() => fsCache.apply(
+export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
+  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsCache.apply(
     hostsUrl,
     async () => {
       const domainSets = new Set<string>();
 
-      for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
+      const lineCb = (l: string) => {
         const line = processLine(l);
         if (!line) {
-          continue;
+          return;
         }
 
         const _domain = line.split(/\s/)[1]?.trim();
         if (!_domain) {
-          continue;
+          return;
         }
         const domain = normalizeDomain(_domain);
         if (!domain) {
-          continue;
+          return;
         }
         if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
           console.warn(picocolors.red(hostsUrl), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
@@ -70,6 +70,25 @@ export function processHosts(span: Span, hostsUrl: string, includeAllSubDomain =
         }
 
         domainSets.add(includeAllSubDomain ? `.${domain}` : domain);
+      };
+
+      if (mirrors == null || mirrors.length === 0) {
+        for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
+          lineCb(l);
+        }
+      } else {
+        // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
+        await Promise.resolve();
+
+        const filterRules = await childSpan.traceChild('download hosts').traceAsyncFn(() => {
+          return fetchAssets(hostsUrl, mirrors).then(text => text.split('\n'));
+        });
+
+        childSpan.traceChild('parse hosts').traceSyncFn(() => {
+          for (let i = 0, len = filterRules.length; i < len; i++) {
+            lineCb(filterRules[i]);
+          }
+        });
       }
 
       console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));

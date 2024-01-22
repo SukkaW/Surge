@@ -91,34 +91,36 @@ const processFile = (span: Span, sourcePath: string) => {
   });
 };
 
-async function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: string) {
-  const span = parentSpan.traceChild(`transform domainset: ${path.basename(sourcePath, path.extname(sourcePath))}`);
+function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: string) {
+  return parentSpan
+    .traceChild(`transform domainset: ${path.basename(sourcePath, path.extname(sourcePath))}`)
+    .traceAsyncFn(async (span) => {
+      const res = await processFile(span, sourcePath);
+      if (!res) return;
 
-  const res = await processFile(span, sourcePath);
-  if (!res) return;
+      const [title, descriptions, lines] = res;
 
-  const [title, descriptions, lines] = res;
+      const deduped = domainDeduper(lines);
+      const description = [
+        ...SHARED_DESCRIPTION,
+        ...(
+          descriptions.length
+            ? ['', ...descriptions]
+            : []
+        )
+      ];
 
-  const deduped = domainDeduper(lines);
-  const description = [
-    ...SHARED_DESCRIPTION,
-    ...(
-      descriptions.length
-        ? ['', ...descriptions]
-        : []
-    )
-  ];
-
-  return span.traceAsyncFn(() => createRuleset(
-    span,
-    title,
-    description,
-    new Date(),
-    deduped,
-    'domainset',
-    path.resolve(outputSurgeDir, relativePath),
-    path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-  ));
+      return createRuleset(
+        span,
+        title,
+        description,
+        new Date(),
+        deduped,
+        'domainset',
+        path.resolve(outputSurgeDir, relativePath),
+        path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+      );
+    });
 }
 
 /**
