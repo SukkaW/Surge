@@ -105,7 +105,8 @@ export const DOMESTICS = {
       'robloxdev.cn',
       'wegame.com',
       'wegame.com.cn',
-      'wegameplus.com'
+      'wegameplus.com',
+      'cdn-go.cn'
     ]
   },
   BILIBILI: {
