@@ -80,9 +80,9 @@ export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | n
         // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
         await Promise.resolve();
 
-        const filterRules = await childSpan.traceChild('download hosts').traceAsyncFn(() => {
-          return fetchAssets(hostsUrl, mirrors).then(text => text.split('\n'));
-        });
+        const filterRules = await childSpan
+          .traceChild('download hosts')
+          .traceAsyncFn(() => fetchAssets(hostsUrl, mirrors).then(text => text.split('\n')));
 
         childSpan.traceChild('parse hosts').traceSyncFn(() => {
           for (let i = 0, len = filterRules.length; i < len; i++) {
