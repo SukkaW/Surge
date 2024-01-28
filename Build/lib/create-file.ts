@@ -35,11 +35,11 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
         }
         if (
           lineA[0] === '/'
-            && lineA[1] === '/'
-            && lineA[3] === '#'
-            && lineB[0] === '/'
-            && lineB[1] === '/'
-            && lineB[3] === '#'
+          && lineA[1] === '/'
+          && lineB[0] === '/'
+          && lineB[1] === '/'
+          && lineA[3] === '#'
+          && lineB[3] === '#'
         ) {
           continue;
         }

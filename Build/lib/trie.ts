@@ -2,20 +2,34 @@
  * Suffix Trie based on Mnemonist Trie
  */
 
+// import { Trie } from 'mnemonist';
+
 export const SENTINEL = Symbol('SENTINEL');
 
 type TrieNode = {
-  [SENTINEL]: boolean
+  [SENTINEL]: boolean,
+  [Bun.inspect.custom]: () => string
 } & Map<string, TrieNode>;
 
+const deepTrieNodeToJSON = (node: TrieNode) => {
+  const obj: Record<string, any> = {};
+  if (node[SENTINEL]) {
+    obj['[start]'] = node[SENTINEL];
+  }
+  node.forEach((value, key) => {
+    obj[key] = deepTrieNodeToJSON(value);
+  });
+  return obj;
+};
+
 const createNode = (): TrieNode => {
-  const map = new Map<string, TrieNode>();
-  const node = map as TrieNode;
+  const node = new Map<string, TrieNode>() as TrieNode;
   node[SENTINEL] = false;
+  node[Bun.inspect.custom] = () => JSON.stringify(deepTrieNodeToJSON(node), null, 2);
   return node;
 };
 
-export const createTrie = (from?: string[] | Set<string>) => {
+export const createTrie = (from?: string[] | Set<string> | null) => {
   let size = 0;
   const root: TrieNode = createNode();
 
@@ -25,6 +39,7 @@ export const createTrie = (from?: string[] | Set<string>) => {
   const add = (suffix: string): void => {
     let node: TrieNode = root;
     let token: string;
+
     for (let i = suffix.length - 1; i >= 0; i--) {
       token = suffix[i];
 
@@ -40,8 +55,8 @@ export const createTrie = (from?: string[] | Set<string>) => {
     // Do we need to increase size?
     if (!node[SENTINEL]) {
       size++;
-      node[SENTINEL] = true;
     }
+    node[SENTINEL] = true;
   };
 
   /**
@@ -84,8 +99,8 @@ export const createTrie = (from?: string[] | Set<string>) => {
     const nodeStack: TrieNode[] = [node];
     const suffixStack: string[] = [inputSuffix];
 
-    while (nodeStack.length) {
-      const suffix = suffixStack.pop()!;
+    do {
+      const suffix: string = suffixStack.pop()!;
       node = nodeStack.pop()!;
 
       if (node[SENTINEL]) {
@@ -98,9 +113,48 @@ export const createTrie = (from?: string[] | Set<string>) => {
         nodeStack.push(childNode);
         suffixStack.push(k + suffix);
       });
-    }
+    } while (nodeStack.length);
 
     return matches;
+  };
+
+  /**
+   * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
+   */
+  const substractSetInPlaceFromFound = (inputSuffix: string, set: Set<string>) => {
+    let node: TrieNode | undefined = root;
+    let token: string;
+
+    // Find the leaf-est node, and early return if not any
+    for (let i = inputSuffix.length - 1; i >= 0; i--) {
+      token = inputSuffix[i];
+
+      node = node.get(token);
+      if (!node) {
+        return;
+      }
+    }
+
+    // Performing DFS from prefix
+    const nodeStack: TrieNode[] = [node];
+    const suffixStack: string[] = [inputSuffix];
+
+    do {
+      const suffix = suffixStack.pop()!;
+      node = nodeStack.pop()!;
+
+      if (node[SENTINEL]) {
+        if (suffix !== inputSuffix) {
+          // found match, delete it from set
+          set.delete(suffix);
+        }
+      }
+
+      node.forEach((childNode, k) => {
+        nodeStack.push(childNode);
+        suffixStack.push(k + suffix);
+      });
+    } while (nodeStack.length);
   };
 
   /**
@@ -169,23 +223,65 @@ export const createTrie = (from?: string[] | Set<string>) => {
     return node[SENTINEL];
   };
 
-  if (from) {
+  if (Array.isArray(from)) {
+    for (let i = 0, l = from.length; i < l; i++) {
+      add(from[i]);
+    }
+  } else if (from) {
     from.forEach(add);
   }
+
+  const dump = () => {
+    const node = root;
+    const nodeStack: TrieNode[] = [];
+    const suffixStack: string[] = [];
+    // Resolving initial string
+    const suffix = '';
+
+    nodeStack.push(node);
+    suffixStack.push(suffix);
+
+    const results: string[] = [];
+
+    let currentNode: TrieNode;
+    let currentPrefix: string;
+    let hasValue = false;
+
+    do {
+      currentNode = nodeStack.pop()!;
+      currentPrefix = suffixStack.pop()!;
+
+      if (currentNode[SENTINEL]) {
+        hasValue = true;
+      }
+
+      node.forEach((childNode, k) => {
+        nodeStack.push(childNode);
+        suffixStack.push(k + suffix);
+      });
+
+      if (hasValue) results.push(currentPrefix);
+    } while (nodeStack.length);
+
+    return results;
+  };
 
   return {
     add,
     contains,
     find,
+    substractSetInPlaceFromFound,
     remove,
     delete: remove,
     has,
+    dump,
     get size() {
       return size;
     },
     get root() {
       return root;
-    }
+    },
+    [Bun.inspect.custom]: () => JSON.stringify(deepTrieNodeToJSON(root), null, 2)
   };
 };
 

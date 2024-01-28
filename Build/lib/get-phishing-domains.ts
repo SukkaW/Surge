@@ -104,11 +104,10 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     return parentSpan.traceChild('delete whitelisted from domainset').traceSyncFn(() => {
       for (let i = 0, len = WHITELIST_DOMAIN.length; i < len; i++) {
         const white = WHITELIST_DOMAIN[i];
-        const found = trieForRemovingWhiteListed.find(`.${white}`, true);
-        for (let j = 0, len2 = found.length; j < len2; j++) {
-          domainSet.delete(found[j]);
-        }
         domainSet.delete(white);
+        domainSet.delete(`.${white}`);
+
+        trieForRemovingWhiteListed.substractSetInPlaceFromFound(`.${white}`, domainSet);
       }
     });
   });

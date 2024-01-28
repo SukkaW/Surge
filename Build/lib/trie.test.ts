@@ -11,6 +11,7 @@ describe('Trie', () => {
     trie.add('akku');
 
     expect(trie.size).toBe(3);
+
     expect(trie.has('sukka')).toBeTrue();
     expect(trie.has('ukka')).toBeTrue();
     expect(trie.has('akku')).toBeTrue();
@@ -86,59 +87,6 @@ describe('Trie', () => {
     expect(trie.find('')).toEqual(['greek', 'roman', 'esqueroman', 'sesqueroman']);
   });
 
-  // it('should work with custom tokens.', () => {
-  //   const trie = new Trie(Array);
-
-  //   trie.add(['the', 'cat', 'eats', 'the', 'mouse']);
-  //   trie.add(['the', 'mouse', 'eats', 'cheese']);
-  //   trie.add(['hello', 'world']);
-
-  //   assert.strictEqual(trie.size, 3);
-
-  //   assert.strictEqual(trie.has(['the', 'mouse', 'eats', 'cheese']), true);
-  //   assert.strictEqual(trie.has(['the', 'mouse', 'eats']), false);
-
-  //   assert.strictEqual(trie.delete(['hello']), false);
-  //   assert.strictEqual(trie.delete(['hello', 'world']), true);
-
-  //   assert.strictEqual(trie.size, 2);
-  // });
-
-  // it('should be possible to iterate over the trie\'s prefixes.', () => {
-  //   const trie = new Trie();
-
-  //   trie.add('rat');
-  //   trie.add('rate');
-
-  //   let prefixes = take(trie.prefixes());
-
-  //   assert.deepStrictEqual(prefixes, ['rat', 'rate']);
-
-  //   trie.add('rater');
-  //   trie.add('rates');
-
-  //   prefixes = take(trie.keys('rate'));
-
-  //   assert.deepStrictEqual(prefixes, ['rate', 'rates', 'rater']);
-  // });
-
-  // it('should be possible to iterate over the trie\'s prefixes using for...of.', () => {
-  //   const trie = new Trie();
-
-  //   trie.add('rat');
-  //   trie.add('rate');
-
-  //   const tests = [
-  //     'rat',
-  //     'rate'
-  //   ];
-
-  //   let i = 0;
-
-  //   for (const prefix of trie)
-  //     assert.deepStrictEqual(prefix, tests[i++]);
-  // });
-
   it('should be possible to create a trie from an arbitrary iterable.', () => {
     const words = ['roman', 'esqueroman'];
 
@@ -159,9 +107,10 @@ describe('surge domainset dedupe', () => {
 
   it('should remove subdomain', () => {
     const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net']);
-    // trie.find('noc.one').toBe(['www.noc.one']);
+
+    console.log(trie);
+
     expect(trie.find('.skk.moe')).toStrictEqual(['image.cdn.skk.moe', 'blog.skk.moe']);
-    // trie.find('sukkaw.net').toBe(['cdn.sukkaw.net']);
     expect(trie.find('.sukkaw.com')).toStrictEqual(['www.sukkaw.com']);
   });
 

@@ -33,7 +33,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
         trie.add(domain);
       }
     }
-    return new Set(PROBE_DOMAINS.flatMap(domain => trie.find(domain, false)));
+    return new Set(PROBE_DOMAINS.flatMap(domain => trie.find(domain)));
   });
 
   // Second trie is to remove blacklisted domains

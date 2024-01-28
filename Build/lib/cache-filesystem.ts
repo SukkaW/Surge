@@ -16,8 +16,12 @@ const enum CacheStatus {
 }
 
 export interface CacheOptions {
+  /** Path to sqlite file dir */
   cachePath?: string,
-  tbd?: number
+  /** Time before deletion */
+  tbd?: number,
+  /** Cache table name */
+  tableName?: string
 }
 
 interface CacheApplyNonStringOption<T> {
@@ -60,13 +64,18 @@ export const TTL = {
 
 export class Cache {
   db: Database;
-  tbd = 60 * 1000; // time before deletion
+  /** Time before deletion */
+  tbd = 60 * 1000;
+  /** SQLite file path */
   cachePath: string;
+  /** Table name */
+  tableName: string;
 
-  constructor({ cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'), tbd }: CacheOptions = {}) {
+  constructor({ cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'), tbd, tableName = 'cache' }: CacheOptions = {}) {
     this.cachePath = cachePath;
     mkdirSync(this.cachePath, { recursive: true });
     if (tbd != null) this.tbd = tbd;
+    this.tableName = tableName;
 
     const db = new Database(path.join(this.cachePath, 'cache.db'));
 
@@ -75,8 +84,8 @@ export class Cache {
     db.exec('PRAGMA temp_store = memory;');
     db.exec('PRAGMA optimize;');
 
-    db.prepare('CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, value TEXT, ttl REAL NOT NULL);').run();
-    db.prepare('CREATE INDEX IF NOT EXISTS cache_ttl ON cache (ttl);').run();
+    db.prepare(`CREATE TABLE IF NOT EXISTS ${this.tableName} (key TEXT PRIMARY KEY, value TEXT, ttl REAL NOT NULL);`).run();
+    db.prepare(`CREATE INDEX IF NOT EXISTS cache_ttl ON ${this.tableName} (ttl);`).run();
 
     const date = new Date();
 
@@ -84,7 +93,7 @@ export class Cache {
 
     // ttl + tbd < now => ttl < now - tbd
     const now = date.getTime() - this.tbd;
-    db.prepare('DELETE FROM cache WHERE ttl < ?').run(now);
+    db.prepare(`DELETE FROM ${this.tableName} WHERE ttl < ?`).run(now);
 
     this.db = db;
 
@@ -100,7 +109,7 @@ export class Cache {
 
   set(key: string, value: string, ttl = 60 * 1000): void {
     const insert = this.db.prepare(
-      'INSERT INTO cache (key, value, ttl) VALUES ($key, $value, $valid) ON CONFLICT(key) DO UPDATE SET value = $value, ttl = $valid'
+      `INSERT INTO ${this.tableName} (key, value, ttl) VALUES ($key, $value, $valid) ON CONFLICT(key) DO UPDATE SET value = $value, ttl = $valid`
     );
 
     insert.run({
@@ -112,7 +121,7 @@ export class Cache {
 
   get(key: string, defaultValue?: string): string | undefined {
     const rv = this.db.prepare<{ value: string }, string>(
-      'SELECT value FROM cache WHERE key = ?'
+      `SELECT value FROM ${this.tableName} WHERE key = ?`
     ).get(key);
 
     if (!rv) return defaultValue;
@@ -121,13 +130,13 @@ export class Cache {
 
   has(key: string): CacheStatus {
     const now = Date.now();
-    const rv = this.db.prepare<{ ttl: number }, string>('SELECT ttl FROM cache WHERE key = ?').get(key);
+    const rv = this.db.prepare<{ ttl: number }, string>(`SELECT ttl FROM ${this.tableName} WHERE key = ?`).get(key);
 
     return !rv ? CacheStatus.Miss : (rv.ttl > now ? CacheStatus.Hit : CacheStatus.Stale);
   }
 
   del(key: string): void {
-    this.db.prepare('DELETE FROM cache WHERE key = ?').run(key);
+    this.db.prepare(`DELETE FROM ${this.tableName} WHERE key = ?`).run(key);
   }
 
   async apply<T>(
@@ -167,9 +176,9 @@ export class Cache {
   }
 }
 
-export const fsCache = traceSync('initializing filesystem cache', () => new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') }));
+export const fsFetchCache = traceSync('initializing filesystem cache for fetch', () => new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') }));
 // process.on('exit', () => {
-//   fsCache.destroy();
+//   fsFetchCache.destroy();
 // });
 
 const separator = '\u0000';

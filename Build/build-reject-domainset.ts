@@ -79,48 +79,58 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   // Dedupe domainSets
-  await span.traceChild('dedupe from black keywords/suffixes').traceAsyncFn(async () => {
-  /** Collect DOMAIN-SUFFIX from non_ip/reject.conf for deduplication */
+  await span.traceChild('dedupe from black keywords/suffixes').traceAsyncFn(async (childSpan) => {
+    /** Collect DOMAIN-SUFFIX from non_ip/reject.conf for deduplication */
     const domainSuffixSet = new Set<string>();
     /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
     const domainKeywordsSet = new Set<string>();
 
-    for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
-      const [type, keyword] = line.split(',');
+    await childSpan.traceChild('collect keywords/suffixes').traceAsyncFn(async () => {
+      for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
+        const [type, value] = line.split(',');
 
-      if (type === 'DOMAIN-KEYWORD') {
-        domainKeywordsSet.add(keyword.trim());
-      } else if (type === 'DOMAIN-SUFFIX') {
-        domainSuffixSet.add(keyword.trim());
-      }
-    }
-
-    const trie1 = createTrie(domainSets);
-
-    domainSuffixSet.forEach(suffix => {
-      trie1.find(suffix, true).forEach(f => domainSets.delete(f));
-    });
-    filterRuleWhitelistDomainSets.forEach(suffix => {
-      trie1.find(suffix, true).forEach(f => domainSets.delete(f));
-
-      if (suffix[0] === '.') {
-        // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
-        domainSets.delete(suffix.slice(1));
-      } else {
-        // If `g.msn.com` is whitelisted, then `.g.msn.com` should be removed from domain set
-        domainSets.delete(`.${suffix}`);
+        if (type === 'DOMAIN-KEYWORD') {
+          domainKeywordsSet.add(value.trim());
+        } else if (type === 'DOMAIN-SUFFIX') {
+          domainSuffixSet.add(value.trim());
+        }
       }
     });
 
-    // remove pre-defined enforced blacklist from whitelist
-    const kwfilter = createKeywordFilter(domainKeywordsSet);
+    // Remove as many domains as possible from domainSets before creating trie
+    SetHelpers.subtract(domainSets, domainSuffixSet);
+    SetHelpers.subtract(domainSets, filterRuleWhitelistDomainSets);
 
-    for (const domain of domainSets) {
+    childSpan.traceChild('dedupe from white/suffixes').traceSyncFn(() => {
+      const trie = createTrie(domainSets);
+
+      domainSuffixSet.forEach(suffix => {
+        trie.remove(suffix);
+        trie.substractSetInPlaceFromFound(suffix, domainSets);
+      });
+      filterRuleWhitelistDomainSets.forEach(suffix => {
+        trie.substractSetInPlaceFromFound(suffix, domainSets);
+
+        if (suffix[0] === '.') {
+          // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
+          domainSets.delete(suffix.slice(1));
+        } else {
+          // If `g.msn.com` is whitelisted, then `.g.msn.com` should be removed from domain set
+          domainSets.delete(`.${suffix}`);
+        }
+      });
+    });
+
+    childSpan.traceChild('dedupe from black keywords').traceSyncFn(() => {
+      const kwfilter = createKeywordFilter(domainKeywordsSet);
+
+      for (const domain of domainSets) {
       // Remove keyword
-      if (kwfilter(domain)) {
-        domainSets.delete(domain);
+        if (kwfilter(domain)) {
+          domainSets.delete(domain);
+        }
       }
-    }
+    });
 
     console.log(`Deduped ${previousSize} - ${domainSets.size} = ${previousSize - domainSets.size} from black keywords and suffixes!`);
   });

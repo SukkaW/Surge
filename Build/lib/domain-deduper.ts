@@ -12,12 +12,7 @@ export function domainDeduper(inputDomains: string[], toArray = true): string[] 
       continue;
     }
 
-    const found = trie.find(d, false);
-
-    for (let j = 0, len2 = found.length; j < len2; j++) {
-      sets.delete(found[j]);
-    }
-
+    trie.substractSetInPlaceFromFound(d, sets);
     sets.delete(d.slice(1));
   }
 
