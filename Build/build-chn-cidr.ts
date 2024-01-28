@@ -2,7 +2,7 @@ import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { resolve as pathResolve } from 'path';
 import { compareAndWriteFile, withBannerArray } from './lib/create-file';
 import { processLineFromReadline } from './lib/process-line';
-import { traceAsync, traceSync } from './lib/trace-runner';
+import { traceSync } from './lib/trace-runner';
 import { task } from './trace';
 
 import { exclude } from 'fast-cidr-tools';
@@ -20,11 +20,7 @@ const INCLUDE_CIDRS = [
 ];
 
 export const getChnCidrPromise = createMemoizedPromise(async () => {
-  const cidr = await traceAsync(
-    picocolors.gray('download chnroutes2'),
-    async () => processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt')),
-    picocolors.gray
-  );
+  const cidr = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
   return traceSync(
     picocolors.gray('processing chnroutes2'),
     () => exclude([...cidr, ...INCLUDE_CIDRS], EXCLUDE_CIDRS, true),
@@ -33,7 +29,11 @@ export const getChnCidrPromise = createMemoizedPromise(async () => {
 });
 
 export const buildChnCidr = task(import.meta.path, async (span) => {
-  const filteredCidr = await getChnCidrPromise();
+  const cidrPromise = getChnCidrPromise();
+  const peeked = Bun.peek(cidrPromise);
+  const filteredCidr: string[] = peeked === cidrPromise
+    ? await span.traceChild('download chnroutes2').tracePromise(cidrPromise)
+    : (peeked as string[]);
 
   // Can not use SHARED_DESCRIPTION here as different license
   const description = [

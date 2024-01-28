@@ -5,9 +5,9 @@ import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 
-export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsCache.apply(
+export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCache.apply(
   'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf',
   () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
   {
@@ -18,7 +18,11 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsCache.app
 ));
 
 export const buildAppleCdn = task(import.meta.path, async (span) => {
-  const res = await span.traceChild('get apple cdn domains').traceAsyncFn(getAppleCdnDomainsPromise);
+  const promise = getAppleCdnDomainsPromise();
+  const peeked = Bun.peek(promise);
+  const res: string[] = peeked === promise
+    ? await span.traceChild('get apple cdn domains').traceAsyncFn(() => promise)
+    : (peeked as string[]);
 
   const description = [
     ...SHARED_DESCRIPTION,

@@ -42,12 +42,19 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
 })();
 
 export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
-  /** @type {string[]} */
-  const cdnDomainsList: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf'));
-  (await getS3OSSDomainsPromise).forEach((domain: string) => { cdnDomainsList.push(`DOMAIN-SUFFIX,${domain}`); });
+  const [
+    cdnDomainsList,
+    S3OSSDomains,
+    downloadDomainSet,
+    steamDomainSet
+  ] = await Promise.all([
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf')),
+    getS3OSSDomainsPromise,
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/download.conf')),
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
+  ]);
 
-  const downloadDomainSet: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/download.conf'));
-  const steamDomainSet: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'));
+  cdnDomainsList.push(...S3OSSDomains);
 
   return Promise.all([
     createRuleset(

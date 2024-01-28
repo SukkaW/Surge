@@ -18,9 +18,14 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import * as SetHelpers from 'mnemonist/set';
 import { setAddFromArray } from './lib/set-add-from-array';
+import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 
 export const buildRejectDomainSet = task(import.meta.path, async (span) => {
-  const gorhill = await getGorhillPublicSuffixPromise();
+  const gorhillPromise = getGorhillPublicSuffixPromise();
+  const gorhillPeeked = Bun.peek(gorhillPromise);
+  const gorhill: PublicSuffixList = gorhillPeeked === gorhillPromise
+    ? await gorhillPromise
+    : (gorhillPeeked as PublicSuffixList);
 
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -105,7 +110,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       const trie = createTrie(domainSets);
 
       domainSuffixSet.forEach(suffix => {
-        trie.remove(suffix);
+        domainSets.delete(suffix);
         trie.substractSetInPlaceFromFound(suffix, domainSets);
       });
       filterRuleWhitelistDomainSets.forEach(suffix => {

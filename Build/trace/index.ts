@@ -28,6 +28,7 @@ export interface Span {
   readonly traceChild: (name: string) => Span,
   readonly traceSyncFn: <T>(fn: (span: Span) => T) => T,
   readonly traceAsyncFn: <T>(fn: (span: Span) => T | Promise<T>) => Promise<T>,
+  readonly tracePromise: <T>(promise: Promise<T>) => Promise<T>,
   readonly traceResult: TraceResult
 }
 
@@ -83,6 +84,13 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
     },
     get traceResult() {
       return curTraceResult;
+    },
+    async tracePromise<T>(promise: Promise<T>): Promise<T> {
+      try {
+        return await promise;
+      } finally {
+        span.stop();
+      }
     }
   };
 

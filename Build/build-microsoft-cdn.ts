@@ -24,24 +24,21 @@ const BLACKLIST = [
 ];
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
-  const set = await traceAsync('fetch accelerated-domains.china.conf', async () => {
-    // First trie is to find the microsoft domains that matches probe domains
-    const trie = createTrie();
-    for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
-      if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
-        const domain = line.slice(8, -16);
-        trie.add(domain);
-      }
+  // First trie is to find the microsoft domains that matches probe domains
+  const trie = createTrie();
+  for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
+    if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
+      const domain = line.slice(8, -16);
+      trie.add(domain);
     }
-    return new Set(PROBE_DOMAINS.flatMap(domain => trie.find(domain)));
-  });
+  }
+  const set = new Set(PROBE_DOMAINS.flatMap(domain => trie.find(domain)));
 
   // Second trie is to remove blacklisted domains
   const trie2 = createTrie(set);
-  const black = BLACKLIST.flatMap(domain => trie2.find(domain, true));
-  for (let i = 0, len = black.length; i < len; i++) {
-    set.delete(black[i]);
-  }
+  BLACKLIST.forEach(black => {
+    trie2.substractSetInPlaceFromFound(black, set);
+  });
 
   return Array.from(set).map(d => `DOMAIN-SUFFIX,${d}`).concat(WHITELIST);
 });
@@ -56,12 +53,18 @@ export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
+  const promise = getMicrosoftCdnRulesetPromise();
+  const peeked = Bun.peek(promise);
+  const res: string[] = peeked === promise
+    ? await span.traceChild('get microsoft cdn domains').tracePromise(promise)
+    : (peeked as string[]);
+
   return createRuleset(
     span,
     'Sukka\'s Ruleset - Microsoft CDN',
     description,
     new Date(),
-    await getMicrosoftCdnRulesetPromise(),
+    res,
     'ruleset',
     path.resolve(import.meta.dir, '../List/non_ip/microsoft_cdn.conf'),
     path.resolve(import.meta.dir, '../Clash/non_ip/microsoft_cdn.txt')

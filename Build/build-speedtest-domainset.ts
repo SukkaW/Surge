@@ -12,14 +12,14 @@ import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import picocolors from 'picocolors';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 import { createMemoizedPromise } from './lib/memo-promise';
 
 import * as SetHelpers from 'mnemonist/set';
 
 const s = new Sema(2);
 
-const latestTopUserAgentsPromise = fsCache.apply(
+const latestTopUserAgentsPromise = fsFetchCache.apply(
   'https://unpkg.com/top-user-agents@latest/src/desktop.json',
   () => fetchWithRetry('https://unpkg.com/top-user-agents@latest/src/desktop.json')
     .then(res => res.json<string[]>())
@@ -39,7 +39,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
-    return await fsCache.apply(
+    return await fsFetchCache.apply(
       url,
       () => s.acquire().then(() => fetchWithRetry(url, {
         headers: {

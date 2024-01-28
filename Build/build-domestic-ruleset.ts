@@ -27,13 +27,19 @@ export const buildDomesticRuleset = task(import.meta.path, async (span) => {
     'This file contains known addresses that are avaliable in the Mainland China.'
   ];
 
+  const promise = getDomesticDomainsRulesetPromise();
+  const peeked = Bun.peek(promise);
+  const res: string[] = peeked === promise
+    ? await promise
+    : (peeked as string[]);
+
   return Promise.all([
     createRuleset(
       span,
       'Sukka\'s Ruleset - Domestic Domains',
       rulesetDescription,
       new Date(),
-      await getDomesticDomainsRulesetPromise(),
+      res,
       'ruleset',
       path.resolve(import.meta.dir, '../List/non_ip/domestic.conf'),
       path.resolve(import.meta.dir, '../Clash/non_ip/domestic.txt')

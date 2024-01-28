@@ -158,9 +158,21 @@ export class Cache {
     let value: T;
     if (cached == null) {
       console.log(picocolors.yellow('[cache] miss'), picocolors.gray(key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
-      value = await fn();
 
       const serializer = 'serializer' in opt ? opt.serializer : identity;
+
+      const promise = fn();
+      const peeked = Bun.peek(promise);
+
+      if (peeked === promise) {
+        return promise.then((value) => {
+          const serializer = 'serializer' in opt ? opt.serializer : identity;
+          this.set(key, serializer(value), ttl);
+          return value;
+        });
+      }
+
+      value = peeked as T;
       this.set(key, serializer(value), ttl);
     } else {
       console.log(picocolors.green('[cache] hit'), picocolors.gray(key));
@@ -168,6 +180,7 @@ export class Cache {
       const deserializer = 'deserializer' in opt ? opt.deserializer : identity;
       value = deserializer(cached);
     }
+
     return value;
   }
 

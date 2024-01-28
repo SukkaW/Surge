@@ -5,11 +5,11 @@ import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-t
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
-import { TTL, deserializeArray, fsCache, serializeArray } from './lib/cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 
 const URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 
-const getBogusNxDomainIPsPromise = fsCache.apply(
+const getBogusNxDomainIPsPromise = fsFetchCache.apply(
   URL,
   async () => {
     const result: string[] = [];
@@ -34,7 +34,13 @@ const getBogusNxDomainIPsPromise = fsCache.apply(
 
 export const buildAntiBogusDomain = task(import.meta.path, async (span) => {
   const result: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/ip/reject.conf'));
-  result.push(...(await getBogusNxDomainIPsPromise));
+
+  const peeked = Bun.peek(getBogusNxDomainIPsPromise);
+  const bogusNxDomainIPs = peeked === getBogusNxDomainIPsPromise
+    ? await span.traceChild('get bogus nxdomain ips').traceAsyncFn(() => getBogusNxDomainIPsPromise)
+    : (peeked as string[]);
+
+  result.push(...bogusNxDomainIPs);
 
   const description = [
     ...SHARED_DESCRIPTION,

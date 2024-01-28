@@ -33,7 +33,11 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
 });
 
 export const buildTelegramCIDR = task(import.meta.path, async (span) => {
-  const { date, results } = await getTelegramCIDRPromise();
+  const promise = getTelegramCIDRPromise();
+  const peeked = Bun.peek(promise);
+  const { date, results } = peeked === promise
+    ? await span.traceChild('get telegram cidr').tracePromise(promise)
+    : (peeked as { date: Date, results: string[] });
 
   if (results.length === 0) {
     throw new Error('Failed to fetch data!');

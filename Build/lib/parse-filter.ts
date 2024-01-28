@@ -13,6 +13,7 @@ import type { Span } from '../trace';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
+const temporaryBypass = DEBUG_DOMAIN_TO_FIND !== null;
 
 export function processDomainLists(span: Span, domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
   return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn(() => fsFetchCache.apply(
@@ -38,7 +39,7 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
     },
     {
       ttl,
-      temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
+      temporaryBypass,
       serializer: serializeSet,
       deserializer: deserializeSet
     }
@@ -97,7 +98,7 @@ export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | n
     },
     {
       ttl,
-      temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
+      temporaryBypass,
       serializer: serializeSet,
       deserializer: deserializeSet
     }
@@ -131,7 +132,11 @@ export async function processFilterRules(
 
       const warningMessages: string[] = [];
 
-      const gorhill = await getGorhillPublicSuffixPromise();
+      const gorhillPromise = getGorhillPublicSuffixPromise();
+      const peekedGorhill = Bun.peek(gorhillPromise);
+      const gorhill = peekedGorhill === gorhillPromise
+        ? await span.traceChild('get gorhill').tracePromise(gorhillPromise)
+        : (peekedGorhill as PublicSuffixList);
 
       /**
      * @param {string} line
@@ -215,7 +220,7 @@ export async function processFilterRules(
     },
     {
       ttl,
-      temporaryBypass: DEBUG_DOMAIN_TO_FIND !== null,
+      temporaryBypass,
       serializer: JSON.stringify,
       deserializer: JSON.parse
     }
