@@ -54,7 +54,7 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
   ]);
 
-  cdnDomainsList.push(...S3OSSDomains);
+  cdnDomainsList.push(...Array.from(S3OSSDomains).map((domain) => `DOMAIN-SUFFIX,${domain}`));
 
   return Promise.all([
     createRuleset(
