@@ -150,15 +150,22 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   // Create reject stats
   const rejectDomainsStats: Array<[string, number]> = span
     .traceChild('create reject stats')
-    .traceSyncFn(() => Object.entries(
-      dudupedDominArray.reduce<Record<string, number>>((acc, cur) => {
-        const suffix = tldts.getDomain(cur, { allowPrivateDomains: false, detectIp: false, validateHostname: false });
-        if (suffix) {
-          acc[suffix] = (acc[suffix] || 0) + 1;
+    .traceSyncFn(() => {
+      const tldtsOpt = { allowPrivateDomains: false, detectIp: false, validateHostname: false };
+      const statMap = dudupedDominArray.reduce<Map<string, number>>((acc, cur) => {
+        const suffix = tldts.getDomain(cur, tldtsOpt);
+        if (!suffix) return acc;
+
+        if (acc.has(suffix)) {
+          acc.set(suffix, acc.get(suffix)! + 1);
+        } else {
+          acc.set(suffix, 1);
         }
         return acc;
-      }, {})
-    ).filter(a => a[1] > 5).sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0])));
+      }, new Map());
+
+      return Array.from(statMap.entries()).filter(a => a[1] > 9).sort((a, b) => (b[1] - a[1]));
+    });
 
   const description = [
     ...SHARED_DESCRIPTION,
