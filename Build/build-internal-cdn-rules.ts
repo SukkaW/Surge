@@ -20,11 +20,11 @@ const processLocalDomainSet = async (domainSetPath: string, set: Set<string>) =>
 const processLocalRuleSet = async (ruleSetPath: string, set: Set<string>, keywords: Set<string>) => {
   for await (const line of readFileByLine(ruleSetPath)) {
     if (line.startsWith('DOMAIN-SUFFIX,')) {
-      set.add(line.replace('DOMAIN-SUFFIX,', ''));
+      set.add(line.slice(14));
     } else if (line.startsWith('DOMAIN,')) {
-      set.add(line.replace('DOMAIN,', ''));
+      set.add(line.slice(7));
     } else if (line.startsWith('DOMAIN-KEYWORD')) {
-      keywords.add(escapeRegExp(line.replace('DOMAIN-KEYWORD,', '')));
+      keywords.add(escapeRegExp(line.slice(15)));
     } else if (line.includes('USER-AGENT,') || line.includes('PROCESS-NAME,') || line.includes('URL-REGEX,')) {
       // do nothing
     } else if (processLine(line)) {
@@ -43,6 +43,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async (span) => {
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_proxy.conf'), proxySet, proxyKeywords),
+    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_plus.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/stream.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/telegram.conf'), proxySet, proxyKeywords),
     processLocalDomainSet(path.resolve(import.meta.dir, '../List/domainset/cdn.conf'), proxySet),
