@@ -190,6 +190,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
       'Tokyo',
       'Singapore',
       'Korea',
+      'Seoul',
       'Canada',
       'Toronto',
       'Montreal',

@@ -15,19 +15,20 @@ const enum CacheStatus {
   Miss = 'miss'
 }
 
-export interface CacheOptions {
+export interface CacheOptions<S = string> {
   /** Path to sqlite file dir */
   cachePath?: string,
   /** Time before deletion */
   tbd?: number,
   /** Cache table name */
-  tableName?: string
+  tableName?: string,
+  type?: S extends string ? 'string' : 'buffer'
 }
 
-interface CacheApplyNonStringOption<T> {
+interface CacheApplyNonStringOption<T, S = string> {
   ttl?: number | null,
-  serializer: (value: T) => string,
-  deserializer: (cached: string) => T,
+  serializer: (value: T) => S,
+  deserializer: (cached: S) => T,
   temporaryBypass?: boolean
 }
 
@@ -36,7 +37,7 @@ interface CacheApplyStringOption {
   temporaryBypass?: boolean
 }
 
-type CacheApplyOption<T> = T extends string ? CacheApplyStringOption : CacheApplyNonStringOption<T>;
+type CacheApplyOption<T, S = string> = T extends string ? CacheApplyStringOption : CacheApplyNonStringOption<T, S>;
 
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -62,7 +63,7 @@ export const TTL = {
   TWO_WEEKS: () => randomInt(10, 14) * ONE_DAY
 };
 
-export class Cache {
+export class Cache<S = string> {
   db: Database;
   /** Time before deletion */
   tbd = 60 * 1000;
@@ -70,12 +71,19 @@ export class Cache {
   cachePath: string;
   /** Table name */
   tableName: string;
+  type: S extends string ? 'string' : 'buffer';
 
-  constructor({ cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'), tbd, tableName = 'cache' }: CacheOptions = {}) {
+  constructor({
+    cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'), tbd, tableName = 'cache', type }: CacheOptions<S> = {}) {
     this.cachePath = cachePath;
     mkdirSync(this.cachePath, { recursive: true });
     if (tbd != null) this.tbd = tbd;
     this.tableName = tableName;
+    if (type) {
+      this.type = type;
+    } else {
+      this.type = 'string' as any;
+    }
 
     const db = new Database(path.join(this.cachePath, 'cache.db'));
 
@@ -84,7 +92,7 @@ export class Cache {
     db.exec('PRAGMA temp_store = memory;');
     db.exec('PRAGMA optimize;');
 
-    db.prepare(`CREATE TABLE IF NOT EXISTS ${this.tableName} (key TEXT PRIMARY KEY, value TEXT, ttl REAL NOT NULL);`).run();
+    db.prepare(`CREATE TABLE IF NOT EXISTS ${this.tableName} (key TEXT PRIMARY KEY, value ${this.type === 'string' ? 'TEXT' : 'BLOB'}, ttl REAL NOT NULL);`).run();
     db.prepare(`CREATE INDEX IF NOT EXISTS cache_ttl ON ${this.tableName} (ttl);`).run();
 
     const date = new Date();
@@ -121,7 +129,7 @@ export class Cache {
 
   get(key: string, defaultValue?: string): string | undefined {
     const rv = this.db.prepare<{ value: string }, string>(
-      `SELECT value FROM ${this.tableName} WHERE key = ?`
+      `SELECT value FROM ${this.tableName} WHERE key = ? LIMIT 1`
     ).get(key);
 
     if (!rv) return defaultValue;
@@ -193,6 +201,8 @@ export const fsFetchCache = traceSync('initializing filesystem cache for fetch',
 // process.on('exit', () => {
 //   fsFetchCache.destroy();
 // });
+
+// export const fsCache = traceSync('initializing filesystem cache', () => new Cache<Uint8Array>({ cachePath: path.resolve(import.meta.dir, '../../.cache'), type: 'buffer' }));
 
 const separator = '\u0000';
 // const textEncoder = new TextEncoder();
