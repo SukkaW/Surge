@@ -1,4 +1,4 @@
-interface StreamService {
+export interface StreamService {
   name: string,
   rules: string[],
   ip?: {

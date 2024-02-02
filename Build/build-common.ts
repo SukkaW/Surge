@@ -55,7 +55,7 @@ if (import.meta.main) {
 
 const processFile = (span: Span, sourcePath: string) => {
   // console.log('Processing', sourcePath);
-  return span.traceChild(`process file: ${sourcePath}`).traceAsyncFn(async () => {
+  return span.traceChildAsync(`process file: ${sourcePath}`, async () => {
     const lines: string[] = [];
 
     let title = '';
@@ -93,34 +93,36 @@ const processFile = (span: Span, sourcePath: string) => {
 
 function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: string) {
   return parentSpan
-    .traceChild(`transform domainset: ${path.basename(sourcePath, path.extname(sourcePath))}`)
-    .traceAsyncFn(async (span) => {
-      const res = await processFile(span, sourcePath);
-      if (!res) return;
+    .traceChildAsync(
+      `transform domainset: ${path.basename(sourcePath, path.extname(sourcePath))}`,
+      async (span) => {
+        const res = await processFile(span, sourcePath);
+        if (!res) return;
 
-      const [title, descriptions, lines] = res;
+        const [title, descriptions, lines] = res;
 
-      const deduped = domainDeduper(lines);
-      const description = [
-        ...SHARED_DESCRIPTION,
-        ...(
-          descriptions.length
-            ? ['', ...descriptions]
-            : []
-        )
-      ];
+        const deduped = domainDeduper(lines);
+        const description = [
+          ...SHARED_DESCRIPTION,
+          ...(
+            descriptions.length
+              ? ['', ...descriptions]
+              : []
+          )
+        ];
 
-      return createRuleset(
-        span,
-        title,
-        description,
-        new Date(),
-        deduped,
-        'domainset',
-        path.resolve(outputSurgeDir, relativePath),
-        path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
-      );
-    });
+        return createRuleset(
+          span,
+          title,
+          description,
+          new Date(),
+          deduped,
+          'domainset',
+          path.resolve(outputSurgeDir, relativePath),
+          path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+        );
+      }
+    );
 }
 
 /**

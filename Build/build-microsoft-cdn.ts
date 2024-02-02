@@ -56,7 +56,7 @@ export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
   const promise = getMicrosoftCdnRulesetPromise();
   const peeked = Bun.peek(promise);
   const res: string[] = peeked === promise
-    ? await span.traceChild('get microsoft cdn domains').tracePromise(promise)
+    ? await span.traceChildPromise('get microsoft cdn domains', promise)
     : (peeked as string[]);
 
   return createRuleset(

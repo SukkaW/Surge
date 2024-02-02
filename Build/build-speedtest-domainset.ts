@@ -175,7 +175,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     '.backend.librespeed.org'
   ]);
 
-  await span.traceChild('fetch previous speedtest domainset').traceAsyncFn(async () => {
+  await span.traceChildAsync('fetch previous speedtest domainset', async () => {
     SetHelpers.add(domains, await getPreviousSpeedtestDomainsPromise());
   });
 
@@ -211,7 +211,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
       'Brazil',
       'Turkey'
     ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
-      pMap[keyword] = span.traceChild(`fetch speedtest endpoints: ${keyword}`).traceAsyncFn(() => querySpeedtestApi(keyword)).then(hostnameGroup => {
+      pMap[keyword] = span.traceChildAsync(`fetch speedtest endpoints: ${keyword}`, () => querySpeedtestApi(keyword)).then(hostnameGroup => {
         hostnameGroup.forEach(hostname => {
           if (hostname) {
             domains.add(hostname);
@@ -238,7 +238,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
   });
 
   const gorhill = await getGorhillPublicSuffixPromise();
-  const deduped = span.traceChild('sort result').traceSyncFn(() => sortDomains(domainDeduper(Array.from(domains)), gorhill));
+  const deduped = span.traceChildSync('sort result', () => sortDomains(domainDeduper(Array.from(domains)), gorhill));
 
   const description = [
     ...SHARED_DESCRIPTION,

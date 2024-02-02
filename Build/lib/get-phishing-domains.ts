@@ -98,8 +98,8 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     SetAdd(domainSet, domainSet2);
   }
 
-  span.traceChild('whitelisting phishing domains').traceSyncFn((parentSpan) => {
-    const trieForRemovingWhiteListed = parentSpan.traceChild('create trie for whitelisting').traceSyncFn(() => createTrie(domainSet));
+  span.traceChildSync('whitelisting phishing domains', (parentSpan) => {
+    const trieForRemovingWhiteListed = parentSpan.traceChildSync('create trie for whitelisting', () => createTrie(domainSet));
 
     return parentSpan.traceChild('delete whitelisted from domainset').traceSyncFn(() => {
       for (let i = 0, len = WHITELIST_DOMAIN.length; i < len; i++) {
@@ -115,7 +115,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   const domainCountMap: Record<string, number> = {};
   const getDomain = createCachedGorhillGetDomain(gorhill);
 
-  span.traceChild('process phishing domain set').traceSyncFn(() => {
+  span.traceChildSync('process phishing domain set', () => {
     const domainArr = Array.from(domainSet);
 
     for (let i = 0, len = domainArr.length; i < len; i++) {
@@ -177,14 +177,14 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     }
   });
 
-  const results = span.traceChild('get final phishing results').traceSyncFn(() => {
-    const results: string[] = [];
+  const results = span.traceChildSync('get final phishing results', () => {
+    const res: string[] = [];
     for (const domain in domainCountMap) {
       if (domainCountMap[domain] >= 5) {
-        results.push(`.${domain}`);
+        res.push(`.${domain}`);
       }
     }
-    return results;
+    return res;
   });
 
   return [results, domainSet] as const;

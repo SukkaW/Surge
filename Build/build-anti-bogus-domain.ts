@@ -37,7 +37,7 @@ export const buildAntiBogusDomain = task(import.meta.path, async (span) => {
 
   const peeked = Bun.peek(getBogusNxDomainIPsPromise);
   const bogusNxDomainIPs = peeked === getBogusNxDomainIPsPromise
-    ? await span.traceChild('get bogus nxdomain ips').traceAsyncFn(() => getBogusNxDomainIPsPromise)
+    ? await span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise)
     : (peeked as string[]);
 
   result.push(...bogusNxDomainIPs);

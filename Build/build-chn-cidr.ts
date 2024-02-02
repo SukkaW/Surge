@@ -32,7 +32,7 @@ export const buildChnCidr = task(import.meta.path, async (span) => {
   const cidrPromise = getChnCidrPromise();
   const peeked = Bun.peek(cidrPromise);
   const filteredCidr: string[] = peeked === cidrPromise
-    ? await span.traceChild('download chnroutes2').tracePromise(cidrPromise)
+    ? await span.traceChildPromise('download chnroutes2', cidrPromise)
     : (peeked as string[]);
 
   // Can not use SHARED_DESCRIPTION here as different license

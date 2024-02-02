@@ -36,7 +36,7 @@ export const buildTelegramCIDR = task(import.meta.path, async (span) => {
   const promise = getTelegramCIDRPromise();
   const peeked = Bun.peek(promise);
   const { date, results } = peeked === promise
-    ? await span.traceChild('get telegram cidr').tracePromise(promise)
+    ? await span.traceChildPromise('get telegram cidr', promise)
     : (peeked as { date: Date, results: string[] });
 
   if (results.length === 0) {

@@ -68,7 +68,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
           SetHelpers.add(domainSets, fullPhishingDomainSet);
           setAddFromArray(domainSets, purePhishingDomains);
         }),
-        childSpan.traceChild('process reject_sukka.conf').traceAsyncFn(async () => {
+        childSpan.traceChildAsync('process reject_sukka.conf', async () => {
           setAddFromArray(domainSets, await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf')));
         })
       ]);
@@ -84,13 +84,13 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   // Dedupe domainSets
-  await span.traceChild('dedupe from black keywords/suffixes').traceAsyncFn(async (childSpan) => {
+  await span.traceChildAsync('dedupe from black keywords/suffixes', async (childSpan) => {
     /** Collect DOMAIN-SUFFIX from non_ip/reject.conf for deduplication */
     const domainSuffixSet = new Set<string>();
     /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
     const domainKeywordsSet = new Set<string>();
 
-    await childSpan.traceChild('collect keywords/suffixes').traceAsyncFn(async () => {
+    await childSpan.traceChildAsync('collect keywords/suffixes', async () => {
       for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
         const [type, value] = line.split(',');
 
@@ -106,7 +106,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     SetHelpers.subtract(domainSets, domainSuffixSet);
     SetHelpers.subtract(domainSets, filterRuleWhitelistDomainSets);
 
-    childSpan.traceChild('dedupe from white/suffixes').traceSyncFn(() => {
+    childSpan.traceChildSync('dedupe from white/suffixes', () => {
       const trie = createTrie(domainSets);
 
       domainSuffixSet.forEach(suffix => {
@@ -126,7 +126,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       });
     });
 
-    childSpan.traceChild('dedupe from black keywords').traceSyncFn(() => {
+    childSpan.traceChildSync('dedupe from black keywords', () => {
       const kwfilter = createKeywordFilter(domainKeywordsSet);
 
       for (const domain of domainSets) {
@@ -142,7 +142,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   previousSize = domainSets.size;
 
   // Dedupe domainSets
-  const dudupedDominArray = span.traceChild('dedupe from covered subdomain').traceSyncFn(() => domainDeduper(Array.from(domainSets)));
+  const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain', () => domainDeduper(Array.from(domainSets)));
 
   console.log(`Deduped ${previousSize - dudupedDominArray.length} rules from covered subdomain!`);
   console.log(`Final size ${dudupedDominArray.length}`);
@@ -186,7 +186,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       'Sukka\'s Ruleset - Reject Base',
       description,
       new Date(),
-      span.traceChild('sort reject domainset').traceSyncFn(() => sortDomains(dudupedDominArray, gorhill)),
+      span.traceChildSync('sort reject domainset', () => sortDomains(dudupedDominArray, gorhill)),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')

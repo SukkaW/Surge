@@ -21,7 +21,7 @@ export const buildAppleCdn = task(import.meta.path, async (span) => {
   const promise = getAppleCdnDomainsPromise();
   const peeked = Bun.peek(promise);
   const res: string[] = peeked === promise
-    ? await span.traceChild('get apple cdn domains').traceAsyncFn(() => promise)
+    ? await span.traceChildPromise('get apple cdn domains', promise)
     : (peeked as string[]);
 
   const description = [

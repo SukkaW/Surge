@@ -18,7 +18,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     console.log(`Nothing to write to ${filePath}...`);
     isEqual = false;
   } else {
-    isEqual = await span.traceChild(`comparing ${filePath}`).traceAsyncFn(async () => {
+    isEqual = await span.traceChildAsync(`comparing ${filePath}`, async () => {
       let index = 0;
 
       for await (const lineB of readFileByLine(file)) {
@@ -63,7 +63,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     return;
   }
 
-  await span.traceChild(`writing ${filePath}`).traceAsyncFn(async () => {
+  await span.traceChildAsync(`writing ${filePath}`, async () => {
     if (linesALen < 10000) {
       return Bun.write(file, `${linesA.join('\n')}\n`);
     }
@@ -98,7 +98,7 @@ export const createRuleset = (
   type: 'ruleset' | 'domainset', surgePath: string, clashPath: string
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn((childSpan) => {
   const surgeContent = withBannerArray(title, description, date, content);
-  const clashContent = childSpan.traceChild('convert incoming ruleset to clash').traceSyncFn(() => {
+  const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
     let _clashContent;
     switch (type) {
       case 'domainset':

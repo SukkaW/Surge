@@ -29,6 +29,9 @@ export interface Span {
   readonly traceSyncFn: <T>(fn: (span: Span) => T) => T,
   readonly traceAsyncFn: <T>(fn: (span: Span) => T | Promise<T>) => Promise<T>,
   readonly tracePromise: <T>(promise: Promise<T>) => Promise<T>,
+  readonly traceChildSync: <T>(name: string, fn: (span: Span) => T) => T,
+  readonly traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>) => Promise<T>,
+  readonly traceChildPromise: <T>(name: string, promise: Promise<T>) => Promise<T>,
   readonly traceResult: TraceResult
 }
 
@@ -91,6 +94,15 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
       } finally {
         span.stop();
       }
+    },
+    traceChildSync<T>(name: string, fn: (span: Span) => T): T {
+      return traceChild(name).traceSyncFn(fn);
+    },
+    traceChildAsync<T>(name: string, fn: (span: Span) => T | Promise<T>): Promise<T> {
+      return traceChild(name).traceAsyncFn(fn);
+    },
+    traceChildPromise<T>(name: string, promise: Promise<T>): Promise<T> {
+      return traceChild(name).tracePromise(promise);
     }
   };
 

@@ -25,19 +25,17 @@ export interface CacheOptions<S = string> {
   type?: S extends string ? 'string' : 'buffer'
 }
 
-interface CacheApplyNonStringOption<T, S = string> {
+interface CacheApplyRawOption {
   ttl?: number | null,
+  temporaryBypass?: boolean
+}
+
+interface CacheApplyNonRawOption<T, S> extends CacheApplyRawOption {
   serializer: (value: T) => S,
-  deserializer: (cached: S) => T,
-  temporaryBypass?: boolean
+  deserializer: (cached: S) => T
 }
 
-interface CacheApplyStringOption {
-  ttl?: number | null,
-  temporaryBypass?: boolean
-}
-
-type CacheApplyOption<T, S = string> = T extends string ? CacheApplyStringOption : CacheApplyNonStringOption<T, S>;
+type CacheApplyOption<T, S> = T extends S ? CacheApplyRawOption : CacheApplyNonRawOption<T, S>;
 
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -127,8 +125,8 @@ export class Cache<S = string> {
     });
   }
 
-  get(key: string, defaultValue?: string): string | undefined {
-    const rv = this.db.prepare<{ value: string }, string>(
+  get(key: string, defaultValue?: S): S | undefined {
+    const rv = this.db.prepare<{ value: S }, string>(
       `SELECT value FROM ${this.tableName} WHERE key = ? LIMIT 1`
     ).get(key);
 
@@ -150,7 +148,7 @@ export class Cache<S = string> {
   async apply<T>(
     key: string,
     fn: () => Promise<T>,
-    opt: CacheApplyOption<T>
+    opt: CacheApplyOption<T, S>
   ): Promise<T> {
     const { ttl, temporaryBypass } = opt;
 

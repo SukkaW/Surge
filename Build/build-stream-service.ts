@@ -9,7 +9,7 @@ import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
 
 export const createRulesetForStreamService = (span: Span, fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
-  return span.traceChild(fileId).traceAsyncFn(async (childSpan) => Promise.all([
+  return span.traceChildAsync(fileId, async (childSpan) => Promise.all([
     // Domains
     createRuleset(
       childSpan,
