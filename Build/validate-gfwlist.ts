@@ -89,6 +89,7 @@ export const parseGfwList = async () => {
   };
 
   await Promise.all([
+    runAgainstRuleset(path.resolve(import.meta.dir, '../Source/non_ip/global.conf')),
     runAgainstRuleset(path.resolve(import.meta.dir, '../Source/non_ip/global_plus.conf')),
     runAgainstRuleset(path.resolve(import.meta.dir, '../List/non_ip/stream.conf'))
   ]);

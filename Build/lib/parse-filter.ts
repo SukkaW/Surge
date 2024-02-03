@@ -78,9 +78,6 @@ export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | n
           lineCb(l);
         }
       } else {
-        // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
-        await Promise.resolve();
-
         const filterRules = await childSpan
           .traceChild('download hosts')
           .traceAsyncFn(() => fetchAssets(hostsUrl, mirrors).then(text => text.split('\n')));
@@ -198,9 +195,6 @@ export async function processFilterRules(
           lineCb(line);
         }
       } else {
-        // Avoid event loop starvation, so we wait for a macrotask before we start fetching.
-        await Promise.resolve();
-
         const filterRules = await span.traceChild('download adguard filter').traceAsyncFn(() => {
           return fetchAssets(filterRulesUrl, fallbackUrls).then(text => text.split('\n'));
         });
