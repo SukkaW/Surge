@@ -10,6 +10,7 @@ import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
 import { deserializeSet, fsFetchCache, serializeSet } from './cache-filesystem';
 import type { Span } from '../trace';
+import createKeywordFilter from './aho-corasick';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -241,25 +242,37 @@ export async function processFilterRules(
   };
 }
 
-const R_KNOWN_NOT_NETWORK_FILTER_PATTERN = /[#%&=~]/;
-const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder|\$cname)/;
+// const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder|\$cname)/;
 // cname exceptional filter can not be parsed by NetworkFilter
 // Surge / Clash can't handle CNAME either, so we just ignore them
+
+const kwfilter = createKeywordFilter([
+  '!',
+  '?',
+  '*',
+  '[',
+  '(',
+  ']',
+  ')',
+  ',',
+  '#',
+  '%',
+  '&',
+  '=',
+  '~',
+  // special modifier
+  '$popup',
+  '$removeparam',
+  '$popunder',
+  '$cname'
+]);
 
 function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
     // includes
-    || $line.includes('!')
-    || $line.includes('?')
-    || $line.includes('*')
-    || $line.includes('[')
-    || $line.includes('(')
-    || $line.includes(']')
-    || $line.includes(')')
-    || $line.includes(',')
-    || R_KNOWN_NOT_NETWORK_FILTER_PATTERN.test($line)
+    || kwfilter($line)
   ) {
     return null;
   }
@@ -281,8 +294,6 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     || lastCharCode === 46 // 46 `.`, line.endsWith('.')
     || lastCharCode === 45 // 45 `-`, line.endsWith('-')
     || lastCharCode === 95 // 95 `_`, line.endsWith('_')
-    // special modifier
-    || R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2.test(line)
     // || line.includes('$popup')
     // || line.includes('$removeparam')
     // || line.includes('$popunder')
