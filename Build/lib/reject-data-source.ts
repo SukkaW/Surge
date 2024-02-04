@@ -221,7 +221,8 @@ export const PREDEFINED_WHITELIST = [
   'vlscppe.microsoft.com',
   // OpenAI use this for A/B testing
   // Fuck Peter Lowe Hosts
-  'pstmrk.it'
+  'pstmrk.it',
+  'email.accounts.bitly.com'
 ];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
@@ -243,6 +244,5 @@ export const PREDEFINED_ENFORCED_WHITELIST = [
   'glitch.me',
   'netlify.app',
   'blogspot.com',
-  'appspot.com',
-  'email.accounts.bitly.com'
+  'appspot.com'
 ];
