@@ -4,6 +4,7 @@ import path from 'path';
 import { task } from './trace';
 
 import { exclude, merge } from 'fast-cidr-tools';
+import { getChnCidrPromise } from './build-chn-cidr';
 
 // https://en.wikipedia.org/wiki/Reserved_IP_addresses
 const RESERVED_IPV4_CIDR = [
@@ -25,10 +26,14 @@ const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
-export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
-  const cidr = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
+export const buildInternalReverseChnCIDR = task(import.meta.path, async (span) => {
+  const cidrPromise = getChnCidrPromise();
+  const peeked = Bun.peek(cidrPromise);
+  const cidr: string[] = peeked === cidrPromise
+    ? await span.traceChildPromise('download chnroutes2', cidrPromise)
+    : (peeked as string[]);
 
-  const reversedCidr = merge(
+  const reversedCidr = span.traceChildSync('build reversed chn cidr', () => merge(
     exclude(
       ['0.0.0.0/0'],
       RESERVED_IPV4_CIDR.concat(cidr),
@@ -38,7 +43,7 @@ export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
       '223.118.0.0/15',
       '223.120.0.0/15'
     ])
-  );
+  ));
 
   return Bun.write(path.resolve(import.meta.dir, '../List/internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
 });
