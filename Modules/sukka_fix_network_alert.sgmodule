@@ -1,6 +1,0 @@
-#!name=[Sukka] Fix No Network Alert Plus
-#!desc=Deprecated, use https://ruleset.skk.moe/Modules/sukka_common_always_realip.sgmodule instead.
-#!system=mac
-
-[General]
-always-real-ip = %APPEND% *.msftncsi.com, *.msftconnecttest.com, network-test.debian.org, detectportal.firefox.com, resolver1.opendns.com

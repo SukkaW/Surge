@@ -1,6 +1,0 @@
-#!name=Game Console SNAT
-#!desc=Deprecated, use https://ruleset.skk.moe/Modules/sukka_common_always_realip.sgmodule instead.
-#!system=mac
-
-[General]
-always-real-ip = %APPEND% *.srv.nintendo.net, *.stun.playstation.net, xbox.*.microsoft.com, *.xboxlive.com
