@@ -243,5 +243,6 @@ export const PREDEFINED_ENFORCED_WHITELIST = [
   'glitch.me',
   'netlify.app',
   'blogspot.com',
-  'appspot.com'
+  'appspot.com',
+  'email.accounts.bitly.com'
 ];
