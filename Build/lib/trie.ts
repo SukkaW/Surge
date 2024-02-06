@@ -211,11 +211,11 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
     for (let i = suffix.length - 1; i >= 0; i--) {
       const token = suffix[i];
 
-      if (node.has(token)) {
-        node = node.get(token)!;
-      } else {
+      if (!node.has(token)) {
         return false;
       }
+
+      node = node.get(token)!;
     }
 
     return node[SENTINEL];

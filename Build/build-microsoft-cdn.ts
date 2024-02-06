@@ -1,5 +1,4 @@
 import path from 'path';
-import { traceAsync } from './lib/trace-runner';
 import { task } from './trace';
 import { createRuleset } from './lib/create-file';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';

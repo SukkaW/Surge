@@ -4,7 +4,6 @@ import os from 'os';
 import path from 'path';
 import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
-import { traceSync } from './trace-runner';
 
 const identity = (x: any) => x;
 
@@ -72,7 +71,13 @@ export class Cache<S = string> {
   type: S extends string ? 'string' : 'buffer';
 
   constructor({
-    cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'), tbd, tableName = 'cache', type }: CacheOptions<S> = {}) {
+    cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'),
+    tbd,
+    tableName = 'cache',
+    type
+  }: CacheOptions<S> = {}) {
+    const start = Bun.nanoseconds();
+
     this.cachePath = cachePath;
     mkdirSync(this.cachePath, { recursive: true });
     if (tbd != null) this.tbd = tbd;
@@ -111,6 +116,9 @@ export class Cache<S = string> {
       this.set('__LAST_VACUUM', dateString, 10 * 365 * 60 * 60 * 24 * 1000);
       this.db.exec('VACUUM;');
     }
+
+    const end = Bun.nanoseconds();
+    console.log(`${picocolors.gray(`[${((end - start) / 1e6).toFixed(3)}ms]`)} cache initialized from ${this.cachePath}`);
   }
 
   set(key: string, value: string, ttl = 60 * 1000): void {
@@ -195,7 +203,7 @@ export class Cache<S = string> {
   }
 }
 
-export const fsFetchCache = traceSync('initializing filesystem cache for fetch', () => new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') }));
+export const fsFetchCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
 // process.on('exit', () => {
 //   fsFetchCache.destroy();
 // });

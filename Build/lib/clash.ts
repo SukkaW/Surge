@@ -24,15 +24,9 @@ const REQUIRE_REWRITE = {
 export const surgeRulesetToClashClassicalTextRuleset = (rules: string[] | Set<string>) => {
   const trie = Trie.from(rules);
 
-  return CLASH_SUPPORTED_RULE_TYPE.flatMap(
-    type => trie.find(`${type},`)
-  ).concat(
-    Object.keys(REQUIRE_REWRITE).flatMap(
-      (type) => {
-        const found = trie.find(`${type},`);
-        return found.map(line => `${REQUIRE_REWRITE[type as keyof typeof REQUIRE_REWRITE]}${line.slice(type.length)}`);
-      }
-    )
+  return CLASH_SUPPORTED_RULE_TYPE.flatMap(type => trie.find(`${type},`)).concat(
+    Object.keys(REQUIRE_REWRITE).flatMap((type) => trie.find(`${type},`)
+      .map(line => `${REQUIRE_REWRITE[type as keyof typeof REQUIRE_REWRITE]}${line.slice(type.length)}`))
   );
 };
 

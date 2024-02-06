@@ -12,20 +12,10 @@ const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((r
     return;
   }
 
-  signal.addEventListener('abort', stop);
-  Bun.sleep(ms).then(done).catch(doReject);
+  function stop(this: AbortSignal) { reject(this.reason); }
 
-  function done() {
-    signal.removeEventListener('abort', stop);
-    resolve();
-  }
-  function stop(this: AbortSignal) {
-    reject(this.reason);
-  }
-  function doReject(reason: unknown) {
-    signal.removeEventListener('abort', stop);
-    reject(reason);
-  }
+  signal.addEventListener('abort', stop, { once: true });
+  Bun.sleep(ms).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
 });
 
 export async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
