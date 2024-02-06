@@ -22,10 +22,14 @@ const deepTrieNodeToJSON = (node: TrieNode) => {
   return obj;
 };
 
+function trieNodeInspectCustom(this: TrieNode) {
+  return JSON.stringify(deepTrieNodeToJSON(this), null, 2);
+}
+
 const createNode = (): TrieNode => {
   const node = new Map<string, TrieNode>() as TrieNode;
   node[SENTINEL] = false;
-  node[Bun.inspect.custom] = () => JSON.stringify(deepTrieNodeToJSON(node), null, 2);
+  node[Bun.inspect.custom] = trieNodeInspectCustom;
   return node;
 };
 
@@ -70,9 +74,7 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
       token = suffix[i];
 
       node = node.get(token);
-      if (!node) {
-        return false;
-      }
+      if (!node) return false;
     }
 
     return true;
@@ -88,9 +90,7 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
       token = inputSuffix[i];
 
       node = node.get(token);
-      if (!node) {
-        return [];
-      }
+      if (!node) return [];
     }
 
     const matches: string[] = [];
@@ -130,9 +130,7 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
       token = inputSuffix[i];
 
       node = node.get(token);
-      if (!node) {
-        return;
-      }
+      if (!node) return;
     }
 
     // Performing DFS from prefix
