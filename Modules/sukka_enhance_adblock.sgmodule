@@ -15,3 +15,4 @@ hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesynd
 ^https?://.*\.doubleclick\.net/instream/ad_status\.js https://ruleset.skk.moe/Mock/doubleclick-net_instream_ad_status.js 302
 ^https?://cdn\.ampproject\.org/v0.js https://ruleset.skk.moe/Mock/ampproject-org_v0.js 302
 ^https?://.*\.addthis\.com/addthis_widget.js https://ruleset.skk.moe/Mock/addthis-com_addthis_widget.js 302
+^https?://.*\.amazon-adsystem.com/aax2/apstag.js https://ruleset.skk.moe/Mock/amazon-adsystem-com_amazon-apstag.js 302
