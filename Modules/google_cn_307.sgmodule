@@ -2,7 +2,7 @@
 #!desc=将 google.cn 的请求重定向到 google.com
 
 [URL Rewrite]
-^(http|https):\/\/(www.)?(g|google)\.cn https://www.google.com 307
+^https?://(www.)?(g|google)\.cn https://www.google.com 307
 
 [MITM]
 hostname = %APPEND% g.cn,www.g.cn,google.cn,www.google.cn
