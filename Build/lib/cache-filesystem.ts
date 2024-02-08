@@ -180,7 +180,6 @@ export class Cache<S = string> {
 
       if (peeked === promise) {
         return promise.then((value) => {
-          const serializer = 'serializer' in opt ? opt.serializer : identity;
           this.set(key, serializer(value), ttl);
           return value;
         });

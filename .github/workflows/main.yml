@@ -31,6 +31,7 @@ jobs:
       - name: Cache cache.db
         uses: actions/cache@v4
         with:
+          save-always: true
           path: |
             .cache
           key: ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
