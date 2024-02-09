@@ -295,7 +295,7 @@ rules:
 #### AI
 
 - 域名规则 人工维护
-- 包含 OpenAI、Bard、Claude、Perplexity 等
+- 包含 OpenAI、Google Gemini、Claude、Perplexity 等
 
 **Surge**
 
