@@ -110,7 +110,6 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       const trie = createTrie(domainSets);
 
       domainSuffixSet.forEach(suffix => {
-        domainSets.delete(suffix);
         trie.substractSetInPlaceFromFound(suffix, domainSets);
       });
       filterRuleWhitelistDomainSets.forEach(suffix => {

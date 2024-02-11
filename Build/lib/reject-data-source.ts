@@ -212,7 +212,7 @@ export const PREDEFINED_WHITELIST = [
   'cdn.userreport.com', // https://github.com/AdguardTeam/AdGuardSDNSFilter/issues/1158
   'ip-api.com',
   'fastly-analytics.com',
-  'syd1.digitaloceanspaces.com',
+  'digitaloceanspaces.com',
   's3.nl-ams.scw.cloud',
   'geolocation-db.com',
   'uploads.codesandbox.io',
