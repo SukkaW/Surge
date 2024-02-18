@@ -109,7 +109,11 @@ export const DOMESTICS = {
       'wegame.com',
       'wegame.com.cn',
       'wegameplus.com',
-      'cdn-go.cn'
+      'cdn-go.cn',
+      'tencentcs.cn',
+      'tencent-coud.cn',
+      'qcloudimg.com',
+      'dnspod.cn'
     ]
   },
   BILIBILI: {
