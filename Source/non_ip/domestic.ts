@@ -116,9 +116,22 @@ export const DOMESTICS = {
       'dnspod.cn'
     ]
   },
+  BILIBILI_ALI: {
+    dns: 'quic://223.5.5.5:853',
+    domains: [
+      'upos-sz-mirrorali.bilivideo.com'
+    ]
+  },
+  BILIBILI_BD: {
+    dns: '180.76.76.76',
+    domains: [
+      'upos-sz-mirrorbos.bilivideo.com'
+    ]
+  },
   BILIBILI: {
     dns: 'https://120.53.53.53/dns-query',
     domains: [
+      'upos-sz-mirrorcoso1.bilivideo.com',
       'acg.tv',
       'b23.tv',
       'acgvideo.com',
@@ -138,18 +151,6 @@ export const DOMESTICS = {
       'bilicomics.com',
       'bilibilipay.cn',
       'bilibilipay.com'
-    ]
-  },
-  BILIBILI_ALI: {
-    dns: 'quic://223.5.5.5:853',
-    domains: [
-      'upos-sz-mirrorali.bilivideo.com'
-    ]
-  },
-  BILIBILI_BD: {
-    dns: '180.76.76.76',
-    domains: [
-      'upos-sz-mirrorbos.bilivideo.com'
     ]
   },
   XIAOMI: {
