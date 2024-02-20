@@ -61,10 +61,11 @@ export const downloadPreviousBuild = task(import.meta.path, async (span) => {
         throw new Error('Download previous build failed! No body found');
       }
 
-      const extract = tarStream.extract();
       const gunzip = zlib.createGunzip();
+      const extract = tarStream.extract();
+
       pipeline(
-        Readable.fromWeb(resp.body) as any,
+        Readable.fromWeb(resp.body as unknown as import('stream/web').ReadableStream<any>),
         gunzip,
         extract
       );
@@ -86,10 +87,7 @@ export const downloadPreviousBuild = task(import.meta.path, async (span) => {
         const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
 
         await mkdir(path.dirname(targetPath), { recursive: true });
-        await pipeline(
-          entry as any,
-          createWriteStream(targetPath)
-        );
+        await pipeline(entry, createWriteStream(targetPath));
       }
     });
 });

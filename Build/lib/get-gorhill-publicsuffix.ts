@@ -1,6 +1,6 @@
 import { toASCII } from 'punycode';
 import { createMemoizedPromise } from './memo-promise';
-import { getPublicSuffixListTextPromise } from '../download-publicsuffixlist';
+import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
 
 const customFetch = (url: string | URL): Promise<Blob> => Promise.resolve(Bun.file(url));
 

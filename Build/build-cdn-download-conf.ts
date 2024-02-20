@@ -4,7 +4,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
+import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
 
 const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   const trie = createTrie((await getPublicSuffixListTextPromise()).split('\n'));

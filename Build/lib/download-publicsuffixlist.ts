@@ -1,6 +1,6 @@
-import { TTL, fsFetchCache } from './lib/cache-filesystem';
-import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
-import { createMemoizedPromise } from './lib/memo-promise';
+import { TTL, fsFetchCache } from './cache-filesystem';
+import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
+import { createMemoizedPromise } from './memo-promise';
 
 export const getPublicSuffixListTextPromise = createMemoizedPromise(() => fsFetchCache.apply(
   'https://publicsuffix.org/list/public_suffix_list.dat',

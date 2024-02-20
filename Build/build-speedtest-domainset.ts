@@ -22,8 +22,8 @@ const s = new Sema(2);
 const latestTopUserAgentsPromise = fsFetchCache.apply(
   'https://unpkg.com/top-user-agents@latest/src/desktop.json',
   () => fetchWithRetry('https://unpkg.com/top-user-agents@latest/src/desktop.json')
-    .then(res => res.json<string[]>())
-    .then(userAgents => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '))),
+    .then(res => res.json())
+    .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '))),
   {
     serializer: serializeArray,
     deserializer: deserializeArray,
@@ -62,7 +62,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         retry: {
           retries: 2
         }
-      })).then(r => r.json<Array<{ url: string }>>()).then(data => data.reduce<string[]>(
+      })).then(r => r.json()).then((data: Array<{ url: string }>) => data.reduce<string[]>(
         (prev, cur) => {
           const hn = tldts.getHostname(cur.url, { detectIp: false });
           if (hn) {
