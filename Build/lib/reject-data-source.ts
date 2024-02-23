@@ -220,9 +220,11 @@ export const PREDEFINED_WHITELIST = [
   // https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
   'vlscppe.microsoft.com',
   // OpenAI use this for A/B testing
+  'statsig.com',
   // Fuck Peter Lowe Hosts
   'pstmrk.it',
-  'email.accounts.bitly.com'
+  'email.accounts.bitly.com',
+  'adsense.google.com'
 ];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
