@@ -92,20 +92,27 @@ export const withBannerArray = (title: string, description: string[] | readonly 
   ];
 };
 
+const MARK = `${Math.random().toString(36).slice(2)}.this_ruleset_is_made_by_sukkaw.${Math.random().toString(36).slice(2)}.ruleset.skk.moe`;
+
 export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
   type: 'ruleset' | 'domainset', surgePath: string, clashPath: string
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn((childSpan) => {
-  const surgeContent = withBannerArray(title, description, date, content);
+  const surgeContent = withBannerArray(
+    title, description, date,
+    type === 'domainset'
+      ? [MARK, ...content]
+      : [`DOMAIN,${MARK}`, ...content]
+  );
   const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
     let _clashContent;
     switch (type) {
       case 'domainset':
-        _clashContent = surgeDomainsetToClashDomainset(content);
+        _clashContent = [MARK, ...surgeDomainsetToClashDomainset(content)];
         break;
       case 'ruleset':
-        _clashContent = surgeRulesetToClashClassicalTextRuleset(content);
+        _clashContent = [`DOMAIN,${MARK}`, ...surgeRulesetToClashClassicalTextRuleset(content)];
         break;
       default:
         throw new TypeError(`Unknown type: ${type as any}`);

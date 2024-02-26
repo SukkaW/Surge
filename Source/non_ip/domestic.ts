@@ -66,7 +66,8 @@ export const DOMESTICS = {
       'hemashare.cn',
       'shyhhema.com',
       'sm.cn',
-      'npmmirror.com'
+      'npmmirror.com',
+      'alios.cn'
     ]
   },
   TENCENT: {
@@ -113,7 +114,9 @@ export const DOMESTICS = {
       'tencentcs.cn',
       'tencent-coud.cn',
       'qcloudimg.com',
-      'dnspod.cn'
+      'dnspod.cn',
+      'yunos.com',
+      'yitao.com'
     ]
   },
   BILIBILI_ALI: {
