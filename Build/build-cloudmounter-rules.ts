@@ -24,7 +24,7 @@ export const buildCloudMounterRules = task(import.meta.path, async (span) => {
     description,
     new Date(),
     results,
-    'domainset',
+    'ruleset',
     path.resolve(outputSurgeDir, 'non_ip', 'cloudmounter.conf'),
     path.resolve(outputClashDir, 'non_ip', 'cloudmounter.txt')
   );
