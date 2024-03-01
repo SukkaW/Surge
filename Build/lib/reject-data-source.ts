@@ -223,6 +223,7 @@ export const PREDEFINED_WHITELIST = [
   'statsig.com',
   // Fuck Peter Lowe Hosts
   'pstmrk.it',
+  'clicks.mlsend.com',
   'email.accounts.bitly.com',
   'adsense.google.com'
 ];
