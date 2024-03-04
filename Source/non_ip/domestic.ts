@@ -341,7 +341,6 @@ export const DOMESTICS = {
       'web.setup',
       'web.setup.home',
       // AS112
-      '168.192.in-addr.arpa',
       '10.in-addr.arpa',
       '16.172.in-addr.arpa',
       '17.172.in-addr.arpa',
