@@ -34,10 +34,10 @@ const REDIRECT = [
   // libravatar
   ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/'],
   // ghproxy
-  ['ghproxy.com/', ''],
-  ['ghps.cc/', ''],
+  ['ghproxy.com/', 'https://'],
+  ['ghps.cc/', 'https://'],
   // gh-proxy
-  ['github.moeyy.xyz/', ''],
+  ['github.moeyy.xyz/', 'https://'],
   // 7ED Services
   ['use.sevencdn.com/css', 'https://fonts.googleapis.com/css'],
   ['use.sevencdn.com/ajax/libs/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
@@ -65,6 +65,10 @@ const REDIRECT = [
   // KGitHub
   ['raw.kgithub.com/', 'https://raw.githubusercontent.com/'],
   ['raw.kkgithub.com/', 'https://raw.githubusercontent.com/'],
+  // Polyfill
+  ['polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
+  ['fastly-polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
+  ['fastly-polyfill.net/', 'https://cdnjs.cloudflare.com/polyfill/'],
   // Misc
   ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/'],
   ['googlefonts.wp-china-yes.net/', 'https://fonts.googleapis.com/'],
@@ -84,10 +88,7 @@ export const buildRedirectModule = task(import.meta.path, async (span) => {
       `hostname = %APPEND% ${domains.join(', ')}`,
       '',
       '[URL Rewrite]',
-      ...REDIRECT.map(([from, to]) => {
-        const src = `^https?://${escapeRegExp(from)}(.*)`;
-        return `${src} ${to}$1 302`;
-      })
+      ...REDIRECT.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 302`)
     ],
     path.resolve(import.meta.dir, '../Modules/sukka_url_redirect.sgmodule')
   );
