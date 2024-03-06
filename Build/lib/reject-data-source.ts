@@ -216,16 +216,13 @@ export const PREDEFINED_WHITELIST = [
   's3.nl-ams.scw.cloud',
   'geolocation-db.com',
   'uploads.codesandbox.io',
-  // Affect Windows ISO download
-  // https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
-  'vlscppe.microsoft.com',
-  // OpenAI use this for A/B testing
-  'statsig.com',
-  // Fuck Peter Lowe Hosts
-  'pstmrk.it',
-  'clicks.mlsend.com',
-  'email.accounts.bitly.com',
-  'adsense.google.com'
+  'vlscppe.microsoft.com', // Affect Windows ISO download https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
+  'statsig.com', // OpenAI use this for A/B testing
+  'pstmrk.it', // Fuck Peter Lowe Hosts
+  'clicks.mlsend.com', // Fuck Peter Lowe Hosts
+  'email.accounts.bitly.com', // Fuck Peter Lowe Hosts
+  'adsense.google.com', // Fuck Peter Lowe Hosts
+  'api.vip.miui.com' // Fuck Goodbye Xiaomi Ads
 ];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
