@@ -309,7 +309,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,[Replace with your policy]
 rule-providers:
   ai_non_ip:
     type: http
-    behavior: domain
+    behavior: classical
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/ai.txt
