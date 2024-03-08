@@ -20,8 +20,8 @@ import * as SetHelpers from 'mnemonist/set';
 const s = new Sema(2);
 
 const latestTopUserAgentsPromise = fsFetchCache.apply(
-  'https://unpkg.com/top-user-agents@latest/src/desktop.json',
-  () => fetchWithRetry('https://unpkg.com/top-user-agents@latest/src/desktop.json')
+  'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
+  () => fetchWithRetry('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json')
     .then(res => res.json())
     .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '))),
   {
