@@ -83,7 +83,9 @@ const BLACK_TLD = new Set([
   'website',
   'win',
   'xyz',
-  'za.com'
+  'za.com',
+  'lat',
+  'design'
 ]);
 
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {

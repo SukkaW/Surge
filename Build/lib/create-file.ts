@@ -92,7 +92,7 @@ export const withBannerArray = (title: string, description: string[] | readonly 
   ];
 };
 
-const MARK = `${Math.random().toString(36).slice(2)}.this_ruleset_is_made_by_sukkaw.${Math.random().toString(36).slice(2)}.ruleset.skk.moe`;
+const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 
 export const createRuleset = (
   parentSpan: Span,
