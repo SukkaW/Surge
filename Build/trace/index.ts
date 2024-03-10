@@ -114,7 +114,7 @@ export const task = <T>(importMetaPath: string, fn: (span: Span) => T, customnam
   const taskName = customname ?? path.basename(importMetaPath, path.extname(importMetaPath));
   return async (span?: Span) => {
     if (span) {
-      return span.traceChild(taskName).traceAsyncFn(fn);
+      return span.traceChildAsync(taskName, fn);
     }
     return fn(createSpan(taskName));
   };

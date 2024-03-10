@@ -9,6 +9,7 @@ import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
 import { buildInternalCDNDomains } from './build-internal-cdn-rules';
 // import { buildInternalChnDomains } from './build-internal-chn-domains';
+import { buildInternalReverseChnCIDR } from './build-internal-reverse-chn-cidr';
 import { buildDomesticRuleset } from './build-domestic-ruleset';
 import { buildStreamService } from './build-stream-service';
 
@@ -33,7 +34,6 @@ import { createSpan, printTraceResult } from './trace';
   const rootSpan = createSpan('root');
 
   try {
-    // TODO: restore this once Bun has fixed their worker
     // const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
 
     const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
@@ -51,17 +51,7 @@ import { createSpan, printTraceResult } from './trace';
       buildCdnConfPromise
     ]).then(() => buildInternalCDNDomains(rootSpan));
 
-    // const buildInternalReverseChnCIDRPromise = new Promise<TaskResult>(resolve => {
-    //   const handleMessage = (e: MessageEvent<TaskResult>) => {
-    //     const { data } = e;
-
-    //     buildInternalReverseChnCIDRWorker.postMessage('exit');
-    //     buildInternalReverseChnCIDRWorker.removeEventListener('message', handleMessage);
-    //     resolve(data);
-    //   };
-    //   buildInternalReverseChnCIDRWorker.addEventListener('message', handleMessage);
-    //   buildInternalReverseChnCIDRWorker.postMessage('build');
-    // });
+    const buildInternalReverseChnCIDRPromise = buildInternalReverseChnCIDR(rootSpan);
 
     // const buildInternalChnDomainsPromise = buildInternalChnDomains();
     const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan));
@@ -92,7 +82,8 @@ import { createSpan, printTraceResult } from './trace';
       buildChnCidrPromise,
       buildSpeedtestDomainSetPromise,
       buildInternalCDNDomainsPromise,
-      // buildInternalReverseChnCIDRPromise,
+      buildInternalReverseChnCIDRPromise,
+      buildInternalReverseChnCIDRPromise,
       // buildInternalChnDomainsPromise,
       buildDomesticRulesetPromise,
       buildRedirectModulePromise,

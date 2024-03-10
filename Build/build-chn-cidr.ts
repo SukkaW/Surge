@@ -5,22 +5,12 @@ import { processLineFromReadline } from './lib/process-line';
 import { task } from './trace';
 
 import { exclude } from 'fast-cidr-tools';
-import picocolors from 'picocolors';
 import { createMemoizedPromise } from './lib/memo-promise';
-
-// https://github.com/misakaio/chnroutes2/issues/25
-const EXCLUDE_CIDRS = [
-  '223.118.0.0/15',
-  '223.120.0.0/15'
-];
-
-const INCLUDE_CIDRS = [
-  '211.99.96.0/19' // wy.com.cn
-];
+import { CN_CIDR_NOT_INCLUDED_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
 
 export const getChnCidrPromise = createMemoizedPromise(async () => {
   const cidr = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
-  return exclude([...cidr, ...INCLUDE_CIDRS], EXCLUDE_CIDRS, true);
+  return exclude([...cidr, ...CN_CIDR_NOT_INCLUDED_IN_CHNROUTE], NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true);
 });
 
 export const buildChnCidr = task(import.meta.path, async (span) => {
