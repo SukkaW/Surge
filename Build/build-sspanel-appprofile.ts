@@ -38,7 +38,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     streamDomains,
     steamDomains,
     globalDomains,
-    globalPlusDomains,
     telegramDomains,
     lanDomains,
     domesticCidrs,
@@ -61,7 +60,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf')).then(surgeDomainsetToClashRuleset),
     // global - domains
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
-    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global_plus.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // lan - domains
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/lan.conf')),
@@ -99,7 +97,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     steamDomains,
     [
       ...globalDomains,
-      ...globalPlusDomains,
       ...telegramDomains
     ],
     lanDomains,

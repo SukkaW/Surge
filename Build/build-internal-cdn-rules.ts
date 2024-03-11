@@ -41,7 +41,6 @@ export const buildInternalCDNDomains = task(import.meta.path, async (span) => {
     getGorhillPublicSuffixPromise(),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global.conf'), proxySet, proxyKeywords),
-    processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/global_plus.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_proxy.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/my_plus.conf'), proxySet, proxyKeywords),
     processLocalRuleSet(path.resolve(import.meta.dir, '../List/non_ip/stream.conf'), proxySet, proxyKeywords),

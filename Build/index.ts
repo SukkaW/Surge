@@ -27,6 +27,7 @@ import { downloadMockAssets } from './download-mock-assets';
 import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
 import { createSpan, printTraceResult } from './trace';
+import { buildDeprecateFiles } from './build-deprecate-files';
 
 (async () => {
   console.log('Bun version:', Bun.version, Bun.revision);
@@ -71,6 +72,8 @@ import { createSpan, printTraceResult } from './trace';
 
     const buildCloudMounterRulesPromise = downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan));
 
+    const buildDeprecateFilesPromise = downloadPreviousBuildPromise.then(() => buildDeprecateFiles(rootSpan));
+
     await Promise.all([
       downloadPreviousBuildPromise,
       buildCommonPromise,
@@ -92,6 +95,7 @@ import { createSpan, printTraceResult } from './trace';
       buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
       buildCloudMounterRulesPromise,
+      buildDeprecateFilesPromise,
       downloadMockAssetsPromise
     ]);
 

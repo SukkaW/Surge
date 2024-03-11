@@ -549,7 +549,6 @@ rules:
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,[Replace with your policy]
-RULE-SET,https://ruleset.skk.moe/List/non_ip/global_plus.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,PROXY
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy]
 ```
@@ -572,13 +571,6 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/direct.txt
     path: ./sukkaw_ruleset/direct_non_ip.txt
-  global_plus_non_ip:
-    type: http
-    behavior: classical
-    format: text
-    interval: 43200
-    url: https://ruleset.skk.moe/Clash/non_ip/global_plus.txt
-    path: ./sukkaw_ruleset/global_plus_non_ip.txt
   global_non_ip:
     type: http
     behavior: classical
@@ -597,7 +589,6 @@ rule-providers:
 rules:
   - RULE-SET,domestic_non_ip,[Replace with your policy]
   - RULE-SET,direct_non_ip,[Replace with your policy]
-  - RULE-SET,global_plus_non_ip,[Replace with your policy]
   - RULE-SET,global_non_ip,[Replace with your policy]
   - RULE-SET,domestic_ip,[Replace with your policy]
 ```

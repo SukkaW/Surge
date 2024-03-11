@@ -9,6 +9,7 @@ import { domainDeduper } from './lib/domain-deduper';
 import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import picocolors from 'picocolors';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -44,6 +45,8 @@ export const buildCommon = task(import.meta.path, async (span) => {
       promises.push(transformRuleset(span, entry.fullpath(), relativePath));
       continue;
     }
+
+    console.error(picocolors.red(`[build-comman] Unknown file: ${relativePath}`));
   }
 
   return Promise.all(promises);
