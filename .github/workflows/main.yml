@@ -45,6 +45,18 @@ jobs:
             ${{ runner.os }}-v1-
       - run: bun install
       - run: bun run build
+      - name: Pre-deploy check
+        # If the public directory doesn't exist, the build should fail.
+        # If the public directory is empty, the build should fail.
+        run: |
+          if [ ! -d public ]; then
+            echo "public directory not found"
+            exit 1
+          fi
+          if [ ! "$(ls -A public)" ]; then
+            echo "public directory is empty"
+            exit 1
+          fi
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
