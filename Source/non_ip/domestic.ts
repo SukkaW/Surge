@@ -118,7 +118,8 @@ export const DOMESTICS = {
       'dnspod.cn',
       'yunos.com',
       'yitao.com',
-      'anticheatexpert.com'
+      'anticheatexpert.com',
+      'url.cn'
     ]
   },
   BILIBILI_ALI: {
