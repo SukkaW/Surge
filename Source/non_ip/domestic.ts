@@ -19,6 +19,7 @@ export const DOMESTICS = {
       'alipay.com.cn',
       'alipayobjects.com',
       'alibaba-inc.com',
+      'alibabausercontent.com',
       'alicloudccp.com',
       'alipan.com',
       'aliyundrive.com',
@@ -116,7 +117,8 @@ export const DOMESTICS = {
       'qcloudimg.com',
       'dnspod.cn',
       'yunos.com',
-      'yitao.com'
+      'yitao.com',
+      'anticheatexpert.com'
     ]
   },
   BILIBILI_ALI: {
