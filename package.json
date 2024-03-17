@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "bun ./Build/index.ts",
+    "build-stream": "ENABLE_TEXT_LINE_STREAM=true bun ./Build/index.ts",
     "lint": "eslint --format=sukka ."
   },
   "author": "",

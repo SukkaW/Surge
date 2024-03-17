@@ -18,11 +18,6 @@ export const buildDeprecateFiles = task(import.meta.path, (span) => span.traceCh
     const surgeFile = path.resolve(outputSurgeDir, `${filePath}.conf`);
     const clashFile = path.resolve(outputClashDir, `${filePath}.txt`);
 
-    console.log({
-      surgeFile,
-      clashFile
-    });
-
     const content = [
       '#########################################',
       '# Sukka\'s Ruleset - Deprecated',
