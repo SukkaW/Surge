@@ -56,7 +56,7 @@ export const parseGfwList = async () => {
 
   const top500Gfwed = new Set<string>();
 
-  const res = await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=845&top=5000');
+  const res = await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000');
   const stream = Readable.fromWeb(res.body!).pipe(parse());
 
   const trie = createTrie(blackSet);

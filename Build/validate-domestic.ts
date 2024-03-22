@@ -18,12 +18,13 @@ export const parseDomesticList = async () => {
 
   const top5000 = new Set<string>();
 
-  const res = await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=845&top=5000');
+  const res = await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000');
   const stream = Readable.fromWeb(res.body!).pipe(parse());
   for await (const [domain] of stream) {
     if (trie.has(domain)) {
       top5000.add(domain);
     }
+    console.log({ domain });
   }
 
   const notIncludedDomestic = new Set<string>(top5000);
