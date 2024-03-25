@@ -47,33 +47,33 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
   ));
 }
 export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
+  const domainSets = new Set<string>();
+
+  const lineCb = (l: string) => {
+    const line = processLine(l);
+    if (!line) {
+      return;
+    }
+
+    const _domain = line.split(/\s/)[1]?.trim();
+    if (!_domain) {
+      return;
+    }
+    const domain = normalizeDomain(_domain);
+    if (!domain) {
+      return;
+    }
+    if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+      console.warn(picocolors.red(hostsUrl), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+      foundDebugDomain = true;
+    }
+
+    domainSets.add(includeAllSubDomain ? `.${domain}` : domain);
+  };
+
   return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
     hostsUrl,
     async () => {
-      const domainSets = new Set<string>();
-
-      const lineCb = (l: string) => {
-        const line = processLine(l);
-        if (!line) {
-          return;
-        }
-
-        const _domain = line.split(/\s/)[1]?.trim();
-        if (!_domain) {
-          return;
-        }
-        const domain = normalizeDomain(_domain);
-        if (!domain) {
-          return;
-        }
-        if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(picocolors.red(hostsUrl), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-          foundDebugDomain = true;
-        }
-
-        domainSets.add(includeAllSubDomain ? `.${domain}` : domain);
-      };
-
       if (mirrors == null || mirrors.length === 0) {
         for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
           lineCb(l);

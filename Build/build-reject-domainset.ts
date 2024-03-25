@@ -114,14 +114,11 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       });
       filterRuleWhitelistDomainSets.forEach(suffix => {
         trie.substractSetInPlaceFromFound(suffix, domainSets);
-
-        if (suffix[0] === '.') {
-          // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
-          domainSets.delete(suffix.slice(1));
-        } else {
-          // If `g.msn.com` is whitelisted, then `.g.msn.com` should be removed from domain set
-          domainSets.delete(`.${suffix}`);
-        }
+        domainSets.delete(
+          suffix[0] === '.'
+            ? suffix.slice(1) // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
+            : `.${suffix}` // If `g.msn.com` is whitelisted, then `.g.msn.com` should be removed from domain set
+        );
       });
     });
 

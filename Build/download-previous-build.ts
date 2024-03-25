@@ -65,7 +65,7 @@ export const downloadPreviousBuild = task(import.meta.path, async (span) => {
       const extract = tarStream.extract();
 
       pipeline(
-        Readable.fromWeb(resp.body as unknown as import('stream/web').ReadableStream<any>),
+        Readable.fromWeb(resp.body as any),
         gunzip,
         extract
       );

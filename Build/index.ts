@@ -29,9 +29,9 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 import { createSpan, printTraceResult } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 
-(async () => {
-  console.log('Bun version:', Bun.version, Bun.revision);
+console.log('Bun version:', Bun.version, Bun.revision);
 
+(async () => {
   const rootSpan = createSpan('root');
 
   try {
