@@ -68,7 +68,8 @@ export const DOMESTICS = {
       'shyhhema.com',
       'sm.cn',
       'npmmirror.com',
-      'alios.cn'
+      'alios.cn',
+      'wandoujia.com'
     ]
   },
   TENCENT: {
