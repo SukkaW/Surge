@@ -69,7 +69,8 @@ export const DOMESTICS = {
       'sm.cn',
       'npmmirror.com',
       'alios.cn',
-      'wandoujia.com'
+      'wandoujia.com',
+      'aliapp.org'
     ]
   },
   TENCENT: {
@@ -209,7 +210,8 @@ export const DOMESTICS = {
       'ixiguavideo.com',
       'ixgvideo.com',
       'volccdn.com',
-      'byted-static.com'
+      'byted-static.com',
+      'volces.com'
     ]
   },
   BAIDU: {
