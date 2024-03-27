@@ -5,6 +5,7 @@ import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
+import { domainDeduper } from './lib/domain-deduper';
 
 const escapeRegExp = (string = '') => string.replaceAll(/[$()*+.?[\\\]^{|}]/g, '\\$&');
 
@@ -52,7 +53,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async (span) => {
   return compareAndWriteFile(
     span,
     [
-      ...sortDomains(Array.from(proxySet), gorhill).map(i => `SUFFIX,${i}`),
+      ...sortDomains(domainDeduper(Array.from(proxySet)), gorhill).map(i => `SUFFIX,${i}`),
       ...Array.from(proxyKeywords).sort().map(i => `REGEX,${i}`)
     ],
     path.resolve(import.meta.dir, '../List/internal/cdn.txt')
