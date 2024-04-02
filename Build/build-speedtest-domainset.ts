@@ -172,7 +172,9 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     // Google Fiber legacy speedtest site (new fiber speedtest use speedtestcustom.com)
     '.speed.googlefiber.net',
     // librespeed
-    '.backend.librespeed.org'
+    '.backend.librespeed.org',
+    // Apple,
+    'mensura.cdn-apple.com' // From netQuality command
   ]);
 
   await span.traceChildAsync('fetch previous speedtest domainset', async () => {
