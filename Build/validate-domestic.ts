@@ -1,6 +1,6 @@
 import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { Readable } from 'stream';
-import { parse } from 'csv-parse';
+import { parse } from 'csv-parse/sync';
 import { createTrie } from './lib/trie';
 import path from 'path';
 import { processLine } from './lib/process-line';
@@ -18,8 +18,8 @@ export const parseDomesticList = async () => {
 
   const top5000 = new Set<string>();
 
-  const res = await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000');
-  const stream = Readable.fromWeb(res.body!).pipe(parse());
+  const res = await (await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000')).text();
+  const stream = parse(res);
   for await (const [domain] of stream) {
     if (trie.has(domain)) {
       top5000.add(domain);
