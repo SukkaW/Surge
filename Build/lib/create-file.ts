@@ -18,6 +18,9 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     console.log(`Nothing to write to ${filePath}...`);
     isEqual = false;
   } else {
+    /* The `isEqual` variable is used to determine whether the content of a file is equal to the
+    provided lines or not. It is initially set to `true`, and then it is updated based on different
+    conditions: */
     isEqual = await span.traceChildAsync(`comparing ${filePath}`, async () => {
       let index = 0;
 
@@ -64,18 +67,17 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   }
 
   await span.traceChildAsync(`writing ${filePath}`, async () => {
-    if (linesALen < 10000) {
-      return Bun.write(file, `${linesA.join('\n')}\n`);
-    }
+    // if (linesALen < 10000) {
+    return Bun.write(file, `${linesA.join('\n')}\n`);
+    // }
+    // const writer = file.writer();
 
-    const writer = file.writer();
+    // for (let i = 0; i < linesALen; i++) {
+    //   writer.write(linesA[i]);
+    //   writer.write('\n');
+    // }
 
-    for (let i = 0; i < linesALen; i++) {
-      writer.write(linesA[i]);
-      writer.write('\n');
-    }
-
-    return writer.end();
+    // return writer.end();
   });
 }
 
