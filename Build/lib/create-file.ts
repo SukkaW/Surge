@@ -92,6 +92,39 @@ export const withBannerArray = (title: string, description: string[] | readonly 
   ];
 };
 
+const collectType = (rule: string) => {
+  let buf = '';
+  for (let i = 0, len = rule.length; i < len; i++) {
+    if (rule[i] === ',') {
+      return buf;
+    }
+    buf += rule[i];
+  }
+  return null;
+};
+
+const defaultSortTypeOrder = Symbol('defaultSortTypeOrder');
+const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
+  DOMAIN: 1,
+  'DOMAIN-SUFFIX': 2,
+  'DOMAIN-KEYWORD': 10,
+  'USER-AGENT': 30,
+  'PROCESS-NAME': 40,
+  [defaultSortTypeOrder]: 50, // default sort order for unknown type
+  AND: 100,
+  OR: 100,
+  'IP-CIDR': 200,
+  'IP-CIDR6': 200
+};
+// sort DOMAIN-SUFFIX and DOMAIN first, then DOMAIN-KEYWORD, then IP-CIDR and IP-CIDR6 if any
+export const sortRuleSet = (ruleSet: string[]) => ruleSet
+  .map((rule) => {
+    const type = collectType(rule);
+    return [type ? (type in sortTypeOrder ? sortTypeOrder[type] : sortTypeOrder[defaultSortTypeOrder]) : 10, rule] as const;
+  })
+  .sort((a, b) => a[0] - b[0])
+  .map(c => c[1]);
+
 const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 
 export const createRuleset = (
@@ -101,9 +134,9 @@ export const createRuleset = (
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn((childSpan) => {
   const surgeContent = withBannerArray(
     title, description, date,
-    type === 'domainset'
+    sortRuleSet(type === 'domainset'
       ? [MARK, ...content]
-      : [`DOMAIN,${MARK}`, ...content]
+      : [`DOMAIN,${MARK}`, ...content])
   );
   const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
     let _clashContent;
