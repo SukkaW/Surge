@@ -284,7 +284,8 @@ export const DOMESTICS = {
       'yunpan.cn',
       'yunpan.com',
       'yunpan.com.cn',
-      'qh-cdn.com'
+      'qh-cdn.com',
+      'baomitu.com'
     ]
   },
   SYSTEM: {

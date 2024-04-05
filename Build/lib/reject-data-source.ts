@@ -204,7 +204,7 @@ export const PREDEFINED_WHITELIST = [
   'survicate.com', // AdGuardDNSFilter
   'perfops.io', // AdGuardDNSFilter
   'd2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
-  'tb-lb.sb-cd.com', // AdGuard
+  'sb-cd.com', // AdGuard
   'storage.yandexcloud.net', // phishing list
   'login.microsoftonline.com', // phishing list
   'api.xiaomi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281

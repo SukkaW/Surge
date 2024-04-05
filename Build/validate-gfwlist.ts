@@ -53,6 +53,9 @@ export const parseGfwList = async () => {
       continue;
     }
   }
+  for (const l of (await (await fetch('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
+    blackSet.add(l);
+  }
 
   const top500Gfwed = new Set<string>();
 
