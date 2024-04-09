@@ -56,7 +56,7 @@ export const buildInternalCDNDomains = task(import.meta.path, async (span) => {
       ...sortDomains(domainDeduper(Array.from(proxySet)), gorhill).map(i => `SUFFIX,${i}`),
       ...Array.from(proxyKeywords).sort().map(i => `REGEX,${i}`)
     ],
-    path.resolve(import.meta.dir, '../List/internal/cdn.txt')
+    path.resolve(import.meta.dir, '../Internal/cdn.txt')
   );
 });
 

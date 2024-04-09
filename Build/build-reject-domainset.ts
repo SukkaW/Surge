@@ -190,7 +190,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     compareAndWriteFile(
       span,
       rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
-      path.resolve(import.meta.dir, '../List/internal/reject-stats.txt')
+      path.resolve(import.meta.dir, '../Internal/reject-stats.txt')
     )
   ]);
 });

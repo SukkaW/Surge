@@ -8,6 +8,7 @@ public
 # $ build output
 List/
 Clash/
+Internal/
 Modules/sukka_local_dns_mapping.sgmodule
 Modules/sukka_url_redirect.sgmodule
 Modules/sukka_common_always_realip.sgmodule

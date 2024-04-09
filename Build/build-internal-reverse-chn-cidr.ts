@@ -23,7 +23,7 @@ export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
     )
   );
 
-  return Bun.write(path.resolve(import.meta.dir, '../List/internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
+  return Bun.write(path.resolve(import.meta.dir, '../Internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
 });
 
 if (import.meta.main) {

@@ -113,6 +113,11 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     output,
     path.resolve(import.meta.dir, '../List/internal/appprofile.php')
   );
+  await compareAndWriteFile(
+    span,
+    output,
+    path.resolve(import.meta.dir, '../Internal/appprofile.php')
+  );
 });
 
 if (import.meta.main) {

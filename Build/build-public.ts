@@ -13,6 +13,7 @@ const folderAndFilesToBeDeployed = [
   `Clash${path.sep}`,
   `Modules${path.sep}`,
   `Script${path.sep}`,
+  `Internal${path.sep}`,
   'LICENSE'
 ];
 
@@ -57,6 +58,7 @@ const priorityOrder: Record<'default' | string & {}, number> = {
   Script: 14,
   Mock: 15,
   Assets: 16,
+  Internal: 17,
   LICENSE: 20,
   default: Number.MAX_VALUE
 };
