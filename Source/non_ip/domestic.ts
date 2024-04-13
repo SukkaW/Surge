@@ -199,6 +199,7 @@ export const DOMESTICS = {
       'iesdouyin.com',
       'pstatp.com',
       'snssdk.com',
+      'bytegoofy.com',
       'toutiao.com',
       'feishu.cn',
       'feishu.net',

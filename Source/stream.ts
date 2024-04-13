@@ -665,8 +665,9 @@ const TIKTOK: StreamService = {
     'DOMAIN-SUFFIX,muscdn.com',
     'DOMAIN-SUFFIX,musical.ly',
     'DOMAIN-SUFFIX,tiktok.com',
+    'DOMAIN-SUFFIX,tiktok.us',
     'DOMAIN-SUFFIX,tik-tokapi.com',
-    'DOMAIN-SUFFIX,tiktokcdn.com',
+    // 'DOMAIN-SUFFIX,tiktokcdn.com',
     'DOMAIN-SUFFIX,tiktokv.com',
     'DOMAIN-KEYWORD,-tiktokcdn-com',
 
