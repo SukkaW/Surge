@@ -14,7 +14,7 @@ const getBogusNxDomainIPsPromise = fsFetchCache.apply(
   async () => {
     const result: string[] = [];
     for await (const line of await fetchRemoteTextByLine(URL)) {
-      if (line && line.startsWith('bogus-nxdomain=')) {
+      if (line.startsWith('bogus-nxdomain=')) {
         const ip = line.slice(15).trim();
         if (isProbablyIpv4(ip)) {
           result.push(`IP-CIDR,${ip}/32,no-resolve`);

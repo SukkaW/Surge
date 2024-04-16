@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-unresolved -- bun
+// eslint-disable-next-line import-x/no-unresolved -- bun
 import { describe, expect, it } from 'bun:test';
 import createKeywordFilter from './aho-corasick';
 

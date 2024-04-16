@@ -1,5 +1,4 @@
 import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
-import { Readable } from 'stream';
 import { parse } from 'csv-parse/sync';
 import { createTrie } from './lib/trie';
 import path from 'path';

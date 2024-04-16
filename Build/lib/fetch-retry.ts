@@ -7,12 +7,13 @@ const MAX_RETRIES = 5;
 const MAX_RETRY_AFTER = 20;
 const FACTOR = 6;
 
-function isClientError(err: any): err is NodeJS.ErrnoException {
-  if (!err) return false;
-  return (
-    err.code === 'ERR_UNESCAPED_CHARACTERS'
-    || err.message === 'Request path contains unescaped characters'
-  );
+function isClientError(err: unknown): err is NodeJS.ErrnoException {
+  if (!err || typeof err !== 'object') return false;
+
+  if ('code' in err) return err.code === 'ERR_UNESCAPED_CHARACTERS';
+  if ('message' in err) return err.message === 'Request path contains unescaped characters';
+
+  return false;
 }
 
 export class ResponseError extends Error {
@@ -70,7 +71,7 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
       return await retry<Response>(async (bail) => {
         try {
           // this will be retried
-          const res = (await $fetch(url, opts)) as Response;
+          const res = (await $fetch(url, opts));
 
           if ((res.status >= 500 && res.status < 600) || res.status === 429) {
             // NOTE: doesn't support http-date format

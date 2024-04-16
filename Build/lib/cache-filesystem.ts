@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-unresolved -- bun built-in module
+// eslint-disable-next-line import-x/no-unresolved -- bun built-in module
 import { Database } from 'bun:sqlite';
 import os from 'os';
 import path from 'path';
