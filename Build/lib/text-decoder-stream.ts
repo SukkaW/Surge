@@ -21,7 +21,7 @@ export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, strin
   readonly ignoreBOM: boolean;
 
   constructor(
-    encoding: Encoding = 'utf-8',
+    encoding: Bun.Encoding = 'utf-8',
     { fatal = false, ignoreBOM = false }: ConstructorParameters<typeof TextDecoder>[1] = {}
   ) {
     const decoder = new TextDecoder(encoding, { fatal, ignoreBOM });

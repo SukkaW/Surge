@@ -7,15 +7,12 @@ import { processLine } from './process-line';
 
 const enableTextLineStream = !!process.env.ENABLE_TEXT_LINE_STREAM;
 
-interface TextLineStreamLike {
-  [Symbol.asyncIterator](): AsyncIterableIterator<string>
-}
-
 const decoder = new TextDecoder('utf-8');
-async function *createTextLineAsyncGeneratorFromStreamSource(stream: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+async function *createTextLineAsyncIterableFromStreamSource(stream: ReadableStream<Uint8Array>): AsyncIterable<string> {
   let buf = '';
 
-  for await (const chunk of stream as any) {
+  // @ts-expect-error -- ReadableStream<Uint8Array> should be AsyncIterable<Uint8Array>
+  for await (const chunk of stream) {
     const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
     for (let i = 0, len = chunkStr.length; i < len; i++) {
       const char = chunkStr[i];
@@ -33,45 +30,34 @@ async function *createTextLineAsyncGeneratorFromStreamSource(stream: ReadableStr
   }
 }
 
-export const readFileByLine: ((file: string | URL | BunFile) => TextLineStreamLike) = enableTextLineStream
-  ? (file: string | URL | BunFile) => {
-    if (typeof file === 'string') {
-      file = Bun.file(file);
-    } else if (!('writer' in file)) {
-      file = Bun.file(file);
-    }
-
-    return file.stream().pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream());
+const getBunBlob = (file: string | URL | BunFile) => {
+  if (typeof file === 'string') {
+    return Bun.file(file);
+  } if (!('writer' in file)) {
+    return Bun.file(file);
   }
-  : (file: string | URL | BunFile) => {
-    if (typeof file === 'string') {
-      file = Bun.file(file);
-    } else if (!('writer' in file)) {
-      file = Bun.file(file);
-    }
+  return file;
+};
 
-    return createTextLineAsyncGeneratorFromStreamSource(file.stream()) as any;
-  };
+// @ts-expect-error -- ReadableStream<string> should be AsyncIterable<string>
+export const readFileByLine: ((file: string | URL | BunFile) => AsyncIterable<string>) = enableTextLineStream
+  ? (file: string | URL | BunFile) => getBunBlob(file).stream().pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream())
+  : (file: string | URL | BunFile) => createTextLineAsyncIterableFromStreamSource(getBunBlob(file).stream());
 
-export const createReadlineInterfaceFromResponse: ((resp: Response) => TextLineStreamLike) = enableTextLineStream
-  ? (resp) => {
-    if (!resp.body) {
-      throw new Error('Failed to fetch remote text');
-    }
-    if (resp.bodyUsed) {
-      throw new Error('Body has already been consumed.');
-    }
-    return resp.body.pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream());
+const ensureResponseBody = (resp: Response) => {
+  if (!resp.body) {
+    throw new Error('Failed to fetch remote text');
   }
-  : (resp) => {
-    if (!resp.body) {
-      throw new Error('Failed to fetch remote text');
-    }
-    if (resp.bodyUsed) {
-      throw new Error('Body has already been consumed.');
-    }
-    return createTextLineAsyncGeneratorFromStreamSource(resp.body) as any;
-  };
+  if (resp.bodyUsed) {
+    throw new Error('Body has already been consumed.');
+  }
+  return resp.body;
+};
+
+// @ts-expect-error -- ReadableStream<string> should be AsyncIterable<string>
+export const createReadlineInterfaceFromResponse: ((resp: Response) => AsyncIterable<string>) = enableTextLineStream
+  ? (resp) => ensureResponseBody(resp).pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream())
+  : (resp) => createTextLineAsyncIterableFromStreamSource(ensureResponseBody(resp));
 
 export function fetchRemoteTextByLine(url: string | URL) {
   return fetchWithRetry(url, defaultRequestInit).then(createReadlineInterfaceFromResponse);

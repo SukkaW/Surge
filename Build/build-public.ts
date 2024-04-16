@@ -22,7 +22,8 @@ export const buildPublic = task(import.meta.path, async (span) => {
     .traceChild('copy public files')
     .traceAsyncFn(async () => {
       const filesToBeCopied = (await listDir(
-        rootPath, {
+        rootPath,
+        {
           ignoreHidden: true,
           ignorePattern: /node_modules|Build|public/
         }

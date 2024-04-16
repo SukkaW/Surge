@@ -23,7 +23,7 @@ export const processLine = (line: string): string | null => {
   return trimmed;
 };
 
-export const processLineFromReadline = async (rl: AsyncGenerator<string> | ReadableStream<string>): Promise<string[]> => {
+export const processLineFromReadline = async (rl: AsyncIterable<string>): Promise<string[]> => {
   const res: string[] = [];
   for await (const line of rl) {
     const l: string | null = processLine(line);

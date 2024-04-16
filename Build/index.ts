@@ -64,9 +64,7 @@ console.log('Bun version:', Bun.version, Bun.revision);
 
     const buildMicrosoftCdnPromise = downloadPreviousBuildPromise.then(() => buildMicrosoftCdn(rootSpan));
 
-    const buildSSPanelUIMAppProfilePromise = Promise.all([
-      downloadPreviousBuildPromise
-    ]).then(() => buildSSPanelUIMAppProfile(rootSpan));
+    const buildSSPanelUIMAppProfilePromise = downloadPreviousBuildPromise.then(() => buildSSPanelUIMAppProfile(rootSpan));
 
     const downloadMockAssetsPromise = downloadMockAssets(rootSpan);
 
