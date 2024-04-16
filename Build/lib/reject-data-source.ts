@@ -226,6 +226,7 @@ export const PREDEFINED_WHITELIST = [
 ];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
+  'r2.dev',
   'godaddysites.com',
   'web.app',
   'firebaseapp.com',
