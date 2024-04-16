@@ -659,16 +659,18 @@ const TIKTOK: StreamService = {
   rules: [
     'DOMAIN-SUFFIX,byteoversea.com',
     'DOMAIN-SUFFIX,ibytedtos.com',
-    'DOMAIN-SUFFIX,ibyteimg.com',
+    // 'DOMAIN-SUFFIX,ibyteimg.com', // We confirm that tiktokcdn DOES NOT have ANY geoblock
     'DOMAIN-SUFFIX,ipstatp.com',
     'DOMAIN-SUFFIX,isnssdk.com',
     'DOMAIN-SUFFIX,muscdn.com',
     'DOMAIN-SUFFIX,musical.ly',
     'DOMAIN-SUFFIX,tiktok.com',
     'DOMAIN-SUFFIX,tiktok.us',
+    'DOMAIN-SUFFIX,tiktokv.us',
     'DOMAIN-SUFFIX,tik-tokapi.com',
-    // 'DOMAIN-SUFFIX,tiktokcdn.com',
+    // 'DOMAIN-SUFFIX,tiktokcdn.com', // We confirm that tiktokcdn DOES NOT have ANY geoblock
     'DOMAIN-SUFFIX,tiktokv.com',
+    'DOMAIN-SUFFIX,tiktokw.com',
     'DOMAIN-KEYWORD,-tiktokcdn-com',
 
     'USER-AGENT,TikTok*'
