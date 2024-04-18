@@ -160,6 +160,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     // Wi-Fi Man
     '.wifiman.com',
     '.wifiman.me',
+    '.wifiman.ubncloud.com',
     // Fast.com
     '.fast.com',
     // MacPaw
