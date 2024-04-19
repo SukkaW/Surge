@@ -73,7 +73,8 @@ export const DOMESTICS = {
       'wandoujia.com',
       'aliapp.org',
       'tanx.com',
-      'hellobike.com'
+      'hellobike.com',
+      'hichina.com'
     ]
   },
   TENCENT: {
