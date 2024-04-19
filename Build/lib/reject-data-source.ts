@@ -63,6 +63,12 @@ export const DOMAIN_LISTS = [
 type AdGuardFilterSource = string | [main: string, mirrors: string[] | null, ttl: number];
 
 export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
+  [
+    'https://anti-ad.net/surge2.txt',
+    [
+      'https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-surge2.txt'
+    ]
+  ],
   // EasyList
   [
     'https://easylist.to/easylist/easylist.txt',
