@@ -5,6 +5,7 @@ import { createTrie } from './lib/trie';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
+import { domainDeduper } from './lib/domain-deduper';
 
 const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   const trie = createTrie((await getPublicSuffixListTextPromise()).split('\n'));
@@ -43,18 +44,19 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
 
 export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
   const [
-    cdnDomainsList,
     S3OSSDomains,
+
+    cdnDomainsList,
     downloadDomainSet,
     steamDomainSet
   ] = await Promise.all([
-    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/cdn.conf')),
     getS3OSSDomainsPromise,
+    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/cdn.conf')),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/download.conf')),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
   ]);
 
-  cdnDomainsList.push(...Array.from(S3OSSDomains).map((domain) => `DOMAIN-SUFFIX,${domain}`));
+  cdnDomainsList.push(...Array.from(S3OSSDomains).map((domain) => `.${domain}`));
 
   return Promise.all([
     createRuleset(
@@ -66,10 +68,10 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
         'This file contains object storage and static assets CDN domains.'
       ],
       new Date(),
-      cdnDomainsList,
-      'ruleset',
-      path.resolve(import.meta.dir, '../List/non_ip/cdn.conf'),
-      path.resolve(import.meta.dir, '../Clash/non_ip/cdn.txt')
+      domainDeduper(cdnDomainsList),
+      'domainset',
+      path.resolve(import.meta.dir, '../List/domainset/cdn.conf'),
+      path.resolve(import.meta.dir, '../Clash/domainset/cdn.txt')
     ),
     createRuleset(
       span,
@@ -80,10 +82,10 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
         'This file contains domains for software updating & large file hosting.'
       ],
       new Date(),
-      [
+      domainDeduper([
         ...downloadDomainSet,
         ...steamDomainSet
-      ],
+      ]),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/download.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/download.txt')

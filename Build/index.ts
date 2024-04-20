@@ -1,3 +1,5 @@
+console.log('Bun version:', Bun.version, Bun.revision);
+
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
 import { buildAntiBogusDomain } from './build-anti-bogus-domain';
@@ -8,15 +10,12 @@ import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
 import { buildInternalCDNDomains } from './build-internal-cdn-rules';
-// import { buildInternalChnDomains } from './build-internal-chn-domains';
 import { buildInternalReverseChnCIDR } from './build-internal-reverse-chn-cidr';
 import { buildDomesticRuleset } from './build-domestic-ruleset';
 import { buildStreamService } from './build-stream-service';
 
 import { buildRedirectModule } from './build-sgmodule-redirect';
 import { buildAlwaysRealIPModule } from './build-sgmodule-always-realip';
-
-import { validate } from './validate-domainset';
 
 import { buildMicrosoftCdn } from './build-microsoft-cdn';
 import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
@@ -29,14 +28,10 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 import { createSpan, printTraceResult } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 
-console.log('Bun version:', Bun.version, Bun.revision);
-
 (async () => {
   const rootSpan = createSpan('root');
 
   try {
-    // const buildInternalReverseChnCIDRWorker = new Worker(new URL('./workers/build-internal-reverse-chn-cidr-worker.ts', import.meta.url));
-
     const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
 
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
@@ -98,8 +93,7 @@ console.log('Bun version:', Bun.version, Bun.revision);
     ]);
 
     await Promise.all([
-      buildPublic(rootSpan),
-      validate(rootSpan)
+      buildPublic(rootSpan)
     ]);
 
     rootSpan.stop();

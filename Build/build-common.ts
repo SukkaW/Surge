@@ -66,7 +66,7 @@ const processFile = (span: Span, sourcePath: string) => {
 
     try {
       for await (const line of readFileByLine(sourcePath)) {
-        if (line === MAGIC_COMMAND_SKIP) {
+        if (line.startsWith(MAGIC_COMMAND_SKIP)) {
           return null;
         }
 
