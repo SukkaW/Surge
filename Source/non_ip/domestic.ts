@@ -8,6 +8,7 @@ export const DOMESTICS = {
       'alibaba.com',
       'alicdn.com',
       'ialicdn.com',
+      'myalicdn.com',
       'alidns.com',
       'aliimg.com',
       'aliyun.com',
