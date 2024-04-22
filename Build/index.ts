@@ -2,7 +2,7 @@ console.log('Bun version:', Bun.version, Bun.revision);
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
-import { buildAntiBogusDomain } from './build-anti-bogus-domain';
+import { buildRejectIPList } from './build-reject-ip-list';
 import { buildAppleCdn } from './build-apple-cdn';
 import { buildCdnDownloadConf } from './build-cdn-download-conf';
 import { buildRejectDomainSet } from './build-reject-domainset';
@@ -35,7 +35,7 @@ import { buildDeprecateFiles } from './build-deprecate-files';
     const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
 
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
-    const buildAntiBogusDomainPromise = downloadPreviousBuildPromise.then(() => buildAntiBogusDomain(rootSpan));
+    const buildRejectIPListPromise = downloadPreviousBuildPromise.then(() => buildRejectIPList(rootSpan));
     const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn(rootSpan));
     const buildCdnConfPromise = downloadPreviousBuildPromise.then(() => buildCdnDownloadConf(rootSpan));
     const buildRejectDomainSetPromise = downloadPreviousBuildPromise.then(() => buildRejectDomainSet(rootSpan));
@@ -70,7 +70,7 @@ import { buildDeprecateFiles } from './build-deprecate-files';
     await Promise.all([
       downloadPreviousBuildPromise,
       buildCommonPromise,
-      buildAntiBogusDomainPromise,
+      buildRejectIPListPromise,
       buildAppleCdnPromise,
       buildCdnConfPromise,
       buildRejectDomainSetPromise,
