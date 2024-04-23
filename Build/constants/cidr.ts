@@ -24,6 +24,10 @@ export const NON_CN_CIDR_INCLUDED_IN_CHNROUTE = [
   '223.120.0.0/15'
 ];
 
+// https://github.com/misakaio/chnroutes2/issues/46
 export const CN_CIDR_NOT_INCLUDED_IN_CHNROUTE = [
-  '211.99.96.0/19' // wy.com.cn
+  '211.99.96.0/19', // wy.com.cn
+  '139.217.0.0/16', // AS58593, Azure China, Shanghai
+  '139.219.0.0/16', // AS58593, Azure China, Shanghai
+  '143.64.0.0/16' // AS58593, Azure China, Beijing
 ];
