@@ -115,16 +115,37 @@ const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   'USER-AGENT': 30,
   'PROCESS-NAME': 40,
   [defaultSortTypeOrder]: 50, // default sort order for unknown type
-  AND: 100,
-  OR: 100,
-  'IP-CIDR': 200,
-  'IP-CIDR6': 200
+  'URL-REGEX': 100,
+  AND: 300,
+  OR: 300,
+  'IP-CIDR': 400,
+  'IP-CIDR6': 400
 };
 // sort DOMAIN-SUFFIX and DOMAIN first, then DOMAIN-KEYWORD, then IP-CIDR and IP-CIDR6 if any
 export const sortRuleSet = (ruleSet: string[]) => ruleSet
   .map((rule) => {
     const type = collectType(rule);
-    return [type ? (type in sortTypeOrder ? sortTypeOrder[type] : sortTypeOrder[defaultSortTypeOrder]) : 10, rule] as const;
+    if (!type) {
+      return [10, rule] as const;
+    }
+    if (!(type in sortTypeOrder)) {
+      return [sortTypeOrder[defaultSortTypeOrder], rule] as const;
+    }
+    if (type === 'URL-REGEX') {
+      let extraWeight = 0;
+      if (rule.includes('.+') || rule.includes('.*')) {
+        extraWeight += 10;
+      }
+      if (rule.includes('|')) {
+        extraWeight += 1;
+      }
+
+      return [
+        sortTypeOrder[type] + extraWeight,
+        rule
+      ] as const;
+    }
+    return [sortTypeOrder[type], rule] as const;
   })
   .sort((a, b) => a[0] - b[0])
   .map(c => c[1]);

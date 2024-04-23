@@ -1,16 +1,21 @@
-const fsPromises = require('fs').promises;
-const pathFn = require('path');
-const table = require('table');
-const listDir = require('@sukka/listdir');
-const { green, yellow } = require('picocolors');
+import { readFileByLine } from './lib/fetch-text-by-line';
+import fsPromises from 'fs/promises';
+import pathFn from 'path';
+import table from 'table';
+import listDir from '@sukka/listdir';
+import { green, yellow } from 'picocolors';
+import { processLineFromReadline } from './lib/process-line';
+import { getHostname } from 'tldts';
 
 const PRESET_MITM_HOSTNAMES = [
   // '*baidu.com',
-  '*ydstatic.com',
+  '*.ydstatic.com',
   // '*snssdk.com',
-  '*musical.com',
+  // '*musical.com',
   // '*musical.ly',
   // '*snssdk.ly',
+  'api.zhihu.com',
+  'www.zhihu.com',
   'api.chelaile.net.cn',
   'atrace.chelaile.net.cn',
   '*.meituan.net',
@@ -20,8 +25,15 @@ const PRESET_MITM_HOSTNAMES = [
   'ctrl.zmzapi.net',
   'api.zhuishushenqi.com',
   'b.zhuishushenqi.com',
-  '*.music.126.net',
-  '*.prod.hosts.ooklaserver.net'
+  'ggic.cmvideo.cn',
+  'ggic2.cmvideo.cn',
+  'mrobot.pcauto.com.cn',
+  'mrobot.pconline.com.cn',
+  'home.umetrip.com',
+  'discardrp.umetrip.com',
+  'startup.umetrip.com',
+  'dsp-x.jd.com',
+  'bdsp-x.jd.com'
 ];
 
 (async () => {
@@ -51,7 +63,7 @@ const PRESET_MITM_HOSTNAMES = [
       }))
   );
 
-  const bothWwwApexDomains = [];
+  const bothWwwApexDomains: Array<{ origin: string, processed: string }> = [];
   urlRegexPaths = urlRegexPaths.map(i => {
     if (!i.processed.includes('{www or not}')) return i;
 
@@ -70,10 +82,13 @@ const PRESET_MITM_HOSTNAMES = [
   urlRegexPaths.push(...bothWwwApexDomains);
 
   await Promise.all(rulesets.map(async file => {
-    const content = (await fsPromises.readFile(pathFn.join(folderListPath, file), { encoding: 'utf-8' })).split('\n');
+    const content = await processLineFromReadline(readFileByLine(pathFn.join(folderListPath, file)));
     urlRegexPaths.push(
       ...content
-        .filter(i => i.startsWith('URL-REGEX'))
+        .filter(i => (
+          i.startsWith('URL-REGEX')
+          && !i.includes('http://')
+        ))
         .map(i => i.split(',')[1])
         .map(i => ({
           origin: i,
@@ -81,6 +96,7 @@ const PRESET_MITM_HOSTNAMES = [
             .replaceAll('^https?://', '')
             .replaceAll('^https://', '')
             .replaceAll('^http://', '')
+            .split('/')[0]
             .replaceAll('\\.', '.')
             .replaceAll('.+', '*')
             .replaceAll('\\d', '*')
@@ -95,21 +111,21 @@ const PRESET_MITM_HOSTNAMES = [
   }));
 
   const mitmDomains = new Set(PRESET_MITM_HOSTNAMES); // Special case for parsed failed
-  const parsedFailures = [];
+  const parsedFailures = new Set();
 
   const dedupedUrlRegexPaths = [...new Set(urlRegexPaths)];
 
   dedupedUrlRegexPaths.forEach(i => {
-    const result = parseDomain(i.processed);
+    const result = getHostnameSafe(i.processed);
 
-    if (result.success) {
-      mitmDomains.add(result.hostname.trim());
+    if (result) {
+      mitmDomains.add(result);
     } else {
-      parsedFailures.add(i.origin);
+      parsedFailures.add(`${i.origin} ${i.processed} ${result}`);
     }
   });
 
-  const mitmDomainsRegExpArray = mitmDomains
+  const mitmDomainsRegExpArray = Array.from(mitmDomains)
     .slice()
     .filter(i => {
       return i.length > 3
@@ -128,21 +144,21 @@ const PRESET_MITM_HOSTNAMES = [
       );
     });
 
-  const parsedDomainsData = [];
+  const parsedDomainsData: Array<[string, string]> = [];
   dedupedUrlRegexPaths.forEach(i => {
-    const result = parseDomain(i.processed);
+    const result = getHostnameSafe(i.processed);
 
-    if (result.success) {
-      if (matchWithRegExpArray(result.hostname.trim(), mitmDomainsRegExpArray)) {
-        parsedDomainsData.push([green(result.hostname), i.origin]);
+    if (result) {
+      if (matchWithRegExpArray(result, mitmDomainsRegExpArray)) {
+        parsedDomainsData.push([green(result), i.origin]);
       } else {
-        parsedDomainsData.push([yellow(result.hostname), i.origin]);
+        parsedDomainsData.push([yellow(result), i.origin]);
       }
     }
   });
 
   console.log('Mitm Hostnames:');
-  console.log(`hostname = %APPEND% ${mitmDomains.join(', ')}`);
+  console.log(`hostname = %APPEND% ${Array.from(mitmDomains).join(', ')}`);
   console.log('--------------------');
   console.log('Parsed Sucessed:');
   console.log(table.table(parsedDomainsData, {
@@ -159,21 +175,14 @@ const PRESET_MITM_HOSTNAMES = [
 })();
 
 /** Util function */
-function parseDomain(input) {
-  try {
-    const url = new URL(`https://${input}`);
-    return {
-      success: true,
-      hostname: url.hostname
-    };
-  } catch {
-    return {
-      success: false
-    };
-  }
+
+function getHostnameSafe(input: string) {
+  const res = getHostname(input);
+  if (res && /[^\s\w*.-]/.test(res)) return null;
+  return res;
 }
 
-function matchWithRegExpArray(input, regexps = []) {
+function matchWithRegExpArray(input: string, regexps: RegExp[] = []) {
   for (const r of regexps) {
     if (r.test(input)) return true;
   }

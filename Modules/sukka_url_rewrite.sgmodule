@@ -53,10 +53,7 @@
 
 # Special AD Block Section
 
-# >> Kugou
-^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/EcomResourceServer/AdPlayPage/adinfo - reject
-^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/MobileAdServer/ - reject
 # >> eLong
-^https?://(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})(\.(2(5[0-5]{1}|[0-4]\d{1})|[0-1]?\d{1,2})){3}/(adgateway|adv)/ - reject
+^https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/(adgateway|adv)/ - reject
 # >> NOMO
 ^https?://nomo.dafork.com/api/v3/iap/ios_product_list https://ruleset.skk.moe/Mock/nomo.json 302
