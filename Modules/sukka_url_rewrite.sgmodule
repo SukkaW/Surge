@@ -1,6 +1,10 @@
 #!name=[Sukka] URL Rewrite
 #!desc=Enable this module to use Sukka URL Rewrite rules
 
+[MITM]
+
+hostname = %APPEND% api.abema.io, g.cn, google.cn, ign.xn--fiqs8s, abbyychina.com, bartender.cc, betterzip.net, beyondcompare.cc, bingdianhuanyuan.cn, chemdraw.com.cn, codesoftchina.com, coreldrawchina.com, crossoverchina.com, easyrecoverychina.com, ediuschina.com, flstudiochina.com, formysql.com, guitarpro.cc, huishenghuiying.com.cn, iconworkshop.cn, imindmap.cc, jihehuaban.com.cn, keyshot.cc, mathtype.cn, mindmanager.cc, mindmapper.cc, mycleanmymac.com, nicelabel.cc, ntfsformac.cc, ntfsformac.cn, overturechina.com, passwordrecovery.cn, pdfexpert.cc, ultraiso.net, vegaschina.cn, xmindchina.net, xshellcn.com, yuanchengxiezuo.com, zbrushcn.com, union.click.jd.com, union.click.jd.com, nomo.dafork.com, www.g.cn, www.google.cn, www.ign.xn--fiqs8s, www.abbyychina.com, www.bartender.cc, www.betterzip.net, www.beyondcompare.cc, www.bingdianhuanyuan.cn, www.chemdraw.com.cn, www.codesoftchina.com, www.coreldrawchina.com, www.crossoverchina.com, www.easyrecoverychina.com, www.ediuschina.com, www.flstudiochina.com, www.formysql.com, www.guitarpro.cc, www.huishenghuiying.com.cn, www.iconworkshop.cn, www.imindmap.cc, www.jihehuaban.com.cn, www.keyshot.cc, www.mathtype.cn, www.mindmanager.cc, www.mindmapper.cc, www.mycleanmymac.com, www.nicelabel.cc, www.ntfsformac.cc, www.ntfsformac.cn, www.overturechina.com, www.passwordrecovery.cn, www.pdfexpert.cc, www.ultraiso.net, www.vegaschina.cn, www.xmindchina.net, www.xshellcn.com, www.yuanchengxiezuo.com, www.zbrushcn.com
+
 [URL Rewrite]
 # AbeamTV Unlock
 ^https?://api\.abema\.io/v\d/ip/check - reject

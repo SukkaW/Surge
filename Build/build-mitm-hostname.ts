@@ -38,47 +38,8 @@ const PRESET_MITM_HOSTNAMES = [
 (async () => {
   const folderListPath = pathFn.resolve(__dirname, '../List/');
   const rulesets = await listDir(folderListPath);
-  let urlRegexPaths = [];
 
-  urlRegexPaths.push(
-    ...(await Bun.file(pathFn.join(__dirname, '../Modules/sukka_url_rewrite.sgmodule')).text())
-      .split('\n')
-      .filter(
-        i => !i.startsWith('#')
-          && !i.startsWith('[')
-      )
-      .map(i => i.split(' ')[0])
-      .map(i => ({
-        origin: i,
-        processed: i
-          .replaceAll('(www.)?', '{www or not}')
-          .replaceAll('^https?://', '')
-          .replaceAll('^https://', '')
-          .replaceAll('^http://', '')
-          .split('/')[0]
-          .replaceAll('\\.', '.')
-          .replaceAll('.+', '*')
-          .replaceAll('(.*)', '*')
-      }))
-  );
-
-  const bothWwwApexDomains: Array<{ origin: string, processed: string }> = [];
-  urlRegexPaths = urlRegexPaths.map(i => {
-    if (!i.processed.includes('{www or not}')) return i;
-
-    const d = i.processed.replace('{www or not}', '');
-    bothWwwApexDomains.push({
-      origin: i.origin,
-      processed: `www.${d}`
-    });
-
-    return {
-      origin: i.origin,
-      processed: d
-    };
-  });
-
-  urlRegexPaths.push(...bothWwwApexDomains);
+  const urlRegexPaths: Array<{ origin: string, processed: string }> = [];
 
   await Promise.all(rulesets.map(async file => {
     const content = await processLineFromReadline(readFileByLine(pathFn.join(folderListPath, file)));
