@@ -26,7 +26,7 @@ const processLocalRuleSet = async (ruleSetPath: string, set: Set<string>, keywor
       set.add(line.slice(7));
     } else if (line.startsWith('DOMAIN-KEYWORD')) {
       keywords.add(escapeRegExp(line.slice(15)));
-    } else if (line.includes('USER-AGENT,') || line.includes('PROCESS-NAME,') || line.includes('URL-REGEX,')) {
+    } else if (line.includes('USER-AGENT,') || line.includes('PROCESS-NAME,') || line.includes('URL-REGEX,') || line.includes('DOMAIN-WILDCARD')) {
       // do nothing
     } else if (processLine(line)) {
       console.warn('[drop line from ruleset]', line);
