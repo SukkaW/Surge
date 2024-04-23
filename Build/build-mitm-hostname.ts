@@ -1,5 +1,4 @@
 import { readFileByLine } from './lib/fetch-text-by-line';
-import fsPromises from 'fs/promises';
 import pathFn from 'path';
 import table from 'table';
 import listDir from '@sukka/listdir';
@@ -42,7 +41,7 @@ const PRESET_MITM_HOSTNAMES = [
   let urlRegexPaths = [];
 
   urlRegexPaths.push(
-    ...(await fsPromises.readFile(pathFn.join(__dirname, '../Modules/sukka_url_rewrite.sgmodule'), { encoding: 'utf-8' }))
+    ...(await Bun.file(pathFn.join(__dirname, '../Modules/sukka_url_rewrite.sgmodule')).text())
       .split('\n')
       .filter(
         i => !i.startsWith('#')
