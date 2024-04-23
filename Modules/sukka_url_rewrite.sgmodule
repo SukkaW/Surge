@@ -3,53 +3,11 @@
 
 [MITM]
 
-hostname = %APPEND% api.abema.io, g.cn, google.cn, ign.xn--fiqs8s, abbyychina.com, bartender.cc, betterzip.net, beyondcompare.cc, bingdianhuanyuan.cn, chemdraw.com.cn, codesoftchina.com, coreldrawchina.com, crossoverchina.com, easyrecoverychina.com, ediuschina.com, flstudiochina.com, formysql.com, guitarpro.cc, huishenghuiying.com.cn, iconworkshop.cn, imindmap.cc, jihehuaban.com.cn, keyshot.cc, mathtype.cn, mindmanager.cc, mindmapper.cc, mycleanmymac.com, nicelabel.cc, ntfsformac.cc, ntfsformac.cn, overturechina.com, passwordrecovery.cn, pdfexpert.cc, ultraiso.net, vegaschina.cn, xmindchina.net, xshellcn.com, yuanchengxiezuo.com, zbrushcn.com, union.click.jd.com, union.click.jd.com, nomo.dafork.com, www.g.cn, www.google.cn, www.ign.xn--fiqs8s, www.abbyychina.com, www.bartender.cc, www.betterzip.net, www.beyondcompare.cc, www.bingdianhuanyuan.cn, www.chemdraw.com.cn, www.codesoftchina.com, www.coreldrawchina.com, www.crossoverchina.com, www.easyrecoverychina.com, www.ediuschina.com, www.flstudiochina.com, www.formysql.com, www.guitarpro.cc, www.huishenghuiying.com.cn, www.iconworkshop.cn, www.imindmap.cc, www.jihehuaban.com.cn, www.keyshot.cc, www.mathtype.cn, www.mindmanager.cc, www.mindmapper.cc, www.mycleanmymac.com, www.nicelabel.cc, www.ntfsformac.cc, www.ntfsformac.cn, www.overturechina.com, www.passwordrecovery.cn, www.pdfexpert.cc, www.ultraiso.net, www.vegaschina.cn, www.xmindchina.net, www.xshellcn.com, www.yuanchengxiezuo.com, www.zbrushcn.com
+hostname = %APPEND% api.abema.io, union.click.jd.com, nomo.dafork.com
 
 [URL Rewrite]
 # AbeamTV Unlock
 ^https?://api\.abema\.io/v\d/ip/check - reject
-# Redirect Google Service
-^https?://(www.)?g\.cn https://www.google.com 302
-^https?://(www.)?google\.cn https://www.google.com 302
-# Redirect False to True
-# >> IGN China to IGN Global
-^https?://(www.)?ign\.xn--fiqs8s/ https://cn.ign.com/ccpref/us 302
-# >> Fake Website Made By Makeding
-^https?://(www.)?abbyychina\.com/ http://www.abbyy.cn/ 302
-^https?://(www.)?bartender\.cc/ https://cn.seagullscientific.com 302
-^https?://(www.)?betterzip\.net/ https://macitbetter.com/ 302
-^https?://(www.)?beyondcompare\.cc/ https://www.scootersoftware.com/ 302
-^https?://(www.)?bingdianhuanyuan\.cn/ http://www.faronics.com/zh-hans/ 302
-^https?://(www.)?chemdraw\.com\.cn/ http://www.cambridgesoft.com/ 302
-^https?://(www.)?codesoftchina\.com/ https://www.teklynx.com/ 302
-^https?://(www.)?coreldrawchina\.com/ https://www.coreldraw.com/cn/ 302
-^https?://(www.)?crossoverchina\.com/ https://www.codeweavers.com/ 302
-^https?://(www.)?easyrecoverychina\.com/ https://www.ontrack.com/ 302
-^https?://(www.)?ediuschina\.com/ https://www.grassvalley.com/ 302
-^https?://(www.)?flstudiochina\.com/ https://www.image-line.com/flstudio/ 302
-^https?://(www.)?formysql\.com/ https://www.navicat.com.cn 302
-^https?://(www.)?guitarpro\.cc/ https://www.guitar-pro.com/ 302
-^https?://(www.)?huishenghuiying\.com\.cn/ https://www.corel.com/cn/ 302
-^https?://(www.)?iconworkshop\.cn/ https://www.axialis.com/iconworkshop/ 302
-^https?://(www.)?imindmap\.cc/ https://imindmap.com/zh-cn/ 302
-^https?://(www.)?jihehuaban\.com\.cn/ https://sketch.io/ 302
-^https?://(www.)?keyshot\.cc/ https://www.keyshot.com/ 302
-^https?://(www.)?mathtype\.cn/ http://www.dessci.com/en/products/mathtype/ 302
-^https?://(www.)?mindmanager\.cc/ https://www.mindjet.com/ 302
-^https?://(www.)?mindmapper\.cc/ https://mindmapper.com 302
-^https?://(www.)?mycleanmymac\.com/ https://macpaw.com/cleanmymac 302
-^https?://(www.)?nicelabel\.cc/ https://www.nicelabel.com/ 302
-^https?://(www.)?ntfsformac\.cc/ https://www.tuxera.com/products/tuxera-ntfs-for-mac-cn/ 302
-^https?://(www.)?ntfsformac\.cn/ https://www.paragon-software.com/ufsdhome/zh/ntfs-mac/ 302
-^https?://(www.)?overturechina\.com/ https://sonicscores.com/overture/ 302
-^https?://(www.)?passwordrecovery\.cn/ https://cn.elcomsoft.com/aopr.html 302
-^https?://(www.)?pdfexpert\.cc/ https://pdfexpert.com/zh 302
-^https?://(www.)?ultraiso\.net/ https://cn.ezbsystems.com/ultraiso/ 302
-^https?://(www.)?vegaschina\.cn/ https://www.vegas.com/ 302
-^https?://(www.)?xmindchina\.net/ https://www.xmind.cn/ 302
-^https?://(www.)?xshellcn\.com/ https://www.netsarang.com/products/xsh_overview.html 302
-^https?://(www.)?yuanchengxiezuo\.com/ https://www.teamviewer.com/zhcn/ 302
-^https?://(www.)?zbrushcn\.com/ http://pixologic.com/ 302
 
 # JD Protection
 ^https?://union\.click\.jd\.com/jda? http://union.click.jd.com/jda?adblock= header
