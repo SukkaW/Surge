@@ -6,6 +6,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
 import { domainDeduper } from './lib/domain-deduper';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   const trie = createTrie((await getPublicSuffixListTextPromise()).split('\n'));
@@ -56,7 +57,7 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
   ]);
 
-  cdnDomainsList.push(...Array.from(S3OSSDomains).map((domain) => `.${domain}`));
+  appendArrayInPlace(cdnDomainsList, Array.from(S3OSSDomains).map((domain) => `.${domain}`));
 
   return Promise.all([
     createRuleset(

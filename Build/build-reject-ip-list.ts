@@ -8,6 +8,7 @@ import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 import { fetchAssets } from './lib/fetch-assets';
 import { processLine } from './lib/process-line';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 
@@ -70,7 +71,8 @@ export const buildRejectIPList = task(import.meta.path, async (span) => {
   const bogusNxDomainIPs = await span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise);
   const botNetIPs = await span.traceChildPromise('get botnet ips', getBotNetFilterIPsPromise);
 
-  result.push(...bogusNxDomainIPs, ...botNetIPs);
+  appendArrayInPlace(result, bogusNxDomainIPs);
+  appendArrayInPlace(result, botNetIPs);
 
   const description = [
     ...SHARED_DESCRIPTION,
