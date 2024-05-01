@@ -181,7 +181,7 @@ function printStats(stats: TraceResult[]): void {
   const realStart = Math.min(...stats.map(i => i.start));
   const realEnd = Math.max(...stats.map(i => i.end));
 
-  const statsStep = ((realEnd - realStart) / 160) | 0;
+  const statsStep = ((realEnd - realStart) / 120) | 0;
 
   stats.forEach(stat => {
     console.log(
