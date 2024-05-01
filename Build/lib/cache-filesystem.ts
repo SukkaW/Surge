@@ -85,7 +85,8 @@ export class Cache<S = string> {
     if (type) {
       this.type = type;
     } else {
-      this.type = 'string' as any;
+      // @ts-expect-error -- fallback type
+      this.type = 'string';
     }
 
     const db = new Database(path.join(this.cachePath, 'cache.db'));

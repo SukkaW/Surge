@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "lib": ["DOM", "DOM.Iterable"],
     "moduleDetection": "force",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "types": ["bun-types"],
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "noEmit": true,
