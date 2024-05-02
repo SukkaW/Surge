@@ -9,7 +9,8 @@ export const HOSTS: HostsSource[] = [
     true,
     TTL.THREE_HOURS()
   ],
-  ['https://someonewhocares.org/hosts/hosts', null, true, TTL.THREE_HOURS()],
+  // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
+  ['https://someonewhocares.org/hosts/zero/hosts', null, true, TTL.THREE_HOURS()],
   // no coin list is not actively maintained, but it updates daily when being maintained, so we set a 3 days cache ttl
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', null, true, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl

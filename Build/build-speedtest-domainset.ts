@@ -232,7 +232,7 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
       });
 
       resolve();
-    }, 1000 * 60 * 2);
+    }, 1000 * 60 * 1.5);
 
     Promise.all(Object.values(pMap)).then(() => {
       clearTimeout(timer);

@@ -42,7 +42,15 @@ export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
 
   const sorter = (a: string, b: string) => {
     if (a === b) return 0;
-    return compare(domains.get(a)!, domains.get(b)!) || compare(a, b);
+
+    const $a = domains.get(a)!;
+    const $b = domains.get(b)!;
+
+    // avoid compare same thing twice
+    if (a === $a && b === $b) {
+      return compare(a, b);
+    }
+    return compare($a, $b) || compare(a, b);
   };
 
   return inputs.sort(sorter);

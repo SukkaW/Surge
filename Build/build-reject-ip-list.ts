@@ -65,8 +65,10 @@ const getBotNetFilterIPsPromise = fsFetchCache.apply(
   }
 );
 
+const localRejectIPSourcesPromise = readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/ip/reject.conf'));
+
 export const buildRejectIPList = task(import.meta.path, async (span) => {
-  const result: string[] = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/ip/reject.conf'));
+  const result = await localRejectIPSourcesPromise;
 
   const bogusNxDomainIPs = await span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise);
   const botNetIPs = await span.traceChildPromise('get botnet ips', getBotNetFilterIPsPromise);

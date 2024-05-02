@@ -46,37 +46,38 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
     }
   ));
 }
+
+const hostsLineCb = (l: string, set: Set<string>, includeAllSubDomain: boolean, meta: string) => {
+  const line = processLine(l);
+  if (!line) {
+    return;
+  }
+
+  const _domain = line.split(/\s/)[1]?.trim();
+  if (!_domain) {
+    return;
+  }
+  const domain = normalizeDomain(_domain);
+  if (!domain) {
+    return;
+  }
+  if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
+    console.warn(picocolors.red(meta), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+    foundDebugDomain = true;
+  }
+
+  set.add(includeAllSubDomain ? `.${domain}` : domain);
+};
+
 export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
   const domainSets = new Set<string>();
-
-  const lineCb = (l: string) => {
-    const line = processLine(l);
-    if (!line) {
-      return;
-    }
-
-    const _domain = line.split(/\s/)[1]?.trim();
-    if (!_domain) {
-      return;
-    }
-    const domain = normalizeDomain(_domain);
-    if (!domain) {
-      return;
-    }
-    if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-      console.warn(picocolors.red(hostsUrl), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-      foundDebugDomain = true;
-    }
-
-    domainSets.add(includeAllSubDomain ? `.${domain}` : domain);
-  };
 
   return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
     hostsUrl,
     async () => {
       if (mirrors == null || mirrors.length === 0) {
         for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
-          lineCb(l);
+          hostsLineCb(l, domainSets, includeAllSubDomain, hostsUrl);
         }
       } else {
         const filterRules = await childSpan
@@ -85,7 +86,7 @@ export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | n
 
         childSpan.traceChild('parse hosts').traceSyncFn(() => {
           for (let i = 0, len = filterRules.length; i < len; i++) {
-            lineCb(filterRules[i]);
+            hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
           }
         });
       }
