@@ -3,12 +3,14 @@ import { parse } from 'csv-parse/sync';
 import { createTrie } from './lib/trie';
 import path from 'path';
 import { processLine } from './lib/process-line';
+import { extract } from 'tar-stream';
+import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
 
 export const parseDomesticList = async () => {
   const set = new Set<string>();
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
-    if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
-      const domain = line.slice(8, -16);
+    const domain = extractDomainsFromFelixDnsmasq(line);
+    if (domain) {
       set.add(domain);
     }
   }

@@ -5,6 +5,7 @@ import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
+import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
 
 const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];
 
@@ -26,8 +27,8 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   // First trie is to find the microsoft domains that matches probe domains
   const trie = createTrie();
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
-    if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
-      const domain = line.slice(8, -16);
+    const domain = extractDomainsFromFelixDnsmasq(line);
+    if (domain) {
       trie.add(domain);
     }
   }
