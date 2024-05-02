@@ -11,9 +11,14 @@ const decoder = new TextDecoder('utf-8');
 async function *createTextLineAsyncIterableFromStreamSource(stream: ReadableStream<Uint8Array>): AsyncIterable<string> {
   let buf = '';
 
-  // @ts-expect-error -- ReadableStream<Uint8Array> should be AsyncIterable<Uint8Array>
-  for await (const chunk of stream) {
-    const chunkStr = decoder.decode(chunk).replaceAll('\r\n', '\n');
+  const reader = stream.getReader();
+
+  while (true) {
+    const res = await reader.read();
+    if (res.done) {
+      break;
+    }
+    const chunkStr = decoder.decode(res.value).replaceAll('\r\n', '\n');
     for (let i = 0, len = chunkStr.length; i < len; i++) {
       const char = chunkStr[i];
       if (char === '\n') {
