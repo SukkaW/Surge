@@ -1,5 +1,4 @@
 import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
-import { createCachedGorhillGetDomain } from './cached-tld-parse';
 
 const compare = (a: string | null, b: string | null) => {
   if (a === b) return 0;
@@ -20,9 +19,9 @@ const compare = (a: string | null, b: string | null) => {
   }
 
   for (let i = 0; i < aLen; i++) {
-    if (b[i] == null) {
-      return 1;
-    }
+    // if (b[i] == null) {
+    //   return 1;
+    // }
     if (a[i] < b[i]) {
       return -1;
     }
@@ -34,22 +33,20 @@ const compare = (a: string | null, b: string | null) => {
 };
 
 export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
-  const getDomain = createCachedGorhillGetDomain(gorhill);
-  const domains = inputs.reduce<Map<string, string>>((acc, cur) => {
-    if (!acc.has(cur)) acc.set(cur, getDomain(cur));
+  const domains = inputs.reduce<Map<string, string | null>>((acc, cur) => {
+    if (!acc.has(cur)) {
+      const topD = gorhill.getDomain(cur[0] === '.' ? cur.slice(1) : cur);
+      acc.set(cur, topD === cur ? null : topD);
+    };
     return acc;
   }, new Map());
 
   const sorter = (a: string, b: string) => {
     if (a === b) return 0;
 
-    const $a = domains.get(a)!;
-    const $b = domains.get(b)!;
+    const $a = domains.get(a) || a;
+    const $b = domains.get(b) || b;
 
-    // avoid compare same thing twice
-    if (a === $a && b === $b) {
-      return compare(a, b);
-    }
     return compare($a, $b) || compare(a, b);
   };
 
