@@ -1,7 +1,10 @@
 // @ts-check
 export const DOMESTICS = {
   ALIBABA: {
-    dns: 'quic://223.6.6.6:853',
+    hosts: {
+      'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1'],
+    },
+    dns: 'quic://dns.alidns.com:853',
     domains: [
       'uc.cn',
       'ucweb.com',
@@ -77,7 +80,12 @@ export const DOMESTICS = {
     ]
   },
   TENCENT: {
-    dns: 'https://120.53.53.53/dns-query',
+    hosts: {
+      'dot.pub': ['120.53.53.53', '1.12.12.12'],
+      'doh.pub': ['120.53.53.53', '1.12.12.12'],
+      'dns.pub': ['162.14.21.178', '162.14.21.56']
+    },
+    dns: 'https://doh.pub/dns-query',
     domains: [
       'dns.pub',
       'doh.pub',
@@ -131,7 +139,7 @@ export const DOMESTICS = {
     ]
   },
   BILIBILI_ALI: {
-    dns: 'quic://223.5.5.5:853',
+    dns: 'quic://dns.alidns.com:853',
     domains: [
       'upos-sz-mirrorali.bilivideo.com'
     ]
@@ -143,7 +151,7 @@ export const DOMESTICS = {
     ]
   },
   BILIBILI: {
-    dns: 'https://120.53.53.53/dns-query',
+    dns: 'https://doh.pub/dns-query',
     domains: [
       'upos-sz-mirrorcoso1.bilivideo.com',
       'acg.tv',
@@ -169,7 +177,7 @@ export const DOMESTICS = {
     ]
   },
   XIAOMI: {
-    dns: 'https://120.53.53.53/dns-query',
+    dns: 'https://doh.pub/dns-query',
     domains: [
       'mi.com',
       'duokan.com',
@@ -249,7 +257,15 @@ export const DOMESTICS = {
     ]
   },
   QIHOO360: {
-    dns: 'https://101.198.198.198/dns-query',
+    hosts: {
+      'doh.360.cn': ['101.198.198.198', '101.198.199.200'],
+      'dot.360.cn': ['101.198.198.198', '101.198.199.200'],
+      'dns.360.cn': ['101.198.198.198', '101.198.199.200'],
+      'doh.360.net': ['101.198.198.198', '101.198.199.200'],
+      'dot.360.net': ['101.198.198.198', '101.198.199.200'],
+      'dns.360.net': ['101.198.198.198', '101.198.199.200']
+    },
+    dns: 'https://dns.360.net/dns-query',
     domains: [
       'qhimg.com',
       'qhimgs0.com',

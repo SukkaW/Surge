@@ -27,11 +27,7 @@ export const buildDomesticRuleset = task(import.meta.path, async (span) => {
     'This file contains known addresses that are avaliable in the Mainland China.'
   ];
 
-  const promise = getDomesticDomainsRulesetPromise();
-  const peeked = Bun.peek(promise);
-  const res: string[] = peeked === promise
-    ? await promise
-    : (peeked as string[]);
+  const res = await getDomesticDomainsRulesetPromise();
 
   return Promise.all([
     createRuleset(
@@ -53,11 +49,17 @@ export const buildDomesticRuleset = task(import.meta.path, async (span) => {
         '[Host]',
         ...Object.entries(DOMESTICS)
           .flatMap(
-            ([, { domains, dns }]) => domains.flatMap((domain) => [
+            ([, { domains, dns, ...rest }]) => [
+              ...(
+                'hosts' in rest
+                  ? Object.entries(rest.hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`)
+                  : []
+              ),
+              ...domains.flatMap((domain) => [
               `${domain} = server:${dns}`,
               `*.${domain} = server:${dns}`
             ])
-          )
+      ])
       ],
       path.resolve(import.meta.dir, '../Modules/sukka_local_dns_mapping.sgmodule')
     )
