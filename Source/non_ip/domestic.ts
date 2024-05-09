@@ -2,7 +2,7 @@
 export const DOMESTICS = {
   ALIBABA: {
     hosts: {
-      'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1'],
+      'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1']
     },
     dns: 'quic://dns.alidns.com:853',
     domains: [
