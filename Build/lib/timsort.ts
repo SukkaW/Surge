@@ -895,7 +895,7 @@ class TimSort<T> {
  * @param hi - Last element in the range.
  *     comparator.
  */
-export function sort<T>(array: T[], compare: Comparator<T> | undefined = alphabeticalCompare, lo = 0, hi: number = array.length) {
+export function sort<T>(array: T[], compare: Comparator<T> | undefined = alphabeticalCompare, lo = 0, hi: number = array.length): T[] {
   // if (!Array.isArray(array)) {
   //   throw new TypeError('Can only sort arrays');
   // }
@@ -914,7 +914,7 @@ export function sort<T>(array: T[], compare: Comparator<T> | undefined = alphabe
 
   // The array is already sorted
   if (remaining < 2) {
-    return;
+    return array;
   }
 
   let runLength = 0;
@@ -922,7 +922,7 @@ export function sort<T>(array: T[], compare: Comparator<T> | undefined = alphabe
   if (remaining < DEFAULT_MIN_MERGE) {
     runLength = makeAscendingRun(array, lo, hi, compare);
     binaryInsertionSort(array, lo, hi, lo + runLength, compare);
-    return;
+    return array;
   }
 
   const ts = new TimSort(array, compare);
@@ -951,4 +951,6 @@ export function sort<T>(array: T[], compare: Comparator<T> | undefined = alphabe
 
   // Force merging of remaining runs
   ts.forceMergeRuns();
+
+  return array;
 }

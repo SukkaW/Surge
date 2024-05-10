@@ -3,6 +3,7 @@ import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 import listDir from '@sukka/listdir';
+import { sort } from './lib/timsort';
 
 const rootPath = path.resolve(import.meta.dir, '../');
 const publicPath = path.resolve(import.meta.dir, '../public');
@@ -68,7 +69,7 @@ const prioritySorter = (a: TreeType, b: TreeType) => {
 };
 const walk = (tree: TreeTypeArray) => {
   let result = '';
-  tree.sort(prioritySorter);
+  sort(tree, prioritySorter);
   for (let i = 0, len = tree.length; i < len; i++) {
     const entry = tree[i];
     if (entry.type === 'directory') {

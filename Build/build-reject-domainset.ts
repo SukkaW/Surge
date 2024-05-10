@@ -18,6 +18,7 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import * as SetHelpers from 'mnemonist/set';
 import { setAddFromArray } from './lib/set-add-from-array';
+import { sort } from './lib/timsort';
 
 export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   const gorhill = await getGorhillPublicSuffixPromise();
@@ -155,7 +156,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
         return acc;
       }, new Map());
 
-      return Array.from(statMap.entries()).filter(a => a[1] > 9).sort((a, b) => (b[1] - a[1]));
+      return sort(Array.from(statMap.entries()).filter(a => a[1] > 9), (a, b) => (b[1] - a[1]));
     });
 
   const description = [

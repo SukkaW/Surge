@@ -158,6 +158,8 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     '.speedtest.aarnet.net.au',
     '.ookla.rcp.net',
     '.ookla-speedtests.e2ro.com',
+    '.speedtest.com.sg',
+    '.ookla.ddnsgeek.com',
     // Cloudflare
     '.speed.cloudflare.com',
     // Wi-Fi Man

@@ -4,6 +4,7 @@ import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset
 import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';
+import { sort } from './timsort';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -122,33 +123,35 @@ const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   'IP-CIDR6': 400
 };
 // sort DOMAIN-SUFFIX and DOMAIN first, then DOMAIN-KEYWORD, then IP-CIDR and IP-CIDR6 if any
-export const sortRuleSet = (ruleSet: string[]) => ruleSet
-  .map((rule) => {
-    const type = collectType(rule);
-    if (!type) {
-      return [10, rule] as const;
-    }
-    if (!(type in sortTypeOrder)) {
-      return [sortTypeOrder[defaultSortTypeOrder], rule] as const;
-    }
-    if (type === 'URL-REGEX') {
-      let extraWeight = 0;
-      if (rule.includes('.+') || rule.includes('.*')) {
-        extraWeight += 10;
+export const sortRuleSet = (ruleSet: string[]) => {
+  return sort(
+    ruleSet.map((rule) => {
+      const type = collectType(rule);
+      if (!type) {
+        return [10, rule] as const;
       }
-      if (rule.includes('|')) {
-        extraWeight += 1;
+      if (!(type in sortTypeOrder)) {
+        return [sortTypeOrder[defaultSortTypeOrder], rule] as const;
       }
+      if (type === 'URL-REGEX') {
+        let extraWeight = 0;
+        if (rule.includes('.+') || rule.includes('.*')) {
+          extraWeight += 10;
+        }
+        if (rule.includes('|')) {
+          extraWeight += 1;
+        }
 
-      return [
-        sortTypeOrder[type] + extraWeight,
-        rule
-      ] as const;
-    }
-    return [sortTypeOrder[type], rule] as const;
-  })
-  .sort((a, b) => a[0] - b[0])
-  .map(c => c[1]);
+        return [
+          sortTypeOrder[type] + extraWeight,
+          rule
+        ] as const;
+      }
+      return [sortTypeOrder[type], rule] as const;
+    }),
+    (a, b) => a[0] - b[0]
+  ).map(c => c[1]);
+};
 
 const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 
