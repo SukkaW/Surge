@@ -156,7 +156,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
         return acc;
       }, new Map());
 
-      return sort(Array.from(statMap.entries()).filter(a => a[1] > 9), (a, b) => (b[1] - a[1]));
+      return sort(Array.from(statMap.entries()).filter(a => a[1] > 9), (a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
     });
 
   const description = [
