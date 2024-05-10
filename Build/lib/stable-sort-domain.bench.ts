@@ -7,10 +7,9 @@ import { bench, group, run } from 'mitata';
 
 (async () => {
   const data = await processLineFromReadline(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt'));
-  const gorhill = await getGorhillPublicSuffixPromise();
 
   group('sortDomains', () => {
-    bench('run', () => sortDomains(data, gorhill));
+    bench('run', () => sortDomains(data));
   });
 
   run();

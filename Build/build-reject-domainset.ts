@@ -21,8 +21,6 @@ import { setAddFromArray } from './lib/set-add-from-array';
 import { sort } from './lib/timsort';
 
 export const buildRejectDomainSet = task(import.meta.path, async (span) => {
-  const gorhill = await getGorhillPublicSuffixPromise();
-
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
@@ -178,7 +176,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       'Sukka\'s Ruleset - Reject Base',
       description,
       new Date(),
-      span.traceChildSync('sort reject domainset', () => sortDomains(dudupedDominArray, gorhill)),
+      span.traceChildSync('sort reject domainset', () => sortDomains(dudupedDominArray)),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')

@@ -1,7 +1,7 @@
-import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
+import * as tldts from 'tldts';
 import { sort } from './timsort';
 
-const compare = (a: string, b: string) => {
+export const compare = (a: string, b: string) => {
   if (a === b) return 0;
 
   const aLen = a.length;
@@ -27,11 +27,13 @@ const compare = (a: string, b: string) => {
   return 0;
 };
 
-export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
+const tldtsOpt = { allowPrivateDomains: false, detectIp: false, validateHostname: false };
+
+export const sortDomains = (inputs: string[]) => {
   const domains = inputs.reduce<Map<string, string>>((acc, cur) => {
     if (!acc.has(cur)) {
-      const topD = gorhill.getDomain(cur[0] === '.' ? cur.slice(1) : cur);
-      acc.set(cur, topD);
+      const topD = tldts.getDomain(cur, tldtsOpt);
+      acc.set(cur, topD ?? cur);
     };
     return acc;
   }, new Map());
@@ -42,7 +44,7 @@ export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
     const $a = domains.get(a)!;
     const $b = domains.get(b)!;
 
-    if ($a === a && $b === b) {
+    if (a === $a && b === $b) {
       return compare(a, b);
     }
     return compare($a, $b) || compare(a, b);
