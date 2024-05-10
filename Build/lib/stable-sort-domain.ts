@@ -28,10 +28,10 @@ const compare = (a: string, b: string) => {
 };
 
 export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
-  const domains = inputs.reduce<Map<string, string | null>>((acc, cur) => {
+  const domains = inputs.reduce<Map<string, string>>((acc, cur) => {
     if (!acc.has(cur)) {
       const topD = gorhill.getDomain(cur[0] === '.' ? cur.slice(1) : cur);
-      acc.set(cur, topD === cur ? null : topD);
+      acc.set(cur, topD);
     };
     return acc;
   }, new Map());
@@ -39,10 +39,10 @@ export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
   const sorter = (a: string, b: string) => {
     if (a === b) return 0;
 
-    const $a = domains.get(a);
-    const $b = domains.get(b);
+    const $a = domains.get(a)!;
+    const $b = domains.get(b)!;
 
-    if ($a == null || $b == null) {
+    if ($a === a && $b === b) {
       return compare(a, b);
     }
     return compare($a, $b) || compare(a, b);
