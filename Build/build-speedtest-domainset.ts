@@ -83,16 +83,16 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   }
 };
 
-const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
-  const domains = new Set<string>();
-  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
-    const line = processLine(l);
-    if (line) {
-      domains.add(line);
-    }
-  }
-  return domains;
-});
+// const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
+//   const domains = new Set<string>();
+//   for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
+//     const line = processLine(l);
+//     if (line) {
+//       domains.add(line);
+//     }
+//   }
+//   return domains;
+// });
 
 export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
   // Predefined domainset
@@ -183,9 +183,9 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     'mensura.cdn-apple.com' // From netQuality command
   ]);
 
-  await span.traceChildAsync('fetch previous speedtest domainset', async () => {
-    SetHelpers.add(domains, await getPreviousSpeedtestDomainsPromise());
-  });
+  // await span.traceChildAsync('fetch previous speedtest domainset', async () => {
+  //   SetHelpers.add(domains, await getPreviousSpeedtestDomainsPromise());
+  // });
 
   await new Promise<void>((resolve) => {
     const pMap = ([
