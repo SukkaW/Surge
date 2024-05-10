@@ -1,14 +1,8 @@
 import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 import { sort } from 'timsort';
 
-const compare = (a: string | null, b: string | null) => {
+const compare = (a: string, b: string) => {
   if (a === b) return 0;
-  if (b == null) {
-    return 1;
-  }
-  if (a == null) {
-    return -1;
-  }
 
   const aLen = a.length;
   const r = aLen - b.length;
@@ -45,10 +39,13 @@ export const sortDomains = (inputs: string[], gorhill: PublicSuffixList) => {
   const sorter = (a: string, b: string) => {
     if (a === b) return 0;
 
-    const $a = domains.get(a) || a;
-    const $b = domains.get(b) || b;
+    const $a = domains.get(a);
+    const $b = domains.get(b);
 
-    return compare($a, $b) || compare(a, b);
+    if ($a && $b) {
+      return compare($a, $b) || compare(a, b);
+    }
+    return compare(a, b);
   };
 
   sort(inputs, sorter);
