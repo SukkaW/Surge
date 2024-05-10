@@ -79,6 +79,8 @@ describe('Trie', () => {
     trie.add('sesqueroman');
     trie.add('greek');
 
+    console.log({ trie });
+
     expect(trie.find('roman')).toEqual(['roman', 'esqueroman', 'sesqueroman']);
     expect(trie.find('man')).toEqual(['roman', 'esqueroman', 'sesqueroman']);
     expect(trie.find('esqueroman')).toEqual(['esqueroman', 'sesqueroman']);
@@ -97,16 +99,21 @@ describe('Trie', () => {
   });
 });
 
-describe('surge domainset dedupe', () => {
+describe.each([
+  ['hostname mode off', false],
+  ['hostname mode on', true]
+])('surge domainset dedupe %s', (_, hostnameMode) => {
   it('should not remove same entry', () => {
-    const trie = createTrie(['.skk.moe', 'noc.one']);
+    const trie = createTrie(['.skk.moe', 'noc.one'], hostnameMode);
+
+    console.log(trie);
 
     expect(trie.find('.skk.moe')).toStrictEqual(['.skk.moe']);
     expect(trie.find('noc.one')).toStrictEqual(['noc.one']);
   });
 
   it('should remove subdomain', () => {
-    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net']);
+    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], hostnameMode);
 
     console.log(trie);
 
@@ -115,7 +122,7 @@ describe('surge domainset dedupe', () => {
   });
 
   it('should not remove non-subdomain', () => {
-    const trie = createTrie(['skk.moe', 'sukkaskk.moe']);
+    const trie = createTrie(['skk.moe', 'sukkaskk.moe'], hostnameMode);
     expect(trie.find('.skk.moe')).toStrictEqual([]);
   });
 });

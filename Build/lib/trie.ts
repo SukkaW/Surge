@@ -33,9 +33,33 @@ const createNode = (): TrieNode => {
   return node;
 };
 
-export const createTrie = (from?: string[] | Set<string> | null) => {
+export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = false) => {
   let size = 0;
   const root: TrieNode = createNode();
+
+  const suffixToTokens = hostnameMode
+    ? (suffix: string) => {
+      let buf = '';
+      const tokens: string[] = [];
+      for (let i = 0, l = suffix.length; i < l; i++) {
+        const c = suffix[i];
+        if (c === '.') {
+          if (buf) {
+            tokens.push(buf, /* . */ c);
+            buf = '';
+          } else {
+            tokens.push(/* . */ c);
+          }
+        } else {
+          buf += c;
+        }
+      }
+      if (buf) {
+        tokens.push(buf);
+      }
+      return tokens;
+    }
+    : (suffix: string) => suffix;
 
   /**
    * Method used to add the given prefix to the trie.
@@ -44,8 +68,10 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
     let node: TrieNode = root;
     let token: string;
 
-    for (let i = suffix.length - 1; i >= 0; i--) {
-      token = suffix[i];
+    const tokens = suffixToTokens(suffix);
+
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      token = tokens[i];
 
       if (node.has(token)) {
         node = node.get(token)!;
@@ -64,14 +90,16 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
   };
 
   /**
-   * @param {string} suffix
+   * @param {string} $suffix
    */
   const contains = (suffix: string): boolean => {
     let node: TrieNode | undefined = root;
     let token: string;
 
-    for (let i = suffix.length - 1; i >= 0; i--) {
-      token = suffix[i];
+    const tokens = suffixToTokens(suffix);
+
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      token = tokens[i];
 
       node = node.get(token);
       if (!node) return false;
@@ -86,48 +114,70 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
     let node: TrieNode | undefined = root;
     let token: string;
 
-    for (let i = inputSuffix.length - 1; i >= 0; i--) {
-      token = inputSuffix[i];
+    const inputTokens = suffixToTokens(inputSuffix);
+
+    for (let i = inputTokens.length - 1; i >= 0; i--) {
+      token = inputTokens[i];
+
+      if (hostnameMode && token === '') {
+        break;
+      }
 
       node = node.get(token);
       if (!node) return [];
     }
 
-    const matches: string[] = [];
+    const matches: Array<string | string[]> = [];
 
     // Performing DFS from prefix
     const nodeStack: TrieNode[] = [node];
-    const suffixStack: string[] = [inputSuffix];
+    const suffixStack: Array<string | string[]> = [inputTokens];
 
     do {
-      const suffix: string = suffixStack.pop()!;
+      const suffix: string | string[] = suffixStack.pop()!;
       node = nodeStack.pop()!;
 
       if (node[SENTINEL]) {
-        if (includeEqualWithSuffix || suffix !== inputSuffix) {
+        if (includeEqualWithSuffix) {
+          matches.push(suffix);
+        } else if (hostnameMode) {
+          if ((suffix as string[]).some((t, i) => t !== inputTokens[i])) {
+            matches.push(suffix);
+          }
+        } else if (suffix !== inputTokens) {
           matches.push(suffix);
         }
       }
 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
-        suffixStack.push(k + suffix);
+
+        if (hostnameMode) {
+          const stack = (suffix as string[]).slice();
+          stack.unshift(k);
+
+          suffixStack.push(stack);
+        } else {
+          suffixStack.push(k + (suffix as string));
+        }
       });
     } while (nodeStack.length);
 
-    return matches;
+    return hostnameMode ? matches.map((m) => (m as string[]).join('')) : matches as string[];
   };
 
   /**
-   * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
-   */
+ * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
+ */
   const substractSetInPlaceFromFound = (inputSuffix: string, set: Set<string>) => {
     let node: TrieNode | undefined = root;
     let token: string;
 
+    const inputTokens = suffixToTokens(inputSuffix);
+
     // Find the leaf-est node, and early return if not any
-    for (let i = inputSuffix.length - 1; i >= 0; i--) {
-      token = inputSuffix[i];
+    for (let i = inputTokens.length - 1; i >= 0; i--) {
+      token = inputTokens[i];
 
       node = node.get(token);
       if (!node) return;
@@ -135,29 +185,39 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
 
     // Performing DFS from prefix
     const nodeStack: TrieNode[] = [node];
-    const suffixStack: string[] = [inputSuffix];
+    const suffixStack: Array<string | string[]> = [inputTokens];
 
     do {
       const suffix = suffixStack.pop()!;
       node = nodeStack.pop()!;
 
       if (node[SENTINEL]) {
-        if (suffix !== inputSuffix) {
-          // found match, delete it from set
-          set.delete(suffix);
+        if (suffix !== inputTokens) {
+        // found match, delete it from set
+          if (hostnameMode) {
+            set.delete((suffix as string[]).join(''));
+          } else {
+            set.delete(suffix as string);
+          }
         }
       }
 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
-        suffixStack.push(k + suffix);
+        if (hostnameMode) {
+          const stack = (suffix as string[]).slice();
+          stack.unshift(k);
+          suffixStack.push(stack);
+        } else {
+          suffixStack.push(k + (suffix as string));
+        }
       });
     } while (nodeStack.length);
   };
 
   /**
-   * Method used to delete a prefix from the trie.
-   */
+ * Method used to delete a prefix from the trie.
+ */
   const remove = (suffix: string): boolean => {
     let node: TrieNode | undefined = root;
     let toPrune: TrieNode | null = null;
@@ -165,8 +225,10 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
     let parent: TrieNode = node;
     let token: string;
 
-    for (let i = suffix.length - 1; i >= 0; i--) {
-      token = suffix[i];
+    const suffixTokens = suffixToTokens(suffix);
+
+    for (let i = suffixTokens.length - 1; i >= 0; i--) {
+      token = suffixTokens[i];
       parent = node;
 
       node = node.get(token);
@@ -203,13 +265,15 @@ export const createTrie = (from?: string[] | Set<string> | null) => {
   };
 
   /**
-   * Method used to assert whether the given prefix exists in the Trie.
-   */
+ * Method used to assert whether the given prefix exists in the Trie.
+ */
   const has = (suffix: string): boolean => {
     let node: TrieNode = root;
 
-    for (let i = suffix.length - 1; i >= 0; i--) {
-      const token = suffix[i];
+    const tokens = suffixToTokens(suffix);
+
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      const token = tokens[i];
 
       if (!node.has(token)) {
         return false;
