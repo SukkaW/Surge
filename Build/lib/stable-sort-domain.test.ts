@@ -1,21 +1,7 @@
 // eslint-disable-next-line import-x/no-unresolved -- bun
 import { describe, expect, it } from 'bun:test';
 
-import { compare, sortDomains } from './stable-sort-domain';
-
-describe('compare', () => {
-  it('basic', () => {
-    expect(
-      compare('.s3-website.ap-northeast-3.amazonaws.com', '.s3.dualstack.ap-south-1.amazonaws.com')
-    ).toBe(1);
-  });
-
-  it('basic', () => {
-    expect(
-      compare('.s3-website.ap-northeast-3.amazonaws.com', '.s3.dualstack.ap-south-1.amazonaws.com')
-    ).toBe(1);
-  });
-});
+import { sortDomains } from './stable-sort-domain';
 
 describe('sortDomains', () => {
   it('basic', () => {
