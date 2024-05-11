@@ -5,9 +5,11 @@
 // import { Trie } from 'mnemonist';
 
 export const SENTINEL = Symbol('SENTINEL');
+const PARENT = Symbol('Parent Node');
 
 type TrieNode = {
   [SENTINEL]: boolean,
+  [PARENT]: TrieNode | null,
   [Bun.inspect.custom]: () => string
 } & Map<string, TrieNode>;
 
@@ -26,14 +28,15 @@ function trieNodeInspectCustom(this: TrieNode) {
   return JSON.stringify(deepTrieNodeToJSON(this), null, 2);
 }
 
-const createNode = (): TrieNode => {
+const createNode = (parent: TrieNode | null = null): TrieNode => {
   const node = new Map<string, TrieNode>() as TrieNode;
   node[SENTINEL] = false;
+  node[PARENT] = parent;
   node[Bun.inspect.custom] = trieNodeInspectCustom;
   return node;
 };
 
-export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = false) => {
+export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = false, smolTree = false) => {
   let size = 0;
   const root: TrieNode = createNode();
 
@@ -75,10 +78,34 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
       if (node.has(token)) {
         node = node.get(token)!;
+
+        if (smolTree) {
+          if (node.get('.')?.[SENTINEL] === true) {
+            return;
+          }
+          // return;
+        }
       } else {
-        const newNode = createNode();
+        const newNode = createNode(node);
         node.set(token, newNode);
         node = newNode;
+      }
+
+      if (smolTree) {
+        if (i === 1 && tokens[0] === '.') {
+          node[SENTINEL] = false;
+          // Trying to add `.sub.example.com` where there is already a `blog.sub.example.com` in the trie
+          const newNode = createNode(node);
+          node.set('.', newNode);
+          node = newNode;
+          break;
+        }
+        if (i === 0) {
+          // Trying to add `example.com` when there is already a `.example.com` in the trie
+          if (node.get('.')?.[SENTINEL] === true) {
+            return;
+          }
+        }
       }
     }
 
@@ -107,10 +134,15 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
     return true;
   };
+
   /**
    * Method used to retrieve every item in the trie with the given prefix.
    */
   const find = (inputSuffix: string, /** @default true */ includeEqualWithSuffix = true): string[] => {
+    if (smolTree) {
+      throw new Error('A Trie with smolTree enabled cannot perform find!');
+    }
+
     let node: TrieNode | undefined = root;
     let token: string;
 
@@ -153,10 +185,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         nodeStack.push(childNode);
 
         if (hostnameMode) {
-          const stack = (suffix as string[]).slice();
-          stack.unshift(k);
-
-          suffixStack.push(stack);
+          suffixStack.push([k, ...suffix]);
         } else {
           suffixStack.push(k + (suffix as string));
         }
@@ -167,9 +196,13 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
   };
 
   /**
- * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
- */
+   * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
+   */
   const substractSetInPlaceFromFound = (inputSuffix: string, set: Set<string>) => {
+    if (smolTree) {
+      throw new Error('A Trie with smolTree enabled cannot perform substractSetInPlaceFromFound!');
+    }
+
     let node: TrieNode | undefined = root;
     let token: string;
 
@@ -193,7 +226,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
       if (node[SENTINEL]) {
         if (suffix !== inputTokens) {
-        // found match, delete it from set
+          // found match, delete it from set
           if (hostnameMode) {
             set.delete((suffix as string[]).join(''));
           } else {
@@ -205,8 +238,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
         if (hostnameMode) {
-          const stack = (suffix as string[]).slice();
-          stack.unshift(k);
+          const stack = [k, ...suffix];
           suffixStack.push(stack);
         } else {
           suffixStack.push(k + (suffix as string));
@@ -216,8 +248,8 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
   };
 
   /**
- * Method used to delete a prefix from the trie.
- */
+   * Method used to delete a prefix from the trie.
+   */
   const remove = (suffix: string): boolean => {
     let node: TrieNode | undefined = root;
     let toPrune: TrieNode | null = null;
@@ -294,35 +326,43 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
   }
 
   const dump = () => {
-    const node = root;
     const nodeStack: TrieNode[] = [];
-    const suffixStack: string[] = [];
+    const suffixStack: Array<string | string[]> = [];
     // Resolving initial string
-    const suffix = '';
+    const suffix = hostnameMode ? [] : '';
 
-    nodeStack.push(node);
+    nodeStack.push(root);
     suffixStack.push(suffix);
 
     const results: string[] = [];
 
-    let currentNode: TrieNode;
-    let currentPrefix: string;
-    let hasValue = false;
+    let node: TrieNode;
 
     do {
-      currentNode = nodeStack.pop()!;
-      currentPrefix = suffixStack.pop()!;
+      let hasValue = false;
 
-      if (currentNode[SENTINEL]) {
+      node = nodeStack.pop()!;
+      const suffix = suffixStack.pop()!;
+
+      if (node[SENTINEL]) {
         hasValue = true;
       }
 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
-        suffixStack.push(k + suffix);
+
+        if (hostnameMode) {
+          suffixStack.push([k, ...suffix]);
+        } else {
+          suffixStack.push(k + (suffix as string));
+        }
       });
 
-      if (hasValue) results.push(currentPrefix);
+      if (hasValue) {
+        results.push(
+          hostnameMode ? (suffix as string[]).join('') : (suffix as string)
+        );
+      }
     } while (nodeStack.length);
 
     return results;
@@ -338,6 +378,9 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     has,
     dump,
     get size() {
+      if (smolTree) {
+        throw new Error('A Trie with smolTree enabled cannot have correct size!');
+      }
       return size;
     },
     get root() {
