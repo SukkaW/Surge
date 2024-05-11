@@ -79,11 +79,10 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       if (node.has(token)) {
         node = node.get(token)!;
 
-        if (smolTree) {
-          if (node.get('.')?.[SENTINEL] === true) {
-            return;
-          }
-          // return;
+        // During the adding of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
+        // Dedupe the covered subdomain by skipping
+        if (smolTree && (node.get('.')?.[SENTINEL])) {
+          return;
         }
       } else {
         const newNode = createNode(node);
@@ -92,9 +91,12 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       }
 
       if (smolTree) {
+        // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
         if (i === 1 && tokens[0] === '.') {
+          // If there is a `[start]sub.example.com` here, remove it
           node[SENTINEL] = false;
-          // Trying to add `.sub.example.com` where there is already a `blog.sub.example.com` in the trie
+
+          // Removing the rest of the child nodes by creating a new node and disconnecting the old one
           const newNode = createNode(node);
           node.set('.', newNode);
           node = newNode;
@@ -225,13 +227,11 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       node = nodeStack.pop()!;
 
       if (node[SENTINEL]) {
-        if (suffix !== inputTokens) {
-          // found match, delete it from set
-          if (hostnameMode) {
-            set.delete((suffix as string[]).join(''));
-          } else {
-            set.delete(suffix as string);
-          }
+        // found match, delete it from set
+        if (hostnameMode) {
+          set.delete((suffix as string[]).join(''));
+        } else if (suffix !== inputTokens) {
+          set.delete(suffix as string);
         }
       }
 
@@ -317,36 +317,21 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     return node[SENTINEL];
   };
 
-  if (Array.isArray(from)) {
-    for (let i = 0, l = from.length; i < l; i++) {
-      add(from[i]);
-    }
-  } else if (from) {
-    from.forEach(add);
-  }
-
   const dump = () => {
     const nodeStack: TrieNode[] = [];
     const suffixStack: Array<string | string[]> = [];
-    // Resolving initial string
-    const suffix = hostnameMode ? [] : '';
 
     nodeStack.push(root);
-    suffixStack.push(suffix);
+    // Resolving initial string (begin the start of the stack)
+    suffixStack.push(hostnameMode ? [] : '');
 
     const results: string[] = [];
 
     let node: TrieNode;
 
     do {
-      let hasValue = false;
-
       node = nodeStack.pop()!;
       const suffix = suffixStack.pop()!;
-
-      if (node[SENTINEL]) {
-        hasValue = true;
-      }
 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
@@ -358,15 +343,21 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         }
       });
 
-      if (hasValue) {
-        results.push(
-          hostnameMode ? (suffix as string[]).join('') : (suffix as string)
-        );
+      if (node[SENTINEL]) {
+        results.push(hostnameMode ? (suffix as string[]).join('') : (suffix as string));
       }
     } while (nodeStack.length);
 
     return results;
   };
+
+  if (Array.isArray(from)) {
+    for (let i = 0, l = from.length; i < l; i++) {
+      add(from[i]);
+    }
+  } else if (from) {
+    from.forEach(add);
+  }
 
   return {
     add,

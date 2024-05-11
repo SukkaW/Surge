@@ -2,7 +2,6 @@ import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts';
 import { createTrie } from './trie';
-import { createCachedGorhillGetDomain } from './cached-tld-parse';
 import { processLine } from './process-line';
 import { TTL } from './cache-filesystem';
 import { isCI } from 'ci-info';
@@ -130,7 +129,6 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   });
 
   const domainCountMap: Record<string, number> = {};
-  const getDomain = createCachedGorhillGetDomain(gorhill);
 
   span.traceChildSync('process phishing domain set', () => {
     const domainArr = Array.from(domainSet);
@@ -139,7 +137,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
       const line = processLine(domainArr[i]);
       if (!line) continue;
 
-      const apexDomain = getDomain(line);
+      const apexDomain = gorhill.getDomain(line);
       if (!apexDomain) continue;
 
       domainCountMap[apexDomain] ||= 0;
