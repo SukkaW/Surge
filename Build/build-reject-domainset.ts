@@ -11,7 +11,6 @@ import createKeywordFilter from './lib/aho-corasick';
 import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './trace';
-import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import * as tldts from 'tldts';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
