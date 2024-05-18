@@ -2,9 +2,7 @@ import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts';
 import { createTrie } from './trie';
-import { processLine } from './process-line';
 import { TTL } from './cache-filesystem';
-import { isCI } from 'ci-info';
 
 import { add as SetAdd } from 'mnemonist/set';
 import type { Span } from '../trace';
