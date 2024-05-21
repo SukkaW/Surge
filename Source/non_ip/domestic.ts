@@ -253,7 +253,9 @@ export const DOMESTICS = {
       'xiaodutv.com',
       'shifen.com',
       'jomodns.com',
-      'bdydns.com'
+      'bdydns.com',
+      'jomoxc.com',
+      'duapp.com'
     ]
   },
   QIHOO360: {

@@ -11,7 +11,6 @@ import createKeywordFilter from './lib/aho-corasick';
 import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './trace';
-import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import * as tldts from 'tldts';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
@@ -78,9 +77,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   // Dedupe domainSets
-  await span.traceChildAsync('dedupe from black keywords/suffixes', async (childSpan) => {
-    /** Collect DOMAIN-SUFFIX from non_ip/reject.conf for deduplication */
-    const domainSuffixSet = new Set<string>();
+  await span.traceChildAsync('dedupe from black keywords', async (childSpan) => {
     /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
     const domainKeywordsSet = new Set<string>();
 
@@ -91,28 +88,26 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
         if (type === 'DOMAIN-KEYWORD') {
           domainKeywordsSet.add(value.trim());
         } else if (type === 'DOMAIN-SUFFIX') {
-          domainSuffixSet.add(value.trim());
+          domainSets.add(`.${value.trim()}`); // Add to domainSets for later deduplication
         }
       }
     });
 
     // Remove as many domains as possible from domainSets before creating trie
-    SetHelpers.subtract(domainSets, domainSuffixSet);
     SetHelpers.subtract(domainSets, filterRuleWhitelistDomainSets);
 
-    childSpan.traceChildSync('dedupe from white/suffixes', () => {
+    childSpan.traceChildSync('dedupe from white suffixes', () => {
       const trie = createTrie(domainSets);
 
-      domainSuffixSet.forEach(suffix => {
-        trie.substractSetInPlaceFromFound(suffix, domainSets);
-      });
       filterRuleWhitelistDomainSets.forEach(suffix => {
         trie.substractSetInPlaceFromFound(suffix, domainSets);
-        domainSets.delete(
-          suffix[0] === '.'
-            ? suffix.slice(1) // handle case like removing `g.msn.com` due to white `.g.msn.com` (`@@||g.msn.com`)
-            : `.${suffix}` // If `g.msn.com` is whitelisted, then `.g.msn.com` should be removed from domain set
-        );
+        if (suffix[0] === '.') {
+          domainSets.delete(suffix.slice(1));
+          domainSets.delete(suffix);
+        } else {
+          domainSets.delete(`.${suffix}`);
+          domainSets.delete(suffix);
+        }
       });
     });
 

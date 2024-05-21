@@ -2,9 +2,7 @@ import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts';
 import { createTrie } from './trie';
-import { processLine } from './process-line';
 import { TTL } from './cache-filesystem';
-import { isCI } from 'ci-info';
 
 import { add as SetAdd } from 'mnemonist/set';
 import type { Span } from '../trace';
@@ -103,21 +101,23 @@ const BLACK_TLD = new Set([
 ]);
 
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
-  const [domainSet, domainSet2, gorhill] = await Promise.all([
-    processDomainLists(span, 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
-    isCI
-      ? processDomainLists(span, 'https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
-      : null,
-    getGorhillPublicSuffixPromise()
-  ]);
-  if (domainSet2) {
+  const gorhill = await getGorhillPublicSuffixPromise();
+
+  const domainSet = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
+    const [domainSet, domainSet2] = await Promise.all([
+      processDomainLists(curSpan, 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
+      processDomainLists(curSpan, 'https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
+    ]);
+
     SetAdd(domainSet, domainSet2);
-  }
 
-  span.traceChildSync('whitelisting phishing domains', (parentSpan) => {
-    const trieForRemovingWhiteListed = parentSpan.traceChildSync('create trie for whitelisting', () => createTrie(domainSet));
+    return domainSet;
+  });
 
-    return parentSpan.traceChild('delete whitelisted from domainset').traceSyncFn(() => {
+  span.traceChildSync('whitelisting phishing domains', (curSpan) => {
+    const trieForRemovingWhiteListed = curSpan.traceChildSync('create trie for whitelisting', () => createTrie(domainSet));
+
+    return curSpan.traceChild('delete whitelisted from domainset').traceSyncFn(() => {
       for (let i = 0, len = WHITELIST_DOMAIN.length; i < len; i++) {
         const white = WHITELIST_DOMAIN[i];
         domainSet.delete(white);
@@ -134,68 +134,28 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     const domainArr = Array.from(domainSet);
 
     for (let i = 0, len = domainArr.length; i < len; i++) {
-      const line = processLine(domainArr[i]);
-      if (!line) continue;
+      const line = domainArr[i];
 
-      const apexDomain = gorhill.getDomain(line);
-      if (!apexDomain) continue;
+      const safeGorhillLine = line[0] === '.' ? line.slice(1) : line;
 
-      domainCountMap[apexDomain] ||= 0;
-
-      const isPhishingDomainMockingCoJp = line.includes('-co-jp');
-      if (isPhishingDomainMockingCoJp) {
-        domainCountMap[apexDomain] += 0.5;
+      const apexDomain = gorhill.getDomain(safeGorhillLine);
+      if (!apexDomain) {
+        console.log({ line });
+        continue;
       }
 
-      if (line.startsWith('.amaz')) {
-        domainCountMap[apexDomain] += 0.5;
-
-        if (line.startsWith('.amazon-')) {
-          domainCountMap[apexDomain] += 4.5;
-        }
-        if (isPhishingDomainMockingCoJp) {
-          domainCountMap[apexDomain] += 4;
-        }
-      } else if (line.startsWith('.customer')) {
-        domainCountMap[apexDomain] += 0.25;
-      }
-
-      const tld = gorhill.getPublicSuffix(line[0] === '.' ? line.slice(1) : line);
+      const tld = gorhill.getPublicSuffix(safeGorhillLine);
       if (!tld || !BLACK_TLD.has(tld)) continue;
 
-      // Only when tld is black will this 1 weight be added
-      domainCountMap[apexDomain] += 1;
-
-      const lineLen = line.length;
-
-      if (lineLen > 19) {
-        // Add more weight if the domain is long enough
-        if (lineLen > 44) {
-          domainCountMap[apexDomain] += 3.5;
-        } else if (lineLen > 34) {
-          domainCountMap[apexDomain] += 2.5;
-        } else if (lineLen > 29) {
-          domainCountMap[apexDomain] += 1.5;
-        } else if (lineLen > 24) {
-          domainCountMap[apexDomain] += 0.75;
-        } else {
-          domainCountMap[apexDomain] += 0.25;
-        }
-
-        if (domainCountMap[apexDomain] < 5) {
-          const subdomain = tldts.getSubdomain(line, { detectIp: false });
-          if (subdomain?.includes('.')) {
-            domainCountMap[apexDomain] += 1.5;
-          }
-        }
-      }
+      domainCountMap[apexDomain] ||= 0;
+      domainCountMap[apexDomain] += calcDomainAbuseScore(line);
     }
   });
 
   const results = span.traceChildSync('get final phishing results', () => {
     const res: string[] = [];
     for (const domain in domainCountMap) {
-      if (domainCountMap[domain] >= 5) {
+      if (domainCountMap[domain] >= 8) {
         res.push(`.${domain}`);
       }
     }
@@ -204,3 +164,61 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
 
   return [results, domainSet] as const;
 });
+
+export function calcDomainAbuseScore(line: string) {
+  let weight = 1;
+
+  const isPhishingDomainMockingCoJp = line.includes('-co-jp');
+  if (isPhishingDomainMockingCoJp) {
+    weight += 0.5;
+  }
+
+  if (line.startsWith('.amaz')) {
+    weight += 0.5;
+
+    if (line.startsWith('.amazon-')) {
+      weight += 4.5;
+    }
+    if (isPhishingDomainMockingCoJp) {
+      weight += 4;
+    }
+  } else if (line.includes('.customer')) {
+    weight += 0.25;
+  }
+
+  const lineLen = line.length;
+
+  if (lineLen > 19) {
+    // Add more weight if the domain is long enough
+    if (lineLen > 44) {
+      weight += 3.5;
+    } else if (lineLen > 34) {
+      weight += 2.5;
+    } else if (lineLen > 29) {
+      weight += 1.5;
+    } else if (lineLen > 24) {
+      weight += 0.75;
+    } else {
+      weight += 0.25;
+    }
+  }
+
+  const subdomain = tldts.getSubdomain(line, { detectIp: false });
+
+  if (subdomain) {
+    if (subdomain.slice(1).includes('.')) {
+      weight += 1;
+    }
+    if (subdomain.length > 40) {
+      weight += 3;
+    } else if (subdomain.length > 30) {
+      weight += 1.5;
+    } else if (subdomain.length > 20) {
+      weight += 1;
+    } else if (subdomain.length > 10) {
+      weight += 0.1;
+    }
+  }
+
+  return weight;
+}
