@@ -224,8 +224,16 @@ export const PREDEFINED_WHITELIST = [
   'email.accounts.bitly.com', // Fuck Peter Lowe Hosts
   'adsense.google.com', // Fuck Peter Lowe Hosts
   'api.vip.miui.com', // Fuck Goodbye Xiaomi Ads
-  'stripe.com' // EasyPrivacy only blocks m.stripe.com wwith $third-party,
+  'stripe.com', // EasyPrivacy only blocks m.stripe.com wwith $third-party,
   // yet stupid AdGuardDNSFilter blocks all of it. Stupid AdGuard
+  'w3s.link', // ipfs gateway
+  'dweb.link', // ipfs gateway
+  'nftstorage.link', // ipfs gateway
+  'fleek.cool', // ipfs gateway
+  'square.site', // Drag'n'Drop site building platform
+  'business.site', // Drag'n'Drop site building platform
+  'page.link', // Firebase URL Shortener
+  'notion.site'
 ];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
