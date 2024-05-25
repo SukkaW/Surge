@@ -140,7 +140,6 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
 
       const apexDomain = gorhill.getDomain(safeGorhillLine);
       if (!apexDomain) {
-        console.log({ line });
         continue;
       }
 
