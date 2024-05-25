@@ -144,8 +144,6 @@ describe('smol tree', () => {
       '.blog.sub.example.com', 'sub.example.com', 'cdn.sub.example.com', '.sub.example.com'
     ], true, true);
 
-    console.log(trie);
-
     expect(trie.dump()).toStrictEqual([
       '.sub.example.com',
       'cdn.noc.one', 'www.noc.one',
@@ -153,12 +151,10 @@ describe('smol tree', () => {
     ]);
   });
 
-  it.only('should create simple tree - 2', () => {
+  it('should create simple tree - 2', () => {
     const trie = createTrie([
       '.skk.moe', 'blog.skk.moe', '.cdn.skk.moe', 'skk.moe'
     ], true, true);
-
-    console.log({ trie });
 
     expect(trie.dump()).toStrictEqual([
       '.skk.moe'
@@ -169,8 +165,6 @@ describe('smol tree', () => {
     const trie = createTrie([
       '.blog.sub.example.com', 'cdn.sub.example.com', '.sub.example.com'
     ], true, true);
-
-    console.log(trie);
 
     expect(trie.dump()).toStrictEqual([
       '.sub.example.com'
@@ -196,5 +190,55 @@ describe('smol tree', () => {
       'commercial.shouji.360.cn',
       'act.commercial.shouji.360.cn'
     ]);
+  });
+
+  it('should dedupe subdomain properly', () => {
+    const trie = createTrie([
+      'skk.moe',
+      'anotherskk.moe',
+      'blog.anotherskk.moe',
+      'blog.skk.moe'
+    ], true, true);
+
+    expect(trie.dump()).toStrictEqual([
+      'anotherskk.moe',
+      'blog.anotherskk.moe',
+      'skk.moe',
+      'blog.skk.moe'
+    ]);
+  });
+
+  it('should efficiently whitelist domains', () => {
+    const trie = createTrie([
+      'skk.moe',
+      'anotherskk.moe',
+      'blog.anotherskk.moe',
+      'blog.skk.moe'
+    ], true, true);
+
+    expect(trie.dump()).toStrictEqual([
+      'anotherskk.moe',
+      'blog.anotherskk.moe',
+      'skk.moe',
+      'blog.skk.moe'
+    ]);
+
+    trie.whitelist('.skk.moe');
+
+    expect(trie.dump()).toStrictEqual([
+      'anotherskk.moe',
+      'blog.anotherskk.moe'
+    ]);
+
+    trie.whitelist('anotherskk.moe');
+
+    expect(trie.dump()).toStrictEqual([
+      'blog.anotherskk.moe'
+    ]);
+
+    trie.add('anotherskk.moe');
+    trie.whitelist('.anotherskk.moe');
+
+    expect(trie.dump()).toStrictEqual([]);
   });
 });

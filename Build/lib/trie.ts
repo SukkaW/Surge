@@ -351,6 +351,76 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     return results;
   };
 
+  const whitelist = (suffix: string) => {
+    if (!hostnameMode && !smolTree) {
+      throw new Error('whitelist method is only available in hostname mode or smolTree mode.');
+    }
+
+    let node: TrieNode | undefined = root;
+
+    let toPrune: TrieNode | null = null;
+    let tokenToPrune: string | null = null;
+    let parent: TrieNode = node;
+
+    const tokens = suffixToTokens(suffix);
+    let token: string;
+
+    for (let i = tokens.length - 1; i >= 0; i--) {
+      token = tokens[i];
+      parent = node;
+
+      node = node.get(token);
+      if (!node) {
+        return;
+      }
+
+      // Keeping track of a potential branch to prune
+      // If the node is to be pruned, but they are more than one token child in it, we can't prune it
+      // If there is only one token child, or no child at all, we can prune it safely
+
+      const onlyChild = node.size === 1 && node.has(token);
+
+      if (onlyChild) {
+        toPrune = parent;
+        tokenToPrune = token;
+      } else if (toPrune !== null) { // not only child, retain the branch
+        toPrune = null;
+        tokenToPrune = null;
+      }
+
+      // During the whitelist of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
+      // Dedupe the covered subdomain by skipping
+      if (node.get('.')?.[SENTINEL]) {
+        return;
+      }
+
+      // Trying to whitelist `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
+      if (i === 1 && tokens[0] === '.') {
+        // If there is a `[start]sub.example.com` here, remove it
+        node[SENTINEL] = false;
+
+        // Removing the rest of the child nodes by creating a new node and disconnecting the old one
+        const newNode = createNode(node);
+        node.set('.', newNode);
+        node = newNode;
+        break;
+      }
+      if (i === 0) {
+        // Trying to add `example.com` when there is already a `.example.com` in the trie
+        if (node.get('.')?.[SENTINEL] === true) {
+          return;
+        }
+      }
+    }
+
+    if (!node[SENTINEL]) return false;
+    if (tokenToPrune && toPrune) {
+      toPrune.delete(tokenToPrune);
+    } else {
+      node[SENTINEL] = false;
+    }
+  };
+
   if (Array.isArray(from)) {
     for (let i = 0, l = from.length; i < l; i++) {
       add(from[i]);
@@ -377,6 +447,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     get root() {
       return root;
     },
+    whitelist,
     [Bun.inspect.custom]: () => JSON.stringify(deepTrieNodeToJSON(root), null, 2)
   };
 };
