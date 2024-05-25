@@ -1,4 +1,7 @@
-import * as tldts from 'tldts';
+// tldts-experimental is way faster than tldts, but very little bit inaccurate
+// (since it is hashes based). But the result is still deterministic, which is
+// enough when sorting.
+import * as tldts from 'tldts-experimental';
 import { sort } from './timsort';
 
 export const compare = (a: string, b: string) => {
@@ -6,11 +9,11 @@ export const compare = (a: string, b: string) => {
   return (a.length - b.length) || a.localeCompare(b);
 };
 
-const tldtsOpt = {
-  extractHostname: false,
+const tldtsOpt: Parameters<typeof tldts.getDomain>[1] = {
   allowPrivateDomains: false,
-  detectIp: false,
+  extractHostname: false,
   validateHostname: false,
+  detectIp: false,
   mixedInputs: false
 };
 
@@ -36,14 +39,16 @@ export const sortDomains = (inputs: string[]) => {
     const main_domain_a = domainMap.get(a)!;
     const main_domain_b = domainMap.get(b)!;
 
-    let t = compare(main_domain_a, main_domain_b);
+    let t = compare(
+      main_domain_a,
+      main_domain_b
+    ) || compare(
+      /** subdomain_a */ subdomainMap.get(a)!,
+      /** subdomain_b */ subdomainMap.get(b)!
+    );
+    if (t !== 0) return t;
 
-    if (t === 0) {
-      const subdomain_a = subdomainMap.get(a)!;
-      const subdomain_b = subdomainMap.get(b)!;
-      t = compare(subdomain_a, subdomain_b);
-    }
-    if (t === 0 && (a !== main_domain_a || b !== main_domain_b)) {
+    if (a !== main_domain_a || b !== main_domain_b) {
       t = compare(a, b);
     }
 

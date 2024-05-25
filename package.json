@@ -29,7 +29,8 @@
     "punycode": "^2.3.1",
     "table": "^6.8.2",
     "tar-stream": "^3.1.7",
-    "tldts": "^6.1.19"
+    "tldts": "^6.1.19",
+    "tldts-experimental": "^6.1.21"
   },
   "devDependencies": {
     "@eslint-sukka/node": "6.0.0-beta.3",

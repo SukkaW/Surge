@@ -4,11 +4,10 @@ import { createRuleset } from './lib/create-file';
 import { sortDomains } from './lib/stable-sort-domain';
 
 import { Sema } from 'async-sema';
-import * as tldts from 'tldts';
+import { getHostname } from 'tldts';
 import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import picocolors from 'picocolors';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
@@ -64,7 +63,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         }
       })).then(r => r.json()).then((data: Array<{ url: string }>) => data.reduce<string[]>(
         (prev, cur) => {
-          const hn = tldts.getHostname(cur.url, { detectIp: false });
+          const hn = getHostname(cur.url, { detectIp: false });
           if (hn) {
             prev.push(hn);
           }

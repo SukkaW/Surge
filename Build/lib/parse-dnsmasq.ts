@@ -1,8 +1,8 @@
 import { fetchRemoteTextByLine } from './fetch-text-by-line';
-import { parse } from 'tldts';
+import { parse as tldtsParse } from 'tldts';
 
 const isDomainLoose = (domain: string): boolean => {
-  const { isIcann, isPrivate, isIp } = parse(domain);
+  const { isIcann, isPrivate, isIp } = tldtsParse(domain);
   return !!(!isIp && (isIcann || isPrivate));
 };
 

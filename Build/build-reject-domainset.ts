@@ -11,7 +11,10 @@ import createKeywordFilter from './lib/aho-corasick';
 import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './trace';
-import * as tldts from 'tldts';
+// tldts-experimental is way faster than tldts, but very little bit inaccurate
+// (since it is hashes based). But the result is still deterministic, which is
+// enough when creating a simple stat of reject hosts.
+import * as tldts from 'tldts-experimental';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 

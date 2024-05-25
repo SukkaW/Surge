@@ -1,6 +1,6 @@
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
-import * as tldts from 'tldts';
+import { getSubdomain } from 'tldts';
 import { TTL } from './cache-filesystem';
 
 import { add as SetAdd } from 'mnemonist/set';
@@ -177,7 +177,7 @@ export function calcDomainAbuseScore(line: string) {
     }
   }
 
-  const subdomain = tldts.getSubdomain(line, { detectIp: false });
+  const subdomain = getSubdomain(line, { detectIp: false });
 
   if (subdomain) {
     if (subdomain.slice(1).includes('.')) {
