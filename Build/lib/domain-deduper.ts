@@ -1,9 +1,17 @@
-import { createTrie } from './trie';
+import { createTrie, type Trie } from './trie';
 
-export function domainDeduper(inputDomains: string[], toArray?: true): string[];
-export function domainDeduper(inputDomains: string[], toArray: false): Set<string>;
-export function domainDeduper(inputDomains: string[], toArray = true): string[] | Set<string> {
-  const trie = createTrie(inputDomains, true, true);
+export function domainDeduper(inputDomains: string[] | Trie, toArray?: true): string[];
+export function domainDeduper(inputDomains: string[] | Trie, toArray: false): Set<string>;
+export function domainDeduper(inputDomains: string[] | Trie, toArray = true): string[] | Set<string> {
+  let trie: Trie;
+  if (Array.isArray(inputDomains)) {
+    trie = createTrie(inputDomains, true, true);
+  } else if (!inputDomains.hostnameMode || !inputDomains.smolTree) {
+    throw new Error('Invalid trie');
+  } else {
+    trie = inputDomains;
+  }
+
   const dumped = trie.dump();
   if (toArray) {
     return dumped;

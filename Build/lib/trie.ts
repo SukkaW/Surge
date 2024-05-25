@@ -448,8 +448,13 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       return root;
     },
     whitelist,
-    [Bun.inspect.custom]: () => JSON.stringify(deepTrieNodeToJSON(root), null, 2)
+    [Bun.inspect.custom]: () => JSON.stringify(deepTrieNodeToJSON(root), null, 2),
+
+    hostnameMode,
+    smolTree
   };
 };
+
+export type Trie = ReturnType<typeof createTrie>;
 
 export default createTrie;

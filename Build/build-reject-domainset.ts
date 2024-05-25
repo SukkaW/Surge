@@ -23,7 +23,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
-  let domainSets = new Set<string>();
+  const domainSets = new Set<string>();
 
   // Parse from AdGuard Filters
   const shouldStop = await span
@@ -73,11 +73,10 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     process.exit(1);
   }
 
-  let previousSize = domainSets.size;
-  console.log(`Import ${previousSize} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
+  console.log(`Import ${domainSets.size} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   // Dedupe domainSets
-  await span.traceChildAsync('dedupe from black keywords', async (childSpan) => {
+  await span.traceChildAsync('dedupe from black keywords/suffixes', async (childSpan) => {
     /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
     const domainKeywordsSet = new Set<string>();
 
@@ -96,16 +95,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     // Remove as many domains as possible from domainSets before creating trie
     SetSubstract(domainSets, filterRuleWhitelistDomainSets);
 
-    domainSets = new Set(childSpan.traceChildSync('dedupe from white suffixes', () => {
-      const trie = createTrie(domainSets, true, true);
-
-      filterRuleWhitelistDomainSets.forEach(suffix => {
-        trie.whitelist(suffix);
-      });
-
-      return trie.dump();
-    }));
-
+    // Perform kwfilter to remove as many domains as possible from domainSets before creating trie
     childSpan.traceChildSync('dedupe from black keywords', () => {
       const kwfilter = createKeywordFilter(domainKeywordsSet);
 
@@ -116,15 +106,18 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
         }
       }
     });
-
-    console.log(`Deduped ${previousSize} - ${domainSets.size} = ${previousSize - domainSets.size} from black keywords and suffixes!`);
   });
-  previousSize = domainSets.size;
+
+  const trie = createTrie(domainSets, true, true);
+  span.traceChildSync('dedupe from white suffixes', () => {
+    filterRuleWhitelistDomainSets.forEach(suffix => {
+      trie.whitelist(suffix);
+    });
+  });
 
   // Dedupe domainSets
-  const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain', () => domainDeduper(Array.from(domainSets)));
+  const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain', () => domainDeduper(trie));
 
-  console.log(`Deduped ${previousSize - dudupedDominArray.length} rules from covered subdomain!`);
   console.log(`Final size ${dudupedDominArray.length}`);
 
   // Create reject stats
