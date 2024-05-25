@@ -3,15 +3,16 @@ import { sort } from './timsort';
 
 export const compare = (a: string, b: string) => {
   if (a === b) return 0;
-
-  const aLen = a.length;
-  const r = aLen - b.length;
-  if (r !== 0) return r;
-
-  return a.localeCompare(b);
+  return (a.length - b.length) || a.localeCompare(b);
 };
 
-const tldtsOpt = { allowPrivateDomains: false, detectIp: false, validateHostname: false };
+const tldtsOpt = {
+  extractHostname: false,
+  allowPrivateDomains: false,
+  detectIp: false,
+  validateHostname: false,
+  mixedInputs: false
+};
 
 export const sortDomains = (inputs: string[]) => {
   const domainMap = new Map<string, string>();
