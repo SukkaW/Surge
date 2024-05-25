@@ -14,27 +14,40 @@ export const compare = (a: string, b: string) => {
 const tldtsOpt = { allowPrivateDomains: false, detectIp: false, validateHostname: false };
 
 export const sortDomains = (inputs: string[]) => {
-  const domains = inputs.reduce<Map<string, string>>((domains, cur) => {
-    if (!domains.has(cur)) {
+  const domainMap = new Map<string, string>();
+  const subdomainMap = new Map<string, string>();
+
+  for (let i = 0, len = inputs.length; i < len; i++) {
+    const cur = inputs[i];
+    if (!domainMap.has(cur)) {
       const topD = tldts.getDomain(cur, tldtsOpt);
-      domains.set(cur, topD ?? cur);
-    };
-    return domains;
-  }, new Map());
+      domainMap.set(cur, topD ?? cur);
+    }
+    if (!subdomainMap.has(cur)) {
+      const subD = tldts.getSubdomain(cur, tldtsOpt);
+      subdomainMap.set(cur, subD ?? cur);
+    }
+  }
 
   const sorter = (a: string, b: string) => {
     if (a === b) return 0;
 
-    const $a = domains.get(a)!;
-    const $b = domains.get(b)!;
+    const main_domain_a = domainMap.get(a)!;
+    const main_domain_b = domainMap.get(b)!;
 
-    if (a === $a && b === $b) {
-      return compare(a, b);
+    let t = compare(main_domain_a, main_domain_b);
+
+    if (t === 0) {
+      const subdomain_a = subdomainMap.get(a)!;
+      const subdomain_b = subdomainMap.get(b)!;
+      t = compare(subdomain_a, subdomain_b);
     }
-    return $a.localeCompare($b) || compare(a, b);
+    if (t === 0 && (a !== main_domain_a || b !== main_domain_b)) {
+      t = compare(a, b);
+    }
+
+    return t;
   };
 
-  sort(inputs, sorter);
-
-  return inputs;
+  return sort(inputs, sorter);
 };
