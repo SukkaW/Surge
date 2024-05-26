@@ -56,10 +56,11 @@ export const buildDomesticRuleset = task(import.meta.path, async (span) => {
                   : []
               ),
               ...domains.flatMap((domain) => [
-              `${domain} = server:${dns}`,
-              `*.${domain} = server:${dns}`
-            ])
-      ])
+                `${domain} = server:${dns}`,
+                `*.${domain} = server:${dns}`
+              ])
+            ]
+          )
       ],
       path.resolve(import.meta.dir, '../Modules/sukka_local_dns_mapping.sgmodule')
     )

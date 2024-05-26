@@ -1,9 +1,8 @@
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
-import { getSubdomain } from 'tldts';
+import { getSubdomain, getPublicSuffix } from 'tldts-experimental';
 import { TTL } from './cache-filesystem';
 
-import { add as SetAdd } from 'mnemonist/set';
 import type { Span } from '../trace';
 import { appendArrayInPlace } from './append-array-in-place';
 
@@ -90,6 +89,14 @@ const BLACK_TLD = new Set([
   'design'
 ]);
 
+const tldtsOpt: Parameters<typeof getSubdomain>[1] = {
+  allowPrivateDomains: false,
+  extractHostname: false,
+  validateHostname: false,
+  detectIp: false,
+  mixedInputs: false
+};
+
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const gorhill = await getGorhillPublicSuffixPromise();
 
@@ -117,7 +124,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         continue;
       }
 
-      const tld = gorhill.getPublicSuffix(safeGorhillLine);
+      const tld = getPublicSuffix(safeGorhillLine, tldtsOpt);
       if (!tld || !BLACK_TLD.has(tld)) continue;
 
       domainCountMap[apexDomain] ||= 0;
@@ -174,7 +181,7 @@ export function calcDomainAbuseScore(line: string) {
     }
   }
 
-  const subdomain = getSubdomain(line, { detectIp: false });
+  const subdomain = getSubdomain(line, tldtsOpt);
 
   if (subdomain) {
     if (subdomain.slice(1).includes('.')) {

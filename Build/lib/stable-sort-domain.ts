@@ -1,7 +1,7 @@
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
 // (since it is hashes based). But the result is still deterministic, which is
 // enough when sorting.
-import * as tldts from 'tldts-experimental';
+import { getDomain, getSubdomain } from 'tldts-experimental';
 import { sort } from './timsort';
 
 export const compare = (a: string, b: string) => {
@@ -9,7 +9,7 @@ export const compare = (a: string, b: string) => {
   return (a.length - b.length) || a.localeCompare(b);
 };
 
-const tldtsOpt: Parameters<typeof tldts.getDomain>[1] = {
+const tldtsOpt: Parameters<typeof getDomain>[1] = {
   allowPrivateDomains: false,
   extractHostname: false,
   validateHostname: false,
@@ -24,11 +24,11 @@ export const sortDomains = (inputs: string[]) => {
   for (let i = 0, len = inputs.length; i < len; i++) {
     const cur = inputs[i];
     if (!domainMap.has(cur)) {
-      const topD = tldts.getDomain(cur, tldtsOpt);
+      const topD = getDomain(cur, tldtsOpt);
       domainMap.set(cur, topD ?? cur);
     }
     if (!subdomainMap.has(cur)) {
-      const subD = tldts.getSubdomain(cur, tldtsOpt);
+      const subD = getSubdomain(cur, tldtsOpt);
       subdomainMap.set(cur, subD ?? cur);
     }
   }

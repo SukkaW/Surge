@@ -4,7 +4,6 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import { sortDomains } from './lib/stable-sort-domain';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
-import { getGorhillPublicSuffixPromise } from './lib/get-gorhill-publicsuffix';
 import { domainDeduper } from './lib/domain-deduper';
 import { sort } from './lib/timsort';
 
