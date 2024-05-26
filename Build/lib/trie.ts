@@ -272,25 +272,30 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
     for (let i = suffixTokens.length - 1; i >= 0; i--) {
       token = suffixTokens[i];
-      parent = node;
 
+      parent = node;
       node = node.get(token);
-      if (!node) {
-        return false;
-      }
+
+      if (!node) return false;
 
       // Keeping track of a potential branch to prune
-      // If the node is to be pruned, but they are more than one token child in it, we can't prune it
-      // If there is only one token child, or no child at all, we can prune it safely
 
-      const onlyChild = node.size === 1 && node.has(token);
+      // Even if the node size is 1, but the single child is ".", we should retain the branch
+      // Since the "." could be special if it is the leaf-est node
+      const onlyChild = node.size < 2 && (!hostnameMode || !node.has('.'));
 
-      if (onlyChild) {
+      if (toPrune != null) { // the top-est branch that could potentially being pruned
+        if (!onlyChild) {
+          // The branch has moew than single child, retain the branch.
+          // And we need to abort prune the parent, so we set it to null
+          toPrune = null;
+          tokenToPrune = null;
+        }
+      } else if (onlyChild) {
+        // There is only one token child, or no child at all, we can prune it safely
+        // It is now the top-est branch that could potentially being pruned
         toPrune = parent;
         tokenToPrune = token;
-      } else if (toPrune !== null) { // not only child, retain the branch
-        toPrune = null;
-        tokenToPrune = null;
       }
     }
 
@@ -376,50 +381,49 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
     for (let i = tokens.length - 1; i >= 0; i--) {
       token = tokens[i];
-      parent = node;
 
+      parent = node;
       node = node.get(token);
+
       if (!node) return;
 
-      // During the whitelist of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
-      // Dedupe the covered subdomain by skipping
-      if (i > 1 && node.get('.')?.[SENTINEL] === true) {
-        return;
-      }
-
-      // Trying to whitelist `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
-      if (i === 1 && tokens[0] === '.') {
-        // If there is a `[start]sub.example.com` here, remove it
-        node[SENTINEL] = false;
-
-        // Removing all the child nodes by disconnecting "."
-        node.delete('.');
-      } else if (i === 0) {
-        // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
-        const dotNode = node.get('.');
-        if (dotNode?.[SENTINEL] === true) {
-          dotNode[SENTINEL] = false;
-        }
-      }
-
       // Keeping track of a potential branch to prune
-      // If the node is to be pruned, but they are more than one token child in it, we can't prune it
-      // If there is only one token child, or no child at all, we can prune it safely
 
-      if (toPrune != null) { // the first branch that could potentially being pruned
-        if (node.size > 1 || node.has('.')) {
-          // not only child, retain the branch.
+      // Even if the node size is 1, but the single child is ".", we should retain the branch
+      // Since the "." could be special if it is the leaf-est node
+      const onlyChild = node.size < 2 && !node.has('.');
+      // const onlyChild = node.size < 2 && (!hostnameMode || !node.has('.'));
+
+      if (toPrune !== null) { // the top-est branch that could potentially being pruned
+        if (!onlyChild) {
+          // The branch has moew than single child, retain the branch.
           // And we need to abort prune the parent, so we set it to null
           toPrune = null;
           tokenToPrune = null;
         }
-      } else if (node.size < 2 && !node.has('.')) {
+      } else if (onlyChild) {
+        // There is only one token child, or no child at all, we can prune it safely
+        // It is now the top-est branch that could potentially being pruned
         toPrune = parent;
         tokenToPrune = token;
       }
     }
 
-    if (!node[SENTINEL]) return false;
+    // Trying to whitelist `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
+    if (tokens[0] === '.') {
+      // If there is a `[start]sub.example.com` here, remove it
+      parent[SENTINEL] = false;
+      // Removing all the child nodes by disconnecting "."
+      parent.delete('.');
+    }
+
+    // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
+    const dotNode = node.get('.');
+    if (dotNode?.[SENTINEL] === true) {
+      dotNode[SENTINEL] = false;
+    }
+
+    // if (!node[SENTINEL]) return;
 
     if (tokenToPrune && toPrune) {
       toPrune.delete(tokenToPrune);
