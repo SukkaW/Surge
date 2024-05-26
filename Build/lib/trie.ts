@@ -36,32 +36,34 @@ const createNode = (parent: TrieNode | null = null): TrieNode => {
   return node;
 };
 
+const hostnameToTokens = (hostname: string): string[] => {
+  let buf = '';
+  const tokens: string[] = [];
+  for (let i = 0, l = hostname.length; i < l; i++) {
+    const c = hostname[i];
+    if (c === '.') {
+      if (buf) {
+        tokens.push(buf, /* . */ c);
+        buf = '';
+      } else {
+        tokens.push(/* . */ c);
+      }
+    } else {
+      buf += c;
+    }
+  }
+  if (buf) {
+    tokens.push(buf);
+  }
+  return tokens;
+};
+
 export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = false, smolTree = false) => {
   let size = 0;
   const root: TrieNode = createNode();
 
   const suffixToTokens = hostnameMode
-    ? (suffix: string) => {
-      let buf = '';
-      const tokens: string[] = [];
-      for (let i = 0, l = suffix.length; i < l; i++) {
-        const c = suffix[i];
-        if (c === '.') {
-          if (buf) {
-            tokens.push(buf, /* . */ c);
-            buf = '';
-          } else {
-            tokens.push(/* . */ c);
-          }
-        } else {
-          buf += c;
-        }
-      }
-      if (buf) {
-        tokens.push(buf);
-      }
-      return tokens;
-    }
+    ? hostnameToTokens
     : (suffix: string) => suffix;
 
   /**

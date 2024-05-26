@@ -1,0 +1,9 @@
+import type * as tldts from 'tldts';
+
+export const looseTldtsOpt: Parameters<typeof tldts.getSubdomain>[1] = {
+  allowPrivateDomains: false,
+  extractHostname: false,
+  validateHostname: false,
+  detectIp: false,
+  mixedInputs: false
+};

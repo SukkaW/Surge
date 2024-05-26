@@ -1,8 +1,8 @@
 interface Node {
   /** @default false */
-  wordEnd?: boolean,
+  wordEnd: boolean,
   children: Map<string, Node | undefined>,
-  fail?: Node
+  fail: Node | undefined
 }
 
 const createNode = (): Node => ({

@@ -3,32 +3,51 @@
 // enough when sorting.
 import { getDomain, getSubdomain } from 'tldts-experimental';
 import { sort } from './timsort';
+import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 
 export const compare = (a: string, b: string) => {
   if (a === b) return 0;
   return (a.length - b.length) || a.localeCompare(b);
 };
 
-const tldtsOpt: Parameters<typeof getDomain>[1] = {
-  allowPrivateDomains: false,
-  extractHostname: false,
-  validateHostname: false,
-  detectIp: false,
-  mixedInputs: false
-};
-
-export const sortDomains = (inputs: string[]) => {
+export const buildParseDomainMap = (inputs: string[]) => {
   const domainMap = new Map<string, string>();
   const subdomainMap = new Map<string, string>();
 
   for (let i = 0, len = inputs.length; i < len; i++) {
     const cur = inputs[i];
     if (!domainMap.has(cur)) {
-      const topD = getDomain(cur, tldtsOpt);
+      const topD = getDomain(cur, looseTldtsOpt);
       domainMap.set(cur, topD ?? cur);
     }
     if (!subdomainMap.has(cur)) {
-      const subD = getSubdomain(cur, tldtsOpt);
+      const subD = getSubdomain(cur, looseTldtsOpt);
+      subdomainMap.set(cur, subD ?? cur);
+    }
+  }
+
+  return { domainMap, subdomainMap };
+};
+
+export const sortDomains = (
+  inputs: string[],
+  domainMap?: Map<string, string>,
+  subdomainMap?: Map<string, string>
+) => {
+  if (!domainMap || !subdomainMap) {
+    const { domainMap: dm, subdomainMap: sm } = buildParseDomainMap(inputs);
+    domainMap = dm;
+    subdomainMap = sm;
+  }
+
+  for (let i = 0, len = inputs.length; i < len; i++) {
+    const cur = inputs[i];
+    if (!domainMap.has(cur)) {
+      const topD = getDomain(cur, looseTldtsOpt);
+      domainMap.set(cur, topD ?? cur);
+    }
+    if (!subdomainMap.has(cur)) {
+      const subD = getSubdomain(cur, looseTldtsOpt);
       subdomainMap.set(cur, subD ?? cur);
     }
   }

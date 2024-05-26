@@ -5,6 +5,7 @@ import { getSubdomain, getPublicSuffix } from 'tldts-experimental';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS } from './reject-data-source';
+import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -99,14 +100,6 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'notion.site'
 ]);
 
-const tldtsOpt: Parameters<typeof getSubdomain>[1] = {
-  allowPrivateDomains: false,
-  extractHostname: false,
-  validateHostname: false,
-  detectIp: false,
-  mixedInputs: false
-};
-
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const gorhill = await getGorhillPublicSuffixPromise();
 
@@ -132,7 +125,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         continue;
       }
 
-      const tld = getPublicSuffix(safeGorhillLine, tldtsOpt);
+      const tld = getPublicSuffix(safeGorhillLine, looseTldtsOpt);
       if (!tld || !BLACK_TLD.has(tld)) continue;
 
       domainCountMap[apexDomain] ||= 0;
@@ -187,7 +180,7 @@ export function calcDomainAbuseScore(line: string) {
     }
   }
 
-  const subdomain = getSubdomain(line, tldtsOpt);
+  const subdomain = getSubdomain(line, looseTldtsOpt);
 
   if (subdomain) {
     if (subdomain.slice(1).includes('.')) {

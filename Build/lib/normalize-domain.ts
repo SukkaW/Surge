@@ -7,6 +7,7 @@ export const normalizeDomain = (domain: string) => {
   const parsed = tldtsParse(domain, { allowPrivateDomains: true, detectIp: false });
   // if (parsed.isIp) return null;
   if (!parsed.hostname) return null;
+  // Private invalid domain (things like .tor, .dn42, etc)
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
   let h = parsed.hostname;
