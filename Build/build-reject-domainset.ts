@@ -19,7 +19,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import { add as SetAdd, subtract as SetSubstract } from 'mnemonist/set';
-import { setAddFromArray } from './lib/set-add-from-array';
+import { setAddFromArray, setAddFromArrayCurried } from './lib/set-add-from-array';
 import { sort } from './lib/timsort';
 
 export const buildRejectDomainSet = task(import.meta.path, async (span) => {
@@ -38,7 +38,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
         // Parse from remote hosts & domain lists
         ...HOSTS.map(entry => processHosts(childSpan, entry[0], entry[1], entry[2], entry[3]).then(hosts => SetAdd(domainSets, hosts))),
 
-        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, entry[0], entry[1], entry[2]).then(hosts => SetAdd(domainSets, hosts))),
+        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, entry[0], entry[1], entry[2]).then(setAddFromArrayCurried(domainSets))),
 
         ...ADGUARD_FILTERS.map(input => (
           typeof input === 'string'
@@ -60,13 +60,9 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
           setAddFromArray(filterRuleWhitelistDomainSets, white);
           setAddFromArray(filterRuleWhitelistDomainSets, black);
         }))),
-        getPhishingDomains(childSpan).then(([purePhishingDomains, fullPhishingDomainSet]) => {
-          SetAdd(domainSets, fullPhishingDomainSet);
-          setAddFromArray(domainSets, purePhishingDomains);
-        }),
-        childSpan.traceChildAsync('process reject_sukka.conf', async () => {
-          setAddFromArray(domainSets, await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf')));
-        })
+        getPhishingDomains(childSpan).then(setAddFromArrayCurried(domainSets)),
+        childSpan.traceChildAsync('process reject_sukka.conf', () => readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))
+          .then(setAddFromArrayCurried(domainSets)))
       ]);
       // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;

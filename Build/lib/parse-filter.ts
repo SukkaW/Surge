@@ -8,7 +8,7 @@ import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
-import { deserializeSet, fsFetchCache, serializeSet } from './cache-filesystem';
+import { deserializeArray, deserializeSet, fsFetchCache, serializeArray, serializeSet } from './cache-filesystem';
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 
@@ -20,7 +20,7 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
   return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn(() => fsFetchCache.apply(
     domainListsUrl,
     async () => {
-      const domainSets = new Set<string>();
+      const domainSets: string[] = [];
 
       for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
         let domainToAdd = processLine(line);
@@ -33,7 +33,7 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
           foundDebugDomain = true;
         }
 
-        domainSets.add(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        domainSets.push(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
       }
 
       return domainSets;
@@ -41,8 +41,8 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
     {
       ttl,
       temporaryBypass,
-      serializer: serializeSet,
-      deserializer: deserializeSet
+      serializer: serializeArray,
+      deserializer: deserializeArray
     }
   ));
 }

@@ -5,6 +5,7 @@ import { TTL } from './cache-filesystem';
 
 import { add as SetAdd } from 'mnemonist/set';
 import type { Span } from '../trace';
+import { appendArrayInPlace } from './append-array-in-place';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -92,13 +93,13 @@ const BLACK_TLD = new Set([
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const gorhill = await getGorhillPublicSuffixPromise();
 
-  const domainSet = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
+  const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
     const [domainSet, domainSet2] = await Promise.all([
       processDomainLists(curSpan, 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
       processDomainLists(curSpan, 'https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
     ]);
 
-    SetAdd(domainSet, domainSet2);
+    appendArrayInPlace(domainSet, domainSet2);
 
     return domainSet;
   });
@@ -106,8 +107,6 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   const domainCountMap: Record<string, number> = {};
 
   span.traceChildSync('process phishing domain set', () => {
-    const domainArr = Array.from(domainSet);
-
     for (let i = 0, len = domainArr.length; i < len; i++) {
       const line = domainArr[i];
 
@@ -126,17 +125,15 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     }
   });
 
-  const results = span.traceChildSync('get final phishing results', () => {
-    const res: string[] = [];
+  span.traceChildSync('get final phishing results', () => {
     for (const domain in domainCountMap) {
       if (domainCountMap[domain] >= 8) {
-        res.push(`.${domain}`);
+        domainArr.push(`.${domain}`);
       }
     }
-    return res;
   });
 
-  return [results, domainSet] as const;
+  return domainArr;
 });
 
 export function calcDomainAbuseScore(line: string) {
