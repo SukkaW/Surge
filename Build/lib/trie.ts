@@ -2,10 +2,12 @@
  * Suffix Trie based on Mnemonist Trie
  */
 
-// import { Trie } from 'mnemonist';
+// const { Error, Bun, JSON, Symbol } = globalThis;
 
-export const SENTINEL = Symbol('SENTINEL');
+const SENTINEL = Symbol('SENTINEL');
 const PARENT = Symbol('Parent Node');
+
+const noop: VoidFunction = () => { /** noop */ };
 
 type TrieNode = {
   [SENTINEL]: boolean,
@@ -69,7 +71,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     : (suffix: string) => suffix;
 
   /**
-   * Method used to add the given prefix to the trie.
+   * Method used to add the given suffix to the trie.
    */
   const add = (suffix: string): void => {
     let node: TrieNode = root;
@@ -85,9 +87,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
         // During the adding of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
         // Dedupe the covered subdomain by skipping
-        if (smolTree && (node.get('.')?.[SENTINEL])) {
-          return;
-        }
+        if (smolTree && (node.get('.')?.[SENTINEL])) return;
       } else {
         const newNode = createNode(node);
         node.set(token, newNode);
@@ -129,155 +129,78 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     node[SENTINEL] = true;
   };
 
-  /**
-   * @param {string} $suffix
-   */
-  const contains = (suffix: string): boolean => {
+  const walkIntoLeafWithTokens = (
+    tokens: string | string[],
+    onLoop: (node: TrieNode, parent: TrieNode, token: string) => void = noop
+  ) => {
     let node: TrieNode | undefined = root;
-    let token: string;
+    let parent: TrieNode = node;
 
-    const tokens = suffixToTokens(suffix);
+    let token: string;
 
     for (let i = tokens.length - 1; i >= 0; i--) {
       token = tokens[i];
-
-      node = node.get(token);
-      if (!node) return false;
-    }
-
-    return true;
-  };
-
-  /**
-   * Method used to retrieve every item in the trie with the given prefix.
-   */
-  const find = (inputSuffix: string, /** @default true */ includeEqualWithSuffix = true): string[] => {
-    if (smolTree) {
-      throw new Error('A Trie with smolTree enabled cannot perform find!');
-    }
-
-    let node: TrieNode | undefined = root;
-    let token: string;
-
-    const inputTokens = suffixToTokens(inputSuffix);
-
-    for (let i = inputTokens.length - 1; i >= 0; i--) {
-      token = inputTokens[i];
 
       if (hostnameMode && token === '') {
         break;
       }
 
-      node = node.get(token);
-      if (!node) return [];
-    }
-
-    const matches: Array<string | string[]> = [];
-
-    // Performing DFS from prefix
-    const nodeStack: TrieNode[] = [node];
-    const suffixStack: Array<string | string[]> = [inputTokens];
-
-    do {
-      const suffix: string | string[] = suffixStack.pop()!;
-      node = nodeStack.pop()!;
-
-      if (node[SENTINEL]) {
-        if (includeEqualWithSuffix) {
-          matches.push(suffix);
-        } else if (isHostnameMode(suffix)) {
-          if (suffix.some((t, i) => t !== inputTokens[i])) {
-            matches.push(suffix);
-          }
-        } else if (suffix !== inputTokens) {
-          matches.push(suffix);
-        }
-      }
-
-      node.forEach((childNode, k) => {
-        nodeStack.push(childNode);
-
-        if (isHostnameMode(suffix)) {
-          suffixStack.push([k, ...suffix]);
-        } else {
-          suffixStack.push(k + suffix);
-        }
-      });
-    } while (nodeStack.length);
-
-    return hostnameMode ? matches.map((m) => (m as string[]).join('')) : matches as string[];
-  };
-
-  /**
-   * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
-   */
-  const substractSetInPlaceFromFound = (inputSuffix: string, set: Set<string>) => {
-    if (smolTree) {
-      throw new Error('A Trie with smolTree enabled cannot perform substractSetInPlaceFromFound!');
-    }
-
-    let node: TrieNode | undefined = root;
-    let token: string;
-
-    const inputTokens = suffixToTokens(inputSuffix);
-
-    // Find the leaf-est node, and early return if not any
-    for (let i = inputTokens.length - 1; i >= 0; i--) {
-      token = inputTokens[i];
-
-      node = node.get(token);
-      if (!node) return;
-    }
-
-    // Performing DFS from prefix
-    const nodeStack: TrieNode[] = [node];
-    const suffixStack: Array<string | string[]> = [inputTokens];
-
-    do {
-      const suffix = suffixStack.pop()!;
-      node = nodeStack.pop()!;
-
-      if (node[SENTINEL]) {
-        // found match, delete it from set
-        if (isHostnameMode(suffix)) {
-          set.delete(suffix.join(''));
-        } else if (suffix !== inputTokens) {
-          set.delete(suffix);
-        }
-      }
-
-      node.forEach((childNode, k) => {
-        nodeStack.push(childNode);
-        if (isHostnameMode(suffix)) {
-          const stack = [k, ...suffix];
-          suffixStack.push(stack);
-        } else {
-          suffixStack.push(k + suffix);
-        }
-      });
-    } while (nodeStack.length);
-  };
-
-  /**
-   * Method used to delete a prefix from the trie.
-   */
-  const remove = (suffix: string): boolean => {
-    let node: TrieNode | undefined = root;
-    let toPrune: TrieNode | null = null;
-    let tokenToPrune: string | null = null;
-    let parent: TrieNode = node;
-    let token: string;
-
-    const suffixTokens = suffixToTokens(suffix);
-
-    for (let i = suffixTokens.length - 1; i >= 0; i--) {
-      token = suffixTokens[i];
-
       parent = node;
       node = node.get(token);
+      if (!node) return null;
 
-      if (!node) return false;
+      onLoop(node, parent, token);
+    }
 
+    return { node, parent };
+  };
+
+  const contains = (suffix: string): boolean => {
+    const tokens = suffixToTokens(suffix);
+    return walkIntoLeafWithTokens(tokens) !== null;
+  };
+
+  const walk = (
+    onMatches: (suffix: string | string[]) => void,
+    initialNode = root,
+    initialSuffix: string | string[] = hostnameMode ? [] : ''
+  ) => {
+    const nodeStack: TrieNode[] = [initialNode];
+    // Resolving initial string (begin the start of the stack)
+    const suffixStack: Array<string | string[]> = [initialSuffix];
+
+    let node: TrieNode = root;
+
+    do {
+      node = nodeStack.pop()!;
+      const suffix = suffixStack.pop()!;
+
+      node.forEach((childNode, k) => {
+        // Pushing the child node to the stack for next iteration of DFS
+        nodeStack.push(childNode);
+
+        suffixStack.push(isHostnameMode(suffix) ? [k, ...suffix] : k + suffix);
+      });
+
+      // If the node is a sentinel, we push the suffix to the results
+      if (node[SENTINEL]) {
+        onMatches(suffix);
+      }
+    } while (nodeStack.length);
+  };
+
+  interface FindSingleChildLeafResult {
+    node: TrieNode,
+    toPrune: TrieNode | null,
+    tokenToPrune: string | null,
+    parent: TrieNode
+  }
+
+  const getSingleChildLeaf = (tokens: string | string[]): FindSingleChildLeafResult | null => {
+    let toPrune: TrieNode | null = null;
+    let tokenToPrune: string | null = null;
+
+    const onLoop = (node: TrieNode, parent: TrieNode, token: string) => {
       // Keeping track of a potential branch to prune
 
       // Even if the node size is 1, but the single child is ".", we should retain the branch
@@ -297,11 +220,89 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         toPrune = parent;
         tokenToPrune = token;
       }
+    };
+
+    const res = walkIntoLeafWithTokens(tokens, onLoop);
+
+    if (res === null) return null;
+    return { node: res.node, toPrune, tokenToPrune, parent: res.parent };
+  };
+
+  /**
+   * Method used to retrieve every item in the trie with the given prefix.
+   */
+  const find = (inputSuffix: string, /** @default true */ includeEqualWithSuffix = true): string[] => {
+    if (smolTree) {
+      throw new Error('A Trie with smolTree enabled cannot perform find!');
     }
 
-    if (!node[SENTINEL]) return false;
+    const inputTokens = suffixToTokens(inputSuffix);
+    const res = walkIntoLeafWithTokens(inputTokens);
+    if (res === null) return [];
+
+    const matches: Array<string | string[]> = [];
+
+    const onMatches = includeEqualWithSuffix
+      ? (suffix: string | string[]) => matches.push(suffix)
+      : (
+        hostnameMode
+          ? (suffix: string[]) => {
+            if (suffix.some((t, i) => t !== inputTokens[i])) {
+              matches.push(suffix);
+            }
+          }
+          : (suffix: string) => {
+            if (suffix !== inputTokens) {
+              matches.push(suffix);
+            }
+          }
+      );
+
+    walk(
+      onMatches as any,
+      res.node, // Performing DFS from prefix
+      inputTokens
+    );
+
+    return hostnameMode ? matches.map((m) => (m as string[]).join('')) : matches as string[];
+  };
+
+  /**
+   * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
+   */
+  const substractSetInPlaceFromFound = (inputSuffix: string, set: Set<string>) => {
+    if (smolTree) {
+      throw new Error('A Trie with smolTree enabled cannot perform substractSetInPlaceFromFound!');
+    }
+
+    const inputTokens = suffixToTokens(inputSuffix);
+
+    const res = walkIntoLeafWithTokens(inputTokens);
+    if (res === null) return;
+
+    const onMatches = hostnameMode
+      ? (suffix: string[]) => set.delete(suffix.join(''))
+      : (suffix: string) => set.delete(suffix);
+
+    walk(
+      onMatches as any,
+      res.node, // Performing DFS from prefix
+      inputTokens
+    );
+  };
+
+  /**
+   * Method used to delete a prefix from the trie.
+   */
+  const remove = (suffix: string): boolean => {
+    const suffixTokens = suffixToTokens(suffix);
+    const res = getSingleChildLeaf(suffixTokens);
+    if (res === null) return false;
+
+    if (!res.node[SENTINEL]) return false;
 
     size--;
+    const { node, toPrune, tokenToPrune } = res;
 
     if (tokenToPrune && toPrune) {
       toPrune.delete(tokenToPrune);
@@ -316,51 +317,22 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
  * Method used to assert whether the given prefix exists in the Trie.
  */
   const has = (suffix: string): boolean => {
-    let node: TrieNode = root;
-
     const tokens = suffixToTokens(suffix);
+    const res = walkIntoLeafWithTokens(tokens);
 
-    for (let i = tokens.length - 1; i >= 0; i--) {
-      const token = tokens[i];
-
-      if (!node.has(token)) {
-        return false;
-      }
-
-      node = node.get(token)!;
-    }
-
-    return node[SENTINEL];
+    return res
+      ? res.node[SENTINEL]
+      : false;
   };
 
   const dump = () => {
-    const nodeStack: TrieNode[] = [];
-    const suffixStack: Array<string | string[]> = [];
-
-    nodeStack.push(root);
-    // Resolving initial string (begin the start of the stack)
-    suffixStack.push(hostnameMode ? [] : '');
-
     const results: string[] = [];
 
-    let node: TrieNode;
-
-    do {
-      node = nodeStack.pop()!;
-      const suffix = suffixStack.pop()!;
-
-      node.forEach((childNode, k) => {
-        // Pushing the child node to the stack for next iteration of DFS
-        nodeStack.push(childNode);
-
-        suffixStack.push(isHostnameMode(suffix) ? [k, ...suffix] : k + suffix);
-      });
-
-      // If the node is a sentinel, we push the suffix to the results
-      if (node[SENTINEL]) {
-        results.push(isHostnameMode(suffix) ? suffix.join('') : suffix);
-      }
-    } while (nodeStack.length);
+    walk(suffix => {
+      results.push(
+        isHostnameMode(suffix) ? suffix.join('') : suffix
+      );
+    });
 
     return results;
   };
@@ -370,44 +342,12 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       throw new Error('whitelist method is only available in hostname mode or smolTree mode.');
     }
 
-    let node: TrieNode | undefined = root;
-
-    let toPrune: TrieNode | null = null;
-    let tokenToPrune: string | null = null;
-    let parent: TrieNode = node;
-
     const tokens = suffixToTokens(suffix);
-    let token: string;
+    const res = getSingleChildLeaf(tokens);
 
-    for (let i = tokens.length - 1; i >= 0; i--) {
-      token = tokens[i];
+    if (res === null) return;
 
-      parent = node;
-      node = node.get(token);
-
-      if (!node) return;
-
-      // Keeping track of a potential branch to prune
-
-      // Even if the node size is 1, but the single child is ".", we should retain the branch
-      // Since the "." could be special if it is the leaf-est node
-      const onlyChild = node.size < 2 && !node.has('.');
-      // const onlyChild = node.size < 2 && (!hostnameMode || !node.has('.'));
-
-      if (toPrune !== null) { // the top-est branch that could potentially being pruned
-        if (!onlyChild) {
-          // The branch has moew than single child, retain the branch.
-          // And we need to abort prune the parent, so we set it to null
-          toPrune = null;
-          tokenToPrune = null;
-        }
-      } else if (onlyChild) {
-        // There is only one token child, or no child at all, we can prune it safely
-        // It is now the top-est branch that could potentially being pruned
-        toPrune = parent;
-        tokenToPrune = token;
-      }
-    }
+    const { node, toPrune, tokenToPrune, parent } = res;
 
     // Trying to whitelist `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
     if (tokens[0] === '.') {
@@ -423,7 +363,8 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       dotNode[SENTINEL] = false;
     }
 
-    // if (!node[SENTINEL]) return;
+    // return early if not found
+    if (!node[SENTINEL]) return;
 
     if (tokenToPrune && toPrune) {
       toPrune.delete(tokenToPrune);
@@ -432,6 +373,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     }
   };
 
+  // Actually build trie
   if (Array.isArray(from)) {
     for (let i = 0, l = from.length; i < l; i++) {
       add(from[i]);
