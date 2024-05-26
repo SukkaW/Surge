@@ -14,7 +14,7 @@ import { processLine } from './lib/process-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 import { createMemoizedPromise } from './lib/memo-promise';
 
-import * as SetHelpers from 'mnemonist/set';
+import { setAddFromArrayCurried } from './lib/set-add-from-array';
 
 const s = new Sema(2);
 
@@ -83,11 +83,11 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
 };
 
 const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
-  const domains = new Set<string>();
+  const domains: string[] = [];
   for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
     const line = processLine(l);
     if (line) {
-      domains.add(line);
+      domains.push(line);
     }
   }
   return domains;
@@ -182,9 +182,11 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     'mensura.cdn-apple.com' // From netQuality command
   ]);
 
-  await span.traceChildAsync('fetch previous speedtest domainset', async () => {
-    SetHelpers.add(domains, await getPreviousSpeedtestDomainsPromise());
-  });
+  await span.traceChildAsync(
+    'fetch previous speedtest domainset',
+    () => getPreviousSpeedtestDomainsPromise()
+      .then(setAddFromArrayCurried(domains))
+  );
 
   await new Promise<void>((resolve) => {
     const pMap = ([

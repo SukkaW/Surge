@@ -14,15 +14,11 @@ import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
 // (since it is hashes based). But the result is still deterministic, which is
 // enough when creating a simple stat of reject hosts.
-import * as tldts from 'tldts-experimental';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
-import { subtract as SetSubstract } from 'mnemonist/set';
 import { setAddFromArray, setAddFromArrayCurried } from './lib/set-add-from-array';
 import { sort } from './lib/timsort';
-import { looseTldtsOpt } from './constants/loose-tldts-opt';
-import { build } from 'bun';
 
 const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'));
 

@@ -8,7 +8,7 @@ import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
-import { deserializeArray, deserializeSet, fsFetchCache, serializeArray, serializeSet } from './cache-filesystem';
+import { deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 
