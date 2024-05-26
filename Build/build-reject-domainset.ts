@@ -109,11 +109,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
 
   const trie = span.traceChildSync('dedupe from white suffixes', () => {
     const trie = createTrie(domainSets, true, true);
-
-    filterRuleWhitelistDomainSets.forEach(suffix => {
-      trie.whitelist(suffix);
-    });
-
+    filterRuleWhitelistDomainSets.forEach(trie.whitelist);
     return trie;
   });
 

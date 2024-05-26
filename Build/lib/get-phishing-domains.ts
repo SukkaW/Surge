@@ -1,10 +1,9 @@
 import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
 import { getSubdomain, getPublicSuffix } from 'tldts-experimental';
-import { TTL } from './cache-filesystem';
 
 import type { Span } from '../trace';
-import { appendArrayInPlace, appendArrayInPlaceCurried } from './append-array-in-place';
+import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS } from './reject-data-source';
 
 const BLACK_TLD = new Set([
@@ -90,6 +89,16 @@ const BLACK_TLD = new Set([
   'design'
 ]);
 
+export const WHITELIST_MAIN_DOMAINS = new Set([
+  'w3s.link', // ipfs gateway
+  'dweb.link', // ipfs gateway
+  'nftstorage.link', // ipfs gateway
+  'fleek.cool', // ipfs gateway
+  'business.site', // Drag'n'Drop site building platform
+  'page.link', // Firebase URL Shortener
+  'notion.site'
+]);
+
 const tldtsOpt: Parameters<typeof getSubdomain>[1] = {
   allowPrivateDomains: false,
   extractHostname: false,
@@ -132,7 +141,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   });
 
   for (const domain in domainCountMap) {
-    if (domainCountMap[domain] >= 8) {
+    if (domainCountMap[domain] >= 8 && !WHITELIST_MAIN_DOMAINS.has(domain)) {
       domainArr.push(`.${domain}`);
     }
   }

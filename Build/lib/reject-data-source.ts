@@ -193,65 +193,59 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
 ] as const;
 
 export const PREDEFINED_WHITELIST = [
-  'localhost',
-  'local',
-  'localhost.localdomain',
-  'broadcasthost',
-  'ip6-loopback',
-  'ip6-localnet',
-  'ip6-mcastprefix',
-  'ip6-allnodes',
-  'ip6-allrouters',
-  'ip6-allhosts',
-  'mcastprefix',
-  'skk.moe',
+  '.localhost',
+  '.local',
+  '.localhost.localdomain',
+  '.broadcasthost',
+  '.ip6-loopback',
+  '.ip6-localnet',
+  '.ip6-mcastprefix',
+  '.ip6-allnodes',
+  '.ip6-allrouters',
+  '.ip6-allhosts',
+  '.mcastprefix',
+  '.skk.moe',
   'analytics.google.com',
-  'cloud.answerhub.com',
+  '.cloud.answerhub.com',
   'ae01.alicdn.com',
-  'whoami.akamai.net',
-  'whoami.ds.akahelp.net',
+  '.whoami.akamai.net',
+  '.whoami.ds.akahelp.net',
   'pxlk9.net.', // This one is malformed from EasyList, which I will manually add instead
-  'instant.page', // No, it doesn't violate anyone's privacy. I will whitelist it
-  'piwik.pro',
+  '.instant.page', // No, it doesn't violate anyone's privacy. I will whitelist it
+  '.piwik.pro',
   'mixpanel.com',
   'cdn.mxpnl.com',
-  'heapanalytics.com',
-  'segment.com',
-  'segmentify.com',
-  't.co', // pgl yoyo add t.co to the blacklist
-  'survicate.com', // AdGuardDNSFilter
-  'perfops.io', // AdGuardDNSFilter
-  'd2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
-  'sb-cd.com', // AdGuard
-  'storage.yandexcloud.net', // phishing list
-  'login.microsoftonline.com', // phishing list
+  '.heapanalytics.com',
+  '.segment.com',
+  '.segmentify.com',
+  '.t.co', // pgl yoyo add t.co to the blacklist
+  '.survicate.com', // AdGuardDNSFilter
+  '.perfops.io', // AdGuardDNSFilter
+  '.d2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
+  '.sb-cd.com', // AdGuard
+  '.storage.yandexcloud.net', // phishing list
+  '.login.microsoftonline.com', // phishing list
   'api.xiaomi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
   'api.io.mi.com', // https://github.com/jerryn70/GoodbyeAds/issues/281
-  'cdn.userreport.com', // https://github.com/AdguardTeam/AdGuardSDNSFilter/issues/1158
-  'ip-api.com',
-  'fastly-analytics.com',
-  'digitaloceanspaces.com',
+  '.cdn.userreport.com', // https://github.com/AdguardTeam/AdGuardSDNSFilter/issues/1158
+  '.ip-api.com',
+  '.fastly-analytics.com',
+  '.digitaloceanspaces.com',
   's3.nl-ams.scw.cloud',
-  'geolocation-db.com',
-  'uploads.codesandbox.io',
-  'vlscppe.microsoft.com', // Affect Windows ISO download https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
-  'statsig.com', // OpenAI use this for A/B testing
-  'pstmrk.it', // Fuck Peter Lowe Hosts
-  'clicks.mlsend.com', // Fuck Peter Lowe Hosts
+  '.geolocation-db.com',
+  '.uploads.codesandbox.io',
+  '.vlscppe.microsoft.com', // Affect Windows ISO download https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
+  '.statsig.com', // OpenAI use this for A/B testing
+  '.pstmrk.it', // Fuck Peter Lowe Hosts
+  '.clicks.mlsend.com', // Fuck Peter Lowe Hosts
   'email.accounts.bitly.com', // Fuck Peter Lowe Hosts
   'adsense.google.com', // Fuck Peter Lowe Hosts
   'api.vip.miui.com', // Fuck Goodbye Xiaomi Ads
-  'stripe.com', // EasyPrivacy only blocks m.stripe.com wwith $third-party,
+  'staging.ai.api.xiaomi.com', // Fuck Goodbye Xiaomi Ads
+  'm.stripe.com', // EasyPrivacy only blocks m.stripe.com wwith $third-party,
   // yet stupid AdGuardDNSFilter blocks all of it. Stupid AdGuard
-  'w3s.link', // ipfs gateway
-  'dweb.link', // ipfs gateway
-  'nftstorage.link', // ipfs gateway
-  'fleek.cool', // ipfs gateway
-  'square.site', // Drag'n'Drop site building platform
-  'business.site', // Drag'n'Drop site building platform
-  'page.link', // Firebase URL Shortener
-  'notion.site'
-].map(suffix => `.${suffix}`);
+  '.w3s.link' // stupid phishing.army, introduce both "*.ipfs.w3s.link" and ".w3s.link" to the block list
+];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
   'r2.dev',

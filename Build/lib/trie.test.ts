@@ -208,26 +208,6 @@ describe('smol tree', () => {
     ]);
   });
 
-  it('should whitelist trie correctly', () => {
-    const trie = createTrie([
-      '.t.co',
-      't.co',
-      'example.t.co',
-      '.skk.moe'
-    ], true, true);
-
-    expect(trie.dump()).toStrictEqual([
-      '.skk.moe',
-      '.t.co'
-    ]);
-
-    trie.whitelist('.t.co');
-    expect(trie.dump()).toStrictEqual(['.skk.moe']);
-
-    trie.whitelist('skk.moe');
-    expect(trie.dump()).toStrictEqual([]);
-  });
-
   it('should efficiently whitelist domains', () => {
     const trie = createTrie([
       'skk.moe',
@@ -259,5 +239,34 @@ describe('smol tree', () => {
     trie.whitelist('.anotherskk.moe');
 
     expect(trie.dump()).toStrictEqual([]);
+  });
+
+  it('should whitelist trie correctly', () => {
+    const trie = createTrie([
+      '.t.co',
+      't.co',
+      'example.t.co',
+      '.skk.moe',
+      'blog.cdn.example.com',
+      'cdn.example.com'
+    ], true, true);
+
+    expect(trie.dump()).toStrictEqual([
+      'cdn.example.com', 'blog.cdn.example.com',
+      '.skk.moe',
+      '.t.co'
+    ]);
+
+    trie.whitelist('.t.co');
+    expect(trie.dump()).toStrictEqual([
+      'cdn.example.com', 'blog.cdn.example.com',
+      '.skk.moe'
+    ]);
+
+    trie.whitelist('skk.moe');
+    expect(trie.dump()).toStrictEqual(['cdn.example.com', 'blog.cdn.example.com']);
+
+    trie.whitelist('cdn.example.com');
+    expect(trie.dump()).toStrictEqual(['blog.cdn.example.com']);
   });
 });
