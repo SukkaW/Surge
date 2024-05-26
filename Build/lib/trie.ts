@@ -370,27 +370,11 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       parent = node;
 
       node = node.get(token);
-      if (!node) {
-        return;
-      }
-
-      // Keeping track of a potential branch to prune
-      // If the node is to be pruned, but they are more than one token child in it, we can't prune it
-      // If there is only one token child, or no child at all, we can prune it safely
-
-      const onlyChild = node.size === 1 && node.has(token);
-
-      if (onlyChild) {
-        toPrune = parent;
-        tokenToPrune = token;
-      } else if (toPrune !== null) { // not only child, retain the branch
-        toPrune = null;
-        tokenToPrune = null;
-      }
+      if (!node) return;
 
       // During the whitelist of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
       // Dedupe the covered subdomain by skipping
-      if (node.get('.')?.[SENTINEL]) {
+      if (i > 1 && node.get('.')?.[SENTINEL] === true) {
         return;
       }
 
@@ -399,21 +383,35 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         // If there is a `[start]sub.example.com` here, remove it
         node[SENTINEL] = false;
 
-        // Removing the rest of the child nodes by creating a new node and disconnecting the old one
-        const newNode = createNode(node);
-        node.set('.', newNode);
-        node = newNode;
-        break;
-      }
-      if (i === 0) {
-        // Trying to add `example.com` when there is already a `.example.com` in the trie
-        if (node.get('.')?.[SENTINEL] === true) {
-          return;
+        // Removing all the child nodes by disconnecting "."
+        node.delete('.');
+      } else if (i === 0) {
+        // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
+        const dotNode = node.get('.');
+        if (dotNode?.[SENTINEL] === true) {
+          dotNode[SENTINEL] = false;
         }
+      }
+
+      // Keeping track of a potential branch to prune
+      // If the node is to be pruned, but they are more than one token child in it, we can't prune it
+      // If there is only one token child, or no child at all, we can prune it safely
+
+      if (toPrune != null) { // the first branch that could potentially being pruned
+        if (node.size > 1 || node.has('.')) {
+          // not only child, retain the branch.
+          // And we need to abort prune the parent, so we set it to null
+          toPrune = null;
+          tokenToPrune = null;
+        }
+      } else if (node.size < 2 && !node.has('.')) {
+        toPrune = parent;
+        tokenToPrune = token;
       }
     }
 
     if (!node[SENTINEL]) return false;
+
     if (tokenToPrune && toPrune) {
       toPrune.delete(tokenToPrune);
     } else {

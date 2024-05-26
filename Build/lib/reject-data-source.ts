@@ -251,7 +251,7 @@ export const PREDEFINED_WHITELIST = [
   'business.site', // Drag'n'Drop site building platform
   'page.link', // Firebase URL Shortener
   'notion.site'
-];
+].map(suffix => `.${suffix}`);
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
   'r2.dev',

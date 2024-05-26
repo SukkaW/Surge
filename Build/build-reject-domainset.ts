@@ -94,9 +94,6 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       }
     });
 
-    // Remove as many domains as possible from domainSets before creating trie
-    SetSubstract(domainSets, filterRuleWhitelistDomainSets);
-
     // Perform kwfilter to remove as many domains as possible from domainSets before creating trie
     childSpan.traceChildSync('dedupe from black keywords', () => {
       const kwfilter = createKeywordFilter(domainKeywordsSet);
@@ -110,11 +107,14 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     });
   });
 
-  const trie = createTrie(domainSets, true, true);
-  span.traceChildSync('dedupe from white suffixes', () => {
+  const trie = span.traceChildSync('dedupe from white suffixes', () => {
+    const trie = createTrie(domainSets, true, true);
+
     filterRuleWhitelistDomainSets.forEach(suffix => {
       trie.whitelist(suffix);
     });
+
+    return trie;
   });
 
   // Dedupe domainSets
