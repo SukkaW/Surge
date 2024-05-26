@@ -4,6 +4,7 @@ node_modules
 .wireit
 .cache
 public
+tmp*
 
 # $ build output
 List/

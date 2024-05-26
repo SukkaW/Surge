@@ -62,6 +62,8 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
   let size = 0;
   const root: TrieNode = createNode();
 
+  const isHostnameMode = (_token: string | string[]): _token is string[] => hostnameMode;
+
   const suffixToTokens = hostnameMode
     ? hostnameToTokens
     : (suffix: string) => suffix;
@@ -91,25 +93,32 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         node.set(token, newNode);
         node = newNode;
       }
+    }
 
-      if (smolTree) {
+    // If we are in smolTree mode, we need to do something at the end of the loop
+    if (smolTree) {
+      if (tokens[0] === '.') {
         // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
-        if (i === 1 && tokens[0] === '.') {
-          // If there is a `[start]sub.example.com` here, remove it
-          node[SENTINEL] = false;
 
-          // Removing the rest of the child nodes by creating a new node and disconnecting the old one
-          const newNode = createNode(node);
-          node.set('.', newNode);
-          node = newNode;
-          break;
-        }
-        if (i === 0) {
-          // Trying to add `example.com` when there is already a `.example.com` in the trie
-          if (node.get('.')?.[SENTINEL] === true) {
-            return;
-          }
-        }
+        const parent = node[PARENT]!;
+
+        // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
+        parent[SENTINEL] = false;
+
+        // Removing the rest of the parent's child nodes by disconnecting the old one and creating a new node
+        const newNode = createNode(node);
+        // The SENTINEL of this newNode will be set to true at the end of the function, so we don't need to set it here
+
+        parent.set('.', newNode);
+
+        // Now the real leaf-est node is the new node, change the pointer to it
+        node = newNode;
+      }
+
+      if (node.get('.')?.[SENTINEL] === true) {
+        // Trying to add `example.com` when there is already a `.example.com` in the trie
+        // No need to increment size and set SENTINEL to true (skip this "new" item)
+        return;
       }
     }
 
@@ -176,8 +185,8 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       if (node[SENTINEL]) {
         if (includeEqualWithSuffix) {
           matches.push(suffix);
-        } else if (hostnameMode) {
-          if ((suffix as string[]).some((t, i) => t !== inputTokens[i])) {
+        } else if (isHostnameMode(suffix)) {
+          if (suffix.some((t, i) => t !== inputTokens[i])) {
             matches.push(suffix);
           }
         } else if (suffix !== inputTokens) {
@@ -188,10 +197,10 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
 
-        if (hostnameMode) {
+        if (isHostnameMode(suffix)) {
           suffixStack.push([k, ...suffix]);
         } else {
-          suffixStack.push(k + (suffix as string));
+          suffixStack.push(k + suffix);
         }
       });
     } while (nodeStack.length);
@@ -230,20 +239,20 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
       if (node[SENTINEL]) {
         // found match, delete it from set
-        if (hostnameMode) {
-          set.delete((suffix as string[]).join(''));
+        if (isHostnameMode(suffix)) {
+          set.delete(suffix.join(''));
         } else if (suffix !== inputTokens) {
-          set.delete(suffix as string);
+          set.delete(suffix);
         }
       }
 
       node.forEach((childNode, k) => {
         nodeStack.push(childNode);
-        if (hostnameMode) {
+        if (isHostnameMode(suffix)) {
           const stack = [k, ...suffix];
           suffixStack.push(stack);
         } else {
-          suffixStack.push(k + (suffix as string));
+          suffixStack.push(k + suffix);
         }
       });
     } while (nodeStack.length);
@@ -336,17 +345,15 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       const suffix = suffixStack.pop()!;
 
       node.forEach((childNode, k) => {
+        // Pushing the child node to the stack for next iteration of DFS
         nodeStack.push(childNode);
 
-        if (hostnameMode) {
-          suffixStack.push([k, ...suffix]);
-        } else {
-          suffixStack.push(k + (suffix as string));
-        }
+        suffixStack.push(isHostnameMode(suffix) ? [k, ...suffix] : k + suffix);
       });
 
+      // If the node is a sentinel, we push the suffix to the results
       if (node[SENTINEL]) {
-        results.push(hostnameMode ? (suffix as string[]).join('') : (suffix as string));
+        results.push(isHostnameMode(suffix) ? suffix.join('') : suffix);
       }
     } while (nodeStack.length);
 
@@ -448,7 +455,8 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       return root;
     },
     whitelist,
-    [Bun.inspect.custom]: () => JSON.stringify(deepTrieNodeToJSON(root), null, 2),
+
+    [Bun.inspect.custom]: (depth: number) => JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line).join('\n'),
 
     hostnameMode,
     smolTree
