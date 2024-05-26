@@ -78,7 +78,7 @@ export const PHISHING_DOMAIN_LISTS: [HostsSource, HostsSource] = [
   ]
 ] as const;
 
-type AdGuardFilterSource = string | [main: string, mirrors: string[] | null, ttl: number];
+type AdGuardFilterSource = [main: string, mirrors: string[] | null, ttl: number];
 
 export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // EasyList

@@ -42,28 +42,30 @@ interface FetchRetryOpt {
   retries?: number,
   factor?: number,
   maxRetryAfter?: number,
-  retry?: number,
-  onRetry?: (err: Error) => void,
-  retryOnAborted?: boolean
+  // onRetry?: (err: Error) => void,
+  retryOnAborted?: boolean,
+  retryOnNon2xx?: boolean
 }
 
 interface FetchWithRetry {
   (url: string | URL | Request, opts?: RequestInit & { retry?: FetchRetryOpt }): Promise<Response>
 }
 
+const DEFAULT_OPT: Required<FetchRetryOpt> = {
+  // timeouts will be [10, 60, 360, 2160, 12960]
+  // (before randomization is added)
+  minTimeout: MIN_TIMEOUT,
+  retries: MAX_RETRIES,
+  factor: FACTOR,
+  maxRetryAfter: MAX_RETRY_AFTER,
+  retryOnAborted: false,
+  retryOnNon2xx: true
+};
+
 function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
   const fetchRetry: FetchWithRetry = async (url, opts = {}) => {
     const retryOpts = Object.assign(
-      {
-        // timeouts will be [10, 60, 360, 2160, 12960]
-        // (before randomization is added)
-        minTimeout: MIN_TIMEOUT,
-        retries: MAX_RETRIES,
-        factor: FACTOR,
-        maxRetryAfter: MAX_RETRY_AFTER,
-        retryOnAborted: false,
-        retryOnNon2xx: true
-      },
+      DEFAULT_OPT,
       opts.retry
     );
 

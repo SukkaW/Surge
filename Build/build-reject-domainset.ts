@@ -18,7 +18,7 @@ import * as tldts from 'tldts-experimental';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
-import { add as SetAdd, subtract as SetSubstract } from 'mnemonist/set';
+import { subtract as SetSubstract } from 'mnemonist/set';
 import { setAddFromArray, setAddFromArrayCurried } from './lib/set-add-from-array';
 import { sort } from './lib/timsort';
 
@@ -27,6 +27,7 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   const domainSets = new Set<string>();
+  const appendArrayToDomainSets = setAddFromArrayCurried(domainSets);
 
   // Parse from AdGuard Filters
   const shouldStop = await span
@@ -36,33 +37,35 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       let shouldStop = false;
       await Promise.all([
         // Parse from remote hosts & domain lists
-        ...HOSTS.map(entry => processHosts(childSpan, ...entry).then(setAddFromArrayCurried(domainSets))),
+        ...HOSTS.map(entry => processHosts(childSpan, ...entry).then(appendArrayToDomainSets)),
 
-        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(setAddFromArrayCurried(domainSets))),
+        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToDomainSets)),
 
-        ...ADGUARD_FILTERS.map(input => (
-          typeof input === 'string'
-            ? processFilterRules(childSpan, input)
-            : processFilterRules(childSpan, ...input)
-        ).then(({ white, black, foundDebugDomain }) => {
-          if (foundDebugDomain) {
-            // eslint-disable-next-line sukka/no-single-return -- not single return
-            shouldStop = true;
-            // we should not break here, as we want to see full matches from all data source
-          }
-          setAddFromArray(filterRuleWhitelistDomainSets, white);
-          setAddFromArray(domainSets, black);
-        })),
+        ...ADGUARD_FILTERS.map(
+          input => processFilterRules(childSpan, ...input)
+            .then(({ white, black, foundDebugDomain }) => {
+              if (foundDebugDomain) {
+                // eslint-disable-next-line sukka/no-single-return -- not single return
+                shouldStop = true;
+                // we should not break here, as we want to see full matches from all data source
+              }
+              setAddFromArray(filterRuleWhitelistDomainSets, white);
+              setAddFromArray(domainSets, black);
+            })
+        ),
         ...([
           'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
           'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
-        ].map(input => processFilterRules(childSpan, input).then(({ white, black }) => {
-          setAddFromArray(filterRuleWhitelistDomainSets, white);
-          setAddFromArray(filterRuleWhitelistDomainSets, black);
-        }))),
-        getPhishingDomains(childSpan).then(setAddFromArrayCurried(domainSets)),
+        ].map(
+          input => processFilterRules(childSpan, input)
+            .then(({ white, black }) => {
+              setAddFromArray(filterRuleWhitelistDomainSets, white);
+              setAddFromArray(filterRuleWhitelistDomainSets, black);
+            })
+        )),
+        getPhishingDomains(childSpan).then(appendArrayToDomainSets),
         childSpan.traceChildAsync('process reject_sukka.conf', () => readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'))
-          .then(setAddFromArrayCurried(domainSets)))
+          .then(appendArrayToDomainSets))
       ]);
       // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;

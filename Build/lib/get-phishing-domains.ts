@@ -131,13 +131,11 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     }
   });
 
-  span.traceChildSync('get final phishing results', () => {
-    for (const domain in domainCountMap) {
-      if (domainCountMap[domain] >= 8) {
-        domainArr.push(`.${domain}`);
-      }
+  for (const domain in domainCountMap) {
+    if (domainCountMap[domain] >= 8) {
+      domainArr.push(`.${domain}`);
     }
-  });
+  }
 
   return domainArr;
 });
