@@ -4,7 +4,8 @@ import { getSubdomain, getPublicSuffix } from 'tldts-experimental';
 import { TTL } from './cache-filesystem';
 
 import type { Span } from '../trace';
-import { appendArrayInPlace } from './append-array-in-place';
+import { appendArrayInPlace, appendArrayInPlaceCurried } from './append-array-in-place';
+import { PHISHING_DOMAIN_LISTS } from './reject-data-source';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -101,12 +102,10 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   const gorhill = await getGorhillPublicSuffixPromise();
 
   const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
-    const [domainSet, domainSet2] = await Promise.all([
-      processDomainLists(curSpan, 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt', true, TTL.THREE_HOURS()),
-      processDomainLists(curSpan, 'https://phishing.army/download/phishing_army_blocklist.txt', true, TTL.THREE_HOURS())
-    ]);
+    const domainSet: string[] = [];
 
-    appendArrayInPlace(domainSet, domainSet2);
+    (await Promise.all(PHISHING_DOMAIN_LISTS.map(entry => processDomainLists(curSpan, ...entry))))
+      .forEach(appendArrayInPlaceCurried(domainSet));
 
     return domainSet;
   });

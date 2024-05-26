@@ -36,14 +36,14 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
       let shouldStop = false;
       await Promise.all([
         // Parse from remote hosts & domain lists
-        ...HOSTS.map(entry => processHosts(childSpan, entry[0], entry[1], entry[2], entry[3]).then(setAddFromArrayCurried(domainSets))),
+        ...HOSTS.map(entry => processHosts(childSpan, ...entry).then(setAddFromArrayCurried(domainSets))),
 
-        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, entry[0], entry[1], entry[2]).then(setAddFromArrayCurried(domainSets))),
+        ...DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(setAddFromArrayCurried(domainSets))),
 
         ...ADGUARD_FILTERS.map(input => (
           typeof input === 'string'
             ? processFilterRules(childSpan, input)
-            : processFilterRules(childSpan, input[0], input[1], input[2])
+            : processFilterRules(childSpan, ...input)
         ).then(({ white, black, foundDebugDomain }) => {
           if (foundDebugDomain) {
             // eslint-disable-next-line sukka/no-single-return -- not single return

@@ -19,3 +19,5 @@ export function appendArrayInPlace<T>(dest: T[], source: T[]) {
   }
   return dest;
 }
+
+export const appendArrayInPlaceCurried = <T>(dest: T[]) => (source: T[]) => appendArrayInPlace(dest, source);

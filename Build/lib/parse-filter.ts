@@ -16,24 +16,41 @@ const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 const temporaryBypass = DEBUG_DOMAIN_TO_FIND !== null;
 
-export function processDomainLists(span: Span, domainListsUrl: string, includeAllSubDomain = false, ttl: number | null = null) {
-  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn(() => fsFetchCache.apply(
+const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
+  let line = processLine(l);
+  if (!line) return;
+
+  line = normalizeDomain(line);
+  if (!line) return;
+
+  if (DEBUG_DOMAIN_TO_FIND && line.includes(DEBUG_DOMAIN_TO_FIND)) {
+    console.warn(picocolors.red(meta), '(black)', line.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+    foundDebugDomain = true;
+  }
+
+  set.push(includeAllSubDomain ? `.${line}` : line);
+};
+
+export function processDomainLists(span: Span, domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
+  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
     domainListsUrl,
     async () => {
       const domainSets: string[] = [];
 
-      for await (const line of await fetchRemoteTextByLine(domainListsUrl)) {
-        let domainToAdd = processLine(line);
-        if (!domainToAdd) continue;
-        domainToAdd = normalizeDomain(domainToAdd);
-        if (!domainToAdd) continue;
-
-        if (DEBUG_DOMAIN_TO_FIND && domainToAdd.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(picocolors.red(domainListsUrl), '(black)', domainToAdd.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-          foundDebugDomain = true;
+      if (mirrors == null || mirrors.length === 0) {
+        for await (const l of await fetchRemoteTextByLine(domainListsUrl)) {
+          domainListLineCb(l, domainSets, includeAllSubDomain, domainListsUrl);
         }
+      } else {
+        const filterRules = await childSpan
+          .traceChild('download domain list')
+          .traceAsyncFn(() => fetchAssets(domainListsUrl, mirrors).then(text => text.split('\n')));
 
-        domainSets.push(includeAllSubDomain ? `.${domainToAdd}` : domainToAdd);
+        childSpan.traceChild('parse domain list').traceSyncFn(() => {
+          for (let i = 0, len = filterRules.length; i < len; i++) {
+            domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
+          }
+        });
       }
 
       return domainSets;

@@ -19,46 +19,63 @@ export const HOSTS: HostsSource[] = [
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.THREE_DAYS()],
   // ad-wars is not actively maintained, so we set a 7 days cache ttl
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.ONE_WEEK()],
-  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()],
-  // Curben's UrlHaus Malicious URL Blocklist
-  [
-    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-hosts.txt',
-    [
-      'https://urlhaus-filter.pages.dev/urlhaus-filter-hosts.txt',
-      'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-hosts.txt'
-    ],
-    true,
-    TTL.THREE_HOURS()
-  ]
-  // Curben's Phishing URL Blocklist
-  // Covered by lib/get-phishing-domains.ts
-  // 'https://curbengh.github.io/phishing-filter/phishing-filter-agh.txt'
-  // 'https://phishing-filter.pages.dev/phishing-filter-agh.txt'
-  // ['https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt', true, true],
+  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()]
 ] as const;
 
-export const DOMAIN_LISTS = [
+export const DOMAIN_LISTS: HostsSource[] = [
   // CoinBlockerList
   // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 14 days cache ttl
-  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', true, TTL.TWO_WEEKS()],
+  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', [], true, TTL.TWO_WEEKS()],
   // BarbBlock
   // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
-  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', true, TTL.TWO_WEEKS()],
+  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', [], true, TTL.TWO_WEEKS()],
   // DigitalSide Threat-Intel - OSINT Hub
   // Update once per day
-  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true, TTL.ONE_DAY()],
+  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true, TTL.ONE_DAY()],
   // Curben's PUP Domains Blocklist
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
   // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl
-  ['https://curbengh.github.io/pup-filter/pup-filter-domains.txt', true, TTL.TWO_WEEKS()],
+  [
+    'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
+    [
+      'https://pup-filter.pages.dev/pup-filter-domains.txt',
+      'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
+    ],
+    true, TTL.TWO_WEEKS()
+  ],
+  // Curben's UrlHaus Malicious URL Blocklist
+  [
+    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
+    [
+      'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
+      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
+    ],
+    true, TTL.THREE_HOURS()
+  ],
   // AdGuard CNAME Filter Combined
   // Update on a 7 days basis, so we add a 3 hours cache ttl
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', true, TTL.THREE_DAYS()]
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()]
+] as const;
+
+export const PHISHING_DOMAIN_LISTS: [HostsSource, HostsSource] = [
+  [
+    'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt',
+    [
+      'https://phishing-filter.pages.dev/phishing-filter-domains.txt',
+      'https://malware-filter.gitlab.io/malware-filter/phishing-filter-domains.txt'
+    ],
+    true, TTL.THREE_HOURS()
+  ],
+  [
+    'https://phishing.army/download/phishing_army_blocklist.txt',
+    [],
+    true, TTL.THREE_HOURS()
+  ]
 ] as const;
 
 type AdGuardFilterSource = string | [main: string, mirrors: string[] | null, ttl: number];
