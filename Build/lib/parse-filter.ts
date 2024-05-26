@@ -47,7 +47,7 @@ export function processDomainLists(span: Span, domainListsUrl: string, includeAl
   ));
 }
 
-const hostsLineCb = (l: string, set: Set<string>, includeAllSubDomain: boolean, meta: string) => {
+const hostsLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
   const line = processLine(l);
   if (!line) {
     return;
@@ -66,15 +66,15 @@ const hostsLineCb = (l: string, set: Set<string>, includeAllSubDomain: boolean, 
     foundDebugDomain = true;
   }
 
-  set.add(includeAllSubDomain ? `.${domain}` : domain);
+  set.push(includeAllSubDomain ? `.${domain}` : domain);
 };
 
 export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
-  const domainSets = new Set<string>();
-
   return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
     hostsUrl,
     async () => {
+      const domainSets: string[] = [];
+
       if (mirrors == null || mirrors.length === 0) {
         for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
           hostsLineCb(l, domainSets, includeAllSubDomain, hostsUrl);
@@ -91,15 +91,13 @@ export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | n
         });
       }
 
-      console.log(picocolors.gray('[process hosts]'), picocolors.gray(hostsUrl), picocolors.gray(domainSets.size));
-
       return domainSets;
     },
     {
       ttl,
       temporaryBypass,
-      serializer: serializeSet,
-      deserializer: deserializeSet
+      serializer: serializeArray,
+      deserializer: deserializeArray
     }
   ));
 }

@@ -21,6 +21,5 @@ export const normalizeDomain = (domain: string) => {
     h = h.slice(sliceStart, sliceEnd);
   }
 
-  if (h) return h;
-  return null;
+  return h || null;
 };
