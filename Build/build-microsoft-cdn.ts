@@ -6,6 +6,7 @@ import { createTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
+import { sortDomains } from './lib/stable-sort-domain';
 
 const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];
 
@@ -25,22 +26,22 @@ const BLACKLIST = [
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   // First trie is to find the microsoft domains that matches probe domains
-  const trie = createTrie();
+  const trie = createTrie(null, true);
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
     const domain = extractDomainsFromFelixDnsmasq(line);
     if (domain) {
       trie.add(domain);
     }
   }
-  const set = new Set(PROBE_DOMAINS.flatMap(domain => trie.find(domain)));
+  const foundMicrosoftCdnDomains = PROBE_DOMAINS.flatMap(domain => trie.find(domain));
 
   // Second trie is to remove blacklisted domains
-  const trie2 = createTrie(set);
-  BLACKLIST.forEach(black => {
-    trie2.substractSetInPlaceFromFound(black, set);
-  });
+  const trie2 = createTrie(foundMicrosoftCdnDomains, true, true);
+  BLACKLIST.forEach(trie2.whitelist);
 
-  return Array.from(set).map(d => `DOMAIN-SUFFIX,${d}`).concat(WHITELIST);
+  return sortDomains(trie2.dump())
+    .map(d => `DOMAIN-SUFFIX,${d}`)
+    .concat(WHITELIST);
 });
 
 export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
@@ -53,11 +54,7 @@ export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
-  const promise = getMicrosoftCdnRulesetPromise();
-  const peeked = Bun.peek(promise);
-  const res: string[] = peeked === promise
-    ? await span.traceChildPromise('get microsoft cdn domains', promise)
-    : (peeked as string[]);
+  const res: string[] = await span.traceChildPromise('get microsoft cdn domains', getMicrosoftCdnRulesetPromise());
 
   return createRuleset(
     span,

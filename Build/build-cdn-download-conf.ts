@@ -7,9 +7,14 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
 import { domainDeduper } from './lib/domain-deduper';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { sortDomains } from './lib/stable-sort-domain';
 
 const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
-  const trie = createTrie((await getPublicSuffixListTextPromise()).split('\n'));
+  const trie = createTrie(
+    (await getPublicSuffixListTextPromise()).split('\n'),
+    true,
+    false
+  );
 
   /**
    * Extract OSS domain from publicsuffix list
@@ -69,7 +74,7 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
         'This file contains object storage and static assets CDN domains.'
       ],
       new Date(),
-      domainDeduper(cdnDomainsList),
+      sortDomains(domainDeduper(cdnDomainsList)),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/cdn.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/cdn.txt')
@@ -83,10 +88,10 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
         'This file contains domains for software updating & large file hosting.'
       ],
       new Date(),
-      domainDeduper([
+      sortDomains(domainDeduper([
         ...downloadDomainSet,
         ...steamDomainSet
-      ]),
+      ])),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/download.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/download.txt')

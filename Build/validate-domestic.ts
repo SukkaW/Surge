@@ -14,7 +14,7 @@ export const parseDomesticList = async () => {
     }
   }
 
-  const trie = createTrie(set);
+  const trie = createTrie(set, true);
 
   const top5000 = new Set<string>();
 

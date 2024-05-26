@@ -75,7 +75,7 @@ export const parseGfwList = async () => {
   })).text();
   const topDomains = parse(res);
 
-  const trie = createTrie(blackSet);
+  const trie = createTrie(blackSet, true);
 
   for await (const [domain] of topDomains) {
     if (trie.has(domain)) {
