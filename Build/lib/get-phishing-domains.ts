@@ -34,12 +34,14 @@ const BLACK_TLD = new Set([
   'cricket',
   'cyou',
   'date',
+  'digital',
   'download',
   'faith',
   'fit',
   'fun',
   'ga',
   'gd',
+  'gives',
   'gq',
   'group',
   'host',
@@ -126,7 +128,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
       }
 
       const tld = getPublicSuffix(safeGorhillLine, looseTldtsOpt);
-      if (!tld || !BLACK_TLD.has(tld)) continue;
+      if (!tld || (!BLACK_TLD.has(tld) && tld.length < 7)) continue;
 
       domainCountMap[apexDomain] ||= 0;
       domainCountMap[apexDomain] += calcDomainAbuseScore(line);
@@ -159,7 +161,8 @@ export function calcDomainAbuseScore(line: string) {
     if (isPhishingDomainMockingCoJp) {
       weight += 4;
     }
-  } else if (line.includes('.customer')) {
+  }
+  if (line.includes('.customer')) {
     weight += 0.25;
   }
 
