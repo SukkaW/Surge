@@ -607,14 +607,16 @@ rules:
 #### 内网域名和局域网 IP
 
 - 人工维护
-- 包含 `.local` 和局域网 IP 的 `in-addr.arpa` 域名（即 AS112 域名）。这部分域名一般会被解析到局域网 IP、需要走内网 DNS 解析、需要直连访问。
-- 和 Surge 不同，Clash 没有内置名为 `LAN` 的规则组、需要手动引入。
+- 域名列表包含 `.local` 和局域网 IP 的 `in-addr.arpa` 域名（即 AS112 域名）。这部分域名一般会被解析到局域网 IP、需要走内网 DNS 解析、需要直连访问。
+- Clash 没有内置局域网 IP 规则列表（Surge 内置有局域网 IP 规则列表 `LAN`），需要手动引入。
 
 **Surge**
 
 ```ini
 # Non IP
 RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
+# IP
+RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
 ```
 
 **Clash Premium**
@@ -626,11 +628,19 @@ rule-providers:
     behavior: classical
     format: text
     interval: 43200
-    url: https://ruleset.skk.moe/Clash/non_ip/lan_non_ip.txt
+    url: https://ruleset.skk.moe/Clash/non_ip/lan.txt
     path: ./sukkaw_ruleset/lan_non_ip.txt
+  lan_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/lan.txt
+    path: ./sukkaw_ruleset/lan_ip.txt
 
 rules:
   - RULE-SET,lan_non_ip,DIRECT
+  - RULE-SET,lan_ip,DIRECT
 ```
 
 #### Misc
