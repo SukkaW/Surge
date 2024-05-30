@@ -5,8 +5,6 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import path from 'path';
 
-import { unlink } from 'fs/promises';
-
 import { ALL as AllStreamServices } from '../Source/stream';
 import { getChnCidrPromise } from './build-chn-cidr';
 import { getTelegramCIDRPromise } from './build-telegram-cidr';
@@ -110,7 +108,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     lanCidrs
   );
 
-  await unlink(path.resolve(import.meta.dir, '../Internal/appprofile.php'));
   await compareAndWriteFile(
     span,
     output,
