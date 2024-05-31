@@ -244,7 +244,8 @@ export const PREDEFINED_WHITELIST = [
   'staging.ai.api.xiaomi.com', // Fuck Goodbye Xiaomi Ads
   'm.stripe.com', // EasyPrivacy only blocks m.stripe.com wwith $third-party,
   // yet stupid AdGuardDNSFilter blocks all of it. Stupid AdGuard
-  '.w3s.link' // stupid phishing.army, introduce both "*.ipfs.w3s.link" and ".w3s.link" to the block list
+  '.w3s.link', // stupid phishing.army, introduce both "*.ipfs.w3s.link" and ".w3s.link" to the block list
+  'ipfs.io' // ipfs.io was blocked by DigitalSide Threat-Intel - OSINT Hub
 ];
 
 export const PREDEFINED_ENFORCED_WHITELIST = [
