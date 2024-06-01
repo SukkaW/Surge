@@ -1,7 +1,6 @@
 // @ts-check
 
 import * as path from 'path';
-import { PathScurry } from 'path-scurry';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
@@ -10,6 +9,7 @@ import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import picocolors from 'picocolors';
+import { fdir as Fdir } from 'fdir';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -22,27 +22,29 @@ const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 export const buildCommon = task(import.meta.path, async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
-  const pw = new PathScurry(sourceDir);
-  for await (const entry of pw) {
-    if (!entry.isFile()) {
-      continue;
-    }
+  const paths = await new Fdir()
+    .withRelativePaths()
+    .crawl(sourceDir)
+    .withPromise();
 
-    const extname = path.extname(entry.name);
+  for (let i = 0, len = paths.length; i < len; i++) {
+    const relativePath = paths[i];
+
+    const extname = path.extname(relativePath);
     if (extname === '.js' || extname === '.ts') {
       continue;
     }
+    const fullPath = sourceDir + path.sep + relativePath;
 
-    const relativePath = entry.relative();
     if (relativePath.startsWith('domainset/')) {
-      promises.push(transformDomainset(span, entry.fullpath(), relativePath));
+      promises.push(transformDomainset(span, fullPath, relativePath));
       continue;
     }
     if (
       relativePath.startsWith('ip/')
       || relativePath.startsWith('non_ip/')
     ) {
-      promises.push(transformRuleset(span, entry.fullpath(), relativePath));
+      promises.push(transformRuleset(span, fullPath, relativePath));
       continue;
     }
 
