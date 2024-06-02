@@ -1,89 +1,120 @@
-interface Node {
-  /** @default false */
-  wordEnd: boolean,
-  children: Map<string, Node | undefined>,
-  fail: Node | undefined
-}
+const WORDEND = Symbol('wordEnd');
+const FAIL = Symbol('fail');
 
-const createNode = (): Node => ({
-  wordEnd: false,
-  children: new Map(),
-  fail: undefined
-});
+type Node = Map<string, Node> & {
+  [WORDEND]: boolean,
+  [FAIL]: Node | undefined
+};
+
+const createNode = (): Node => {
+  const node = new Map<string, Node | undefined>() as Node;
+  node[WORDEND] = false;
+  node[FAIL] = undefined;
+  return node;
+};
+
+const deepNodeToJSON = (node: Node, wset: WeakSet<Node>) => {
+  if (wset.has(node)) {
+    return 'circular';
+  }
+  wset.add(node);
+
+  const obj: Record<string, any> = {};
+  if (node[WORDEND]) {
+    obj['[end]'] = node[WORDEND];
+  }
+
+  node.forEach((value, key) => {
+    obj[key] = deepNodeToJSON(value, wset);
+  });
+  return obj;
+};
+
+function createNodeInspectCustom(node: Node) {
+  const wset = new WeakSet<Node>();
+  return () => {
+    try {
+      return JSON.stringify(deepNodeToJSON(node, wset), null, 2);
+    } catch (e) {
+      console.error(e);
+      return '';
+    }
+  };
+}
 
 const createKeywordFilter = (keys: string[] | Set<string>) => {
   const root = createNode();
 
-  const put = (key: string, len = key.length) => {
+  // Create a trie with extra fields and information
+  const put = (key: string) => {
+    const len = key.length;
+
     let node = root;
-    const lastIdx = len - 1;
 
     for (let idx = 0; idx < len; idx++) {
       const char = key[idx];
 
-      if (node.children.has(char)) {
-        node = node.children.get(char)!;
+      if (node.has(char)) {
+        node = node.get(char)!;
       } else {
         const newNode = createNode();
-        node.children.set(char, newNode);
+        node.set(char, newNode);
         node = newNode;
       }
+    }
 
-      if (lastIdx === idx && node !== root) {
-        node.wordEnd = true;
-      }
+    // If a new node is created, mark it as a word end when loop finish
+    if (node !== root) {
+      node[WORDEND] = true;
     }
   };
 
-  keys.forEach(k => put(k));
+  keys.forEach(put);
 
   // const build = () => {
-  const queue: Node[] = [];
-  queue.push(root);
+  const queue: Node[] = [root];
 
-  let idx = 0;
-  while (queue.length > idx) {
-    const beginNode = queue[idx];
-    const children = beginNode.children;
+  while (queue.length) {
+    const beginNode = queue.pop()!;
 
-    children.forEach((node, char) => {
-      let failNode = beginNode.fail;
+    beginNode.forEach((node, char) => {
+      let failNode = beginNode[FAIL];
 
-      while (failNode && !failNode.children.has(char)) {
-        failNode = failNode.fail;
+      while (failNode && !failNode.has(char)) {
+        failNode = failNode[FAIL];
       }
 
-      if (node) {
-        node.fail = failNode?.children.get(char) || root;
+      node[FAIL] = failNode ? failNode.get(char) : root;
 
-        queue.push(node);
-      }
+      queue.push(node);
     });
-
-    idx++;
   }
   // };
   // build();
 
-  return (text: string) => {
+  const tester = (text: string) => {
     let node: Node | undefined = root;
 
     for (let i = 0, textLen = text.length; i < textLen; i++) {
-      // const key = text.charAt(i);
       const char = text[i];
 
-      while (node && !node.children.has(char)) {
-        node = node.fail;
+      while (node && !node.has(char)) {
+        node = node[FAIL];
       }
-      node = node?.children.get(char) || root;
 
-      if (node.wordEnd) {
+      node = node ? node.get(char)! : root;
+
+      if (node[WORDEND]) {
         return true;
       }
     }
 
     return false;
   };
+
+  tester[Bun.inspect.custom] = createNodeInspectCustom(root);
+
+  return tester;
 };
 
 export default createKeywordFilter;
