@@ -179,7 +179,9 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     // librespeed
     '.backend.librespeed.org',
     // Apple,
-    'mensura.cdn-apple.com' // From netQuality command
+    'mensura.cdn-apple.com', // From netQuality command
+    // OpenSpeedtest
+    'open.cachefly.net'
   ]);
 
   await span.traceChildAsync(
