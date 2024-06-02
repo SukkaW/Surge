@@ -19,8 +19,7 @@ export const buildParseDomainMap = (inputs: string[]) => {
     if (!domainMap.has(cur)) {
       const topD = getDomain(cur, looseTldtsOpt);
       domainMap.set(cur, topD ?? cur);
-    }
-    if (!subdomainMap.has(cur)) {
+      // if (!subdomainMap.has(cur)) {
       const subD = getSubdomain(cur, looseTldtsOpt);
       subdomainMap.set(cur, subD ?? cur);
     }
