@@ -16,18 +16,23 @@
 // Modified by Sukka (https://skk.moe) to increase compatibility and performance with Bun.
 
 export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, string> {
-  readonly encoding: string;
   readonly fatal: boolean;
   readonly ignoreBOM: boolean;
 
   constructor(
-    encoding: Bun.Encoding = 'utf-8',
-    { fatal = false, ignoreBOM = false }: ConstructorParameters<typeof TextDecoder>[1] = {}
+    public readonly encoding: Bun.Encoding = 'utf-8',
+    {
+      fatal = false,
+      ignoreBOM = false
+    }: ConstructorParameters<typeof TextDecoder>[1] = {}
   ) {
     const decoder = new TextDecoder(encoding, { fatal, ignoreBOM });
+
+    const nonLastChunkDecoderOpt: TextDecodeOptions = { stream: true };
+
     super({
       transform(chunk: Uint8Array, controller: TransformStreamDefaultController<string>) {
-        const decoded = decoder.decode(chunk);
+        const decoded = decoder.decode(chunk, nonLastChunkDecoderOpt);
         controller.enqueue(decoded);
       },
       flush(controller: TransformStreamDefaultController<string>) {
@@ -43,7 +48,6 @@ export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, strin
       }
     });
 
-    this.encoding = encoding;
     this.fatal = fatal;
     this.ignoreBOM = ignoreBOM;
   }
