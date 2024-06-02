@@ -233,7 +233,13 @@ const ENCORE_TVB: StreamService = {
 
     'USER-AGENT,encoreTVB*',
 
-    'USER-AGENT,TVer-Release*',
+    'USER-AGENT,TVer-Release*'
+  ]
+};
+
+const ENCORE_TVB_JP_TVER = {
+  name: 'encoreTVB JP',
+  rules: [
     'DOMAIN-SUFFIX,tver.jp'
   ]
 };
@@ -875,13 +881,13 @@ export const JP = [
   DMM,
   // DMMTV
   ABEMA_TV,
-  NICONICO
+  NICONICO,
   // music.jp
   // Telasa
   // Paravi
   // unext
   // HuluJP
-  // TVer
+  ENCORE_TVB_JP_TVER
   // GYAO!
   // wowow
   // VideoMarket
