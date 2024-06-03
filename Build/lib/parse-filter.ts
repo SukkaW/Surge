@@ -477,10 +477,11 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
       if (domain) {
         result[0] = domain;
         result[1] = whiteIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
+        return result;
       }
 
       result[0] = `[parse-filter E0001] (white) invalid domain: ${JSON.stringify({
-        line, sliced, sliceStart, sliceEnd
+        line, sliced, sliceStart, sliceEnd, domain
       })}`;
       result[1] = ParseType.ErrorMessage;
       return result;
@@ -557,9 +558,10 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
     if (domain) {
       result[0] = domain;
       result[1] = ParseType.BlackIncludeSubdomain;
+      return result;
     }
 
-    result[0] = `[paparse-filter E0003] (black) invalid domain: ${sliced}`;
+    result[0] = `[parse-filter E0003] (black) invalid domain: ${JSON.stringify({ sliced, domain })}`;
     result[1] = ParseType.ErrorMessage;
     return result;
   }
