@@ -228,7 +228,8 @@ export const DOMESTICS = {
       'byted-static.com',
       'volces.com',
       'baike.com',
-      'zjcdn.com'
+      'zjcdn.com',
+      'zijieapi.com'
     ]
   },
   BAIDU: {
