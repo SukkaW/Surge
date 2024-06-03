@@ -461,6 +461,7 @@ const MYTV_SUPER: StreamService = {
   rules: [
     'DOMAIN-SUFFIX,mytvsuper.com',
     'DOMAIN-SUFFIX,tvb.com',
+    'DOMAIN-SUFFIX,psg.cdn.hgc.com.hk',
 
     'USER-AGENT,mytv*',
 
