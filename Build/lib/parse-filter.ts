@@ -125,7 +125,8 @@ const enum ParseType {
   WhiteAbsolute = -1,
   BlackAbsolute = 1,
   BlackIncludeSubdomain = 2,
-  ErrorMessage = 10
+  ErrorMessage = 10,
+  Null = 1000
 }
 
 export async function processFilterRules(
@@ -152,16 +153,18 @@ export async function processFilterRules(
         ? await span.traceChild('get gorhill').tracePromise(gorhillPromise)
         : (peekedGorhill as PublicSuffixList);
 
+      const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', 1000];
       /**
-     * @param {string} line
-     */
+       * @param {string} line
+       */
       const lineCb = (line: string) => {
-        const result = parse(line, gorhill);
-        if (!result) {
+        const result = parse(line, gorhill, MUTABLE_PARSE_LINE_RESULT);
+        const flag = result[1];
+
+        if (flag === ParseType.Null) {
           return;
         }
 
-        const flag = result[1];
         const hostname = result[0];
 
         if (DEBUG_DOMAIN_TO_FIND) {
@@ -283,14 +286,15 @@ const kwfilter = createKeywordFilter([
   '$cname'
 ]);
 
-function parse($line: string, gorhill: PublicSuffixList): null | [hostname: string, flag: ParseType] {
+function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseType]): [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
     // includes
     || kwfilter($line)
   ) {
-    return null;
+    result[1] = ParseType.Null;
+    return result;
   }
 
   const line = $line.trim();
@@ -298,7 +302,8 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
   /** @example line.length */
   const len = line.length;
   if (len === 0) {
-    return null;
+    result[1] = ParseType.Null;
+    return result;
   }
 
   const firstCharCode = line[0].charCodeAt(0);
@@ -314,11 +319,13 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     // || line.includes('$removeparam')
     // || line.includes('$popunder')
   ) {
-    return null;
+    result[1] = ParseType.Null;
+    return result;
   }
 
   if ((line.includes('/') || line.includes(':')) && !line.includes('://')) {
-    return null;
+    result[1] = ParseType.Null;
+    return result;
   }
 
   const filter = NetworkFilter.parse(line);
@@ -336,7 +343,8 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       || (!filter.fromAny() && !filter.fromDocument())
     ) {
       // not supported type
-      return null;
+      result[1] = ParseType.Null;
+      return result;
     }
 
     if (
@@ -346,7 +354,8 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     ) {
       const hostname = normalizeDomain(filter.hostname);
       if (!hostname) {
-        return null;
+        result[1] = ParseType.Null;
+        return result;
       }
 
       //  |: filter.isHostnameAnchor(),
@@ -355,7 +364,9 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       const isIncludeAllSubDomain = filter.isHostnameAnchor();
 
       if (filter.isException() || filter.isBadFilter()) {
-        return [hostname, isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute];
+        result[0] = hostname;
+        result[1] = isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
+        return result;
       }
 
       const _1p = filter.firstParty();
@@ -363,12 +374,15 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
       if (_1p) {
         if (_1p === _3p) {
-          return [hostname, isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute];
+          result[0] = hostname;
+          result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
         }
-        return null;
+        result[1] = ParseType.Null;
+        return result;
       }
       if (_3p) {
-        return null;
+        result[1] = ParseType.Null;
+        return result;
       }
     }
   }
@@ -386,7 +400,8 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
    * `.1.1.1.l80.js^$third-party`
    */
   if (line.includes('$third-party') || line.includes('$frame')) {
-    return null;
+    result[1] = ParseType.Null;
+    return result;
   }
 
   /** @example line.endsWith('^') */
@@ -460,22 +475,22 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       const sliced = line.slice(sliceStart, sliceEnd);
       const domain = normalizeDomain(sliced);
       if (domain) {
-        return [domain, whiteIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute];
+        result[0] = domain;
+        result[1] = whiteIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
       }
-      return [
-        `[parse-filter E0001] (white) invalid domain: ${JSON.stringify({
-          line, sliced, sliceStart, sliceEnd
-        })}`,
-        ParseType.ErrorMessage
-      ];
+
+      result[0] = `[parse-filter E0001] (white) invalid domain: ${JSON.stringify({
+        line, sliced, sliceStart, sliceEnd
+      })}`;
+      result[1] = ParseType.ErrorMessage;
+      return result;
     }
 
-    return [
-      `[parse-filter E0006] (white) failed to parse: ${JSON.stringify({
-        line, sliceStart, sliceEnd
-      })}`,
-      ParseType.ErrorMessage
-    ];
+    result[0] = `[parse-filter E0006] (white) failed to parse: ${JSON.stringify({
+      line, sliceStart, sliceEnd
+    })}`;
+    result[1] = ParseType.ErrorMessage;
+    return result;
   }
 
   if (
@@ -504,13 +519,14 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
 
     const domain = normalizeDomain(sliced);
     if (domain) {
-      return [domain, includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute];
+      result[0] = domain;
+      result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+      return result;
     }
 
-    return [
-      `[parse-filter E0002] (black) invalid domain: ${sliced}`,
-      ParseType.ErrorMessage
-    ];
+    result[0] = `[parse-filter E0002] (black) invalid domain: ${sliced}`;
+    result[1] = ParseType.ErrorMessage;
+    return result;
   }
 
   const lineStartsWithSingleDot = firstCharCode === 46; // 46 `.`
@@ -533,18 +549,19 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     const suffix = gorhill.getPublicSuffix(sliced);
     if (!gorhill.suffixInPSL(suffix)) {
       // This exclude domain-like resource like `1.1.4.514.js`
-      return null;
+      result[1] = ParseType.Null;
+      return result;
     }
 
     const domain = normalizeDomain(sliced);
     if (domain) {
-      return [domain, ParseType.BlackIncludeSubdomain];
+      result[0] = domain;
+      result[1] = ParseType.BlackIncludeSubdomain;
     }
 
-    return [
-      `[paparse-filter E0003] (black) invalid domain: ${sliced}`,
-      ParseType.ErrorMessage
-    ];
+    result[0] = `[paparse-filter E0003] (black) invalid domain: ${sliced}`;
+    result[1] = ParseType.ErrorMessage;
+    return result;
   }
 
   /**
@@ -576,14 +593,16 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
       const sliced = line.slice(sliceStart, sliceEnd);
       const domain = normalizeDomain(sliced);
       if (domain) {
-        return [domain, ParseType.BlackIncludeSubdomain];
+        result[0] = domain;
+        result[1] = ParseType.BlackIncludeSubdomain;
+        return result;
       }
-      return [
-        `[parse-filter E0004] (black) invalid domain: ${JSON.stringify({
-          line, sliced, sliceStart, sliceEnd
-        })}`,
-        ParseType.ErrorMessage
-      ];
+
+      result[0] = `[parse-filter E0004] (black) invalid domain: ${JSON.stringify({
+        line, sliced, sliceStart, sliceEnd
+      })}`;
+      result[1] = ParseType.ErrorMessage;
+      return result;
     }
   }
   /**
@@ -604,18 +623,20 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
     const suffix = gorhill.getPublicSuffix(_domain);
     if (!suffix || !gorhill.suffixInPSL(suffix)) {
       // This exclude domain-like resource like `_social_tracking.js^`
-      return null;
+      result[1] = ParseType.Null;
+      return result;
     }
 
     const domain = normalizeDomain(_domain);
     if (domain) {
-      return [domain, ParseType.BlackAbsolute];
+      result[0] = domain;
+      result[1] = ParseType.BlackAbsolute;
+      return result;
     }
 
-    return [
-      `[parse-filter E0005] (black) invalid domain: ${_domain}`,
-      ParseType.ErrorMessage
-    ];
+    result[0] = `[parse-filter E0005] (black) invalid domain: ${_domain}`;
+    result[1] = ParseType.ErrorMessage;
+    return result;
   }
 
   // Possibly that entire rule is domain
@@ -666,17 +687,19 @@ function parse($line: string, gorhill: PublicSuffixList): null | [hostname: stri
    */
   if (!suffix || !gorhill.suffixInPSL(suffix)) {
     // This exclude domain-like resource like `.gatracking.js`, `.beacon.min.js` and `.cookielaw.js`
-    return null;
+    result[1] = ParseType.Null;
+    return result;
   }
 
   const tryNormalizeDomain = normalizeDomain(sliced);
   if (tryNormalizeDomain === sliced) {
     // the entire rule is domain
-    return [sliced, ParseType.BlackIncludeSubdomain];
+    result[0] = sliced;
+    result[1] = ParseType.BlackIncludeSubdomain;
+    return result;
   }
 
-  return [
-    `[parse-filter E0010] can not parse: ${line}`,
-    ParseType.ErrorMessage
-  ];
+  result[0] = `[parse-filter E0010] can not parse: ${line}`;
+  result[1] = ParseType.ErrorMessage;
+  return result;
 }
