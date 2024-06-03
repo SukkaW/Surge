@@ -28,6 +28,15 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 import { createSpan, printTraceResult } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+  process.exit(1);
+});
+
 (async () => {
   const rootSpan = createSpan('root');
 
