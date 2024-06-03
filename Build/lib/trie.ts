@@ -7,7 +7,7 @@
 const SENTINEL = Symbol('SENTINEL');
 const PARENT = Symbol('Parent Node');
 
-const noop: VoidFunction = () => { /** noop */ };
+const noop = () => { /** noop */ };
 
 type TrieNode = {
   [SENTINEL]: boolean,

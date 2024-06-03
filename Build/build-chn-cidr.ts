@@ -14,11 +14,7 @@ export const getChnCidrPromise = createMemoizedPromise(async () => {
 });
 
 export const buildChnCidr = task(import.meta.path, async (span) => {
-  const cidrPromise = getChnCidrPromise();
-  const peeked = Bun.peek(cidrPromise);
-  const filteredCidr: string[] = peeked === cidrPromise
-    ? await span.traceChildPromise('download chnroutes2', cidrPromise)
-    : (peeked as string[]);
+  const filteredCidr = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
 
   // Can not use SHARED_DESCRIPTION here as different license
   const description = [

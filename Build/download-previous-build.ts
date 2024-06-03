@@ -65,10 +65,7 @@ export const downloadPreviousBuild = task(import.meta.path, async (span) => {
       const extract = tarStream.extract();
 
       pipeline(
-        Readable.fromWeb(
-          // @ts-expect-error -- DOM type is incompatible with Node type
-          resp.body
-        ),
+        Readable.fromWeb(resp.body),
         gunzip,
         extract
       );

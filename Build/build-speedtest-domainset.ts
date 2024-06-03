@@ -21,7 +21,7 @@ const s = new Sema(2);
 const latestTopUserAgentsPromise = fsFetchCache.apply(
   'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
   () => fetchWithRetry('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json')
-    .then(res => res.json())
+    .then(res => res.json() as any)
     .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '))),
   {
     serializer: serializeArray,
@@ -61,7 +61,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         retry: {
           retries: 2
         }
-      })).then(r => r.json()).then((data: Array<{ url: string }>) => data.reduce<string[]>(
+      })).then(r => r.json() as any).then((data: Array<{ url: string }>) => data.reduce<string[]>(
         (prev, cur) => {
           const hn = getHostname(cur.url, { detectIp: false });
           if (hn) {

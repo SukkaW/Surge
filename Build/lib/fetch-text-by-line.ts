@@ -44,7 +44,6 @@ const getBunBlob = (file: string | URL | BunFile) => {
   return file;
 };
 
-// @ts-expect-error -- ReadableStream<string> should be AsyncIterable<string>
 export const readFileByLine: ((file: string | URL | BunFile) => AsyncIterable<string>) = enableTextLineStream
   ? (file: string | URL | BunFile) => getBunBlob(file).stream().pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream())
   : (file: string | URL | BunFile) => createTextLineAsyncIterableFromStreamSource(getBunBlob(file).stream());
@@ -59,7 +58,6 @@ const ensureResponseBody = (resp: Response) => {
   return resp.body;
 };
 
-// @ts-expect-error -- ReadableStream<string> should be AsyncIterable<string>
 export const createReadlineInterfaceFromResponse: ((resp: Response) => AsyncIterable<string>) = enableTextLineStream
   ? (resp) => ensureResponseBody(resp).pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream())
   : (resp) => createTextLineAsyncIterableFromStreamSource(ensureResponseBody(resp));
