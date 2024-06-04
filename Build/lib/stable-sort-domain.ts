@@ -39,18 +39,6 @@ export const sortDomains = (
     subdomainMap = sm;
   }
 
-  for (let i = 0, len = inputs.length; i < len; i++) {
-    const cur = inputs[i];
-    if (!domainMap.has(cur)) {
-      const topD = getDomain(cur, looseTldtsOpt);
-      domainMap.set(cur, topD ?? cur);
-    }
-    if (!subdomainMap.has(cur)) {
-      const subD = getSubdomain(cur, looseTldtsOpt);
-      subdomainMap.set(cur, subD ?? cur);
-    }
-  }
-
   const sorter = (a: string, b: string) => {
     if (a === b) return 0;
 

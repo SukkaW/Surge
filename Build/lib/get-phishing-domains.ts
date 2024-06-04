@@ -1,6 +1,5 @@
-import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import { processDomainLists } from './parse-filter';
-import { getSubdomain, getPublicSuffix } from 'tldts-experimental';
+import { parse } from 'tldts-experimental';
 
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
@@ -103,8 +102,6 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
 ]);
 
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
-  const gorhill = await getGorhillPublicSuffixPromise();
-
   const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
     const domainSet: string[] = [];
 
@@ -122,16 +119,16 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
 
       const safeGorhillLine = line[0] === '.' ? line.slice(1) : line;
 
-      const apexDomain = gorhill.getDomain(safeGorhillLine);
-      if (!apexDomain) {
-        continue;
-      }
+      const {
+        publicSuffix: tld,
+        domain: apexDomain,
+        subdomain
+      } = parse(safeGorhillLine, looseTldtsOpt);
 
-      const tld = getPublicSuffix(safeGorhillLine, looseTldtsOpt);
-      if (!tld || (!BLACK_TLD.has(tld) && tld.length < 7)) continue;
+      if (!tld || !apexDomain || (!BLACK_TLD.has(tld) && tld.length < 7)) continue;
 
       domainCountMap[apexDomain] ||= 0;
-      domainCountMap[apexDomain] += calcDomainAbuseScore(line);
+      domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain);
     }
   });
 
@@ -144,7 +141,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   return domainArr;
 });
 
-export function calcDomainAbuseScore(line: string) {
+export function calcDomainAbuseScore(line: string, subdomain: string | null) {
   let weight = 1;
 
   const isPhishingDomainMockingCoJp = line.includes('-co-jp');
@@ -182,8 +179,6 @@ export function calcDomainAbuseScore(line: string) {
       weight += 0.25;
     }
   }
-
-  const subdomain = getSubdomain(line, looseTldtsOpt);
 
   if (subdomain) {
     if (subdomain.slice(1).includes('.')) {

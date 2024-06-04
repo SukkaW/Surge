@@ -101,9 +101,7 @@ process.on('unhandledRejection', (reason) => {
       downloadMockAssetsPromise
     ]);
 
-    await Promise.all([
-      buildPublic(rootSpan)
-    ]);
+    await buildPublic(rootSpan);
 
     rootSpan.stop();
 
