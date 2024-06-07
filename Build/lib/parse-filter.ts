@@ -376,6 +376,7 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
         if (_1p === _3p) {
           result[0] = hostname;
           result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+          return result;
         }
         result[1] = ParseType.Null;
         return result;
