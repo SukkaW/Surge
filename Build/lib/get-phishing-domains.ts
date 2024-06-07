@@ -5,6 +5,7 @@ import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS } from './reject-data-source';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
+import picocolors from 'picocolors';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -103,12 +104,12 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
 
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
-    const domainSet: string[] = [];
+    const domainArr: string[] = [];
 
     (await Promise.all(PHISHING_DOMAIN_LISTS.map(entry => processDomainLists(curSpan, ...entry))))
-      .forEach(appendArrayInPlaceCurried(domainSet));
+      .forEach(appendArrayInPlaceCurried(domainArr));
 
-    return domainSet;
+    return domainArr;
   });
 
   const domainCountMap: Record<string, number> = {};
@@ -125,7 +126,16 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         subdomain
       } = parse(safeGorhillLine, looseTldtsOpt);
 
-      if (!tld || !apexDomain || (!BLACK_TLD.has(tld) && tld.length < 7)) continue;
+      if (!tld) {
+        console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, safeGorhillLine, tld });
+        continue;
+      }
+      if (!apexDomain) {
+        console.log(picocolors.yellow('[phishing domains] E0002'), 'missing domain', { line, safeGorhillLine, apexDomain });
+        continue;
+      }
+
+      if (!BLACK_TLD.has(tld) && tld.length < 7) continue;
 
       domainCountMap[apexDomain] ||= 0;
       domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain);
