@@ -19,7 +19,7 @@ import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
     mixedInputs: false
   };
 
-  (['getDomain', 'getPublicSuffix', 'getSubdomain'] as const).forEach(methodName => {
+  (['getDomain', 'getPublicSuffix', 'getSubdomain', 'parse'] as const).forEach(methodName => {
     group(methodName, () => {
       if (methodName in gorhill) {
         bench('gorhill', () => {

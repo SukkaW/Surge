@@ -1,7 +1,7 @@
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
 // (since it is hashes based). But the result is still deterministic, which is
 // enough when sorting.
-import { getDomain, getSubdomain } from 'tldts-experimental';
+import * as tldts from 'tldts-experimental';
 import { sort } from './timsort';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 
@@ -17,11 +17,10 @@ export const buildParseDomainMap = (inputs: string[]) => {
   for (let i = 0, len = inputs.length; i < len; i++) {
     const cur = inputs[i];
     if (!domainMap.has(cur)) {
-      const topD = getDomain(cur, looseTldtsOpt);
-      domainMap.set(cur, topD ?? cur);
+      const parsed = tldts.parse(cur, looseTldtsOpt);
+      domainMap.set(cur, parsed.domain ?? cur);
       // if (!subdomainMap.has(cur)) {
-      const subD = getSubdomain(cur, looseTldtsOpt);
-      subdomainMap.set(cur, subD ?? cur);
+      subdomainMap.set(cur, parsed.subdomain ?? cur);
     }
   }
 
@@ -45,13 +44,11 @@ export const sortDomains = (
     const main_domain_a = domainMap.get(a)!;
     const main_domain_b = domainMap.get(b)!;
 
-    let t = compare(
-      main_domain_a,
-      main_domain_b
-    ) || compare(
-      /** subdomain_a */ subdomainMap.get(a)!,
-      /** subdomain_b */ subdomainMap.get(b)!
-    );
+    let t = compare(main_domain_a, main_domain_b)
+      || compare(
+        /** subdomain_a */ subdomainMap.get(a)!,
+        /** subdomain_b */ subdomainMap.get(b)!
+      );
     if (t !== 0) return t;
 
     if (a !== main_domain_a || b !== main_domain_b) {
