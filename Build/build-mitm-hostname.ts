@@ -1,7 +1,7 @@
 import { readFileByLine } from './lib/fetch-text-by-line';
 import pathFn from 'path';
 import table from 'table';
-import listDir from '@sukka/listdir';
+import { fdir as Fdir } from 'fdir';
 import { green, yellow } from 'picocolors';
 import { processLineFromReadline } from './lib/process-line';
 import { getHostname } from 'tldts';
@@ -37,12 +37,16 @@ const PRESET_MITM_HOSTNAMES = [
 
 (async () => {
   const folderListPath = pathFn.resolve(__dirname, '../List/');
-  const rulesets = await listDir(folderListPath);
+
+  const rulesets = await new Fdir()
+    .withFullPaths()
+    .crawl(folderListPath)
+    .withPromise();
 
   const urlRegexPaths: Array<{ origin: string, processed: string }> = [];
 
   await Promise.all(rulesets.map(async file => {
-    const content = await processLineFromReadline(readFileByLine(pathFn.join(folderListPath, file)));
+    const content = await processLineFromReadline(readFileByLine(file));
     urlRegexPaths.push(
       ...content
         .filter(i => (

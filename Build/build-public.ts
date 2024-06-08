@@ -2,8 +2,10 @@ import path from 'path';
 import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
-import listDir from '@sukka/listdir';
+import { fdir as Fdir } from 'fdir';
 import { sort } from './lib/timsort';
+
+import Trie from 'mnemonist/trie';
 
 const rootPath = path.resolve(import.meta.dir, '../');
 const publicPath = path.resolve(import.meta.dir, '../public');
@@ -22,13 +24,15 @@ export const buildPublic = task(import.meta.main, import.meta.path)(async (span)
   await span
     .traceChild('copy public files')
     .traceAsyncFn(async () => {
-      const filesToBeCopied = (await listDir(
-        rootPath,
-        {
-          ignoreHidden: true,
-          ignorePattern: /node_modules|Build|public/
-        }
-      )).filter(file => folderAndFilesToBeDeployed.some(folderOrFile => file.startsWith(folderOrFile)));
+      const trie = Trie.from(await new Fdir()
+        .withRelativePaths()
+        .exclude((dirName) => {
+          return dirName === 'node_modules' || dirName === 'Build' || dirName === 'public' || dirName[0] === '.';
+        })
+        .crawl(rootPath)
+        .withPromise());
+
+      const filesToBeCopied = folderAndFilesToBeDeployed.flatMap(folderOrFile => trie.find(folderOrFile));
 
       return Promise.all(filesToBeCopied.map(file => {
         const src = path.resolve(rootPath, file);
