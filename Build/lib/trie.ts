@@ -87,7 +87,9 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
         // During the adding of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
         // Dedupe the covered subdomain by skipping
-        if (smolTree && (node.get('.')?.[SENTINEL])) return;
+        if (smolTree && hostnameMode && (node.get('.')?.[SENTINEL])) {
+          return;
+        }
       } else {
         const newNode = createNode(node);
         node.set(token, newNode);
@@ -113,19 +115,17 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
         // Now the real leaf-est node is the new node, change the pointer to it
         node = newNode;
-      }
 
-      if (node.get('.')?.[SENTINEL] === true) {
+        // we can use else-if here, because new node is empty, so we don't need to check the leading "."
+      } else if (node.get('.')?.[SENTINEL] === true) {
         // Trying to add `example.com` when there is already a `.example.com` in the trie
         // No need to increment size and set SENTINEL to true (skip this "new" item)
         return;
       }
-    }
-
-    // Do we need to increase size?
-    if (!node[SENTINEL]) {
+    } else if (!node[SENTINEL]) { // smol tree don't have size, so else-if here
       size++;
     }
+
     node[SENTINEL] = true;
   };
 
@@ -295,8 +295,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
    * Method used to delete a prefix from the trie.
    */
   const remove = (suffix: string): boolean => {
-    const suffixTokens = suffixToTokens(suffix);
-    const res = getSingleChildLeaf(suffixTokens);
+    const res = getSingleChildLeaf(suffixToTokens(suffix));
     if (res === null) return false;
 
     if (!res.node[SENTINEL]) return false;
