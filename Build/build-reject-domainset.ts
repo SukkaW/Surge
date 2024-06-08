@@ -75,36 +75,37 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
   console.log(`Import ${domainSets.size} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   // Dedupe domainSets
-  await span.traceChildAsync('dedupe from black keywords/suffixes', async (childSpan) => {
+  const domainKeywordsSet = await span.traceChildAsync('collect black keywords/suffixes', async () => {
     /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
     const domainKeywordsSet = new Set<string>();
 
-    await childSpan.traceChildAsync('collect keywords/suffixes', async () => {
-      for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
-        const [type, value] = line.split(',');
+    for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
+      const [type, value] = line.split(',');
 
-        if (type === 'DOMAIN-KEYWORD') {
-          domainKeywordsSet.add(value.trim());
-        } else if (type === 'DOMAIN-SUFFIX') {
-          domainSets.add(`.${value.trim()}`); // Add to domainSets for later deduplication
-        }
+      if (type === 'DOMAIN-KEYWORD') {
+        domainKeywordsSet.add(value.trim());
+      } else if (type === 'DOMAIN-SUFFIX') {
+        domainSets.add(`.${value.trim()}`); // Add to domainSets for later deduplication
       }
-    });
+    }
 
-    // Perform kwfilter to remove as many domains as possible from domainSets before creating trie
-    childSpan.traceChildSync('dedupe from black keywords', () => {
-      const kwfilter = createKeywordFilter(domainKeywordsSet);
-
-      for (const domain of domainSets) {
-        // Remove keyword
-        if (kwfilter(domain)) {
-          domainSets.delete(domain);
-        }
-      }
-    });
+    return domainKeywordsSet;
   });
 
-  const trie = span.traceChildSync('create smol trie', () => createTrie(domainSets, true, true));
+  const trie = span.traceChildSync('create smol trie while deduping black keywords', () => {
+    const trie = createTrie(null, true, true);
+
+    const kwfilter = createKeywordFilter(domainKeywordsSet);
+
+    for (const domain of domainSets) {
+      // exclude keyword when creating trie
+      if (!kwfilter(domain)) {
+        trie.add(domain);
+      }
+    }
+
+    return trie;
+  });
 
   span.traceChildSync('dedupe from white suffixes', () => filterRuleWhitelistDomainSets.forEach(trie.whitelist));
 
