@@ -9,7 +9,6 @@ import { buildRejectDomainSet } from './build-reject-domainset';
 import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
-import { buildInternalCDNDomains } from './build-internal-cdn-rules';
 import { buildInternalReverseChnCIDR } from './build-internal-reverse-chn-cidr';
 import { buildDomesticRuleset } from './build-domestic-ruleset';
 import { buildStreamService } from './build-stream-service';
@@ -51,10 +50,6 @@ process.on('unhandledRejection', (reason) => {
     const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR(rootSpan));
     const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan));
     const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan));
-    const buildInternalCDNDomainsPromise = Promise.all([
-      buildCommonPromise,
-      buildCdnConfPromise
-    ]).then(() => buildInternalCDNDomains(rootSpan));
 
     const buildInternalReverseChnCIDRPromise = buildInternalReverseChnCIDR(rootSpan);
 
@@ -86,7 +81,6 @@ process.on('unhandledRejection', (reason) => {
       buildTelegramCIDRPromise,
       buildChnCidrPromise,
       buildSpeedtestDomainSetPromise,
-      buildInternalCDNDomainsPromise,
       buildInternalReverseChnCIDRPromise,
       buildInternalReverseChnCIDRPromise,
       // buildInternalChnDomainsPromise,

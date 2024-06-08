@@ -118,20 +118,18 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     for (let i = 0, len = domainArr.length; i < len; i++) {
       const line = domainArr[i];
 
-      const safeGorhillLine = line[0] === '.' ? line.slice(1) : line;
-
       const {
         publicSuffix: tld,
         domain: apexDomain,
         subdomain
-      } = parse(safeGorhillLine, looseTldtsOpt);
+      } = parse(line, looseTldtsOpt);
 
       if (!tld) {
-        console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, safeGorhillLine, tld });
+        console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, tld });
         continue;
       }
       if (!apexDomain) {
-        console.log(picocolors.yellow('[phishing domains] E0002'), 'missing domain', { line, safeGorhillLine, apexDomain });
+        console.log(picocolors.yellow('[phishing domains] E0002'), 'missing domain', { line, apexDomain });
         continue;
       }
 
