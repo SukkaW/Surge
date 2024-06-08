@@ -237,7 +237,7 @@ const ENCORE_TVB: StreamService = {
   ]
 };
 
-const ENCORE_TVB_JP_TVER = {
+const ENCORE_TVB_JP_TVER: StreamService = {
   name: 'encoreTVB JP',
   rules: [
     'DOMAIN-SUFFIX,tver.jp'
@@ -770,7 +770,7 @@ const WETV: StreamService = {
   ]
 };
 
-export const ALL = [
+export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
   BAHAMUT, BBC, BILIBILI_INTL,
@@ -796,7 +796,7 @@ export const ALL = [
   SHOWTIME
 ];
 
-export const NORTH_AMERICA = [
+export const NORTH_AMERICA: StreamService[] = [
   FOX_NOW,
   FOX_PLUS,
   HULU, // Hulu US
@@ -835,7 +835,7 @@ export const NORTH_AMERICA = [
   // Crave
 ];
 
-export const EU = [
+export const EU: StreamService[] = [
   // RakutenTV
   // Funimation
   // SkyShowTime
@@ -864,7 +864,7 @@ export const EU = [
   // Amediateka
 ];
 
-export const HK = [
+export const HK: StreamService[] = [
   NOW_E,
   VIUTV,
   MYTV_SUPER,
@@ -872,7 +872,7 @@ export const HK = [
   BILIBILI_INTL
 ];
 
-export const TW = [
+export const TW: StreamService[] = [
   KKTV,
   LITV,
   // MyVideo
@@ -886,7 +886,7 @@ export const TW = [
   BILIBILI_INTL
 ];
 
-export const JP = [
+export const JP: StreamService[] = [
   DMM,
   // DMMTV
   ABEMA_TV,
