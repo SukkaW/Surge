@@ -119,7 +119,3 @@ export const parseGfwList = async () => {
     top500Gfwed
   ] as const;
 };
-
-if (import.meta.main) {
-  parseGfwList();
-}

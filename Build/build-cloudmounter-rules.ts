@@ -7,7 +7,7 @@ import { task } from './trace';
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
-export const buildCloudMounterRules = task(import.meta.path, async (span) => {
+export const buildCloudMounterRules = task(import.meta.main, import.meta.path)(async (span) => {
   // AND,((SRC-IP,192.168.1.110), (DOMAIN, example.com))
 
   const results = DOMAINS.flatMap(domain => {
@@ -29,7 +29,3 @@ export const buildCloudMounterRules = task(import.meta.path, async (span) => {
     path.resolve(outputClashDir, 'non_ip', 'cloudmounter.txt')
   );
 });
-
-if (import.meta.main) {
-  buildCloudMounterRules();
-}

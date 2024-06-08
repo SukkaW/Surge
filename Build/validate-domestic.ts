@@ -67,7 +67,3 @@ export const parseDomesticList = async () => {
 
   console.log(notIncludedDomestic.size, notIncludedDomestic);
 };
-
-if (import.meta.main) {
-  parseDomesticList();
-}

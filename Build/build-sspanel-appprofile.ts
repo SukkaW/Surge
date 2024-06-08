@@ -26,7 +26,7 @@ const removeNoResolved = (line: string) => line.replace(',no-resolve', '');
 /**
  * This only generates a simplified version, for under-used users only.
  */
-export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => {
+export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path)(async (span) => {
   const [
     domesticDomains,
     appleCdnDomains,
@@ -114,10 +114,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.path, async (span) => 
     path.resolve(import.meta.dir, '../Internal/appprofile.php')
   );
 });
-
-if (import.meta.main) {
-  buildSSPanelUIMAppProfile();
-}
 
 const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 

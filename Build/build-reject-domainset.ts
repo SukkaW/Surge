@@ -22,7 +22,7 @@ import { sort } from './lib/timsort';
 
 const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'));
 
-export const buildRejectDomainSet = task(import.meta.path, async (span) => {
+export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(async (span) => {
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
@@ -167,7 +167,3 @@ export const buildRejectDomainSet = task(import.meta.path, async (span) => {
     )
   ]);
 });
-
-if (import.meta.main) {
-  buildRejectDomainSet();
-}

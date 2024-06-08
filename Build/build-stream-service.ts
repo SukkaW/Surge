@@ -50,7 +50,7 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
   ]));
 };
 
-export const buildStreamService = task(import.meta.path, async (span) => {
+export const buildStreamService = task(import.meta.main, import.meta.path)(async (span) => {
   return Promise.all([
     createRulesetForStreamService(span, 'stream', 'All', ALL),
     createRulesetForStreamService(span, 'stream_us', 'North America', NORTH_AMERICA),
@@ -63,7 +63,3 @@ export const buildStreamService = task(import.meta.path, async (span) => {
     // createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
   ]);
 });
-
-if (import.meta.main) {
-  buildStreamService();
-}

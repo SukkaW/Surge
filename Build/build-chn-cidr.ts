@@ -13,7 +13,7 @@ export const getChnCidrPromise = createMemoizedPromise(async () => {
   return exclude([...cidr, ...CN_CIDR_NOT_INCLUDED_IN_CHNROUTE], NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true);
 });
 
-export const buildChnCidr = task(import.meta.path, async (span) => {
+export const buildChnCidr = task(import.meta.main, import.meta.path)(async (span) => {
   const filteredCidr = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
 
   // Can not use SHARED_DESCRIPTION here as different license
@@ -49,7 +49,3 @@ export const buildChnCidr = task(import.meta.path, async (span) => {
     )
   ]);
 });
-
-if (import.meta.main) {
-  buildChnCidr();
-}

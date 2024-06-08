@@ -44,7 +44,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
     .concat(WHITELIST);
 });
 
-export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
+export const buildMicrosoftCdn = task(import.meta.main, import.meta.path)(async (span) => {
   const description = [
     ...SHARED_DESCRIPTION,
     '',
@@ -67,7 +67,3 @@ export const buildMicrosoftCdn = task(import.meta.path, async (span) => {
     path.resolve(import.meta.dir, '../Clash/non_ip/microsoft_cdn.txt')
   );
 });
-
-if (import.meta.main) {
-  buildMicrosoftCdn();
-}

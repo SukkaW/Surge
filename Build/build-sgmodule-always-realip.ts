@@ -49,7 +49,7 @@ const HOSTNAMES = [
   '*.battlenet.com'
 ] as const;
 
-export const buildAlwaysRealIPModule = task(import.meta.path, async (span) => {
+export const buildAlwaysRealIPModule = task(import.meta.main, import.meta.path)(async (span) => {
   return compareAndWriteFile(
     span,
     [
@@ -62,7 +62,3 @@ export const buildAlwaysRealIPModule = task(import.meta.path, async (span) => {
     path.resolve(import.meta.dir, '../Modules/sukka_common_always_realip.sgmodule')
   );
 });
-
-if (import.meta.main) {
-  buildAlwaysRealIPModule();
-}

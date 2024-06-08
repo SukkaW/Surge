@@ -32,7 +32,7 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   return { date, results };
 });
 
-export const buildTelegramCIDR = task(import.meta.path, async (span) => {
+export const buildTelegramCIDR = task(import.meta.main, import.meta.path)(async (span) => {
   const { date, results } = await span.traceChildAsync('get telegram cidr', getTelegramCIDRPromise);
 
   if (results.length === 0) {
@@ -56,7 +56,3 @@ export const buildTelegramCIDR = task(import.meta.path, async (span) => {
     path.resolve(import.meta.dir, '../Clash/ip/telegram.txt')
   );
 });
-
-if (import.meta.main) {
-  buildTelegramCIDR();
-}

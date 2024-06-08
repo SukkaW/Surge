@@ -13,7 +13,7 @@ import { Readable } from 'stream';
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
 
-export const downloadPreviousBuild = task(import.meta.path, async (span) => {
+export const downloadPreviousBuild = task(import.meta.main, import.meta.path)(async (span) => {
   const buildOutputList: string[] = [];
 
   let flag = 1 | ALL_FILES_EXISTS;
@@ -91,7 +91,3 @@ export const downloadPreviousBuild = task(import.meta.path, async (span) => {
       }
     });
 });
-
-if (import.meta.main) {
-  downloadPreviousBuild();
-}

@@ -17,7 +17,7 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCach
   }
 ));
 
-export const buildAppleCdn = task(import.meta.path, async (span) => {
+export const buildAppleCdn = task(import.meta.main, import.meta.path)(async (span) => {
   const promise = getAppleCdnDomainsPromise();
   const res: string[] = await span.traceChildPromise('get apple cdn domains', promise);
 
@@ -56,7 +56,3 @@ export const buildAppleCdn = task(import.meta.path, async (span) => {
     )
   ]);
 });
-
-if (import.meta.main) {
-  buildAppleCdn();
-}

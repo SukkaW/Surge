@@ -11,7 +11,7 @@ const DEPRECATED_FILES = [
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
-export const buildDeprecateFiles = task(import.meta.path, (span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
+export const buildDeprecateFiles = task(import.meta.main, import.meta.path)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
   const promises: Array<Promise<unknown>> = [];
 
   for (const [filePath, description] of DEPRECATED_FILES) {
@@ -33,7 +33,3 @@ export const buildDeprecateFiles = task(import.meta.path, (span) => span.traceCh
 
   return Promise.all(promises);
 }));
-
-if (import.meta.main) {
-  buildDeprecateFiles();
-}

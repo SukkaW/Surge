@@ -5,7 +5,7 @@ import { exclude, merge } from 'fast-cidr-tools';
 import { getChnCidrPromise } from './build-chn-cidr';
 import { NON_CN_CIDR_INCLUDED_IN_CHNROUTE, RESERVED_IPV4_CIDR } from './constants/cidr';
 
-export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
+export const buildInternalReverseChnCIDR = task(import.meta.main, import.meta.path)(async () => {
   const cidrPromise = getChnCidrPromise();
   const peeked = Bun.peek(cidrPromise);
   const cidr: string[] = peeked === cidrPromise
@@ -25,7 +25,3 @@ export const buildInternalReverseChnCIDR = task(import.meta.path, async () => {
 
   return Bun.write(path.resolve(import.meta.dir, '../Internal/reversed-chn-cidr.txt'), `${reversedCidr.join('\n')}\n`);
 });
-
-if (import.meta.main) {
-  buildInternalReverseChnCIDR();
-}

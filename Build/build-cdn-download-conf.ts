@@ -48,7 +48,7 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   return S3OSSDomains;
 })();
 
-export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
+export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(async (span) => {
   const [
     S3OSSDomains,
 
@@ -98,7 +98,3 @@ export const buildCdnDownloadConf = task(import.meta.path, async (span) => {
     )
   ]);
 });
-
-if (import.meta.main) {
-  buildCdnDownloadConf();
-}

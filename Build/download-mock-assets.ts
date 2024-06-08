@@ -12,12 +12,8 @@ const ASSETS_LIST = {
 
 const mockDir = path.resolve(import.meta.dir, '../Mock');
 
-export const downloadMockAssets = task(import.meta.path, (span) => Promise.all(Object.entries(ASSETS_LIST).map(
+export const downloadMockAssets = task(import.meta.main, import.meta.path)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
   ([filename, url]) => span
     .traceChild(url)
     .traceAsyncFn(() => fetchWithRetry(url).then(res => Bun.write(path.join(mockDir, filename), res)))
 )));
-
-if (import.meta.main) {
-  downloadMockAssets();
-}

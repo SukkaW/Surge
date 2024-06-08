@@ -20,7 +20,7 @@ export const getDomesticDomainsRulesetPromise = createMemoizedPromise(async () =
   return results;
 });
 
-export const buildDomesticRuleset = task(import.meta.path, async (span) => {
+export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(async (span) => {
   const rulesetDescription = [
     ...SHARED_DESCRIPTION,
     '',
@@ -66,7 +66,3 @@ export const buildDomesticRuleset = task(import.meta.path, async (span) => {
     )
   ]);
 });
-
-if (import.meta.main) {
-  buildDomesticRuleset();
-}

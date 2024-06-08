@@ -93,7 +93,7 @@ const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
   return domains;
 });
 
-export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
+export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(async (span) => {
   // Predefined domainset
   /** @type {Set<string>} */
   const domains = new Set<string>([
@@ -267,7 +267,3 @@ export const buildSpeedtestDomainSet = task(import.meta.path, async (span) => {
     path.resolve(import.meta.dir, '../Clash/domainset/speedtest.txt')
   );
 });
-
-if (import.meta.main) {
-  buildSpeedtestDomainSet();
-}

@@ -18,7 +18,7 @@ const folderAndFilesToBeDeployed = [
   'LICENSE'
 ];
 
-export const buildPublic = task(import.meta.path, async (span) => {
+export const buildPublic = task(import.meta.main, import.meta.path)(async (span) => {
   await span
     .traceChild('copy public files')
     .traceAsyncFn(async () => {
@@ -44,10 +44,6 @@ export const buildPublic = task(import.meta.path, async (span) => {
 
   return Bun.write(path.join(publicPath, 'index.html'), html);
 });
-
-if (import.meta.main) {
-  buildPublic();
-}
 
 const priorityOrder: Record<'default' | string & {}, number> = {
   domainset: 1,

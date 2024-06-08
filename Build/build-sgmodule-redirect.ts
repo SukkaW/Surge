@@ -118,7 +118,7 @@ const REDIRECT_FAKEWEBSITES = [
   ['zbrushcn.com', 'https://www.maxon.net/en/zbrush']
 ] as const;
 
-export const buildRedirectModule = task(import.meta.path, async (span) => {
+export const buildRedirectModule = task(import.meta.main, import.meta.path)(async (span) => {
   const domains = Array.from(
     new Set(
       [
@@ -144,7 +144,3 @@ export const buildRedirectModule = task(import.meta.path, async (span) => {
     path.resolve(import.meta.dir, '../Modules/sukka_url_redirect.sgmodule')
   );
 });
-
-if (import.meta.main) {
-  buildRedirectModule();
-}

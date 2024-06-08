@@ -19,7 +19,7 @@ const sourceDir = path.resolve(import.meta.dir, '../Source');
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
-export const buildCommon = task(import.meta.path, async (span) => {
+export const buildCommon = task(import.meta.main, import.meta.path)(async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
   const paths = await new Fdir()
@@ -53,10 +53,6 @@ export const buildCommon = task(import.meta.path, async (span) => {
 
   return Promise.all(promises);
 });
-
-if (import.meta.main) {
-  buildCommon();
-}
 
 const processFile = (span: Span, sourcePath: string) => {
   // console.log('Processing', sourcePath);
