@@ -85,9 +85,9 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       if (node.has(token)) {
         node = node.get(token)!;
 
-        // During the adding of `[start]blog.skk.moe` and find out that there is a `[start].skk.moe` in the trie
+        // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie
         // Dedupe the covered subdomain by skipping
-        if (smolTree && hostnameMode && (node.get('.')?.[SENTINEL])) {
+        if (smolTree && token === '.' && node[SENTINEL]) {
           return;
         }
       } else {
