@@ -1,11 +1,12 @@
 import { processDomainLists } from './parse-filter';
-import { parse } from 'tldts-experimental';
+import * as tldts from 'tldts-experimental';
 
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS } from './reject-data-source';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
+import createKeywordFilter from './aho-corasick';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -122,7 +123,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         publicSuffix: tld,
         domain: apexDomain,
         subdomain
-      } = parse(line, looseTldtsOpt);
+      } = tldts.parse(line, looseTldtsOpt);
 
       if (!tld) {
         console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, tld });
@@ -133,7 +134,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         continue;
       }
 
-      if (!BLACK_TLD.has(tld) && tld.length < 7) continue;
+      if (tld.length < 7 && !BLACK_TLD.has(tld)) continue;
 
       domainCountMap[apexDomain] ||= 0;
       domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain);
@@ -149,6 +150,25 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   return domainArr;
 });
 
+const sensitiveKeywords = createKeywordFilter([
+  '-roblox',
+  '.amazon-',
+  '-amazon',
+  'fb-com',
+  'facebook-',
+  '-facebook',
+  'coinbase',
+  'metamask-',
+  '-metamask',
+  'virus-'
+]);
+const lowKeywords = createKeywordFilter([
+  '-co-jp',
+  'customer.',
+  'customer-',
+  '.www-'
+]);
+
 export function calcDomainAbuseScore(line: string, subdomain: string | null) {
   let weight = 1;
 
@@ -157,18 +177,15 @@ export function calcDomainAbuseScore(line: string, subdomain: string | null) {
     weight += 0.5;
   }
 
-  if (line.startsWith('.amaz')) {
-    weight += 0.5;
+  const hitLowKeywords = lowKeywords(line);
 
-    if (line.startsWith('.amazon-')) {
-      weight += 4.5;
+  if (sensitiveKeywords(line)) {
+    weight += 4;
+    if (hitLowKeywords) {
+      weight += 5;
     }
-    if (isPhishingDomainMockingCoJp) {
-      weight += 4;
-    }
-  }
-  if (line.includes('.customer')) {
-    weight += 0.25;
+  } else if (hitLowKeywords) {
+    weight += 0.5;
   }
 
   const lineLen = line.length;
@@ -189,9 +206,6 @@ export function calcDomainAbuseScore(line: string, subdomain: string | null) {
   }
 
   if (subdomain) {
-    if (subdomain.slice(1).includes('.')) {
-      weight += 1;
-    }
     if (subdomain.length > 40) {
       weight += 3;
     } else if (subdomain.length > 30) {
@@ -200,6 +214,9 @@ export function calcDomainAbuseScore(line: string, subdomain: string | null) {
       weight += 1;
     } else if (subdomain.length > 10) {
       weight += 0.1;
+    }
+    if (subdomain.slice(1).includes('.')) {
+      weight += 1;
     }
   }
 
