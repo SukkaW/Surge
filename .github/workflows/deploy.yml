@@ -1,0 +1,69 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: canary
+      - name: Get current date
+        id: date
+        run: |
+          echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
+          echo "month=$(date +'%m')" >> $GITHUB_OUTPUT
+          echo "day=$(date +'%d')" >> $GITHUB_OUTPUT
+          echo "hour=$(date +'%H')" >> $GITHUB_OUTPUT
+          echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
+          echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
+      - name: Cache cache.db
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: |
+            .cache
+          key: ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:
+            ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:
+            ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }}
+            ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
+            ${{ runner.os }}-v1-${{ steps.date.outputs.year }}-
+            ${{ runner.os }}-v1-
+      - run: bun install
+      - run: bun run build
+      - name: Pre-deploy check
+        # If the public directory doesn't exist, the build should fail.
+        # If the public directory is empty, the build should fail.
+        run: |
+          if [ ! -d public ]; then
+            echo "public directory not found"
+            exit 1
+          fi
+          if [ ! "$(ls -A public)" ]; then
+            echo "public directory is empty"
+            exit 1
+          fi
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GIT_TOKEN }}
+          user_name: ${{ secrets.GIT_USER }}
+          user_email: ${{ secrets.GIT_EMAIL }}
+          #external_repository: SukkaLab/ruleset.skk.moe
+          publish_branch: gh-pages
+          publish_dir: public
+          cname:  ${{ secrets.CNAME }}
