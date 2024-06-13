@@ -1,33 +1,43 @@
-// @ts-check
-import Trie from 'mnemonist/trie';
+const identity = <T>(x: T): T => x;
 
 // https://dreamacro.github.io/clash/configuration/rules.html
-const CLASH_SUPPORTED_RULE_TYPE = [
-  'DOMAIN',
-  'DOMAIN-SUFFIX',
-  'DOMAIN-KEYWORD',
-  'GEOIP',
-  'IP-CIDR',
-  'IP-CIDR6',
-  'SRC-IP-CIDR',
-  'SRC-PORT',
-  'DST-PORT',
-  'PROCESS-NAME',
-  'PROCESS-PATH'
-];
-
-const REQUIRE_REWRITE = {
-  'DEST-PORT': 'DST-PORT',
-  'IN-PORT': 'SRC-PORT'
-} as const;
+const PROCESSOR: Record<string, (raw: string, type: string, value: string) => string> = {
+  DOMAIN: identity,
+  'DOMAIN-SUFFIX': identity,
+  'DOMAIN-KEYWORD': identity,
+  GEOIP: identity,
+  'IP-CIDR': identity,
+  'IP-CIDR6': identity,
+  'SRC-IP-CIDR': identity,
+  'SRC-PORT': identity,
+  'DST-PORT': identity,
+  'PROCESS-NAME': identity,
+  'PROCESS-PATH': identity,
+  'DEST-PORT': (_raw, type, value) => `DST-PORT,${value}`,
+  'IN-PORT': (_raw, type, value) => `SRC-PORT,${value}`
+};
 
 export const surgeRulesetToClashClassicalTextRuleset = (rules: string[] | Set<string>) => {
-  const trie = Trie.from(rules);
-
-  return CLASH_SUPPORTED_RULE_TYPE.flatMap(type => trie.find(`${type},`)).concat(
-    Object.keys(REQUIRE_REWRITE).flatMap((type) => trie.find(`${type},`)
-      .map(line => `${REQUIRE_REWRITE[type as keyof typeof REQUIRE_REWRITE]}${line.slice(type.length)}`))
-  );
+  return Array.from(rules).reduce<string[]>((acc, cur) => {
+    let buf = '';
+    let type = '';
+    let i = 0;
+    for (const len = cur.length; i < len; i++) {
+      if (cur[i] === ',') {
+        type = buf;
+        break;
+      }
+      buf += cur[i];
+    }
+    if (type === '') {
+      return acc;
+    }
+    const value = cur.slice(i + 1);
+    if (type in PROCESSOR) {
+      acc.push(PROCESSOR[type](cur, type, value));
+    }
+    return acc;
+  }, []);
 };
 
 export const surgeDomainsetToClashDomainset = (domainset: string[]) => {
