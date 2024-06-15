@@ -1,13 +1,11 @@
 import path from 'path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
+import { DIRECTS } from '../Source/non_ip/direct';
 
 const HOSTNAMES = [
-  // Intranet
-  '*.lan',
-  '*.localdomain',
-  '*.localhost',
-  '*.home.arpa',
+  // Intranet, Router Setup, and mant more
+  ...(Object.entries(DIRECTS)).flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])),
   // Network Detection, Captive Portal
   'msftncsi.com',
   'msftconnecttest.com',
@@ -27,14 +25,10 @@ const HOSTNAMES = [
   'stun.twilio.com',
   '*.stun.twilio.com',
   'stun.syncthing.net',
-  'stun.*.*',
-  'stun.*.*.*',
+  'stun.*',
   'controlplane.tailscale.com',
   // NTP
-  'time.*.com', 'time.*.gov, time.*.edu.cn, time.*.apple.com', 'time1.*.com', 'time2.*.com', 'time3.*.com', 'time4.*.com', 'time5.*.com', 'time6.*.com', 'time7.*.com', 'time8.*.com', 'time9.*.com, ntp.*.com, ntp1.*.com, ntp2.*.com, ntp3.*.com, ntp4.*.com, ntp5.*.com, ntp6.*.com, ntp7.*.com', 'time1.*.com', 'time2.*.com', 'time3.*.com', 'time4.*.com', 'time5.*.com', 'time6.*.com', 'time7.*.com', 'time8.*.com', 'ti me9.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org', 'time1.cloud.tencent.com',
-  // AdGuard
-  'local.adguard.org',
-  'injections.adguard.org',
+  'time.*.com', 'time.*.gov, time.*.edu.cn, time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org', 'time*.cloud.tencent.com',
   // QQ Login
   'localhost.ptlogin2.qq.com',
   'localhost.sec.qq.com',

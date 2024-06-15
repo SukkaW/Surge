@@ -1,5 +1,5 @@
 import { getAppleCdnDomainsPromise } from './build-apple-cdn';
-import { getDomesticDomainsRulesetPromise } from './build-domestic-ruleset';
+import { getDomesticAndDirectDomainsRulesetPromise } from './build-domestic-ruleset';
 import { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashRuleset } from './lib/clash';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
@@ -46,7 +46,8 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
     lanCidrs
   ] = await Promise.all([
     // domestic - domains
-    getDomesticDomainsRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
+    getDomesticAndDirectDomainsRulesetPromise()
+      .then(data => data.flatMap(surgeRulesetToClashClassicalTextRuleset)),
     getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
     getMicrosoftCdnRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/apple_cn.conf')),
