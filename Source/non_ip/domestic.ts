@@ -1,3 +1,5 @@
+import type { DNSMapping } from './direct';
+
 export const DOMESTICS = {
   ALIBABA: {
     hosts: {
@@ -307,4 +309,4 @@ export const DOMESTICS = {
       'baomitu.com'
     ]
   }
-} as const;
+} satisfies Record<string, DNSMapping>;

@@ -2,10 +2,9 @@ import path from 'path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
+import * as yaml from 'yaml';
 
 const HOSTNAMES = [
-  // Intranet, Router Setup, and mant more
-  ...([Object.entries(DIRECTS), Object.entries(LANS)]).flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain]))),
   // Network Detection, Captive Portal
   'msftncsi.com',
   'msftconnecttest.com',
@@ -41,18 +40,36 @@ const HOSTNAMES = [
   '*.battlenet.com.cn',
   '*.blzstatic.cn',
   '*.battlenet.com'
-] as const;
+];
 
 export const buildAlwaysRealIPModule = task(import.meta.main, import.meta.path)(async (span) => {
-  return compareAndWriteFile(
-    span,
-    [
-      '#!name=[Sukka] Always Real IP Plus',
-      `#!desc=Last Updated: ${new Date().toISOString()}`,
-      '',
-      '[General]',
-      `always-real-ip = %APPEND% ${HOSTNAMES.join(', ')}`
-    ],
-    path.resolve(import.meta.dir, '../Modules/sukka_common_always_realip.sgmodule')
-  );
+  // Intranet, Router Setup, and mant more
+  const dataset = ([Object.entries(DIRECTS), Object.entries(LANS)]);
+  const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])));
+  const clash = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.map((domain) => `+.${domain}`)));
+
+  return Promise.all([
+    compareAndWriteFile(
+      span,
+      [
+        '#!name=[Sukka] Always Real IP Plus',
+        `#!desc=Last Updated: ${new Date().toISOString()}`,
+        '',
+        '[General]',
+        `always-real-ip = %APPEND% ${HOSTNAMES.concat(surge).join(', ')}`
+      ],
+      path.resolve(import.meta.dir, '../Modules/sukka_common_always_realip.sgmodule')
+    ),
+    Bun.write(
+      path.resolve(import.meta.dir, '../Internal/clash_fake_ip_filter.yaml'),
+      yaml.stringify(
+        {
+          dns: {
+            'fake-ip-filter': HOSTNAMES.concat(clash)
+          }
+        },
+        { version: '1.1' }
+      )
+    )
+  ]);
 });

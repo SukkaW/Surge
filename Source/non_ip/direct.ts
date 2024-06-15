@@ -1,3 +1,11 @@
+export interface DNSMapping {
+  hosts?: {
+    [domain: string]: string[]
+  },
+  dns: string,
+  domains: string[]
+}
+
 export const DIRECTS = {
   ROUTER: {
     dns: 'system',
@@ -79,7 +87,7 @@ export const DIRECTS = {
       'local.adguard.org'
     ]
   }
-} as const;
+} satisfies Record<string, DNSMapping>;
 
 export const LANS = {
   LAN: {
@@ -111,4 +119,4 @@ export const LANS = {
       '254.169.in-addr.arpa'
     ]
   }
-};
+} satisfies Record<string, DNSMapping>;

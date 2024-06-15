@@ -30,7 +30,8 @@
     "table": "^6.8.2",
     "tar-stream": "^3.1.7",
     "tldts": "^6.1.26",
-    "tldts-experimental": "^6.1.26"
+    "tldts-experimental": "^6.1.26",
+    "yaml": "^2.4.5"
   },
   "devDependencies": {
     "@eslint-sukka/node": "6.0.0-beta.3",

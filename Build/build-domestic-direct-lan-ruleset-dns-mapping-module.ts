@@ -7,6 +7,7 @@ import { compareAndWriteFile, createRuleset } from './lib/create-file';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
+import * as yaml from 'yaml';
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf'));
@@ -28,6 +29,8 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 
 export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(async (span) => {
   const res = await getDomesticAndDirectDomainsRulesetPromise();
+
+  const dataset = [...Object.entries(DOMESTICS), ...Object.entries(DIRECTS), ...Object.entries(LANS)];
 
   return Promise.all([
     createRuleset(
@@ -79,20 +82,54 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
         `#!desc=Last Updated: ${new Date().toISOString()}`,
         '',
         '[Host]',
-        ...([...Object.entries(DOMESTICS), ...Object.entries(DIRECTS), ...Object.entries(LANS)])
-          .flatMap(([, { domains, dns, ...rest }]) => [
-            ...(
-              'hosts' in rest
-                ? Object.entries(rest.hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`)
-                : []
-            ),
-            ...domains.flatMap((domain) => [
-              `${domain} = server:${dns}`,
-              `*.${domain} = server:${dns}`
-            ])
+        ...dataset.flatMap(([, { domains, dns, ...rest }]) => [
+          ...(
+            'hosts' in rest
+              ? Object.entries(rest.hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`)
+              : []
+          ),
+          ...domains.flatMap((domain) => [
+            `${domain} = server:${dns}`,
+            `*.${domain} = server:${dns}`
           ])
+        ])
       ],
       path.resolve(import.meta.dir, '../Modules/sukka_local_dns_mapping.sgmodule')
+    ),
+    Bun.write(
+      path.resolve(import.meta.dir, '../Internal/clash_nameserver_policy.yaml'),
+      yaml.stringify(
+        {
+          dns: {
+            'nameserver-policy': dataset.reduce<Record<string, string | string[]>>(
+              (acc, [, { domains, dns }]) => {
+                domains.forEach((domain) => {
+                  acc[`+.${domain}`] = dns === 'system'
+                    ? [
+                      'system://',
+                      'system',
+                      'dhcp://system'
+                    ]
+                    : dns;
+                });
+
+                return acc;
+              },
+              {}
+            )
+          },
+          hosts: dataset.reduce<Record<string, string>>(
+            (acc, [, { domains, dns, ...rest }]) => {
+              if ('hosts' in rest) {
+                Object.assign(acc, rest.hosts);
+              }
+              return acc;
+            },
+            {}
+          )
+        },
+        { version: '1.1' }
+      )
     )
   ]);
 });
