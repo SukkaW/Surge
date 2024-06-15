@@ -28,7 +28,7 @@ const removeNoResolved = (line: string) => line.replace(',no-resolve', '');
  */
 export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path)(async (span) => {
   const [
-    domesticDomains,
+    [domesticDomains, directDomains, lanDomains],
     appleCdnDomains,
     microsoftCdnDomains,
     appleCnDomains,
@@ -46,7 +46,11 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
   ] = await Promise.all([
     // domestic - domains
     getDomesticAndDirectDomainsRulesetPromise()
-      .then(data => data.flatMap(surgeRulesetToClashClassicalTextRuleset)),
+      .then(
+        data => (
+          data.map(surgeRulesetToClashClassicalTextRuleset)
+        ) as [string[], string[], string[]]
+      ),
     getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
     getMicrosoftCdnRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/apple_cn.conf')),
@@ -97,6 +101,10 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
       ...globalDomains,
       ...telegramDomains
     ],
+    [
+      ...directDomains,
+      ...lanDomains
+    ],
     domesticCidrs,
     streamCidrs,
     [
@@ -121,6 +129,7 @@ function generateAppProfile(
   steamDomains: string[],
   globalDomains: string[],
 
+  lanDomains: string[],
   directCidrs: string[],
   streamCidrs: string[],
   globalCidrs: string[],
@@ -189,6 +198,8 @@ function generateAppProfile(
     // global - domains
     ...globalDomains.map(line => `        '${line},Global',`),
     // microsoft & apple - ip cidr (nope)
+    // lan - domains
+    ...lanDomains.map(line => `        '${line},DIRECT',`),
     // stream - ip cidr
     ...streamCidrs.map(line => `        '${line},Stream',`),
     // global - ip cidr
