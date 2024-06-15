@@ -1,5 +1,5 @@
 import { getAppleCdnDomainsPromise } from './build-apple-cdn';
-import { getDomesticAndDirectDomainsRulesetPromise } from './build-domestic-ruleset';
+import { getDomesticAndDirectDomainsRulesetPromise } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
 import { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashRuleset } from './lib/clash';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
@@ -39,7 +39,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
     steamDomains,
     globalDomains,
     telegramDomains,
-    lanDomains,
     domesticCidrs,
     streamCidrs,
     { results: rawTelegramCidrs },
@@ -62,8 +61,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
     // global - domains
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
-    // lan - domains
-    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/lan.conf')),
     // domestic - ip cidr
     getChnCidrPromise().then(cidrs => cidrs.map(cidr => `IP-CIDR,${cidr}`)),
     AllStreamServices.flatMap((i) => (
@@ -100,7 +97,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
       ...globalDomains,
       ...telegramDomains
     ],
-    lanDomains,
     domesticCidrs,
     streamCidrs,
     [
@@ -125,7 +121,6 @@ function generateAppProfile(
   steamDomains: string[],
   globalDomains: string[],
 
-  lanDomains: string[],
   directCidrs: string[],
   streamCidrs: string[],
   globalCidrs: string[],
@@ -194,8 +189,6 @@ function generateAppProfile(
     // global - domains
     ...globalDomains.map(line => `        '${line},Global',`),
     // microsoft & apple - ip cidr (nope)
-    // lan - domains
-    ...lanDomains.map(line => `        '${line},DIRECT',`),
     // stream - ip cidr
     ...streamCidrs.map(line => `        '${line},Stream',`),
     // global - ip cidr

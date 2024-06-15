@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'path';
 import { DOMESTICS } from '../Source/non_ip/domestic';
-import { DIRECTS } from '../Source/non_ip/direct';
+import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile, createRuleset } from './lib/create-file';
 import { task } from './trace';
@@ -11,6 +11,7 @@ import { createMemoizedPromise } from './lib/memo-promise';
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf'));
   const directs = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/direct.conf'));
+  const lans: string[] = [];
 
   Object.entries(DOMESTICS).forEach(([, { domains }]) => {
     domestics.push(...domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
@@ -18,8 +19,11 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
   Object.entries(DIRECTS).forEach(([, { domains }]) => {
     directs.push(...domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
   });
+  Object.entries(LANS).forEach(([, { domains }]) => {
+    lans.push(...domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+  });
 
-  return [domestics, directs] as const;
+  return [domestics, directs, lans] as const;
 });
 
 export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(async (span) => {
@@ -54,6 +58,20 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
       path.resolve(import.meta.dir, '../List/non_ip/direct.conf'),
       path.resolve(import.meta.dir, '../Clash/non_ip/direct.txt')
     ),
+    createRuleset(
+      span,
+      'Sukka\'s Ruleset - LAN',
+      [
+        ...SHARED_DESCRIPTION,
+        '',
+        'This file includes rules for LAN DOMAIN and reserved TLDs.'
+      ],
+      new Date(),
+      res[2],
+      'ruleset',
+      path.resolve(import.meta.dir, '../List/non_ip/lan.conf'),
+      path.resolve(import.meta.dir, '../Clash/non_ip/lan.txt')
+    ),
     compareAndWriteFile(
       span,
       [
@@ -61,7 +79,7 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
         `#!desc=Last Updated: ${new Date().toISOString()}`,
         '',
         '[Host]',
-        ...([...Object.entries(DOMESTICS), ...Object.entries(DIRECTS)])
+        ...([...Object.entries(DOMESTICS), ...Object.entries(DIRECTS), ...Object.entries(LANS)])
           .flatMap(([, { domains, dns, ...rest }]) => [
             ...(
               'hosts' in rest

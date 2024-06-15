@@ -1,11 +1,11 @@
 import path from 'path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
-import { DIRECTS } from '../Source/non_ip/direct';
+import { DIRECTS, LANS } from '../Source/non_ip/direct';
 
 const HOSTNAMES = [
   // Intranet, Router Setup, and mant more
-  ...(Object.entries(DIRECTS)).flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])),
+  ...([Object.entries(DIRECTS), Object.entries(LANS)]).flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain]))),
   // Network Detection, Captive Portal
   'msftncsi.com',
   'msftconnecttest.com',

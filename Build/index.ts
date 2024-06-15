@@ -10,7 +10,7 @@ import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
 import { buildInternalReverseChnCIDR } from './build-internal-reverse-chn-cidr';
-import { buildDomesticRuleset } from './build-domestic-ruleset';
+import { buildDomesticRuleset } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
 import { buildStreamService } from './build-stream-service';
 
 import { buildRedirectModule } from './build-sgmodule-redirect';

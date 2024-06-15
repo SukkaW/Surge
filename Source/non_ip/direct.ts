@@ -78,7 +78,10 @@ export const DIRECTS = {
       'injections.adguard.org',
       'local.adguard.org'
     ]
-  },
+  }
+} as const;
+
+export const LANS = {
   LAN: {
     dns: 'system',
     domains: [
@@ -108,4 +111,4 @@ export const DIRECTS = {
       '254.169.in-addr.arpa'
     ]
   }
-} as const;
+};
