@@ -107,16 +107,11 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
         parent[SENTINEL] = false;
 
-        // Removing the rest of the parent's child nodes by disconnecting the old one and creating a new node
-        const newNode = createNode(node);
-        // The SENTINEL of this newNode will be set to true at the end of the function, so we don't need to set it here
+        // Removing the rest of the parent's child nodes
+        node.clear();
+        // The SENTINEL of this node will be set to true at the end of the function, so we don't need to set it here
 
-        parent.set('.', newNode);
-
-        // Now the real leaf-est node is the new node, change the pointer to it
-        node = newNode;
-
-        // we can use else-if here, because new node is empty, so we don't need to check the leading "."
+        // we can use else-if here, because new node is empty, we don't need to check the leading "."
       } else if (node.get('.')?.[SENTINEL] === true) {
         // Trying to add `example.com` when there is already a `.example.com` in the trie
         // No need to increment size and set SENTINEL to true (skip this "new" item)
