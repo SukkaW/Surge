@@ -35,8 +35,8 @@ export const buildPublic = task(import.meta.main, import.meta.path)(async (span)
       const filesToBeCopied = folderAndFilesToBeDeployed.flatMap(folderOrFile => trie.find(folderOrFile));
 
       return Promise.all(filesToBeCopied.map(file => {
-        const src = path.resolve(rootPath, file);
-        const dest = path.resolve(publicPath, file);
+        const src = path.join(rootPath, file);
+        const dest = path.join(publicPath, file);
 
         return Bun.write(dest, Bun.file(src));
       }));
@@ -67,67 +67,69 @@ const priorityOrder: Record<'default' | string & {}, number> = {
 const prioritySorter = (a: TreeType, b: TreeType) => {
   return ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || a.name.localeCompare(b.name);
 };
+
+const html = (string: TemplateStringsArray, ...values: any[]) => string.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
+
 const walk = (tree: TreeTypeArray) => {
   let result = '';
   sort(tree, prioritySorter);
   for (let i = 0, len = tree.length; i < len; i++) {
     const entry = tree[i];
     if (entry.type === 'directory') {
-      result += `<li class="folder">${entry.name}`;
-      result += '<ul>';
-      result += walk(entry.children);
-      result += '</ul>';
+      result += html`
+        <li class="folder">
+          ${entry.name}
+          <ul>
+            ${walk(entry.children)}
+          </ul>
+        </li>
+      `;
     } else if (/* entry.type === 'file' && */ entry.name !== 'index.html') {
-      result += `<li><a class="file directory-list-file" href="${entry.path}">${entry.name}</a></li>`;
+      result += html`<li><a class="file directory-list-file" href="${entry.path}">${entry.name}</a></li>`;
     }
   }
   return result;
 };
 
 function generateHtml(tree: TreeTypeArray) {
-  let html = `<!DOCTYPE html>
-  <html lang="en">
+  return html`
+      <!DOCTYPE html>
+        <html lang="en">
 
-  <head>
-    <meta charset="utf-8">
-    <title>Surge Ruleset Server | Sukka (@SukkaW)</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <link href="https://cdn.skk.moe/favicon.ico" rel="icon" type="image/ico">
-    <link href="https://cdn.skk.moe/favicon/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180">
-    <link href="https://cdn.skk.moe/favicon/android-chrome-192x192.png" rel="icon" type="image/png" sizes="192x192">
-    <link href="https://cdn.skk.moe/favicon/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32">
-    <link href="https://cdn.skk.moe/favicon/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16">
-    <meta name="description" content="Sukka 自用的 Surge / Clash Premium 规则组">
-  
-    <link rel="stylesheet" href="https://cdn.skk.moe/ruleset/css/21d8777a.css" />
-  
-    <meta property="og:title" content="Surge Ruleset | Sukka (@SukkaW)">
-    <meta property="og:type" content="Website">
-    <meta property="og:url" content="https://ruleset.skk.moe/">
-    <meta property="og:image" content="https://cdn.skk.moe/favicon/android-chrome-192x192.png">
-    <meta property="og:description" content="Sukka 自用的 Surge / Clash Premium 规则组">
-    <meta name="twitter:card" content="summary">
-    <link rel="canonical" href="https://ruleset.skk.moe/">
-  </head>`;
+        <head>
+          <meta charset="utf-8">
+          <title>Surge Ruleset Server | Sukka (@SukkaW)</title>
+          <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+          <link href="https://cdn.skk.moe/favicon.ico" rel="icon" type="image/ico">
+          <link href="https://cdn.skk.moe/favicon/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180">
+          <link href="https://cdn.skk.moe/favicon/android-chrome-192x192.png" rel="icon" type="image/png" sizes="192x192">
+          <link href="https://cdn.skk.moe/favicon/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32">
+          <link href="https://cdn.skk.moe/favicon/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16">
+          <meta name="description" content="Sukka 自用的 Surge / Clash Premium 规则组">
 
-  html += `<body>
-  <main class="container">
-    <h1>Sukka Ruleset Server</h1>
-    <p>
-      Made by <a href="https://skk.moe">Sukka</a> | <a href="https://github.com/SukkaW/Surge/">Source @ GitHub</a> | Licensed under <a href="/LICENSE" target="_blank">AGPL-3.0</a>
-    </p>
-    <p>Last Build: ${new Date().toISOString()}</p>
-    <br>`;
+          <link rel="stylesheet" href="https://cdn.skk.moe/ruleset/css/21d8777a.css" />
 
-  html += '<ul class="directory-list">';
-
-  html += walk(tree);
-
-  html += '</ul>';
-
-  html += `</main>
-  </body>
-  </html>`;
-
-  return html;
+          <meta property="og:title" content="Surge Ruleset | Sukka (@SukkaW)">
+          <meta property="og:type" content="Website">
+          <meta property="og:url" content="https://ruleset.skk.moe/">
+          <meta property="og:image" content="https://cdn.skk.moe/favicon/android-chrome-192x192.png">
+          <meta property="og:description" content="Sukka 自用的 Surge / Clash Premium 规则组">
+          <meta name="twitter:card" content="summary">
+          <link rel="canonical" href="https://ruleset.skk.moe/">
+        </head>
+      <body>
+        <main class="container">
+          <h1>Sukka Ruleset Server</h1>
+          <p>
+            Made by <a href="https://skk.moe">Sukka</a> | <a href="https://github.com/SukkaW/Surge/">Source @ GitHub</a> | Licensed under <a href="/LICENSE" target="_blank">AGPL-3.0</a>
+          </p>
+          <p>Last Build: ${new Date().toISOString()}</p>
+          <br>
+          <ul class="directory-list">
+            ${walk(tree)}
+          </ul>
+        </main>
+      </body>
+    </html>
+  `;
 }
