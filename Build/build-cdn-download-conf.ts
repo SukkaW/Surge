@@ -62,7 +62,8 @@ export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(asy
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
   ]);
 
-  appendArrayInPlace(cdnDomainsList, Array.from(S3OSSDomains).map((domain) => `.${domain}`));
+  appendArrayInPlace(downloadDomainSet, Array.from(S3OSSDomains).map((domain) => `.${domain}`));
+  appendArrayInPlace(downloadDomainSet, steamDomainSet);
 
   return Promise.all([
     createRuleset(
@@ -88,10 +89,7 @@ export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(asy
         'This file contains domains for software updating & large file hosting.'
       ],
       new Date(),
-      sortDomains(domainDeduper([
-        ...downloadDomainSet,
-        ...steamDomainSet
-      ])),
+      sortDomains(domainDeduper(downloadDomainSet)),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/download.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/download.txt')
