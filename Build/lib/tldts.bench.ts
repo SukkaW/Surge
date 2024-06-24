@@ -35,14 +35,12 @@ import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 
       bench('tldts', () => {
         for (let i = 0, len = data.length; i < len; i++) {
-          // eslint-disable-next-line import-x/namespace -- safe
           tldts[methodName](data[i], tldtsOpt);
         }
       });
 
       bench('tldts-experimental', () => {
         for (let i = 0, len = data.length; i < len; i++) {
-          // eslint-disable-next-line import-x/namespace -- safe
           tldtsExperimental[methodName](data[i], tldtsOpt);
         }
       });

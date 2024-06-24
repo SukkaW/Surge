@@ -190,7 +190,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
       .then(setAddFromArrayCurried(domains))
   );
 
-  await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve, reject) => {
     const pMap = ([
       'Hong Kong',
       'Taiwan',
@@ -244,8 +244,8 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
 
     Promise.all(Object.values(pMap)).then(() => {
       clearTimeout(timer);
-      resolve();
-    });
+      return resolve();
+    }).catch(() => reject);
   });
 
   const deduped = span.traceChildSync('sort result', () => sortDomains(domainDeduper(Array.from(domains))));
