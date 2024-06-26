@@ -34,14 +34,14 @@
     "yaml": "^2.4.5"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^6.0.0-beta.27",
+    "@eslint-sukka/node": "^6.0.0-beta.29",
     "@types/async-retry": "^1.4.8",
     "@types/bun": "^1.1.5",
     "@types/tar-stream": "^3.1.3",
-    "bun-types": "^1.1.16",
+    "bun-types": "^1.1.17",
     "eslint": "^9.5.0",
-    "eslint-config-sukka": "^6.0.0-beta.27",
-    "eslint-formatter-sukka": "^6.0.0-beta.27",
+    "eslint-config-sukka": "^6.0.0-beta.29",
+    "eslint-formatter-sukka": "^6.0.0-beta.29",
     "mitata": "^0.1.11",
     "typescript": "^5.5.2"
   },
