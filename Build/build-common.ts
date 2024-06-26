@@ -28,9 +28,7 @@ export const buildCommon = task(import.meta.main, import.meta.path)(async (span)
     //   if (dirName === 'domainset' || dirName === 'ip' || dirName === 'non_ip') {
     //     return false;
     //   }
-
-  //   console.error(picocolors.red(`[build-comman] Unknown dir: ${dirPath}`));
-
+    //   console.error(picocolors.red(`[build-comman] Unknown dir: ${dirPath}`));
     //   return true;
     // })
     .filter((filepath, isDirectory) => {

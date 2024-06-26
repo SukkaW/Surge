@@ -44,7 +44,7 @@ const HOSTNAMES = [
 
 export const buildAlwaysRealIPModule = task(import.meta.main, import.meta.path)(async (span) => {
   // Intranet, Router Setup, and mant more
-  const dataset = ([Object.entries(DIRECTS), Object.entries(LANS)]);
+  const dataset = [Object.entries(DIRECTS), Object.entries(LANS)];
   const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])));
   const clash = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.map((domain) => `+.${domain}`)));
 

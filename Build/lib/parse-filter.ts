@@ -434,28 +434,41 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
     let sliceStart = 0;
     let sliceEnd: number | undefined;
 
-    if (line[2] === '|') { // line.startsWith('@@|')
-      sliceStart = 3;
-      whiteIncludeAllSubDomain = false;
+    switch (line[2]) {
+      case '|':
+        // line.startsWith('@@|')
+        sliceStart = 3;
+        whiteIncludeAllSubDomain = false;
 
-      if (line[3] === '|') { // line.startsWith('@@||')
-        sliceStart = 4;
+        if (line[3] === '|') { // line.startsWith('@@||')
+          sliceStart = 4;
+          whiteIncludeAllSubDomain = true;
+        }
+
+        break;
+
+      case '.': { // line.startsWith('@@.')
+        sliceStart = 3;
         whiteIncludeAllSubDomain = true;
+        break;
       }
-    } else if (line[2] === '.') { // line.startsWith('@@.')
-      sliceStart = 3;
-      whiteIncludeAllSubDomain = true;
-    } else if (
-      /**
-       * line.startsWith('@@://')
-       *
-       * `@@://googleadservices.com^|`
-       * `@@://www.googleadservices.com^|`
-       */
-      line[2] === ':' && line[3] === '/' && line[4] === '/'
-    ) {
-      whiteIncludeAllSubDomain = false;
-      sliceStart = 5;
+
+      case ':': {
+        /**
+         * line.startsWith('@@://')
+         *
+         * `@@://googleadservices.com^|`
+         * `@@://www.googleadservices.com^|`
+         */
+        if (line[3] === '/' && line[4] === '/') {
+          whiteIncludeAllSubDomain = false;
+          sliceStart = 5;
+        }
+        break;
+      }
+
+      default:
+        break;
     }
 
     if (lineEndsWithCaretOrCaretVerticalBar) {
