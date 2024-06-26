@@ -55,11 +55,10 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
           'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
           'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
         ].map(
-          input => processFilterRules(childSpan, input)
-            .then(({ white, black }) => {
-              setAddFromArray(filterRuleWhitelistDomainSets, white);
-              setAddFromArray(filterRuleWhitelistDomainSets, black);
-            })
+          input => processFilterRules(childSpan, input).then(({ white, black }) => {
+            setAddFromArray(filterRuleWhitelistDomainSets, white);
+            setAddFromArray(filterRuleWhitelistDomainSets, black);
+          })
         )),
         getPhishingDomains(childSpan).then(appendArrayToDomainSets),
         getRejectSukkaConfPromise.then(appendArrayToDomainSets)

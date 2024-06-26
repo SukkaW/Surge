@@ -8,6 +8,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import * as yaml from 'yaml';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf'));
@@ -15,13 +16,13 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
   const lans: string[] = [];
 
   Object.entries(DOMESTICS).forEach(([, { domains }]) => {
-    domestics.push(...domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+    appendArrayInPlace(domestics, domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
   });
   Object.entries(DIRECTS).forEach(([, { domains }]) => {
-    directs.push(...domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+    appendArrayInPlace(directs, domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
   });
   Object.entries(LANS).forEach(([, { domains }]) => {
-    lans.push(...domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+    appendArrayInPlace(lans, domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
   });
 
   return [domestics, directs, lans] as const;
@@ -30,7 +31,9 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(async (span) => {
   const res = await getDomesticAndDirectDomainsRulesetPromise();
 
-  const dataset = [...Object.entries(DOMESTICS), ...Object.entries(DIRECTS), ...Object.entries(LANS)];
+  const dataset = Object.entries(DOMESTICS);
+  appendArrayInPlace(dataset, Object.entries(DIRECTS));
+  appendArrayInPlace(dataset, Object.entries(LANS));
 
   return Promise.all([
     createRuleset(

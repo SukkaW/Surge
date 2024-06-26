@@ -28,7 +28,7 @@ export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, strin
   ) {
     const decoder = new TextDecoder(encoding, { fatal, ignoreBOM });
 
-    const nonLastChunkDecoderOpt: TextDecodeOptions = { stream: true };
+    const nonLastChunkDecoderOpt = { stream: true };
 
     super({
       transform(chunk: Uint8Array, controller: TransformStreamDefaultController<string>) {

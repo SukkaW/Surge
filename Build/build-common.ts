@@ -8,8 +8,8 @@ import { domainDeduper } from './lib/domain-deduper';
 import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import picocolors from 'picocolors';
 import { fdir as Fdir } from 'fdir';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -24,31 +24,45 @@ export const buildCommon = task(import.meta.main, import.meta.path)(async (span)
 
   const paths = await new Fdir()
     .withRelativePaths()
+    // .exclude((dirName, dirPath) => {
+    //   if (dirName === 'domainset' || dirName === 'ip' || dirName === 'non_ip') {
+    //     return false;
+    //   }
+
+  //   console.error(picocolors.red(`[build-comman] Unknown dir: ${dirPath}`));
+
+    //   return true;
+    // })
+    .filter((filepath, isDirectory) => {
+      if (isDirectory) return true;
+
+      const extname = path.extname(filepath);
+      if (extname === '.js' || extname === '.ts') {
+        return false;
+      }
+
+      return true;
+    })
     .crawl(sourceDir)
     .withPromise();
 
   for (let i = 0, len = paths.length; i < len; i++) {
     const relativePath = paths[i];
-
-    const extname = path.extname(relativePath);
-    if (extname === '.js' || extname === '.ts') {
-      continue;
-    }
     const fullPath = sourceDir + path.sep + relativePath;
 
     if (relativePath.startsWith('domainset/')) {
       promises.push(transformDomainset(span, fullPath, relativePath));
       continue;
     }
-    if (
-      relativePath.startsWith('ip/')
-      || relativePath.startsWith('non_ip/')
-    ) {
-      promises.push(transformRuleset(span, fullPath, relativePath));
-      continue;
-    }
+    // if (
+    //   relativePath.startsWith('ip/')
+    //   || relativePath.startsWith('non_ip/')
+    // ) {
+    promises.push(transformRuleset(span, fullPath, relativePath));
+    // continue;
+    // }
 
-    console.error(picocolors.red(`[build-comman] Unknown file: ${relativePath}`));
+    // console.error(picocolors.red(`[build-comman] Unknown file: ${relativePath}`));
   }
 
   return Promise.all(promises);
@@ -103,14 +117,15 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
         const [title, descriptions, lines] = res;
 
         const deduped = domainDeduper(lines);
-        const description = [
-          ...SHARED_DESCRIPTION,
-          ...(
-            descriptions.length
-              ? ['', ...descriptions]
-              : []
-          )
-        ];
+
+        let description: string[];
+        if (descriptions.length) {
+          description = SHARED_DESCRIPTION.slice();
+          description.push('');
+          appendArrayInPlace(description, descriptions);
+        } else {
+          description = SHARED_DESCRIPTION;
+        }
 
         return createRuleset(
           span,
@@ -138,14 +153,14 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
 
       const [title, descriptions, lines] = res;
 
-      const description = [
-        ...SHARED_DESCRIPTION,
-        ...(
-          descriptions.length
-            ? ['', ...descriptions]
-            : []
-        )
-      ];
+      let description: string[];
+      if (descriptions.length) {
+        description = SHARED_DESCRIPTION.slice();
+        description.push('');
+        appendArrayInPlace(description, descriptions);
+      } else {
+        description = SHARED_DESCRIPTION;
+      }
 
       return createRuleset(
         span,

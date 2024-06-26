@@ -26,7 +26,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
       let index = 0;
 
       for await (const lineB of readFileByLine(file)) {
-        const lineA = linesA[index];
+        const lineA = linesA[index] as string | undefined;
         index++;
 
         if (lineA == null) {

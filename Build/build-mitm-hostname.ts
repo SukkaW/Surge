@@ -61,9 +61,9 @@ const PRESET_MITM_HOSTNAMES = [
             .replaceAll('^https://', '')
             .replaceAll('^http://', '')
             .split('/')[0]
-            .replaceAll('\\.', '.')
+            .replaceAll(String.raw`\.`, '.')
             .replaceAll('.+', '*')
-            .replaceAll('\\d', '*')
+            .replaceAll(String.raw`\d`, '*')
             .replaceAll('([a-z])', '*')
             .replaceAll('[a-z]', '*')
             .replaceAll('([0-9])', '*')
@@ -104,7 +104,7 @@ const PRESET_MITM_HOSTNAMES = [
       return new RegExp(
         escapeRegExp(i)
           .replaceAll('{www or not}', '(www.)?')
-          .replaceAll('\\*', '(.*)')
+          .replaceAll(String.raw`\*`, '(.*)')
       );
     });
 
@@ -135,7 +135,7 @@ const PRESET_MITM_HOSTNAMES = [
   }));
   console.log('--------------------');
   console.log('Parsed Failed');
-  console.log([...parsedFailures].join('\n'));
+  console.log(Array.from(parsedFailures).join('\n'));
 })();
 
 /** Util function */
@@ -159,6 +159,6 @@ function escapeRegExp(string = '') {
   const reHasRegExpChar = new RegExp(reRegExpChar.source);
 
   return string && reHasRegExpChar.test(string)
-    ? string.replaceAll(reRegExpChar, '\\$&')
+    ? string.replaceAll(reRegExpChar, String.raw`\$&`)
     : string;
 }
