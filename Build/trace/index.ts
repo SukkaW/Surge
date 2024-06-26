@@ -72,26 +72,20 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
     stop,
     traceChild,
     traceSyncFn<T>(fn: (span: Span) => T) {
-      try {
-        return fn(span);
-      } finally {
-        span.stop();
-      }
+      const res = fn(span);
+      span.stop();
+      return res;
     },
     async traceAsyncFn<T>(fn: (span: Span) => T | Promise<T>): Promise<T> {
-      try {
-        return await fn(span);
-      } finally {
-        span.stop();
-      }
+      const res = await fn(span);
+      span.stop();
+      return res;
     },
     traceResult: curTraceResult,
     async tracePromise<T>(promise: Promise<T>): Promise<T> {
-      try {
-        return await promise;
-      } finally {
-        span.stop();
-      }
+      const res = await promise;
+      span.stop();
+      return res;
     },
     traceChildSync: <T>(name: string, fn: (span: Span) => T): T => traceChild(name).traceSyncFn(fn),
     traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>): Promise<T> => traceChild(name).traceAsyncFn(fn),

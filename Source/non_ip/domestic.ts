@@ -141,18 +141,21 @@ export const DOMESTICS = {
   },
   BILIBILI_ALI: {
     dns: 'quic://dns.alidns.com:853',
+    hosts: {},
     domains: [
       'upos-sz-mirrorali.bilivideo.com'
     ]
   },
   BILIBILI_BD: {
     dns: '180.76.76.76',
+    hosts: {},
     domains: [
       'upos-sz-mirrorbos.bilivideo.com'
     ]
   },
   BILIBILI: {
     dns: 'https://doh.pub/dns-query',
+    hosts: {},
     domains: [
       'upos-sz-mirrorcoso1.bilivideo.com',
       'acg.tv',
@@ -179,6 +182,7 @@ export const DOMESTICS = {
   },
   XIAOMI: {
     dns: 'https://doh.pub/dns-query',
+    hosts: {},
     domains: [
       'mi.com',
       'duokan.com',
@@ -195,6 +199,7 @@ export const DOMESTICS = {
   },
   BYTEDANCE: {
     dns: '180.184.2.2',
+    hosts: {},
     domains: [
       'bytecdn.cn',
       'toutiaoimg.com',
@@ -235,6 +240,7 @@ export const DOMESTICS = {
   },
   BAIDU: {
     dns: '180.76.76.76',
+    hosts: {},
     domains: [
       '91.com',
       'hao123.com',

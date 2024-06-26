@@ -85,12 +85,8 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
         `#!desc=Last Updated: ${new Date().toISOString()}`,
         '',
         '[Host]',
-        ...dataset.flatMap(([, { domains, dns, ...rest }]) => [
-          ...(
-            'hosts' in rest
-              ? Object.entries(rest.hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`)
-              : []
-          ),
+        ...dataset.flatMap(([, { domains, dns, hosts }]) => [
+          ...Object.entries(hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`),
           ...domains.flatMap((domain) => [
             `${domain} = server:${dns}`,
             `*.${domain} = server:${dns}`

@@ -2,6 +2,7 @@ import path from 'path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts';
+import { isTruthy } from './lib/misc';
 
 function escapeRegExp(string = '') {
   const reRegExpChar = /[$()*+.?[\\\]^{|}]/g;
@@ -122,7 +123,7 @@ export const buildRedirectModule = task(import.meta.main, import.meta.path)(asyn
   const domains = Array.from(new Set([
     ...REDIRECT_MIRROR.map(([from]) => getHostname(from, { detectIp: false })),
     ...REDIRECT_FAKEWEBSITES.flatMap(([from]) => [from, `www.${from}`])
-  ])).filter(Boolean);
+  ])).filter(isTruthy);
 
   return compareAndWriteFile(
     span,

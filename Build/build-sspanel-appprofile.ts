@@ -10,6 +10,8 @@ import { getChnCidrPromise } from './build-chn-cidr';
 import { getTelegramCIDRPromise } from './build-telegram-cidr';
 import { compareAndWriteFile } from './lib/create-file';
 import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
+import { isTruthy } from './lib/misc';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: boolean]> = [
   ['Default Proxy', true, false],
@@ -120,8 +122,6 @@ export const buildSSPanelUIMAppProfile = task(import.meta.main, import.meta.path
   );
 });
 
-const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
-
 function generateAppProfile(
   directDomains: string[],
   microsoftAppleDomains: string[],
@@ -135,7 +135,7 @@ function generateAppProfile(
   globalCidrs: string[],
   lanCidrs: string[]
 ) {
-  return [
+  const redults = [
     '<?php',
     '',
     `// # Build ${new Date().toISOString()}`,
@@ -172,8 +172,12 @@ function generateAppProfile(
       return acc;
     }, [])).slice(1, -1)}];`,
     '$_ENV[\'Clash_Group_Config\'] = [',
-    '    \'proxy-groups\' => [',
-    ...POLICY_GROUPS.flatMap(([name, insertProxy, insertDirect]) => {
+    '    \'proxy-groups\' => ['
+  ];
+
+  appendArrayInPlace(
+    redults,
+    POLICY_GROUPS.flatMap(([name, insertProxy, insertDirect]) => {
       return [
         '        [',
         `            'name' => '${name}',`,
@@ -184,33 +188,79 @@ function generateAppProfile(
         '            ],',
         '        ],'
       ].filter(isTruthy);
-    }),
-    '    ],',
-    '    \'rules\' => [',
-    // domestic - domains
-    ...directDomains.map(line => `        '${line},Domestic',`),
-    // microsoft & apple - domains
-    ...microsoftAppleDomains.map(line => `        '${line},Microsoft & Apple',`),
-    // stream - domains
-    ...streamDomains.map(line => `        '${line},Stream',`),
-    // steam download - domains
-    ...steamDomains.map(line => `        '${line},Steam Download',`),
-    // global - domains
-    ...globalDomains.map(line => `        '${line},Global',`),
-    // microsoft & apple - ip cidr (nope)
-    // lan - domains
-    ...lanDomains.map(line => `        '${line},DIRECT',`),
-    // stream - ip cidr
-    ...streamCidrs.map(line => `        '${line},Stream',`),
-    // global - ip cidr
-    ...globalCidrs.map(line => `        '${line},Global',`),
-    // domestic - ip cidr
-    ...directCidrs.map(line => `        '${line},Domestic',`),
-    // lan - ip cidr
-    ...lanCidrs.map(line => `        '${line},DIRECT',`),
-    // match
-    '        \'MATCH,Final Match\',',
-    '    ],',
-    '];'
-  ];
+    })
+  );
+
+  appendArrayInPlace(
+    redults,
+    [
+      '    ],',
+      '    \'rules\' => ['
+    ]
+  );
+
+  // domestic - domains
+  appendArrayInPlace(
+    redults,
+    directDomains.map(line => `        '${line},Domestic',`)
+  );
+
+  // microsoft & apple - domains
+  appendArrayInPlace(
+    redults,
+    microsoftAppleDomains.map(line => `        '${line},Microsoft & Apple',`)
+  );
+
+  // stream - domains
+  appendArrayInPlace(
+    redults,
+    streamDomains.map(line => `        '${line},Stream',`)
+  );
+  // steam download - domains
+  appendArrayInPlace(
+    redults,
+    steamDomains.map(line => `        '${line},Steam Download',`)
+  );
+  // global - domains
+  appendArrayInPlace(
+    redults,
+    globalDomains.map(line => `        '${line},Global',`)
+  );
+  // microsoft & apple - ip cidr (nope)
+  // lan - domains
+  appendArrayInPlace(
+    redults,
+    lanDomains.map(line => `        '${line},DIRECT',`)
+  );
+  // stream - ip cidr
+  appendArrayInPlace(
+    redults,
+    streamCidrs.map(line => `        '${line},Stream',`)
+  );
+  // global - ip cidr
+  appendArrayInPlace(
+    redults,
+    globalCidrs.map(line => `        '${line},Global',`)
+  );
+  // domestic - ip cidr
+  appendArrayInPlace(
+    redults,
+    directCidrs.map(line => `        '${line},Domestic',`)
+  );
+  // lan - ip cidr
+  appendArrayInPlace(
+    redults,
+    lanCidrs.map(line => `        '${line},DIRECT',`)
+  );
+  // match
+  appendArrayInPlace(
+    redults,
+    [
+      '        \'MATCH,Final Match\',',
+      '    ],',
+      '];'
+    ]
+  );
+
+  return redults;
 }

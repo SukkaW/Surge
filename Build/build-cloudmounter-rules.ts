@@ -11,9 +11,7 @@ export const buildCloudMounterRules = task(import.meta.main, import.meta.path)(a
   // AND,((SRC-IP,192.168.1.110), (DOMAIN, example.com))
 
   const results = DOMAINS.flatMap(domain => {
-    return PROCESS_NAMES.map(process => {
-      return `AND,((${domain}),(PROCESS-NAME,${process}))`;
-    });
+    return PROCESS_NAMES.map(process => `AND,((${domain}),(PROCESS-NAME,${process}))`);
   });
 
   const description = SHARED_DESCRIPTION;

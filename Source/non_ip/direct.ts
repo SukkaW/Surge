@@ -1,5 +1,5 @@
 export interface DNSMapping {
-  hosts?: {
+  hosts: {
     [domain: string]: string[]
   },
   dns: string,
@@ -9,6 +9,7 @@ export interface DNSMapping {
 export const DIRECTS = {
   ROUTER: {
     dns: 'system',
+    hosts: {},
     domains: [
       // Aruba Router
       'instant.arubanetworks.com',
@@ -77,6 +78,7 @@ export const DIRECTS = {
   },
   SYSTEM: {
     dns: 'system',
+    hosts: {},
     domains: [
       '_hotspot_.m2m',
       'hotspot.cslwifi.com',
@@ -92,6 +94,7 @@ export const DIRECTS = {
 export const LANS = {
   LAN: {
     dns: 'system',
+    hosts: {},
     domains: [
       'lan',
       'localhost',
