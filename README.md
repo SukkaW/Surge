@@ -219,7 +219,7 @@ rule-providers:
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/ip/stream_us.txt
-    path: ./sukkaw_ruleset/stream_ip.txt
+    path: ./sukkaw_ruleset/stream_us_ip.txt
   # 欧洲相关流媒体
   stream_eu_non_ip:
     type: http
