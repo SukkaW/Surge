@@ -26,9 +26,12 @@ export const buildPublic = task(import.meta.main, import.meta.path)(async (span)
     .traceAsyncFn(async () => {
       const trie = Trie.from(await new Fdir()
         .withRelativePaths()
-        .exclude((dirName) => {
-          return dirName === 'node_modules' || dirName === 'Build' || dirName === 'public' || dirName[0] === '.';
-        })
+        .exclude((dirName) => (
+          dirName === 'node_modules'
+          || dirName === 'Build'
+          || dirName === 'public'
+          || dirName[0] === '.'
+        ))
         .crawl(rootPath)
         .withPromise());
 

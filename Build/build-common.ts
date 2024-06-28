@@ -19,6 +19,8 @@ const sourceDir = path.resolve(import.meta.dir, '../Source');
 const outputSurgeDir = path.resolve(import.meta.dir, '../List');
 const outputClashDir = path.resolve(import.meta.dir, '../Clash');
 
+const domainsetSrcFolder = 'domainset' + path.sep;
+
 export const buildCommon = task(import.meta.main, import.meta.path)(async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
@@ -48,7 +50,7 @@ export const buildCommon = task(import.meta.main, import.meta.path)(async (span)
     const relativePath = paths[i];
     const fullPath = sourceDir + path.sep + relativePath;
 
-    if (relativePath.startsWith('domainset/')) {
+    if (relativePath.startsWith(domainsetSrcFolder)) {
       promises.push(transformDomainset(span, fullPath, relativePath));
       continue;
     }
