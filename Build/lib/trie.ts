@@ -25,14 +25,8 @@ const deepTrieNodeToJSON = (node: TrieNode) => {
   return obj;
 };
 
-function trieNodeInspectCustom(this: TrieNode) {
-  return JSON.stringify(deepTrieNodeToJSON(this), null, 2);
-}
-
 const createNode = (parent: TrieNode | null = null): TrieNode => {
-  const node = [false, parent, new Map<string, TrieNode>()] as TrieNode;
-  Object.defineProperty(node, Bun.inspect.custom, { value: trieNodeInspectCustom });
-  return node;
+  return [false, parent, new Map<string, TrieNode>()] as TrieNode;
 };
 
 const hostnameToTokens = (hostname: string): string[] => {
@@ -70,32 +64,32 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
   /**
    * Method used to add the given suffix to the trie.
    */
-  const add = (suffix: string): void => {
-    let node: TrieNode = root;
-    let token: string;
+  const add = smolTree
+    ? (suffix: string): void => {
+      let node: TrieNode = root;
+      let token: string;
 
-    const tokens = suffixToTokens(suffix);
+      const tokens = suffixToTokens(suffix);
 
-    for (let i = tokens.length - 1; i >= 0; i--) {
-      token = tokens[i];
+      for (let i = tokens.length - 1; i >= 0; i--) {
+        token = tokens[i];
 
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+        if (node[2].has(token)) {
+          node = node[2].get(token)!;
 
-        // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie
-        // Dedupe the covered subdomain by skipping
-        if (smolTree && token === '.' && node[0]) {
-          return;
+          // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie
+          // Dedupe the covered subdomain by skipping
+          if (token === '.' && node[0]) {
+            return;
+          }
+        } else {
+          const newNode = createNode(node);
+          node[2].set(token, newNode);
+          node = newNode;
         }
-      } else {
-        const newNode = createNode(node);
-        node[2].set(token, newNode);
-        node = newNode;
       }
-    }
 
-    // If we are in smolTree mode, we need to do something at the end of the loop
-    if (smolTree) {
+      // If we are in smolTree mode, we need to do something at the end of the loop
       if (tokens[0] === '.') {
         // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
 
@@ -114,12 +108,32 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         // No need to increment size and set SENTINEL to true (skip this "new" item)
         return;
       }
-    } else if (!node[0]) { // smol tree don't have size, so else-if here
-      size++;
-    }
 
-    node[0] = true;
-  };
+      node[0] = true;
+    }
+    : (suffix: string): void => {
+      let node: TrieNode = root;
+      let token: string;
+
+      const tokens = suffixToTokens(suffix);
+
+      for (let i = tokens.length - 1; i >= 0; i--) {
+        token = tokens[i];
+
+        if (node[2].has(token)) {
+          node = node[2].get(token)!;
+        } else {
+          const newNode = createNode(node);
+          node[2].set(token, newNode);
+          node = newNode;
+        }
+      }
+
+      if (!node[0]) { // smol tree don't have size, so else-if here
+        size++;
+        node[0] = true;
+      }
+    };
 
   const walkIntoLeafWithTokens = (
     tokens: string | string[],
