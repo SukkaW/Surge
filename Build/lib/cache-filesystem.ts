@@ -4,6 +4,7 @@ import os from 'os';
 import path from 'path';
 import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
+import { fastStringArrayJoin } from './misc';
 
 const identity = (x: any) => x;
 
@@ -215,7 +216,7 @@ const separator = '\u0000';
 // const textDecoder = new TextDecoder();
 // export const serializeString = (str: string) => textEncoder.encode(str);
 // export const deserializeString = (str: string) => textDecoder.decode(new Uint8Array(str.split(separator).map(Number)));
-export const serializeSet = (set: Set<string>) => Array.from(set).join(separator);
+export const serializeSet = (set: Set<string>) => fastStringArrayJoin(Array.from(set), separator);
 export const deserializeSet = (str: string) => new Set(str.split(separator));
-export const serializeArray = (arr: string[]) => arr.join(separator);
+export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separator);
 export const deserializeArray = (str: string) => str.split(separator);

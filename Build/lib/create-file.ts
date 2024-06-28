@@ -5,6 +5,7 @@ import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';
 import { sort } from './timsort';
+import { fastStringArrayJoin } from './misc';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -69,7 +70,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
   await span.traceChildAsync(`writing ${filePath}`, async () => {
     // if (linesALen < 10000) {
-    return Bun.write(file, `${linesA.join('\n')}\n`);
+    return Bun.write(file, fastStringArrayJoin(linesA, '\n') + '\n');
     // }
     // const writer = file.writer();
 

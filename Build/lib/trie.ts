@@ -2,6 +2,8 @@
  * Suffix Trie based on Mnemonist Trie
  */
 
+import { fastStringArrayJoin } from './misc';
+
 // const { Error, Bun, JSON, Symbol } = globalThis;
 
 const noop = () => { /** noop */ };
@@ -262,7 +264,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       inputTokens
     );
 
-    return hostnameMode ? matches.map((m) => (m as string[]).join('')) : matches as string[];
+    return hostnameMode ? matches.map((m) => fastStringArrayJoin(m as string[], '')) : matches as string[];
   };
 
   /**
@@ -279,7 +281,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     if (res === null) return;
 
     const onMatches = hostnameMode
-      ? (suffix: string[]) => set.delete(suffix.join(''))
+      ? (suffix: string[]) => set.delete(fastStringArrayJoin(suffix, ''))
       : (suffix: string) => set.delete(suffix);
 
     walk(
@@ -327,7 +329,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
     walk(suffix => {
       results.push(
-        isHostnameMode(suffix) ? suffix.join('') : suffix
+        isHostnameMode(suffix) ? fastStringArrayJoin(suffix, '') : suffix
       );
     });
 
