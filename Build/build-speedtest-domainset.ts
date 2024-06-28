@@ -223,7 +223,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
       'Turkey'
     ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
       pMap[keyword] = span.traceChildAsync(`fetch speedtest endpoints: ${keyword}`, () => querySpeedtestApi(keyword)).then(hostnameGroup => {
-        hostnameGroup.forEach(hostname => {
+        return hostnameGroup.forEach(hostname => {
           if (hostname) {
             domains.add(hostname);
           }
