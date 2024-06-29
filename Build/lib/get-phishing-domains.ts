@@ -3,7 +3,7 @@ import * as tldts from 'tldts-experimental';
 
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
-import { PHISHING_DOMAIN_LISTS } from './reject-data-source';
+import { PHISHING_DOMAIN_LISTS } from '../constants/reject-data-source';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';

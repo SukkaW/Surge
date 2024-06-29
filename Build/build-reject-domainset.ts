@@ -4,7 +4,7 @@ import path from 'path';
 import { processHosts, processFilterRules, processDomainLists } from './lib/parse-filter';
 import { createTrie } from './lib/trie';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS } from './lib/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS } from './constants/reject-data-source';
 import { createRuleset, compareAndWriteFile } from './lib/create-file';
 import { domainDeduper } from './lib/domain-deduper';
 import createKeywordFilter from './lib/aho-corasick';

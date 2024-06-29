@@ -1,4 +1,4 @@
-import { TTL } from './cache-filesystem';
+import { TTL } from '../lib/cache-filesystem';
 
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean, ttl: number];
 
