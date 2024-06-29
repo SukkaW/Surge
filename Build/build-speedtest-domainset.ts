@@ -155,6 +155,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
     '.ookla-speedtests.e2ro.com',
     '.speedtest.com.sg',
     '.ookla.ddnsgeek.com',
+    '.speedtest.pni.tw',
     // Cloudflare
     '.speed.cloudflare.com',
     // Wi-Fi Man
