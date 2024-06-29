@@ -31,10 +31,11 @@ const createNode = (parent: TrieNode | null = null): TrieNode => {
 
 const hostnameToTokens = (hostname: string): string[] => {
   return hostname.split('.').reduce<string[]>((acc, token, index) => {
-    if (index !== 0) {
-      acc.push('.');
+    if (index > 0) {
+      acc.push('.', token);
+    } else if (token.length > 0) {
+      acc.push(token);
     }
-    acc.push(token);
     return acc;
   }, []);
 };
