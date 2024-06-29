@@ -30,25 +30,13 @@ const createNode = (parent: TrieNode | null = null): TrieNode => {
 };
 
 const hostnameToTokens = (hostname: string): string[] => {
-  let buf = '';
-  const tokens: string[] = [];
-  for (let i = 0, l = hostname.length; i < l; i++) {
-    const c = hostname[i];
-    if (c === '.') {
-      if (buf) {
-        tokens.push(buf, /* . */ c);
-        buf = '';
-      } else {
-        tokens.push(/* . */ c);
-      }
-    } else {
-      buf += c;
+  return hostname.split('.').reduce<string[]>((acc, token, index) => {
+    if (index !== 0) {
+      acc.push('.');
     }
-  }
-  if (buf) {
-    tokens.push(buf);
-  }
-  return tokens;
+    acc.push(token);
+    return acc;
+  }, []);
 };
 
 export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = false, smolTree = false) => {
