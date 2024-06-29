@@ -82,9 +82,9 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
       const [type, value] = line.split(',');
 
       if (type === 'DOMAIN-KEYWORD') {
-        domainKeywordsSet.add(value.trim());
+        domainKeywordsSet.add(value);
       } else if (type === 'DOMAIN-SUFFIX') {
-        domainSets.add(`.${value.trim()}`); // Add to domainSets for later deduplication
+        domainSets.add('.' + value); // Add to domainSets for later deduplication
       }
     }
 
