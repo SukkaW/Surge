@@ -9,8 +9,7 @@ import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import picocolors from 'picocolors';
-import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
-import { processLine } from './lib/process-line';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 import { createMemoizedPromise } from './lib/memo-promise';
 
@@ -83,14 +82,11 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
 };
 
 const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
-  const domains: string[] = [];
-  for await (const l of await fetchRemoteTextByLine('https://ruleset.skk.moe/List/domainset/speedtest.conf')) {
-    const line = processLine(l);
-    if (line) {
-      domains.push(line);
-    }
+  try {
+    return await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'));
+  } catch {
+    return [];
   }
-  return domains;
 });
 
 export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(async (span) => {
