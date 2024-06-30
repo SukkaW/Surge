@@ -103,6 +103,31 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'notion.site'
 ]);
 
+const sensitiveKeywords = createKeywordFilter([
+  '-roblox',
+  '.amazon-',
+  '-amazon',
+  'fb-com',
+  'facebook.',
+  'facebook-',
+  '.facebook',
+  '-facebook',
+  'coinbase',
+  'metamask-',
+  '-metamask',
+  'virus-',
+  'icloud-',
+  'apple-',
+  '-coinbase',
+  'coinbase-'
+]);
+const lowKeywords = createKeywordFilter([
+  '-co-jp',
+  'customer.',
+  'customer-',
+  '.www-'
+]);
+
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
     const domainArr: string[] = [];
@@ -134,10 +159,11 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         continue;
       }
 
-      if (tld.length < 7 && !BLACK_TLD.has(tld)) continue;
+      let sensitiveKeywordsHit: boolean | null = null;
+      if (tld.length < 7 && !BLACK_TLD.has(tld) && !(sensitiveKeywordsHit = sensitiveKeywords(line))) continue;
 
       domainCountMap[apexDomain] ||= 0;
-      domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain);
+      domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain, sensitiveKeywordsHit);
     }
   });
 
@@ -150,26 +176,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   return domainArr;
 });
 
-const sensitiveKeywords = createKeywordFilter([
-  '-roblox',
-  '.amazon-',
-  '-amazon',
-  'fb-com',
-  'facebook-',
-  '-facebook',
-  'coinbase',
-  'metamask-',
-  '-metamask',
-  'virus-'
-]);
-const lowKeywords = createKeywordFilter([
-  '-co-jp',
-  'customer.',
-  'customer-',
-  '.www-'
-]);
-
-export function calcDomainAbuseScore(line: string, subdomain: string | null) {
+export function calcDomainAbuseScore(line: string, subdomain: string | null, sensitiveKeywordsHit: boolean | null) {
   let weight = 1;
 
   const isPhishingDomainMockingCoJp = line.includes('-co-jp');
@@ -179,7 +186,8 @@ export function calcDomainAbuseScore(line: string, subdomain: string | null) {
 
   const hitLowKeywords = lowKeywords(line);
 
-  if (sensitiveKeywords(line)) {
+  sensitiveKeywordsHit ??= sensitiveKeywords(line);
+  if (sensitiveKeywordsHit) {
     weight += 4;
     if (hitLowKeywords) {
       weight += 5;
