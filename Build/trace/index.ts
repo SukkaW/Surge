@@ -166,19 +166,19 @@ function printTree(initialTree: TraceResult, printNode: (node: TraceResult, bran
 }
 
 function printStats(stats: TraceResult[]): void {
-  stats.sort((a, b) => a.start - b.start);
-
   const longestTaskName = Math.max(...stats.map(i => i.name.length));
   const realStart = Math.min(...stats.map(i => i.start));
   const realEnd = Math.max(...stats.map(i => i.end));
 
   const statsStep = ((realEnd - realStart) / 120) | 0;
 
-  stats.forEach(stat => {
-    console.log(
-      `[${stat.name}]${' '.repeat(longestTaskName - stat.name.length)}`,
-      ' '.repeat(((stat.start - realStart) / statsStep) | 0),
-      '='.repeat(Math.max(((stat.end - stat.start) / statsStep) | 0, 1))
-    );
-  });
+  stats
+    .sort((a, b) => a.start - b.start)
+    .forEach(stat => {
+      console.log(
+        `[${stat.name}]${' '.repeat(longestTaskName - stat.name.length)}`,
+        ' '.repeat(((stat.start - realStart) / statsStep) | 0),
+        '='.repeat(Math.max(((stat.end - stat.start) / statsStep) | 0, 1))
+      );
+    });
 }

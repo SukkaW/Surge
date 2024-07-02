@@ -159,7 +159,7 @@ const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
-  type: 'ruleset' | 'domainset', surgePath: string, clashPath: string
+  type: ('ruleset' | 'domainset' | string & {}), surgePath: string, clashPath: string
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn((childSpan) => {
   const surgeContent = withBannerArray(
     title, description, date,
@@ -177,7 +177,7 @@ export const createRuleset = (
         _clashContent = [`DOMAIN,${MARK}`, ...surgeRulesetToClashClassicalTextRuleset(content)];
         break;
       default:
-        throw new TypeError(`Unknown type: ${type as any}`);
+        throw new TypeError(`Unknown type: ${type}`);
     }
     return withBannerArray(title, description, date, _clashContent);
   });

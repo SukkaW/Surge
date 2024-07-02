@@ -9,7 +9,7 @@ import { domainDeduper } from './lib/domain-deduper';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { sortDomains } from './lib/stable-sort-domain';
 
-const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
+const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie(
     (await getPublicSuffixListTextPromise()).split('\n'),
     true,
@@ -45,7 +45,7 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
     }
   });
 
-  return S3OSSDomains;
+  return Array.from(S3OSSDomains);
 })();
 
 export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(async (span) => {
@@ -62,7 +62,7 @@ export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(asy
     readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
   ]);
 
-  appendArrayInPlace(downloadDomainSet, Array.from(S3OSSDomains).map((domain) => `.${domain}`));
+  appendArrayInPlace(downloadDomainSet, S3OSSDomains.map(domain => `.${domain}`));
   appendArrayInPlace(downloadDomainSet, steamDomainSet);
 
   return Promise.all([

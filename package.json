@@ -29,21 +29,21 @@
     "punycode": "^2.3.1",
     "table": "^6.8.2",
     "tar-stream": "^3.1.7",
-    "tldts": "^6.1.29",
-    "tldts-experimental": "^6.1.29",
+    "tldts": "^6.1.30",
+    "tldts-experimental": "^6.1.30",
     "yaml": "^2.4.5"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^6.0.0-beta.29",
+    "@eslint-sukka/node": "^6.0.0",
     "@types/async-retry": "^1.4.8",
-    "@types/bun": "^1.1.5",
+    "@types/bun": "^1.1.6",
     "@types/tar-stream": "^3.1.3",
     "bun-types": "^1.1.17",
-    "eslint": "^9.5.0",
-    "eslint-config-sukka": "^6.0.0-beta.29",
-    "eslint-formatter-sukka": "^6.0.0-beta.29",
+    "eslint": "^9.6.0",
+    "eslint-config-sukka": "^6.0.0",
+    "eslint-formatter-sukka": "^6.0.0",
     "mitata": "^0.1.11",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.3"
   },
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"

@@ -426,15 +426,15 @@ class TimSort<T> {
 
     this.tmp = new Array(this.tmpStorageLength);
 
-    this.stackLength = (
-      this.length < 120
-        ? 5
-        : this.length < 1542
-          ? 10
-          : this.length < 119151
-            ? 19
-            : 40
-    );
+    if (this.length < 120) {
+      this.stackLength = 5;
+    } else if (this.length < 1542) {
+      this.stackLength = 10;
+    } else if (this.length < 119151) {
+      this.stackLength = 19;
+    } else {
+      this.stackLength = 40;
+    }
 
     this.runStart = new Array(this.stackLength);
     this.runLength = new Array(this.stackLength);

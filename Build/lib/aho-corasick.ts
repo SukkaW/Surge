@@ -13,35 +13,6 @@ const createNode = (): Node => {
   return node;
 };
 
-const deepNodeToJSON = (node: Node, wset: WeakSet<Node>) => {
-  if (wset.has(node)) {
-    return 'circular';
-  }
-  wset.add(node);
-
-  const obj: Record<string, any> = {};
-  if (node[WORDEND]) {
-    obj['[end]'] = node[WORDEND];
-  }
-
-  node.forEach((value, key) => {
-    obj[key] = deepNodeToJSON(value, wset);
-  });
-  return obj;
-};
-
-function createNodeInspectCustom(node: Node) {
-  const wset = new WeakSet<Node>();
-  return () => {
-    try {
-      return JSON.stringify(deepNodeToJSON(node, wset), null, 2);
-    } catch (e) {
-      console.error(e);
-      return '';
-    }
-  };
-}
-
 const createKeywordFilter = (keys: string[] | Set<string>) => {
   const root = createNode();
 
@@ -92,7 +63,7 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
   // };
   // build();
 
-  const tester = (text: string) => {
+  return (text: string) => {
     let node: Node | undefined = root;
 
     for (let i = 0, textLen = text.length; i < textLen; i++) {
@@ -111,10 +82,6 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
 
     return false;
   };
-
-  tester[Bun.inspect.custom] = createNodeInspectCustom(root);
-
-  return tester;
 };
 
 export default createKeywordFilter;
