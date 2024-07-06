@@ -5,6 +5,7 @@ import { sortDomains } from './lib/stable-sort-domain';
 
 import { Sema } from 'async-sema';
 import { getHostname } from 'tldts';
+import isValidHostname from 'is-valid-hostname';
 import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
@@ -223,7 +224,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
     ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
       pMap[keyword] = span.traceChildAsync(`fetch speedtest endpoints: ${keyword}`, () => querySpeedtestApi(keyword)).then(hostnameGroup => {
         return hostnameGroup.forEach(hostname => {
-          if (hostname) {
+          if (hostname && isValidHostname(hostname)) {
             domainTrie.add(hostname);
           }
         });
