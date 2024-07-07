@@ -59,9 +59,10 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         retry: {
           retries: 2
         }
-      })).then(r => r.json() as any).then((data: Array<{ url: string }>) => data.reduce<string[]>(
+      })).then(r => r.json() as any).then((data: Array<{ url: string, host: string }>) => data.reduce<string[]>(
         (prev, cur) => {
-          const hn = getHostname(cur.url, { detectIp: false, validateHostname: true });
+          const line = cur.host || cur.url;
+          const hn = getHostname(line, { detectIp: false, validateHostname: true });
           if (hn) {
             prev.push(hn);
           }
@@ -146,6 +147,8 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
       '.speedtest.com.sg',
       '.ookla.ddnsgeek.com',
       '.speedtest.pni.tw',
+      '.speedtest.cmcnetworks.net',
+      '.speedtestwnet.com.br',
       // Cloudflare
       '.speed.cloudflare.com',
       // Wi-Fi Man
@@ -178,14 +181,14 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
     'fetch previous speedtest domainset',
     async () => {
       try {
-        const contents = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'));
-        contents.reduce<string[]>((acc, line) => {
+        (
+          await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'))
+        ) .forEach(line => {
           const hn = getHostname(line, { detectIp: false, validateHostname: true });
           if (hn) {
-            acc.push(hn);
+            domainTrie.add(hn);
           }
-          return acc;
-        }, []).forEach(domainTrie.add);
+        });
       } catch { }
     }
   );
