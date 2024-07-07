@@ -100,7 +100,8 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'fleek.cool', // ipfs gateway
   'business.site', // Drag'n'Drop site building platform
   'page.link', // Firebase URL Shortener
-  'notion.site'
+  'notion.site',
+  'vercel.app'
 ]);
 
 const sensitiveKeywords = createKeywordFilter([
@@ -168,7 +169,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   });
 
   for (const domain in domainCountMap) {
-    if (domainCountMap[domain] >= 8 && !WHITELIST_MAIN_DOMAINS.has(domain)) {
+    if (domainCountMap[domain] >= 10 && !WHITELIST_MAIN_DOMAINS.has(domain)) {
       domainArr.push(`.${domain}`);
     }
   }
@@ -178,11 +179,6 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
 
 export function calcDomainAbuseScore(line: string, subdomain: string | null, sensitiveKeywordsHit: boolean | null) {
   let weight = 1;
-
-  const isPhishingDomainMockingCoJp = line.includes('-co-jp');
-  if (isPhishingDomainMockingCoJp) {
-    weight += 0.5;
-  }
 
   const hitLowKeywords = lowKeywords(line);
 
