@@ -11,7 +11,6 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import picocolors from 'picocolors';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
-import { createMemoizedPromise } from './lib/memo-promise';
 
 import { createTrie } from './lib/trie';
 
@@ -62,7 +61,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
         }
       })).then(r => r.json() as any).then((data: Array<{ url: string }>) => data.reduce<string[]>(
         (prev, cur) => {
-          const hn = getHostname(cur.url, { detectIp: false });
+          const hn = getHostname(cur.url, { detectIp: false, validateHostname: true });
           if (hn) {
             prev.push(hn);
           }
@@ -80,14 +79,6 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     return [];
   }
 };
-
-const getPreviousSpeedtestDomainsPromise = createMemoizedPromise(async () => {
-  try {
-    return await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'));
-  } catch {
-    return [];
-  }
-});
 
 export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(async (span) => {
   const domainTrie = createTrie(
@@ -185,8 +176,18 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
 
   await span.traceChildAsync(
     'fetch previous speedtest domainset',
-    () => getPreviousSpeedtestDomainsPromise()
-      .then(prevDomains => prevDomains.forEach(domainTrie.add))
+    async () => {
+      try {
+        const contents = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'));
+        contents.reduce<string[]>((acc, line) => {
+          const hn = getHostname(line, { detectIp: false, validateHostname: true });
+          if (hn) {
+            acc.push(hn);
+          }
+          return acc;
+        }, []).forEach(domainTrie.add);
+      } catch { }
+    }
   );
 
   await new Promise<void>((resolve, reject) => {
