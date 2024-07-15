@@ -4,7 +4,8 @@ export const DOMAINS = [
   'DOMAIN,www.googleapis.com',
   'DOMAIN,api.onedrive.com',
   'DOMAIN-SUFFIX,storage.live.com',
-  'DOMAIN-SUFFIX,files.1drv.com'
+  'DOMAIN-SUFFIX,files.1drv.com',
+  'DOMAIN-SUFFIX,my.microsoftpersonalcontent.com'
 ];
 
 export const PROCESS_NAMES = [
