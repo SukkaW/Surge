@@ -159,7 +159,7 @@ rule-providers:
     path: ./sukkaw_ruleset/cdn_domainset.txt
   cdn_non_ip:
     type: http
-    behavior: domain
+    behavior: classical
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
@@ -593,7 +593,7 @@ rule-providers:
     path: ./sukkaw_ruleset/download_domainset.txt
   download_non_ip:
     type: http
-    behavior: domain
+    behavior: classical
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/download.txt
