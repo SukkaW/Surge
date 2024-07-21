@@ -3,13 +3,6 @@ import { TTL } from '../lib/cache-filesystem';
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean, ttl: number];
 
 export const HOSTS: HostsSource[] = [
-  [
-    'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext',
-    ['https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/pgl.yoyo.org/as/serverlist'],
-    true,
-    TTL.THREE_HOURS()
-  ],
-
   // no coin list is not actively maintained, but it updates daily when being maintained, so we set a 3 days cache ttl
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', null, true, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl
@@ -20,6 +13,13 @@ export const HOSTS: HostsSource[] = [
 ] as const;
 
 export const HOSTS_EXTRA: HostsSource[] = [
+  // This stupid hosts blocks t.co, so we determine that this is also bullshit, so it is also extra
+  [
+    'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext',
+    ['https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/pgl.yoyo.org/as/serverlist'],
+    true,
+    TTL.THREE_HOURS()
+  ],
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
   ['https://someonewhocares.org/hosts/zero/hosts', null, true, TTL.THREE_HOURS()],
   // ad-wars is not actively maintained, so we set a 7 days cache ttl
@@ -31,18 +31,6 @@ export const DOMAIN_LISTS: HostsSource[] = [
   // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 14 days cache ttl
   ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', [], true, TTL.TWO_WEEKS()],
 
-  // Curben's PUP Domains Blocklist
-  // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
-  // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
-  // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl
-  [
-    'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
-    [
-      'https://pup-filter.pages.dev/pup-filter-domains.txt',
-      'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
-    ],
-    true, TTL.TWO_WEEKS()
-  ],
   // Curben's UrlHaus Malicious URL Blocklist
   [
     'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
@@ -67,7 +55,19 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()]
+  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  // Curben's PUP Domains Blocklist
+  // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
+  // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
+  // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl, and move it to extra
+  [
+    'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
+    [
+      'https://pup-filter.pages.dev/pup-filter-domains.txt',
+      'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
+    ],
+    true, TTL.TWO_WEEKS()
+  ]
 ];
 
 export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [

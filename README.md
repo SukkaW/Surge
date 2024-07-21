@@ -27,7 +27,11 @@
 
 ```ini
 # Non IP
+# 基础的 12 万拦截域名
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching
+# 额外 20 万拦截域名，作为基础的补充，启用时需要搭配基础一起使用
+# 在 Surge 5 for Mac（或更新版本），即使同时启用基础和额外的拦截域名也不会导致匹配性能下降或内存占用过高
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_extra.conf,REJECT,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,extended-matching
@@ -65,13 +69,20 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/reject.txt
     path: ./sukkaw_ruleset/reject_non_ip.txt
-  # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
   reject_domainset:
     type: http
     behavior: domain
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/domainset/reject.txt
+    path: ./sukkaw_ruleset/reject_domainset.txt
+  # 在 Clash 上，同时启用基础和额外的拦截域名会导致内存占用过高和匹配用时增加等性能问题
+  reject_extra_domainset:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/reject_extra.txt
     path: ./sukkaw_ruleset/reject_domainset.txt
   reject_ip:
     type: http
@@ -84,8 +95,8 @@ rule-providers:
 rules:
   - RULE-SET,reject_non_ip,REJECT
 
-  # WARNING! Using reject_domainset can cause Clash out of memory due to the insufficient Clash implementation.
   - RULE-SET,reject_domainset,REJECT
+  - RULE-SET,reject_extra_domainset,REJECT
 
   - RULE-SET,reject_ip,REJECT
   - RULE-SET,reject_non_ip_drop,REJECT-DROP
