@@ -3,7 +3,7 @@ import * as tldts from 'tldts-experimental';
 
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
-import { PHISHING_DOMAIN_LISTS } from '../constants/reject-data-source';
+import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
@@ -133,7 +133,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
     const domainArr: string[] = [];
 
-    (await Promise.all(PHISHING_DOMAIN_LISTS.map(entry => processDomainLists(curSpan, ...entry))))
+    (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry))))
       .forEach(appendArrayInPlaceCurried(domainArr));
 
     return domainArr;

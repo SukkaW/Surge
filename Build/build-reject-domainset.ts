@@ -4,7 +4,7 @@ import path from 'path';
 import { processHosts, processFilterRules, processDomainLists } from './lib/parse-filter';
 import { createTrie } from './lib/trie';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS } from './constants/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA } from './constants/reject-data-source';
 import { createRuleset, compareAndWriteFile } from './lib/create-file';
 import { domainDeduper } from './lib/domain-deduper';
 import createKeywordFilter from './lib/aho-corasick';
@@ -29,6 +29,9 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
   const domainSets = new Set<string>();
   const appendArrayToDomainSets = setAddFromArrayCurried(domainSets);
 
+  const domainSetsExtra = new Set<string>();
+  const appendArrayToDomainSetsExtra = setAddFromArrayCurried(domainSetsExtra);
+
   // Parse from AdGuard Filters
   const shouldStop = await span
     .traceChild('download and process hosts / adblock filter rules')
@@ -38,7 +41,11 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
       await Promise.all([
         // Parse from remote hosts & domain lists
         HOSTS.map(entry => processHosts(childSpan, ...entry).then(appendArrayToDomainSets)),
+        HOSTS_EXTRA.map(entry => processHosts(childSpan, ...entry).then(appendArrayToDomainSetsExtra)),
+
         DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToDomainSets)),
+        DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToDomainSetsExtra)),
+
         ADGUARD_FILTERS.map(
           input => processFilterRules(childSpan, ...input)
             .then(({ white, black, foundDebugDomain }) => {
@@ -51,6 +58,19 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
               setAddFromArray(domainSets, black);
             })
         ),
+        ADGUARD_FILTERS_EXTRA.map(
+          input => processFilterRules(childSpan, ...input)
+            .then(({ white, black, foundDebugDomain }) => {
+              if (foundDebugDomain) {
+                // eslint-disable-next-line sukka/no-single-return -- not single return
+                shouldStop = true;
+                // we should not break here, as we want to see full matches from all data source
+              }
+              setAddFromArray(filterRuleWhitelistDomainSets, white);
+              setAddFromArray(domainSetsExtra, black);
+            })
+        ),
+
         ([
           'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
           'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
@@ -60,7 +80,7 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
             setAddFromArray(filterRuleWhitelistDomainSets, black);
           })
         )),
-        getPhishingDomains(childSpan).then(appendArrayToDomainSets),
+        getPhishingDomains(childSpan).then(appendArrayToDomainSetsExtra),
         getRejectSukkaConfPromise.then(appendArrayToDomainSets)
       ].flat());
       // eslint-disable-next-line sukka/no-single-return -- not single return
@@ -71,7 +91,7 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
     process.exit(1);
   }
 
-  console.log(`Import ${domainSets.size} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
+  console.log(`Import ${domainSets.size} + ${domainSetsExtra.size} rules from Hosts / AdBlock Filter Rules & reject_sukka.conf!`);
 
   // Dedupe domainSets
   const domainKeywordsSet = await span.traceChildAsync('collect black keywords/suffixes', async () => {
@@ -91,25 +111,38 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
     return domainKeywordsSet;
   });
 
-  const trie = span.traceChildSync('create smol trie while deduping black keywords', () => {
-    const trie = createTrie(null, true, true);
+  const [baseTrie, extraTrie] = span.traceChildSync('create smol trie while deduping black keywords', () => {
+    const baseTrie = createTrie(null, true, true);
+    const extraTrie = createTrie(null, true, true);
 
     const kwfilter = createKeywordFilter(domainKeywordsSet);
 
     for (const domain of domainSets) {
       // exclude keyword when creating trie
       if (!kwfilter(domain)) {
-        trie.add(domain);
+        baseTrie.add(domain);
       }
     }
 
-    return trie;
+    for (const domain of domainSetsExtra) {
+      // exclude keyword when creating trie
+      if (!kwfilter(domain)) {
+        extraTrie.add(domain);
+      }
+    }
+
+    return [baseTrie, extraTrie] as const;
   });
 
-  span.traceChildSync('dedupe from white suffixes', () => filterRuleWhitelistDomainSets.forEach(trie.whitelist));
+  span.traceChildSync('dedupe from white suffixes (base)', () => filterRuleWhitelistDomainSets.forEach(baseTrie.whitelist));
+  span.traceChildSync('dedupe from white suffixes and base (extra)', () => {
+    domainSets.forEach(extraTrie.whitelist);
+    filterRuleWhitelistDomainSets.forEach(extraTrie.whitelist);
+  });
 
   // Dedupe domainSets
-  const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain', () => domainDeduper(trie));
+  const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain (base)', () => domainDeduper(baseTrie));
+  const dudupedDominArrayExtra = span.traceChildSync('dedupe from covered subdomain (extra)', () => domainDeduper(extraTrie));
 
   console.log(`Final size ${dudupedDominArray.length}`);
 
@@ -118,7 +151,7 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
     subdomainMap: domainArraySubdomainMap
   } = span.traceChildSync(
     'build map for stat and sort',
-    () => buildParseDomainMap(dudupedDominArray)
+    () => buildParseDomainMap(dudupedDominArray.concat(dudupedDominArrayExtra))
   );
 
   // Create reject stats
@@ -136,29 +169,45 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
       return sort(Array.from(statMap.entries()).filter(a => a[1] > 9), (a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
     });
 
-  const description = [
-    ...SHARED_DESCRIPTION,
-    '',
-    'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
-    '',
-    'Build from:',
-    ...HOSTS.map(host => ` - ${host[0]}`),
-    ...DOMAIN_LISTS.map(domainList => ` - ${domainList[0]}`),
-    ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`),
-    ' - https://curbengh.github.io/phishing-filter/phishing-filter-hosts.txt',
-    ' - https://phishing.army/download/phishing_army_blocklist.txt'
-  ];
-
   return Promise.all([
     createRuleset(
       span,
       'Sukka\'s Ruleset - Reject Base',
-      description,
+      [
+        ...SHARED_DESCRIPTION,
+        '',
+        'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+        '',
+        'Build from:',
+        ...HOSTS.map(host => ` - ${host[0]}`),
+        ...DOMAIN_LISTS.map(domainList => ` - ${domainList[0]}`),
+        ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
+      ],
       new Date(),
-      span.traceChildSync('sort reject domainset', () => sortDomains(dudupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
+      span.traceChildSync('sort reject domainset (base)', () => sortDomains(dudupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
       path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
       path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')
+    ),
+    createRuleset(
+      span,
+      'Sukka\'s Ruleset - Reject Extra',
+      [
+        ...SHARED_DESCRIPTION,
+        '',
+        'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+        '',
+        'Build from:',
+        ...HOSTS_EXTRA.map(host => ` - ${host[0]}`),
+        ...DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`),
+        ...ADGUARD_FILTERS_EXTRA.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`),
+        ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
+      ],
+      new Date(),
+      span.traceChildSync('sort reject domainset (extra)', () => sortDomains(dudupedDominArrayExtra, domainArrayMainDomainMap, domainArraySubdomainMap)),
+      'domainset',
+      path.resolve(import.meta.dir, '../List/domainset/reject_extra.conf'),
+      path.resolve(import.meta.dir, '../Clash/domainset/reject_extra.txt')
     ),
     compareAndWriteFile(
       span,

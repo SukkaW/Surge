@@ -9,29 +9,28 @@ export const HOSTS: HostsSource[] = [
     true,
     TTL.THREE_HOURS()
   ],
-  // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
-  ['https://someonewhocares.org/hosts/zero/hosts', null, true, TTL.THREE_HOURS()],
+
   // no coin list is not actively maintained, but it updates daily when being maintained, so we set a 3 days cache ttl
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', null, true, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', null, true, TTL.TWO_WEEKS()],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.THREE_DAYS()],
-  // ad-wars is not actively maintained, so we set a 7 days cache ttl
-  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.ONE_WEEK()],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()]
 ] as const;
+
+export const HOSTS_EXTRA: HostsSource[] = [
+  // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
+  ['https://someonewhocares.org/hosts/zero/hosts', null, true, TTL.THREE_HOURS()],
+  // ad-wars is not actively maintained, so we set a 7 days cache ttl
+  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.ONE_WEEK()]
+];
 
 export const DOMAIN_LISTS: HostsSource[] = [
   // CoinBlockerList
   // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 14 days cache ttl
   ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', [], true, TTL.TWO_WEEKS()],
-  // BarbBlock
-  // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
-  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', [], true, TTL.TWO_WEEKS()],
-  // DigitalSide Threat-Intel - OSINT Hub
-  // Update once per day
-  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true, TTL.ONE_DAY()],
+
   // Curben's PUP Domains Blocklist
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
@@ -52,7 +51,16 @@ export const DOMAIN_LISTS: HostsSource[] = [
       'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
     ],
     true, TTL.THREE_HOURS()
-  ],
+  ]
+] as const;
+
+export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
+  // BarbBlock
+  // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
+  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', [], true, TTL.TWO_WEEKS()],
+  // DigitalSide Threat-Intel - OSINT Hub
+  // Update once per day
+  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true, TTL.ONE_DAY()],
   // AdGuard CNAME Filter Combined
   // Update on a 7 days basis, so we add a 3 hours cache ttl
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', [], true, TTL.THREE_DAYS()],
@@ -60,9 +68,9 @@ export const DOMAIN_LISTS: HostsSource[] = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()]
-] as const;
+];
 
-export const PHISHING_DOMAIN_LISTS: [HostsSource, HostsSource] = [
+export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [
   [
     'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt',
     [
@@ -114,6 +122,46 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     ],
     TTL.TWLVE_HOURS()
   ],
+  // AdGuard Base Filter
+  ['https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt', null, TTL.THREE_HOURS()],
+  // AdGuard Mobile AD
+  ['https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt', null, TTL.THREE_HOURS()],
+  // AdGuard Tracking Protection
+  ['https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt', null, TTL.THREE_HOURS()],
+  // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
+  ['https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt', null, TTL.THREE_HOURS()],
+  // AdGuard Annoyances filter
+  ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS()],
+  // GameConsoleAdblockList
+  // Update almost once per 1 to 3 months, let's set a 10 days cache ttl
+  ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt', null, TTL.TEN_DAYS()],
+  // PiHoleBlocklist
+  // Update almost once per 3 months, let's set a 10 days cache ttl
+  [
+    'https://perflyst.github.io/PiHoleBlocklist/SmartTV-AGH.txt',
+    [
+      'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'
+    ],
+    TTL.TEN_DAYS()
+  ],
+  // Spam404
+  // Not actively maintained, let's use a 10 days cache ttl
+  ['https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt', null, TTL.TEN_DAYS()],
+  // Brave First Party & First Party CNAME
+  ['https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt', null, TTL.ONE_DAY()]
+] as const;
+
+export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
+  // EasyList Germany filter
+  [
+    'https://easylist.to/easylistgermany/easylistgermany.txt',
+    [
+      'https://easylist-downloads.adblockplus.org/easylistgermany.txt'
+    ],
+    TTL.TWLVE_HOURS()
+  ],
+  // AdGuard Japanese filter
+  ['https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt', null, TTL.THREE_HOURS()],
   // uBlock Origin Filter List
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
@@ -152,45 +200,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://ublockorigin.pages.dev/filters/unbreak.min.txt'
     ],
     TTL.THREE_HOURS()
-  ],
-  // AdGuard Base Filter
-  ['https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt', null, TTL.THREE_HOURS()],
-  // AdGuard Mobile AD
-  ['https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt', null, TTL.THREE_HOURS()],
-  // AdGuard Tracking Protection
-  ['https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt', null, TTL.THREE_HOURS()],
-  // AdGuard Japanese filter
-  ['https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt', null, TTL.THREE_HOURS()],
-  // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
-  ['https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt', null, TTL.THREE_HOURS()],
-  // AdGuard Annoyances filter
-  ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS()],
-  // EasyList Germany filter
-  [
-    'https://easylist.to/easylistgermany/easylistgermany.txt',
-    [
-      'https://easylist-downloads.adblockplus.org/easylistgermany.txt'
-    ],
-    TTL.TWLVE_HOURS()
-  ],
-  // GameConsoleAdblockList
-  // Update almost once per 1 to 3 months, let's set a 10 days cache ttl
-  ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt', null, TTL.TEN_DAYS()],
-  // PiHoleBlocklist
-  // Update almost once per 3 months, let's set a 10 days cache ttl
-  [
-    'https://perflyst.github.io/PiHoleBlocklist/SmartTV-AGH.txt',
-    [
-      'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'
-    ],
-    TTL.TEN_DAYS()
-  ],
-  // Spam404
-  // Not actively maintained, let's use a 10 days cache ttl
-  ['https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt', null, TTL.TEN_DAYS()],
-  // Brave First Party & First Party CNAME
-  ['https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt', null, TTL.ONE_DAY()]
-] as const;
+  ]
+];
 
 export const PREDEFINED_WHITELIST = [
   '.localhost',
