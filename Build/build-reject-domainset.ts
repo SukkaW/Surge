@@ -111,32 +111,37 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
     return domainKeywordsSet;
   });
 
-  const [baseTrie, extraTrie] = span.traceChildSync('create smol trie while deduping black keywords', () => {
+  const [baseTrie, extraTrie] = span.traceChildSync('create smol trie while deduping black keywords', (childSpan) => {
     const baseTrie = createTrie(null, true, true);
     const extraTrie = createTrie(null, true, true);
 
     const kwfilter = createKeywordFilter(domainKeywordsSet);
 
-    for (const domain of domainSets) {
-      // exclude keyword when creating trie
-      if (!kwfilter(domain)) {
-        baseTrie.add(domain);
+    childSpan.traceChildSync('add items to trie (extra)', () => {
+      for (const domain of domainSetsExtra) {
+        // exclude keyword when creating trie
+        if (!kwfilter(domain)) {
+          extraTrie.add(domain);
+        }
       }
-    }
+    });
 
-    for (const domain of domainSetsExtra) {
-      // exclude keyword when creating trie
-      if (!kwfilter(domain)) {
-        extraTrie.add(domain);
+    childSpan.traceChildSync('add items to trie (base) + dedupe extra trie', () => {
+      for (const domain of domainSets) {
+        // exclude keyword when creating trie
+        if (!kwfilter(domain)) {
+          baseTrie.add(domain);
+
+          extraTrie.whitelist(domain);
+        }
       }
-    }
+    });
 
     return [baseTrie, extraTrie] as const;
   });
 
   span.traceChildSync('dedupe from white suffixes (base)', () => filterRuleWhitelistDomainSets.forEach(baseTrie.whitelist));
   span.traceChildSync('dedupe from white suffixes and base (extra)', () => {
-    domainSets.forEach(extraTrie.whitelist);
     filterRuleWhitelistDomainSets.forEach(extraTrie.whitelist);
   });
 
