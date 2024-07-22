@@ -235,7 +235,8 @@ export const DOMESTICS = {
       'volces.com',
       'baike.com',
       'zjcdn.com',
-      'zijieapi.com'
+      'zijieapi.com',
+      'feelgood.cn'
     ]
   },
   BAIDU: {
