@@ -3,6 +3,7 @@
  */
 
 import { fastStringArrayJoin } from './misc';
+import { inspect } from 'util';
 
 // const { Error, Bun, JSON, Symbol } = globalThis;
 
@@ -403,7 +404,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     },
     whitelist,
 
-    [Bun.inspect.custom]: (depth: number) => JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line).join('\n'),
+    [inspect.custom]: (depth: number) => JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line).join('\n'),
 
     hostnameMode,
     smolTree

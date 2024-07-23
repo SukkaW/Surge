@@ -69,13 +69,12 @@ export function fetchRemoteTextByLine(url: string | URL) {
   return fetchWithRetry(url, defaultRequestInit).then(createReadlineInterfaceFromResponse);
 }
 
-export async function readFileIntoProcessedArray(file: string | URL | BunFile) {
-  if (typeof file === 'string') {
-    file = Bun.file(file);
-  } else if (!('writer' in file)) {
-    file = Bun.file(file);
+export async function readFileIntoProcessedArray(file: string | BunFile | FileHandle) {
+  const results = [];
+  for await (const line of readFileByLine(file)) {
+    if (processLine(line)) {
+      results.push(line);
+    }
   }
-
-  const content = await file.text();
-  return content.split('\n').filter(processLine);
+  return results;
 }

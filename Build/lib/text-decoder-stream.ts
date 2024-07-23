@@ -20,7 +20,7 @@ export class PolyfillTextDecoderStream extends TransformStream<Uint8Array, strin
   readonly ignoreBOM: boolean;
 
   constructor(
-    public readonly encoding: Bun.Encoding = 'utf-8',
+    public readonly encoding: BufferEncoding = 'utf-8',
     {
       fatal = false,
       ignoreBOM = false
