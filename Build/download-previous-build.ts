@@ -33,7 +33,6 @@ export const downloadPreviousBuild = task(import.meta.main, import.meta.path)(as
         buildOutputList.push(line);
 
         if (!isCI) {
-          // Bun.file().exists() doesn't check directory
           if (!existsSync(path.join(import.meta.dir, '..', line))) {
             flag = flag & ~ALL_FILES_EXISTS;
           }

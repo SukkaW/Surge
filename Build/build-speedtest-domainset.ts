@@ -13,6 +13,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 
 import { createTrie } from './lib/trie';
+import { peek } from './lib/bun';
 
 const s = new Sema(2);
 
@@ -239,7 +240,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
     const timer = setTimeout(() => {
       console.error(picocolors.red('Task timeout!'));
       Object.entries(pMap).forEach(([name, p]) => {
-        console.log(`[${name}]`, Bun.peek.status(p));
+        console.log(`[${name}]`, peek.status(p));
       });
 
       resolve();

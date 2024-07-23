@@ -5,6 +5,7 @@ import path from 'path';
 import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from './misc';
+import { peek } from 'bun';
 
 const identity = (x: any) => x;
 
@@ -178,7 +179,7 @@ export class Cache<S = string> {
       const serializer = 'serializer' in opt ? opt.serializer : identity;
 
       const promise = fn();
-      const peeked = Bun.peek(promise);
+      const peeked = peek(promise);
 
       if (peeked === promise) {
         return promise.then((value) => {

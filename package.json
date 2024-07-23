@@ -23,6 +23,7 @@
     "csv-parse": "^5.5.6",
     "fast-cidr-tools": "^0.2.5",
     "fdir": "^6.1.1",
+    "foxact": "^0.2.36",
     "mnemonist": "^0.39.8",
     "path-scurry": "^1.11.1",
     "picocolors": "^1.0.1",
@@ -47,5 +48,6 @@
   },
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"
-  }
+  },
+  "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
 }
