@@ -5,7 +5,7 @@ import { exclude, merge } from 'fast-cidr-tools';
 import { getChnCidrPromise } from './build-chn-cidr';
 import { NON_CN_CIDR_INCLUDED_IN_CHNROUTE, RESERVED_IPV4_CIDR } from './constants/cidr';
 
-import fsp from 'fs/promises';
+import { writeFile } from './lib/bun';
 
 export const buildInternalReverseChnCIDR = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async () => {
   const cidr = await getChnCidrPromise();
@@ -21,9 +21,11 @@ export const buildInternalReverseChnCIDR = task(typeof Bun !== 'undefined' ? Bun
     )
   );
 
-  return fsp.writeFile(
-    path.resolve(__dirname, '../Internal/reversed-chn-cidr.txt'),
-    reversedCidr.join('\n') + '\n',
-    { encoding: 'utf-8' }
+  const outputDir = path.resolve(__dirname, '../Internal');
+  const outputFile = path.join(outputDir, 'reversed-chn-cidr.txt');
+
+  return writeFile(
+    outputFile,
+    reversedCidr.join('\n') + '\n'
   );
 });

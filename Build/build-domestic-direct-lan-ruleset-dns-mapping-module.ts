@@ -1,6 +1,5 @@
 // @ts-check
 import path from 'path';
-import fsp from 'fs/promises';
 import { DOMESTICS } from '../Source/non_ip/domestic';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
@@ -10,6 +9,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { writeFile } from './lib/bun';
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
@@ -96,7 +96,7 @@ export const buildDomesticRuleset = task(typeof Bun !== 'undefined' ? Bun.main =
       ],
       path.resolve(__dirname, '../Modules/sukka_local_dns_mapping.sgmodule')
     ),
-    fsp.writeFile(
+    writeFile(
       path.resolve(__dirname, '../Internal/clash_nameserver_policy.yaml'),
       yaml.stringify(
         {
@@ -129,8 +129,7 @@ export const buildDomesticRuleset = task(typeof Bun !== 'undefined' ? Bun.main =
           )
         },
         { version: '1.1' }
-      ),
-      { encoding: 'utf-8' }
+      )
     )
   ]);
 });

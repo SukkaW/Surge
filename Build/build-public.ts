@@ -7,6 +7,7 @@ import { fdir as Fdir } from 'fdir';
 import { sort } from './lib/timsort';
 
 import Trie from 'mnemonist/trie';
+import { writeFile } from './lib/bun';
 
 const rootPath = path.resolve(__dirname, '../');
 const publicPath = path.resolve(__dirname, '../public');
@@ -50,7 +51,7 @@ export const buildPublic = task(typeof Bun !== 'undefined' ? Bun.main === __file
     .traceChild('generate index.html')
     .traceAsyncFn(() => treeDir(publicPath).then(generateHtml));
 
-  return fsp.writeFile(path.join(publicPath, 'index.html'), html);
+  return writeFile(path.join(publicPath, 'index.html'), html);
 });
 
 const priorityOrder: Record<'default' | string & {}, number> = {

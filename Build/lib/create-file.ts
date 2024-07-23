@@ -8,6 +8,7 @@ import fsp from 'fs/promises';
 import { sort } from './timsort';
 import { fastStringArrayJoin } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
+import { writeFile } from './bun';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -70,7 +71,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
   await span.traceChildAsync(`writing ${filePath}`, async () => {
     // if (linesALen < 10000) {
-    return fsp.writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
+    return writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
     // }
     // const writer = file.writer();
 
