@@ -1,5 +1,6 @@
 // @ts-check
 import path from 'path';
+import fsp from 'fs/promises';
 import { DOMESTICS } from '../Source/non_ip/domestic';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
@@ -95,7 +96,7 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
       ],
       path.resolve(import.meta.dir, '../Modules/sukka_local_dns_mapping.sgmodule')
     ),
-    Bun.write(
+    fsp.writeFile(
       path.resolve(import.meta.dir, '../Internal/clash_nameserver_policy.yaml'),
       yaml.stringify(
         {
@@ -128,7 +129,8 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
           )
         },
         { version: '1.1' }
-      )
+      ),
+      { encoding: 'utf-8' }
     )
   ]);
 });

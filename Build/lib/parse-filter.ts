@@ -2,7 +2,6 @@
 import { fetchRemoteTextByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
-import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
 
 import picocolors from 'picocolors';
@@ -11,6 +10,7 @@ import { fetchAssets } from './fetch-assets';
 import { deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
+import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -147,11 +147,7 @@ export async function processFilterRules(
 
       const warningMessages: string[] = [];
 
-      const gorhillPromise = getGorhillPublicSuffixPromise();
-      const peekedGorhill = Bun.peek(gorhillPromise);
-      const gorhill = peekedGorhill === gorhillPromise
-        ? await span.traceChild('get gorhill').tracePromise(gorhillPromise)
-        : (peekedGorhill as PublicSuffixList);
+      const gorhill = await span.traceChild('get gorhill').tracePromise(getGorhillPublicSuffixPromise());
 
       const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', 1000];
       /**
