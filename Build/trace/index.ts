@@ -4,8 +4,6 @@ import picocolors from 'picocolors';
 const SPAN_STATUS_START = 0;
 const SPAN_STATUS_END = 1;
 
-const NUM_OF_MS_IN_NANOSEC = 1_000_000;
-
 const spanTag = Symbol('span');
 
 export interface TraceResult {
@@ -36,7 +34,7 @@ export interface Span {
 }
 
 export const createSpan = (name: string, parentTraceResult?: TraceResult): Span => {
-  const start = Bun.nanoseconds();
+  const start = performance.now();
 
   let curTraceResult: TraceResult;
 
@@ -45,7 +43,7 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
   } else {
     curTraceResult = {
       name,
-      start: start / NUM_OF_MS_IN_NANOSEC,
+      start,
       end: 0,
       children: []
     };
@@ -58,9 +56,9 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
     if (status === SPAN_STATUS_END) {
       throw new Error(`span already stopped: ${name}`);
     }
-    const end = time ?? Bun.nanoseconds();
+    const end = time ?? performance.now();
 
-    curTraceResult.end = end / NUM_OF_MS_IN_NANOSEC;
+    curTraceResult.end = end;
 
     status = SPAN_STATUS_END;
   };

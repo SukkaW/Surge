@@ -6,6 +6,7 @@ import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from './misc';
 import { peek } from 'bun';
+import { performance } from 'perf_hooks';
 
 const identity = (x: any) => x;
 
@@ -78,7 +79,7 @@ export class Cache<S = string> {
     tableName = 'cache',
     type
   }: CacheOptions<S> = {}) {
-    const start = Bun.nanoseconds();
+    const start = performance.now();
 
     this.cachePath = cachePath;
     mkdirSync(this.cachePath, { recursive: true });
@@ -120,7 +121,7 @@ export class Cache<S = string> {
       this.db.exec('VACUUM;');
     }
 
-    const end = Bun.nanoseconds();
+    const end = performance.now();
     console.log(`${picocolors.gray(`[${((end - start) / 1e6).toFixed(3)}ms]`)} cache initialized from ${this.cachePath}`);
   }
 

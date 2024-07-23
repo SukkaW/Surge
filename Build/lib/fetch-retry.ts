@@ -1,5 +1,6 @@
 import retry from 'async-retry';
 import picocolors from 'picocolors';
+import { setTimeout } from 'timers/promises';
 
 // retry settings
 const MIN_TIMEOUT = 10;
@@ -84,7 +85,7 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
                 if (retryAfter > retryOpts.maxRetryAfter) {
                   return res;
                 }
-                await Bun.sleep(retryAfter * 1e3);
+                await setTimeout(retryAfter * 1e3, undefined, { ref: false });
               }
             }
             throw new ResponseError(res);
