@@ -11,6 +11,7 @@
     "build": "SWCRC=true ENABLE_TEXT_LINE_STREAM=true node -r @swc-node/register ./Build/index.ts",
     "build-bun": "bun ./Build/index.ts",
     "build-bun-stream": "ENABLE_TEXT_LINE_STREAM=true bun ./Build/index.ts",
+    "build-profile": "SWCRC=true ENABLE_TEXT_LINE_STREAM=true dexnode -r @swc-node/register ./Build/index.ts",
     "lint": "eslint --format=sukka ."
   },
   "author": "",
