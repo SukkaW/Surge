@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "bun ./Build/index.ts",
+    "build-node": "ENABLE_TEXT_LINE_STREAM=true node -r @swc-node/register ./Build/index.ts",
     "build-stream": "ENABLE_TEXT_LINE_STREAM=true bun ./Build/index.ts",
     "lint": "eslint --format=sukka ."
   },
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint-sukka/node": "^6.1.6",
+    "@swc-node/register": "^1.10.9",
     "@types/async-retry": "^1.4.8",
     "@types/bun": "^1.1.6",
     "@types/tar-stream": "^3.1.3",
@@ -46,8 +48,8 @@
     "mitata": "^0.1.11",
     "typescript": "^5.5.3"
   },
+  "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903",
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"
-  },
-  "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
+  }
 }
