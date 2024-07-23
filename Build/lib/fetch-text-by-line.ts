@@ -1,5 +1,6 @@
 import type { BunFile } from 'bun';
 import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
+import type { FileHandle } from 'fs/promises';
 
 import { TextLineStream } from './text-line-transform-stream';
 import { PolyfillTextDecoderStream } from './text-decoder-stream';
@@ -35,18 +36,20 @@ async function *createTextLineAsyncIterableFromStreamSource(stream: ReadableStre
   }
 }
 
-const getBunBlob = (file: string | URL | BunFile) => {
+const getReadableStream = (file: string | BunFile | FileHandle): ReadableStream => {
   if (typeof file === 'string') {
-    return Bun.file(file);
-  } if (!('writer' in file)) {
-    return Bun.file(file);
+    return Bun.file(file).stream();
   }
-  return file;
+  if ('writer' in file) {
+    return file.stream();
+  }
+  return file.readableWebStream();
 };
 
-export const readFileByLine: ((file: string | URL | BunFile) => AsyncIterable<string>) = enableTextLineStream
-  ? (file: string | URL | BunFile) => getBunBlob(file).stream().pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream())
-  : (file: string | URL | BunFile) => createTextLineAsyncIterableFromStreamSource(getBunBlob(file).stream());
+// TODO: use FileHandle.readLine()
+export const readFileByLine: ((file: string | BunFile | FileHandle) => AsyncIterable<string>) = enableTextLineStream
+  ? (file: string | BunFile | FileHandle) => getReadableStream(file).pipeThrough(new PolyfillTextDecoderStream()).pipeThrough(new TextLineStream())
+  : (file: string | BunFile | FileHandle) => createTextLineAsyncIterableFromStreamSource(getReadableStream(file));
 
 const ensureResponseBody = (resp: Response) => {
   if (!resp.body) {

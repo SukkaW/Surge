@@ -1,5 +1,4 @@
 // @ts-check
-import { readFileByLine } from './fetch-text-by-line';
 import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
 import picocolors from 'picocolors';
 import type { Span } from '../trace';
@@ -8,10 +7,11 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import { sort } from './timsort';
 import { fastStringArrayJoin } from './misc';
+import { readFileByLine } from './fetch-text-by-line';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
-  const file = Bun.file(filePath);
+  const fd = await fsp.open(filePath);
 
   const linesALen = linesA.length;
 
@@ -28,7 +28,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     isEqual = await span.traceChildAsync(`comparing ${filePath}`, async () => {
       let index = 0;
 
-      for await (const lineB of readFileByLine(file)) {
+      for await (const lineB of readFileByLine(fd)) {
         const lineA = linesA[index] as string | undefined;
         index++;
 
@@ -83,6 +83,8 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
     // return writer.end();
   });
+
+  await fd.close();
 }
 
 export const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {
