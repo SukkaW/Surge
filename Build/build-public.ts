@@ -1,4 +1,5 @@
 import path from 'path';
+import fsp from 'fs/promises';
 import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
@@ -41,7 +42,7 @@ export const buildPublic = task(import.meta.main, import.meta.path)(async (span)
         const src = path.join(rootPath, file);
         const dest = path.join(publicPath, file);
 
-        return Bun.write(dest, Bun.file(src));
+        return fsp.copyFile(src, dest);
       }));
     });
 
@@ -49,7 +50,7 @@ export const buildPublic = task(import.meta.main, import.meta.path)(async (span)
     .traceChild('generate index.html')
     .traceAsyncFn(() => treeDir(publicPath).then(generateHtml));
 
-  return Bun.write(path.join(publicPath, 'index.html'), html);
+  return fsp.writeFile(path.join(publicPath, 'index.html'), html);
 });
 
 const priorityOrder: Record<'default' | string & {}, number> = {

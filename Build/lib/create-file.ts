@@ -4,6 +4,8 @@ import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset
 import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';
+import fs from 'fs';
+import fsp from 'fs/promises';
 import { sort } from './timsort';
 import { fastStringArrayJoin } from './misc';
 
@@ -13,7 +15,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
   const linesALen = linesA.length;
 
-  if (!(await file.exists())) {
+  if (!fs.existsSync(filePath)) {
     console.log(`${filePath} does not exists, writing...`);
     isEqual = false;
   } else if (linesALen === 0) {
@@ -70,7 +72,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
   await span.traceChildAsync(`writing ${filePath}`, async () => {
     // if (linesALen < 10000) {
-    return Bun.write(file, fastStringArrayJoin(linesA, '\n') + '\n');
+    return fsp.writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
     // }
     // const writer = file.writer();
 

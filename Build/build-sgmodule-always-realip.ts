@@ -1,4 +1,5 @@
 import path from 'path';
+import fsp from 'fs/promises';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
@@ -60,7 +61,7 @@ export const buildAlwaysRealIPModule = task(import.meta.main, import.meta.path)(
       ],
       path.resolve(import.meta.dir, '../Modules/sukka_common_always_realip.sgmodule')
     ),
-    Bun.write(
+    fsp.writeFile(
       path.resolve(import.meta.dir, '../Internal/clash_fake_ip_filter.yaml'),
       yaml.stringify(
         {
