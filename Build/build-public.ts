@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import fsp from 'fs/promises';
 import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
@@ -23,6 +24,8 @@ const folderAndFilesToBeDeployed = [
 ];
 
 export const buildPublic = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+  fs.mkdirSync(publicPath, { recursive: true });
+
   await span
     .traceChild('copy public files')
     .traceAsyncFn(async () => {
@@ -43,7 +46,16 @@ export const buildPublic = task(typeof Bun !== 'undefined' ? Bun.main === __file
         const src = path.join(rootPath, file);
         const dest = path.join(publicPath, file);
 
-        return fsp.copyFile(src, dest);
+        const destParen = path.dirname(dest);
+        if (!fs.existsSync(destParen)) {
+          fs.mkdirSync(destParen, { recursive: true });
+        }
+
+        return fsp.copyFile(
+          src,
+          dest,
+          fs.constants.COPYFILE_FICLONE
+        );
       }));
     });
 
