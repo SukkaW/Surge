@@ -6,5 +6,9 @@
       "syntax": "typescript",
       "dynamicImport": true
     }
+  },
+  "module": {
+    "type": "commonjs",
+    "ignoreDynamic": true
   }
 }

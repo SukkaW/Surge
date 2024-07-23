@@ -62,7 +62,7 @@ export const parseDomesticList = async () => {
   };
 
   // await Promise.all([
-  await runAgainstRuleset(path.resolve(import.meta.dir, '../List/non_ip/domestic.conf'));
+  await runAgainstRuleset(path.resolve(__dirname, '../List/non_ip/domestic.conf'));
   // ]);
 
   console.log(notIncludedDomestic.size, notIncludedDomestic);

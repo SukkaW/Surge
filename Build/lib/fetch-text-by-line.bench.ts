@@ -4,7 +4,7 @@ import { readFileByLine } from './fetch-text-by-line';
 import path from 'path';
 import fsp from 'fs/promises';
 
-const file = path.resolve(import.meta.dir, '../../Source/domainset/cdn.conf');
+const file = path.resolve(__dirname, '../../Source/domainset/cdn.conf');
 
 group('read file by line', () => {
   bench('readline', () => processLineFromReadline(readFileByLine(file)));

@@ -15,13 +15,13 @@ const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
 const MAGIC_COMMAND_DESCRIPTION = '# $ meta_description ';
 
-const sourceDir = path.resolve(import.meta.dir, '../Source');
-const outputSurgeDir = path.resolve(import.meta.dir, '../List');
-const outputClashDir = path.resolve(import.meta.dir, '../Clash');
+const sourceDir = path.resolve(__dirname, '../Source');
+const outputSurgeDir = path.resolve(__dirname, '../List');
+const outputClashDir = path.resolve(__dirname, '../Clash');
 
 const domainsetSrcFolder = 'domainset' + path.sep;
 
-export const buildCommon = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildCommon = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
   const paths = await new Fdir()

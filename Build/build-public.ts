@@ -8,8 +8,8 @@ import { sort } from './lib/timsort';
 
 import Trie from 'mnemonist/trie';
 
-const rootPath = path.resolve(import.meta.dir, '../');
-const publicPath = path.resolve(import.meta.dir, '../public');
+const rootPath = path.resolve(__dirname, '../');
+const publicPath = path.resolve(__dirname, '../public');
 
 const folderAndFilesToBeDeployed = [
   `Mock${path.sep}`,
@@ -21,7 +21,7 @@ const folderAndFilesToBeDeployed = [
   'LICENSE'
 ];
 
-export const buildPublic = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildPublic = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   await span
     .traceChild('copy public files')
     .traceAsyncFn(async () => {

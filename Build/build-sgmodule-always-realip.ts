@@ -43,7 +43,7 @@ const HOSTNAMES = [
   '*.battlenet.com'
 ];
 
-export const buildAlwaysRealIPModule = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildAlwaysRealIPModule = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   // Intranet, Router Setup, and mant more
   const dataset = [Object.entries(DIRECTS), Object.entries(LANS)];
   const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])));
@@ -59,10 +59,10 @@ export const buildAlwaysRealIPModule = task(import.meta.main, import.meta.path)(
         '[General]',
         `always-real-ip = %APPEND% ${HOSTNAMES.concat(surge).join(', ')}`
       ],
-      path.resolve(import.meta.dir, '../Modules/sukka_common_always_realip.sgmodule')
+      path.resolve(__dirname, '../Modules/sukka_common_always_realip.sgmodule')
     ),
     fsp.writeFile(
-      path.resolve(import.meta.dir, '../Internal/clash_fake_ip_filter.yaml'),
+      path.resolve(__dirname, '../Internal/clash_fake_ip_filter.yaml'),
       yaml.stringify(
         {
           dns: {

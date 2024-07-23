@@ -82,7 +82,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   }
 };
 
-export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildSpeedtestDomainSet = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const domainTrie = createTrie(
     [
       // speedtest.net
@@ -183,7 +183,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
     async () => {
       try {
         (
-          await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'))
+          await readFileIntoProcessedArray(path.resolve(__dirname, '../List/domainset/speedtest.conf'))
         ) .forEach(line => {
           const hn = getHostname(line, { detectIp: false, validateHostname: true });
           if (hn) {
@@ -267,7 +267,7 @@ export const buildSpeedtestDomainSet = task(import.meta.main, import.meta.path)(
     new Date(),
     deduped,
     'domainset',
-    path.resolve(import.meta.dir, '../List/domainset/speedtest.conf'),
-    path.resolve(import.meta.dir, '../Clash/domainset/speedtest.txt')
+    path.resolve(__dirname, '../List/domainset/speedtest.conf'),
+    path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
   );
 });

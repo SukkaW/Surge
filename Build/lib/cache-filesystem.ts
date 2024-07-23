@@ -1,11 +1,11 @@
-// eslint-disable-next-line import-x/no-unresolved -- bun built-in module
-import { Database } from 'bun:sqlite';
+import createDb from 'better-sqlite3';
+import type { Database } from 'better-sqlite3';
 import os from 'os';
 import path from 'path';
 import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from './misc';
-import { peek } from 'bun';
+import { peek } from './bun';
 import { performance } from 'perf_hooks';
 
 const identity = (x: any) => x;
@@ -92,12 +92,12 @@ export class Cache<S = string> {
       this.type = 'string';
     }
 
-    const db = new Database(path.join(this.cachePath, 'cache.db'));
+    const db = createDb(path.join(this.cachePath, 'cache.db'));
 
-    db.exec('PRAGMA journal_mode = WAL;');
-    db.exec('PRAGMA synchronous = normal;');
-    db.exec('PRAGMA temp_store = memory;');
-    db.exec('PRAGMA optimize;');
+    db.pragma('journal_mode = WAL');
+    db.pragma('synchronous = normal');
+    db.pragma('temp_store = memory');
+    db.pragma('optimize');
 
     db.prepare(`CREATE TABLE IF NOT EXISTS ${this.tableName} (key TEXT PRIMARY KEY, value ${this.type === 'string' ? 'TEXT' : 'BLOB'}, ttl REAL NOT NULL);`).run();
     db.prepare(`CREATE INDEX IF NOT EXISTS cache_ttl ON ${this.tableName} (ttl);`).run();
@@ -130,15 +130,20 @@ export class Cache<S = string> {
       `INSERT INTO ${this.tableName} (key, value, ttl) VALUES ($key, $value, $valid) ON CONFLICT(key) DO UPDATE SET value = $value, ttl = $valid`
     );
 
+    const valid = Date.now() + ttl;
+
     insert.run({
       $key: key,
+      key,
       $value: value,
-      $valid: Date.now() + ttl
+      value,
+      $valid: valid,
+      valid
     });
   }
 
   get(key: string, defaultValue?: S): S | undefined {
-    const rv = this.db.prepare<{ value: S }, string>(
+    const rv = this.db.prepare<string, { value: S }>(
       `SELECT value FROM ${this.tableName} WHERE key = ? LIMIT 1`
     ).get(key);
 
@@ -148,7 +153,7 @@ export class Cache<S = string> {
 
   has(key: string): CacheStatus {
     const now = Date.now();
-    const rv = this.db.prepare<{ ttl: number }, string>(`SELECT ttl FROM ${this.tableName} WHERE key = ?`).get(key);
+    const rv = this.db.prepare<string, { ttl: number }>(`SELECT ttl FROM ${this.tableName} WHERE key = ?`).get(key);
 
     return !rv ? CacheStatus.Miss : (rv.ttl > now ? CacheStatus.Hit : CacheStatus.Stale);
   }
@@ -206,18 +211,14 @@ export class Cache<S = string> {
   }
 }
 
-export const fsFetchCache = new Cache({ cachePath: path.resolve(import.meta.dir, '../../.cache') });
+export const fsFetchCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache') });
 // process.on('exit', () => {
 //   fsFetchCache.destroy();
 // });
 
-// export const fsCache = traceSync('initializing filesystem cache', () => new Cache<Uint8Array>({ cachePath: path.resolve(import.meta.dir, '../../.cache'), type: 'buffer' }));
+// export const fsCache = traceSync('initializing filesystem cache', () => new Cache<Uint8Array>({ cachePath: path.resolve(__dirname, '../../.cache'), type: 'buffer' }));
 
 const separator = '\u0000';
-// const textEncoder = new TextEncoder();
-// const textDecoder = new TextDecoder();
-// export const serializeString = (str: string) => textEncoder.encode(str);
-// export const deserializeString = (str: string) => textDecoder.decode(new Uint8Array(str.split(separator).map(Number)));
 export const serializeSet = (set: Set<string>) => fastStringArrayJoin(Array.from(set), separator);
 export const deserializeSet = (str: string) => new Set(str.split(separator));
 export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separator);

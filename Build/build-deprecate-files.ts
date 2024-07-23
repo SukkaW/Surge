@@ -8,10 +8,10 @@ const DEPRECATED_FILES = [
   ['domainset/reject_phishing', 'This file has been merged with domainset/reject']
 ];
 
-const outputSurgeDir = path.resolve(import.meta.dir, '../List');
-const outputClashDir = path.resolve(import.meta.dir, '../Clash');
+const outputSurgeDir = path.resolve(__dirname, '../List');
+const outputClashDir = path.resolve(__dirname, '../Clash');
 
-export const buildDeprecateFiles = task(import.meta.main, import.meta.path)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
+export const buildDeprecateFiles = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
   const promises: Array<Promise<unknown>> = [];
 
   for (const [filePath, description] of DEPRECATED_FILES) {

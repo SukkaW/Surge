@@ -17,7 +17,7 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCach
   }
 ));
 
-export const buildAppleCdn = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildAppleCdn = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const res: string[] = await span.traceChildPromise('get apple cdn domains', getAppleCdnDomainsPromise());
 
   const description = [
@@ -40,8 +40,8 @@ export const buildAppleCdn = task(import.meta.main, import.meta.path)(async (spa
       new Date(),
       ruleset,
       'ruleset',
-      path.resolve(import.meta.dir, '../List/non_ip/apple_cdn.conf'),
-      path.resolve(import.meta.dir, '../Clash/non_ip/apple_cdn.txt')
+      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
+      path.resolve(__dirname, '../Clash/non_ip/apple_cdn.txt')
     ),
     createRuleset(
       span,
@@ -50,8 +50,8 @@ export const buildAppleCdn = task(import.meta.main, import.meta.path)(async (spa
       new Date(),
       domainset,
       'domainset',
-      path.resolve(import.meta.dir, '../List/domainset/apple_cdn.conf'),
-      path.resolve(import.meta.dir, '../Clash/domainset/apple_cdn.txt')
+      path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
+      path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt')
     )
   ]);
 });

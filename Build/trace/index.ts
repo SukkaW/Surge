@@ -1,4 +1,4 @@
-import path from 'path';
+import { basename, extname } from 'path';
 import picocolors from 'picocolors';
 
 const SPAN_STATUS_START = 0;
@@ -95,7 +95,7 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
 };
 
 export const task = (importMetaMain: boolean, importMetaPath: string) => <T>(fn: (span: Span) => Promise<T>, customName?: string) => {
-  const taskName = customName ?? path.basename(importMetaPath, path.extname(importMetaPath));
+  const taskName = customName ?? basename(importMetaPath, extname(importMetaPath));
 
   const dummySpan = createSpan(taskName);
 

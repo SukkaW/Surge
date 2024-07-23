@@ -16,7 +16,7 @@ export const getChnCidrPromise = createMemoizedPromise(async () => {
   return exclude(cidr, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true);
 });
 
-export const buildChnCidr = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildChnCidr = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const filteredCidr = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
 
   // Can not use SHARED_DESCRIPTION here as different license
@@ -38,7 +38,7 @@ export const buildChnCidr = task(import.meta.main, import.meta.path)(async (span
         new Date(),
         filteredCidr.map(i => `IP-CIDR,${i}`)
       ),
-      pathResolve(import.meta.dir, '../List/ip/china_ip.conf')
+      pathResolve(__dirname, '../List/ip/china_ip.conf')
     ),
     compareAndWriteFile(
       span,
@@ -48,7 +48,7 @@ export const buildChnCidr = task(import.meta.main, import.meta.path)(async (span
         new Date(),
         filteredCidr
       ),
-      pathResolve(import.meta.dir, '../Clash/ip/china_ip.txt')
+      pathResolve(__dirname, '../Clash/ip/china_ip.txt')
     )
   ]);
 });

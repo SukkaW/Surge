@@ -13,7 +13,7 @@ import { Readable } from 'stream';
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
 
-export const downloadPreviousBuild = task(import.meta.main, import.meta.path)(async (span) => {
+export const downloadPreviousBuild = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const buildOutputList: string[] = [];
 
   let flag = 1 | ALL_FILES_EXISTS;
@@ -21,7 +21,7 @@ export const downloadPreviousBuild = task(import.meta.main, import.meta.path)(as
   await span
     .traceChild('read .gitignore')
     .traceAsyncFn(async () => {
-      for await (const line of readFileByLine(path.resolve(import.meta.dir, '../.gitignore'))) {
+      for await (const line of readFileByLine(path.resolve(__dirname, '../.gitignore'))) {
         if (line === '# $ build output') {
           flag = flag | IS_READING_BUILD_OUTPUT;
           continue;
@@ -33,7 +33,7 @@ export const downloadPreviousBuild = task(import.meta.main, import.meta.path)(as
         buildOutputList.push(line);
 
         if (!isCI) {
-          if (!existsSync(path.join(import.meta.dir, '..', line))) {
+          if (!existsSync(path.join(__dirname, '..', line))) {
             flag = flag & ~ALL_FILES_EXISTS;
           }
         }
@@ -83,7 +83,7 @@ export const downloadPreviousBuild = task(import.meta.main, import.meta.path)(as
         }
 
         const relativeEntryPath = entry.header.name.replace(pathPrefix, '');
-        const targetPath = path.join(import.meta.dir, '..', relativeEntryPath);
+        const targetPath = path.join(__dirname, '..', relativeEntryPath);
 
         await mkdir(path.dirname(targetPath), { recursive: true });
         await pipeline(entry, createWriteStream(targetPath));

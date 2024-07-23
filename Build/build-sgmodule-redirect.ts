@@ -120,7 +120,7 @@ const REDIRECT_FAKEWEBSITES = [
   ['zbrushcn.com', 'https://www.maxon.net/en/zbrush']
 ] as const;
 
-export const buildRedirectModule = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildRedirectModule = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const domains = Array.from(new Set([
     ...REDIRECT_MIRROR.map(([from]) => getHostname(from, { detectIp: false })),
     ...REDIRECT_FAKEWEBSITES.flatMap(([from]) => [from, `www.${from}`])
@@ -139,6 +139,6 @@ export const buildRedirectModule = task(import.meta.main, import.meta.path)(asyn
       ...REDIRECT_MIRROR.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1`),
       ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to}`)
     ],
-    path.resolve(import.meta.dir, '../Modules/sukka_url_redirect.sgmodule')
+    path.resolve(__dirname, '../Modules/sukka_url_redirect.sgmodule')
   );
 });

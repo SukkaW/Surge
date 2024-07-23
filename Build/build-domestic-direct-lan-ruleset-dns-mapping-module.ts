@@ -12,8 +12,8 @@ import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
-  const domestics = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/domestic.conf'));
-  const directs = await readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/non_ip/direct.conf'));
+  const domestics = await readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
+  const directs = await readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/direct.conf'));
   const lans: string[] = [];
 
   Object.entries(DOMESTICS).forEach(([, { domains }]) => {
@@ -29,7 +29,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
   return [domestics, directs, lans] as const;
 });
 
-export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildDomesticRuleset = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const res = await getDomesticAndDirectDomainsRulesetPromise();
 
   const dataset = Object.entries(DOMESTICS);
@@ -48,8 +48,8 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
       new Date(),
       res[0],
       'ruleset',
-      path.resolve(import.meta.dir, '../List/non_ip/domestic.conf'),
-      path.resolve(import.meta.dir, '../Clash/non_ip/domestic.txt')
+      path.resolve(__dirname, '../List/non_ip/domestic.conf'),
+      path.resolve(__dirname, '../Clash/non_ip/domestic.txt')
     ),
     createRuleset(
       span,
@@ -62,8 +62,8 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
       new Date(),
       res[1],
       'ruleset',
-      path.resolve(import.meta.dir, '../List/non_ip/direct.conf'),
-      path.resolve(import.meta.dir, '../Clash/non_ip/direct.txt')
+      path.resolve(__dirname, '../List/non_ip/direct.conf'),
+      path.resolve(__dirname, '../Clash/non_ip/direct.txt')
     ),
     createRuleset(
       span,
@@ -76,8 +76,8 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
       new Date(),
       res[2],
       'ruleset',
-      path.resolve(import.meta.dir, '../List/non_ip/lan.conf'),
-      path.resolve(import.meta.dir, '../Clash/non_ip/lan.txt')
+      path.resolve(__dirname, '../List/non_ip/lan.conf'),
+      path.resolve(__dirname, '../Clash/non_ip/lan.txt')
     ),
     compareAndWriteFile(
       span,
@@ -94,10 +94,10 @@ export const buildDomesticRuleset = task(import.meta.main, import.meta.path)(asy
           ])
         ])
       ],
-      path.resolve(import.meta.dir, '../Modules/sukka_local_dns_mapping.sgmodule')
+      path.resolve(__dirname, '../Modules/sukka_local_dns_mapping.sgmodule')
     ),
     fsp.writeFile(
-      path.resolve(import.meta.dir, '../Internal/clash_nameserver_policy.yaml'),
+      path.resolve(__dirname, '../Internal/clash_nameserver_policy.yaml'),
       yaml.stringify(
         {
           dns: {

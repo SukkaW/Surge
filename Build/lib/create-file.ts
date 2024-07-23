@@ -11,8 +11,6 @@ import { readFileByLine } from './fetch-text-by-line';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
-  const fd = await fsp.open(filePath);
-
   const linesALen = linesA.length;
 
   if (!fs.existsSync(filePath)) {
@@ -22,12 +20,10 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     console.log(`Nothing to write to ${filePath}...`);
     isEqual = false;
   } else {
-    /* The `isEqual` variable is used to determine whether the content of a file is equal to the
-    provided lines or not. It is initially set to `true`, and then it is updated based on different
-    conditions: */
+    const fd = await fsp.open(filePath);
+
     isEqual = await span.traceChildAsync(`comparing ${filePath}`, async () => {
       let index = 0;
-
       for await (const lineB of readFileByLine(fd)) {
         const lineA = linesA[index] as string | undefined;
         index++;
@@ -63,6 +59,8 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
       return true;
     });
+
+    await fd.close();
   }
 
   if (isEqual) {
@@ -83,8 +81,6 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
     // return writer.end();
   });
-
-  await fd.close();
 }
 
 export const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {

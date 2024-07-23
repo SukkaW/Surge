@@ -3,7 +3,7 @@ import fsp from 'fs/promises';
 import { fdir as Fdir } from 'fdir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 
-const sourceDir = path.resolve(import.meta.dir, '../Source');
+const sourceDir = path.resolve(__dirname, '../Source');
 
 (async () => {
   const promises: Array<Promise<unknown>> = [];

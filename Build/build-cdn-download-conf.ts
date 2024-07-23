@@ -48,7 +48,7 @@ const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   return Array.from(S3OSSDomains);
 })();
 
-export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildCdnDownloadConf = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   const [
     S3OSSDomains,
 
@@ -57,9 +57,9 @@ export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(asy
     steamDomainSet
   ] = await Promise.all([
     getS3OSSDomainsPromise,
-    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/cdn.conf')),
-    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/download.conf')),
-    readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/steam.conf'))
+    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/cdn.conf')),
+    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/download.conf')),
+    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/steam.conf'))
   ]);
 
   appendArrayInPlace(downloadDomainSet, S3OSSDomains.map(domain => `.${domain}`));
@@ -77,8 +77,8 @@ export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(asy
       new Date(),
       sortDomains(domainDeduper(cdnDomainsList)),
       'domainset',
-      path.resolve(import.meta.dir, '../List/domainset/cdn.conf'),
-      path.resolve(import.meta.dir, '../Clash/domainset/cdn.txt')
+      path.resolve(__dirname, '../List/domainset/cdn.conf'),
+      path.resolve(__dirname, '../Clash/domainset/cdn.txt')
     ),
     createRuleset(
       span,
@@ -91,8 +91,8 @@ export const buildCdnDownloadConf = task(import.meta.main, import.meta.path)(asy
       new Date(),
       sortDomains(domainDeduper(downloadDomainSet)),
       'domainset',
-      path.resolve(import.meta.dir, '../List/domainset/download.conf'),
-      path.resolve(import.meta.dir, '../Clash/domainset/download.txt')
+      path.resolve(__dirname, '../List/domainset/download.conf'),
+      path.resolve(__dirname, '../Clash/domainset/download.txt')
     )
   ]);
 });

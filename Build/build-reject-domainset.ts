@@ -20,9 +20,9 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 import { setAddFromArray, setAddFromArrayCurried } from './lib/set-add-from-array';
 import { sort } from './lib/timsort';
 
-const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.resolve(import.meta.dir, '../Source/domainset/reject_sukka.conf'));
+const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'));
 
-export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(async (span) => {
+export const buildRejectDomainSet = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
@@ -98,7 +98,7 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
     /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
     const domainKeywordsSet = new Set<string>();
 
-    for await (const line of readFileByLine(path.resolve(import.meta.dir, '../Source/non_ip/reject.conf'))) {
+    for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
       const [type, value] = line.split(',');
 
       if (type === 'DOMAIN-KEYWORD') {
@@ -191,8 +191,8 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
       new Date(),
       span.traceChildSync('sort reject domainset (base)', () => sortDomains(dudupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
-      path.resolve(import.meta.dir, '../List/domainset/reject.conf'),
-      path.resolve(import.meta.dir, '../Clash/domainset/reject.txt')
+      path.resolve(__dirname, '../List/domainset/reject.conf'),
+      path.resolve(__dirname, '../Clash/domainset/reject.txt')
     ),
     createRuleset(
       span,
@@ -211,13 +211,13 @@ export const buildRejectDomainSet = task(import.meta.main, import.meta.path)(asy
       new Date(),
       span.traceChildSync('sort reject domainset (extra)', () => sortDomains(dudupedDominArrayExtra, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
-      path.resolve(import.meta.dir, '../List/domainset/reject_extra.conf'),
-      path.resolve(import.meta.dir, '../Clash/domainset/reject_extra.txt')
+      path.resolve(__dirname, '../List/domainset/reject_extra.conf'),
+      path.resolve(__dirname, '../Clash/domainset/reject_extra.txt')
     ),
     compareAndWriteFile(
       span,
       rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
-      path.resolve(import.meta.dir, '../Internal/reject-stats.txt')
+      path.resolve(__dirname, '../Internal/reject-stats.txt')
     )
   ]);
 });
