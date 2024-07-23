@@ -4,7 +4,6 @@ import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';
 import fs from 'fs';
-import fsp from 'fs/promises';
 import { sort } from './timsort';
 import { fastStringArrayJoin } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
@@ -21,11 +20,9 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     console.log(`Nothing to write to ${filePath}...`);
     isEqual = false;
   } else {
-    const fd = await fsp.open(filePath);
-
     isEqual = await span.traceChildAsync(`comparing ${filePath}`, async () => {
       let index = 0;
-      for await (const lineB of readFileByLine(fd)) {
+      for await (const lineB of readFileByLine(filePath)) {
         const lineA = linesA[index] as string | undefined;
         index++;
 
@@ -60,8 +57,6 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
       return true;
     });
-
-    await fd.close();
   }
 
   if (isEqual) {
