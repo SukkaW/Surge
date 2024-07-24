@@ -4,7 +4,6 @@ import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';
 import fs from 'fs';
-import { sort } from './timsort';
 import { fastStringArrayJoin } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
 import { writeFile } from './bun';
@@ -121,33 +120,31 @@ const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
 };
 // sort DOMAIN-SUFFIX and DOMAIN first, then DOMAIN-KEYWORD, then IP-CIDR and IP-CIDR6 if any
 export const sortRuleSet = (ruleSet: string[]) => {
-  return sort(
-    ruleSet.map((rule) => {
-      const type = collectType(rule);
-      if (!type) {
-        return [10, rule] as const;
+  return ruleSet.map((rule) => {
+    const type = collectType(rule);
+    if (!type) {
+      return [10, rule] as const;
+    }
+    if (!(type in sortTypeOrder)) {
+      return [sortTypeOrder[defaultSortTypeOrder], rule] as const;
+    }
+    if (type === 'URL-REGEX') {
+      let extraWeight = 0;
+      if (rule.includes('.+') || rule.includes('.*')) {
+        extraWeight += 10;
       }
-      if (!(type in sortTypeOrder)) {
-        return [sortTypeOrder[defaultSortTypeOrder], rule] as const;
+      if (rule.includes('|')) {
+        extraWeight += 1;
       }
-      if (type === 'URL-REGEX') {
-        let extraWeight = 0;
-        if (rule.includes('.+') || rule.includes('.*')) {
-          extraWeight += 10;
-        }
-        if (rule.includes('|')) {
-          extraWeight += 1;
-        }
 
-        return [
-          sortTypeOrder[type] + extraWeight,
-          rule
-        ] as const;
-      }
-      return [sortTypeOrder[type], rule] as const;
-    }),
-    (a, b) => a[0] - b[0]
-  ).map(c => c[1]);
+      return [
+        sortTypeOrder[type] + extraWeight,
+        rule
+      ] as const;
+    }
+    return [sortTypeOrder[type], rule] as const;
+  }).sort((a, b) => a[0] - b[0])
+    .map(c => c[1]);
 };
 
 const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';

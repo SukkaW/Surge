@@ -29,7 +29,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
   return [domestics, directs, lans] as const;
 });
 
-export const buildDomesticRuleset = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildDomesticRuleset = task(require.main === module, __filename)(async (span) => {
   const res = await getDomesticAndDirectDomainsRulesetPromise();
 
   const dataset = Object.entries(DOMESTICS);

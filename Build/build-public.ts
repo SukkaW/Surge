@@ -5,7 +5,6 @@ import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 import { fdir as Fdir } from 'fdir';
-import { sort } from './lib/timsort';
 
 import Trie from 'mnemonist/trie';
 import { writeFile } from './lib/bun';
@@ -23,7 +22,7 @@ const folderAndFilesToBeDeployed = [
   'LICENSE'
 ];
 
-export const buildPublic = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildPublic = task(require.main === module, __filename)(async (span) => {
   fs.mkdirSync(publicPath, { recursive: true });
 
   await span
@@ -89,7 +88,7 @@ const html = (string: TemplateStringsArray, ...values: any[]) => string.reduce((
 
 const walk = (tree: TreeTypeArray) => {
   let result = '';
-  sort(tree, prioritySorter);
+  tree.sort(prioritySorter);
   for (let i = 0, len = tree.length; i < len; i++) {
     const entry = tree[i];
     if (entry.type === 'directory') {

@@ -13,7 +13,7 @@ import { Readable } from 'stream';
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
 
-export const downloadPreviousBuild = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const downloadPreviousBuild = task(require.main === module, __filename)(async (span) => {
   const buildOutputList: string[] = [];
 
   let flag = 1 | ALL_FILES_EXISTS;

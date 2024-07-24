@@ -15,7 +15,7 @@ const ASSETS_LIST = {
 
 const mockDir = path.resolve(__dirname, '../Mock');
 
-export const downloadMockAssets = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
+export const downloadMockAssets = task(require.main === module, __filename)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
   ([filename, url]) => span
     .traceChild(url)
     .traceAsyncFn(() => fetchWithRetry(url).then(res => {

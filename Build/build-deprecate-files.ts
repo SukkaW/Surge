@@ -11,7 +11,7 @@ const DEPRECATED_FILES = [
 const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
 
-export const buildDeprecateFiles = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
+export const buildDeprecateFiles = task(require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
   const promises: Array<Promise<unknown>> = [];
 
   for (const [filePath, description] of DEPRECATED_FILES) {

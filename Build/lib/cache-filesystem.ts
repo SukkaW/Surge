@@ -5,7 +5,6 @@ import path from 'path';
 import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from './misc';
-import { peek } from './bun';
 import { performance } from 'perf_hooks';
 
 const identity = (x: any) => x;
@@ -178,32 +177,23 @@ export class Cache<S = string> {
     }
 
     const cached = this.get(key);
-    let value: T;
     if (cached == null) {
       console.log(picocolors.yellow('[cache] miss'), picocolors.gray(key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
 
       const serializer = 'serializer' in opt ? opt.serializer : identity;
 
       const promise = fn();
-      const peeked = peek(promise);
 
-      if (peeked === promise) {
-        return promise.then((value) => {
-          this.set(key, serializer(value), ttl);
-          return value;
-        });
-      }
-
-      value = peeked as T;
-      this.set(key, serializer(value), ttl);
-    } else {
-      console.log(picocolors.green('[cache] hit'), picocolors.gray(key));
-
-      const deserializer = 'deserializer' in opt ? opt.deserializer : identity;
-      value = deserializer(cached);
+      return promise.then((value) => {
+        this.set(key, serializer(value), ttl);
+        return value;
+      });
     }
 
-    return value;
+    console.log(picocolors.green('[cache] hit'), picocolors.gray(key));
+
+    const deserializer = 'deserializer' in opt ? opt.deserializer : identity;
+    return deserializer(cached);
   }
 
   destroy() {

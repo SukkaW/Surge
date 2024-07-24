@@ -50,7 +50,7 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
   ]));
 };
 
-export const buildStreamService = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildStreamService = task(require.main === module, __filename)(async (span) => {
   return Promise.all([
     createRulesetForStreamService(span, 'stream', 'All', ALL),
     createRulesetForStreamService(span, 'stream_us', 'North America', NORTH_AMERICA),

@@ -1,4 +1,4 @@
-console.log('Version:', process.version, typeof Bun !== 'undefined' ? Bun.revision : '');
+console.log('Version:', process.version);
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';

@@ -44,7 +44,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
     .concat(WHITELIST);
 });
 
-export const buildMicrosoftCdn = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildMicrosoftCdn = task(require.main === module, __filename)(async (span) => {
   const description = [
     ...SHARED_DESCRIPTION,
     '',

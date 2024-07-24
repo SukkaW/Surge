@@ -67,7 +67,7 @@ const getBotNetFilterIPsPromise = fsFetchCache.apply(
 
 const localRejectIPSourcesPromise = readFileIntoProcessedArray(path.resolve(__dirname, '../Source/ip/reject.conf'));
 
-export const buildRejectIPList = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildRejectIPList = task(require.main === module, __filename)(async (span) => {
   const result = await localRejectIPSourcesPromise;
 
   const bogusNxDomainIPs = await span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise);

@@ -32,7 +32,7 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   return { date, results };
 });
 
-export const buildTelegramCIDR = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildTelegramCIDR = task(require.main === module, __filename)(async (span) => {
   const { date, results } = await span.traceChildAsync('get telegram cidr', getTelegramCIDRPromise);
 
   if (results.length === 0) {

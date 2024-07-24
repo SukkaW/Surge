@@ -5,8 +5,6 @@
 import { fastStringArrayJoin } from './misc';
 import { inspect } from 'util';
 
-// const { Error, Bun, JSON, Symbol } = globalThis;
-
 const noop = () => { /** noop */ };
 
 type TrieNode = [

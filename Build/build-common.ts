@@ -21,7 +21,7 @@ const outputClashDir = path.resolve(__dirname, '../Clash');
 
 const domainsetSrcFolder = 'domainset' + path.sep;
 
-export const buildCommon = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildCommon = task(require.main === module, __filename)(async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
   const paths = await new Fdir()

@@ -28,7 +28,7 @@ const removeNoResolved = (line: string) => line.replace(',no-resolve', '');
 /**
  * This only generates a simplified version, for under-used users only.
  */
-export const buildSSPanelUIMAppProfile = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildSSPanelUIMAppProfile = task(require.main === module, __filename)(async (span) => {
   const [
     [domesticDomains, directDomains, lanDomains],
     appleCdnDomains,

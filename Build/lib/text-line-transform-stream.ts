@@ -2,6 +2,8 @@
 // This module is browser compatible.
 // Modified by Sukka (https://skk.moe) to increase compatibility and performance with Bun.
 
+import { TransformStream } from 'stream/web';
+
 interface TextLineStreamOptions {
   /** Allow splitting by solo \r */
   allowCR?: boolean

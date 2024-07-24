@@ -48,7 +48,7 @@ const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   return Array.from(S3OSSDomains);
 })();
 
-export const buildCdnDownloadConf = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildCdnDownloadConf = task(require.main === module, __filename)(async (span) => {
   const [
     S3OSSDomains,
 

@@ -120,7 +120,7 @@ const REDIRECT_FAKEWEBSITES = [
   ['zbrushcn.com', 'https://www.maxon.net/en/zbrush']
 ] as const;
 
-export const buildRedirectModule = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildRedirectModule = task(require.main === module, __filename)(async (span) => {
   const domains = Array.from(new Set([
     ...REDIRECT_MIRROR.map(([from]) => getHostname(from, { detectIp: false })),
     ...REDIRECT_FAKEWEBSITES.flatMap(([from]) => [from, `www.${from}`])

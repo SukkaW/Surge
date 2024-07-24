@@ -2,7 +2,6 @@
 // (since it is hashes based). But the result is still deterministic, which is
 // enough when sorting.
 import * as tldts from 'tldts-experimental';
-import { sort } from './timsort';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 
 export const compare = (a: string, b: string) => {
@@ -58,5 +57,5 @@ export const sortDomains = (
     return t;
   };
 
-  return sort(inputs, sorter);
+  return inputs.sort(sorter);
 };

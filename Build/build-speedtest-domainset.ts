@@ -13,7 +13,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 
 import { createTrie } from './lib/trie';
-import { peek } from './lib/bun';
+import { peek, track } from './lib/bun';
 
 const s = new Sema(2);
 
@@ -82,7 +82,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   }
 };
 
-export const buildSpeedtestDomainSet = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
   const domainTrie = createTrie(
     [
       // speedtest.net
@@ -226,13 +226,13 @@ export const buildSpeedtestDomainSet = task(typeof Bun !== 'undefined' ? Bun.mai
       'Brazil',
       'Turkey'
     ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
-      pMap[keyword] = span.traceChildAsync(`fetch speedtest endpoints: ${keyword}`, () => querySpeedtestApi(keyword)).then(hostnameGroup => {
+      pMap[keyword] = track(span.traceChildAsync(`fetch speedtest endpoints: ${keyword}`, () => querySpeedtestApi(keyword)).then(hostnameGroup => {
         return hostnameGroup.forEach(hostname => {
           if (hostname) {
             domainTrie.add(hostname);
           }
         });
-      });
+      }));
 
       return pMap;
     }, {});
@@ -240,7 +240,7 @@ export const buildSpeedtestDomainSet = task(typeof Bun !== 'undefined' ? Bun.mai
     const timer = setTimeout(() => {
       console.error(picocolors.red('Task timeout!'));
       Object.entries(pMap).forEach(([name, p]) => {
-        console.log(`[${name}]`, peek.status(p));
+        console.log(`[${name}]`, peek(p));
       });
 
       resolve();

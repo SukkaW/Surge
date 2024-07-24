@@ -7,7 +7,7 @@ import { task } from './trace';
 const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
 
-export const buildCloudMounterRules = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildCloudMounterRules = task(require.main === module, __filename)(async (span) => {
   // AND,((SRC-IP,192.168.1.110), (DOMAIN, example.com))
 
   const results = DOMAINS.flatMap(domain => {

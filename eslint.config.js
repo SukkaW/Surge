@@ -2,12 +2,7 @@
 
 module.exports = require('eslint-config-sukka').sukka({
   js: {
-    disableNoConsoleInCLI: ['Build/**'],
-    env: {
-      customGlobals: {
-        Bun: 'readonly'
-      }
-    }
+    disableNoConsoleInCLI: ['Build/**']
   },
   node: true,
   ts: true

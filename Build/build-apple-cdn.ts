@@ -17,7 +17,7 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCach
   }
 ));
 
-export const buildAppleCdn = task(typeof Bun !== 'undefined' ? Bun.main === __filename : require.main === module, __filename)(async (span) => {
+export const buildAppleCdn = task(require.main === module, __filename)(async (span) => {
   const res: string[] = await span.traceChildPromise('get apple cdn domains', getAppleCdnDomainsPromise());
 
   const description = [
