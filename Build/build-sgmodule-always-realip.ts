@@ -3,7 +3,7 @@ import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import * as yaml from 'yaml';
-import { writeFile } from './lib/bun';
+import { writeFile } from './lib/misc';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal

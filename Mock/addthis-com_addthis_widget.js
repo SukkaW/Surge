@@ -2,6 +2,7 @@
   'use strict';
 
   const noopfn = function () {
+    // noop
   };
   window.addthis = {
     addEventListener: noopfn,

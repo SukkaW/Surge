@@ -7,7 +7,7 @@ import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 import { fdir as Fdir } from 'fdir';
 
 import Trie from 'mnemonist/trie';
-import { writeFile } from './lib/bun';
+import { writeFile } from './lib/misc';
 
 const rootPath = path.resolve(__dirname, '../');
 const publicPath = path.resolve(__dirname, '../public');

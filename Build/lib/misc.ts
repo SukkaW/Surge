@@ -1,3 +1,7 @@
+import { dirname } from 'path';
+import fs from 'fs';
+import fsp from 'fs/promises';
+
 export const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 
 export const fastStringArrayJoin = (arr: string[], sep: string) => {
@@ -11,8 +15,16 @@ export const fastStringArrayJoin = (arr: string[], sep: string) => {
   return result;
 };
 
-export const fastStringArrayJoin2 = (arr: string[], sep: string) => {
-  return arr.reduce((acc, cur, index) => {
-    return index === 0 ? cur : acc + sep + cur;
-  }, '');
+interface Write {
+  (
+    destination: string,
+    input: NodeJS.TypedArray | string,
+  ): Promise<unknown>
+}
+
+export const writeFile: Write = async (destination: string, input, dir = dirname(destination)) => {
+  if (!fs.existsSync(dir)) {
+    await fsp.mkdir(dir, { recursive: true });
+  }
+  return fsp.writeFile(destination, input, { encoding: 'utf-8' });
 };

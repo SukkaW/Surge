@@ -4,9 +4,8 @@ import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import path from 'path';
 import fs from 'fs';
-import { fastStringArrayJoin } from './misc';
+import { fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
-import { writeFile } from './bun';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
