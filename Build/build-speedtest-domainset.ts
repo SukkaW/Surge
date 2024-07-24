@@ -8,18 +8,19 @@ import { getHostname } from 'tldts';
 import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import picocolors from 'picocolors';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
 
 import { createTrie } from './lib/trie';
-import { peek, track } from './lib/bun';
 
 const s = new Sema(2);
 
 const latestTopUserAgentsPromise = fsFetchCache.apply(
   'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
-  () => fetchWithRetry('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json')
+  () => fetchWithRetry(
+    'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
+    { signal: AbortSignal.timeout(1000 * 60) }
+  )
     .then(res => res.json() as Promise<string[]>)
     .then((userAgents) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '))),
   {
@@ -56,7 +57,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
             }
             : {})
         },
-        signal: AbortSignal.timeout(1000 * 4),
+        signal: AbortSignal.timeout(1000 * 60),
         retry: {
           retries: 2
         }
@@ -194,63 +195,44 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
     }
   );
 
-  await new Promise<void>((resolve, reject) => {
-    const pMap = ([
-      'Hong Kong',
-      'Taiwan',
-      'China Telecom',
-      'China Mobile',
-      'China Unicom',
-      'Japan',
-      'Tokyo',
-      'Singapore',
-      'Korea',
-      'Seoul',
-      'Canada',
-      'Toronto',
-      'Montreal',
-      'Los Ang',
-      'San Jos',
-      'Seattle',
-      'New York',
-      'Dallas',
-      'Miami',
-      'Berlin',
-      'Frankfurt',
-      'London',
-      'Paris',
-      'Amsterdam',
-      'Moscow',
-      'Australia',
-      'Sydney',
-      'Brazil',
-      'Turkey'
-    ]).reduce<Record<string, Promise<void>>>((pMap, keyword) => {
-      pMap[keyword] = track(span.traceChildAsync(`fetch speedtest endpoints: ${keyword}`, () => querySpeedtestApi(keyword)).then(hostnameGroup => {
-        return hostnameGroup.forEach(hostname => {
-          if (hostname) {
-            domainTrie.add(hostname);
-          }
-        });
-      }));
-
-      return pMap;
-    }, {});
-
-    const timer = setTimeout(() => {
-      console.error(picocolors.red('Task timeout!'));
-      Object.entries(pMap).forEach(([name, p]) => {
-        console.log(`[${name}]`, peek(p));
-      });
-
-      resolve();
-    }, 1000 * 60 * 1.5);
-
-    Promise.all(Object.values(pMap)).then(() => {
-      clearTimeout(timer);
-      return resolve();
-    }).catch(() => reject);
-  });
+  await Promise.all([
+    'Hong Kong',
+    'Taiwan',
+    'China Telecom',
+    'China Mobile',
+    'China Unicom',
+    'Japan',
+    'Tokyo',
+    'Singapore',
+    'Korea',
+    'Seoul',
+    'Canada',
+    'Toronto',
+    'Montreal',
+    'Los Ang',
+    'San Jos',
+    'Seattle',
+    'New York',
+    'Dallas',
+    'Miami',
+    'Berlin',
+    'Frankfurt',
+    'London',
+    'Paris',
+    'Amsterdam',
+    'Moscow',
+    'Australia',
+    'Sydney',
+    'Brazil',
+    'Turkey'
+  ].map((keyword) => span.traceChildAsync(
+    `fetch speedtest endpoints: ${keyword}`,
+    () => querySpeedtestApi(keyword)
+  ).then(hostnameGroup => hostnameGroup.forEach(hostname => {
+    if (hostname) {
+      domainTrie.add(hostname);
+    }
+  }))));
 
   const deduped = span.traceChildSync('sort result', () => sortDomains(domainDeduper(domainTrie)));
 

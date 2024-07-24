@@ -4,7 +4,8 @@ import { createMemoizedPromise } from './memo-promise';
 import { getPublicSuffixListTextPromise } from './download-publicsuffixlist';
 import { fileURLToPath } from 'url';
 
-const customFetch = async (url: string | URL) => {
+// TODO: node undfici fetch doesn't support file URL reading yet
+const customFetch = async (url: URL) => {
   const filePath = fileURLToPath(url);
   const file = await fsp.readFile(filePath);
   return new Blob([file]) as any;

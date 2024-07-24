@@ -8,47 +8,16 @@ import type { ReadableStream } from 'stream/web';
 import { TextDecoderStream } from 'stream/web';
 import { processLine } from './process-line';
 
-const enableTextLineStream = !!process.env.ENABLE_TEXT_LINE_STREAM;
-
-const decoder = new TextDecoder('utf-8');
-async function *createTextLineAsyncIterableFromStreamSource(stream: ReadableStream<Uint8Array>): AsyncIterable<string> {
-  let buf = '';
-
-  const reader = stream.getReader();
-
-  while (true) {
-    const res = await reader.read();
-    if (res.done) {
-      break;
-    }
-    const chunkStr = decoder.decode(res.value).replaceAll('\r\n', '\n');
-    for (let i = 0, len = chunkStr.length; i < len; i++) {
-      const char = chunkStr[i];
-      if (char === '\n') {
-        yield buf;
-        buf = '';
-      } else {
-        buf += char;
-      }
-    }
-  }
-
-  if (buf) {
-    yield buf;
-  }
-}
-
 const getReadableStream = (file: string | FileHandle): ReadableStream => {
   if (typeof file === 'string') {
-    return Readable.toWeb(fs.createReadStream(file /* { encoding: 'utf-8' } */));
+    return Readable.toWeb(fs.createReadStream(file/* , { encoding: 'utf-8' } */));
   }
   return file.readableWebStream();
 };
-
 // TODO: use FileHandle.readLine()
-export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<string>) = enableTextLineStream
-  ? (file: string | FileHandle) => getReadableStream(file).pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream())
-  : (file: string | FileHandle) => createTextLineAsyncIterableFromStreamSource(getReadableStream(file));
+export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<string>) = (file: string | FileHandle) => getReadableStream(file)
+  .pipeThrough(new TextDecoderStream())
+  .pipeThrough(new TextLineStream());
 
 const ensureResponseBody = (resp: Response) => {
   if (!resp.body) {
@@ -60,9 +29,9 @@ const ensureResponseBody = (resp: Response) => {
   return resp.body;
 };
 
-export const createReadlineInterfaceFromResponse: ((resp: Response) => AsyncIterable<string>) = enableTextLineStream
-  ? (resp) => ensureResponseBody(resp).pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream())
-  : (resp) => createTextLineAsyncIterableFromStreamSource(ensureResponseBody(resp));
+export const createReadlineInterfaceFromResponse: ((resp: Response) => AsyncIterable<string>) = (resp) => ensureResponseBody(resp)
+  .pipeThrough(new TextDecoderStream())
+  .pipeThrough(new TextLineStream());
 
 export function fetchRemoteTextByLine(url: string | URL) {
   return fetchWithRetry(url, defaultRequestInit).then(createReadlineInterfaceFromResponse);

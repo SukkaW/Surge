@@ -2,12 +2,6 @@ import retry from 'async-retry';
 import picocolors from 'picocolors';
 import { setTimeout } from 'timers/promises';
 
-// retry settings
-const MIN_TIMEOUT = 10;
-const MAX_RETRIES = 5;
-const MAX_RETRY_AFTER = 20;
-const FACTOR = 6;
-
 function isClientError(err: unknown): err is NodeJS.ErrnoException {
   if (!err || typeof err !== 'object') return false;
 
@@ -55,10 +49,10 @@ interface FetchWithRetry {
 const DEFAULT_OPT: Required<FetchRetryOpt> = {
   // timeouts will be [10, 60, 360, 2160, 12960]
   // (before randomization is added)
-  minTimeout: MIN_TIMEOUT,
-  retries: MAX_RETRIES,
-  factor: FACTOR,
-  maxRetryAfter: MAX_RETRY_AFTER,
+  minTimeout: 10,
+  retries: 5,
+  factor: 6,
+  maxRetryAfter: 20,
   retryOnAborted: false,
   retryOnNon2xx: true
 };

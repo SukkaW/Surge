@@ -9,10 +9,11 @@
   },
   "type": "commonjs",
   "scripts": {
-    "node": "SWCRC=true ENABLE_TEXT_LINE_STREAM=true node -r @swc-node/register",
-    "dexnode": "SWCRC=true ENABLE_TEXT_LINE_STREAM=true dexnode -r @swc-node/register",
+    "node": "SWCRC=true node -r @swc-node/register",
+    "dexnode": "SWCRC=true dexnode -r @swc-node/register",
     "build": "pnpm run node ./Build/index.ts",
     "build-profile": "pnpm run dexnode -r @swc-node/register ./Build/index.ts",
+    "build-webstream": "ENABLE_EXPERIMENTAL_WEBSTREAMS=true pnpm run node ./Build/index.ts",
     "lint": "eslint --format=sukka ."
   },
   "author": "",
