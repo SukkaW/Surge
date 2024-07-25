@@ -1,22 +1,17 @@
-// eslint-disable-next-line import-x/no-unresolved -- bun
-import { describe, expect, it } from 'bun:test';
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
 import createKeywordFilter from './aho-corasick';
 
 describe('AhoCorasick', () => {
   it('basic', () => {
     let kwfilter = createKeywordFilter(['ap', 'an']);
-    expect(kwfilter('bananan')).toBeTrue();
-    expect(kwfilter('apple')).toBeTrue();
-    expect(kwfilter('melon')).toBeFalse();
-
-    console.log(kwfilter);
+    expect(kwfilter('bananan')).to.equal(true);
+    expect(kwfilter('apple')).to.equal(true);
+    expect(kwfilter('melon')).to.equal(false);
 
     kwfilter = createKeywordFilter(['cdn', 'sukka']);
-    expect(kwfilter('bananan')).toBeFalse();
-    expect(kwfilter('apple')).toBeFalse();
-    expect(kwfilter('melon')).toBeFalse();
-
-    console.log(kwfilter);
-    console.log(createKeywordFilter(['skk.moe', 'anotherskk', 'skk.com']));
+    expect(kwfilter('bananan')).to.equal(false);
+    expect(kwfilter('apple')).to.equal(false);
+    expect(kwfilter('melon')).to.equal(false);
   });
 });

@@ -1,6 +1,6 @@
 import { createTrie } from './trie';
-// eslint-disable-next-line import-x/no-unresolved -- fuck eslint-import
-import { describe, expect, it } from 'bun:test';
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
 
 describe('Trie', () => {
   it('should be possible to add items to a Trie.', () => {
@@ -10,14 +10,14 @@ describe('Trie', () => {
     trie.add('ukka');
     trie.add('akku');
 
-    expect(trie.size).toBe(3);
+    expect(trie.size).to.equal(3);
 
-    expect(trie.has('sukka')).toBeTrue();
-    expect(trie.has('ukka')).toBeTrue();
-    expect(trie.has('akku')).toBeTrue();
-    expect(trie.has('noc')).toBeFalse();
-    expect(trie.has('suk')).toBeFalse();
-    expect(trie.has('sukkaw')).toBeFalse();
+    expect(trie.has('sukka')).to.equal(true);
+    expect(trie.has('ukka')).to.equal(true);
+    expect(trie.has('akku')).to.equal(true);
+    expect(trie.has('noc')).to.equal(false);
+    expect(trie.has('suk')).to.equal(false);
+    expect(trie.has('sukkaw')).to.equal(false);
   });
 
   it('should be possible to add domains to a Trie (hostname).', () => {
@@ -27,14 +27,14 @@ describe('Trie', () => {
     trie.add('skk.moe');
     trie.add('anotherskk.moe');
 
-    expect(trie.size).toBe(3);
+    expect(trie.size).to.equal(3);
 
-    expect(trie.has('a.skk.moe')).toBeTrue();
-    expect(trie.has('skk.moe')).toBeTrue();
-    expect(trie.has('anotherskk.moe')).toBeTrue();
-    expect(trie.has('example.com')).toBeFalse();
-    expect(trie.has('skk.mo')).toBeFalse();
-    expect(trie.has('another.skk.moe')).toBeFalse();
+    expect(trie.has('a.skk.moe')).to.equal(true);
+    expect(trie.has('skk.moe')).to.equal(true);
+    expect(trie.has('anotherskk.moe')).to.equal(true);
+    expect(trie.has('example.com')).to.equal(false);
+    expect(trie.has('skk.mo')).to.equal(false);
+    expect(trie.has('another.skk.moe')).to.equal(false);
   });
 
   it('adding the same item several times should not increase size.', () => {
@@ -44,8 +44,8 @@ describe('Trie', () => {
     trie.add('erat');
     trie.add('rat');
 
-    expect(trie.size).toBe(2);
-    expect(trie.has('rat')).toBeTrue();
+    expect(trie.size).to.equal(2);
+    expect(trie.has('rat')).to.equal(true);
   });
 
   it('adding the same item several times should not increase size (hostname).', () => {
@@ -55,19 +55,19 @@ describe('Trie', () => {
     trie.add('blog.skk.moe');
     trie.add('skk.moe');
 
-    expect(trie.size).toBe(2);
-    expect(trie.has('skk.moe')).toBeTrue();
+    expect(trie.size).to.equal(2);
+    expect(trie.has('skk.moe')).to.equal(true);
   });
 
   it('should be possible to set the null sequence.', () => {
     let trie = createTrie();
 
     trie.add('');
-    expect(trie.has('')).toBeTrue();
+    expect(trie.has('')).to.equal(true);
 
     trie = createTrie(null, true);
     trie.add('');
-    expect(trie.has('')).toBeTrue();
+    expect(trie.has('')).to.equal(true);
   });
 
   it('should be possible to delete items.', () => {
@@ -77,20 +77,20 @@ describe('Trie', () => {
     trie.add('rate');
     trie.add('tar');
 
-    expect(trie.delete('')).toBeFalse();
-    expect(trie.delete('')).toBeFalse();
-    expect(trie.delete('hello')).toBeFalse();
+    expect(trie.delete('')).to.equal(false);
+    expect(trie.delete('')).to.equal(false);
+    expect(trie.delete('hello')).to.equal(false);
 
-    expect(trie.delete('rat')).toBeTrue();
-    expect(trie.has('rat')).toBeFalse();
-    expect(trie.has('rate')).toBeTrue();
+    expect(trie.delete('rat')).to.equal(true);
+    expect(trie.has('rat')).to.equal(false);
+    expect(trie.has('rate')).to.equal(true);
 
-    expect(trie.size).toBe(2);
+    expect(trie.size).to.equal(2);
 
-    expect(trie.delete('rate')).toBeTrue();
-    expect(trie.size).toBe(1);
-    expect(trie.delete('tar')).toBeTrue();
-    expect(trie.size).toBe(0);
+    expect(trie.delete('rate')).to.equal(true);
+    expect(trie.size).to.equal(1);
+    expect(trie.delete('tar')).to.equal(true);
+    expect(trie.size).to.equal(0);
   });
 
   it('should be possible to delete items (hostname).', () => {
@@ -100,20 +100,20 @@ describe('Trie', () => {
     trie.add('example.com');
     trie.add('moe.sb');
 
-    expect(trie.delete('')).toBeFalse();
-    expect(trie.delete('')).toBeFalse();
-    expect(trie.delete('example.org')).toBeFalse();
+    expect(trie.delete('')).to.equal(false);
+    expect(trie.delete('')).to.equal(false);
+    expect(trie.delete('example.org')).to.equal(false);
 
-    expect(trie.delete('skk.moe')).toBeTrue();
-    expect(trie.has('skk.moe')).toBeFalse();
-    expect(trie.has('moe.sb')).toBeTrue();
+    expect(trie.delete('skk.moe')).to.equal(true);
+    expect(trie.has('skk.moe')).to.equal(false);
+    expect(trie.has('moe.sb')).to.equal(true);
 
-    expect(trie.size).toBe(2);
+    expect(trie.size).to.equal(2);
 
-    expect(trie.delete('example.com')).toBeTrue();
-    expect(trie.size).toBe(1);
-    expect(trie.delete('moe.sb')).toBeTrue();
-    expect(trie.size).toBe(0);
+    expect(trie.delete('example.com')).to.equal(true);
+    expect(trie.size).to.equal(1);
+    expect(trie.delete('moe.sb')).to.equal(true);
+    expect(trie.size).to.equal(0);
   });
 
   it('should be possible to check the existence of a sequence in the Trie.', () => {
@@ -121,10 +121,10 @@ describe('Trie', () => {
 
     trie.add('romanesque');
 
-    expect(trie.has('romanesque')).toBe(true);
-    expect(trie.has('roman')).toBe(false);
-    expect(trie.has('esque')).toBe(false);
-    expect(trie.has('')).toBe(false);
+    expect(trie.has('romanesque')).to.equal(true);
+    expect(trie.has('roman')).to.equal(false);
+    expect(trie.has('esque')).to.equal(false);
+    expect(trie.has('')).to.equal(false);
   });
 
   it('should be possible to check the existence of a sequence in the Trie (hostname).', () => {
@@ -132,10 +132,10 @@ describe('Trie', () => {
 
     trie.add('example.org.skk.moe');
 
-    expect(trie.has('example.org.skk.moe')).toBe(true);
-    expect(trie.has('skk.moe')).toBe(false);
-    expect(trie.has('example.org')).toBe(false);
-    expect(trie.has('')).toBe(false);
+    expect(trie.has('example.org.skk.moe')).to.equal(true);
+    expect(trie.has('skk.moe')).to.equal(false);
+    expect(trie.has('example.org')).to.equal(false);
+    expect(trie.has('')).to.equal(false);
   });
 
   it('should be possible to retrieve items matching the given prefix.', () => {
@@ -146,12 +146,12 @@ describe('Trie', () => {
     trie.add('sesqueroman');
     trie.add('greek');
 
-    expect(trie.find('roman')).toEqual(['roman', 'esqueroman', 'sesqueroman']);
-    expect(trie.find('man')).toEqual(['roman', 'esqueroman', 'sesqueroman']);
-    expect(trie.find('esqueroman')).toEqual(['esqueroman', 'sesqueroman']);
-    expect(trie.find('eek')).toEqual(['greek']);
-    expect(trie.find('hello')).toEqual([]);
-    expect(trie.find('')).toEqual(['greek', 'roman', 'esqueroman', 'sesqueroman']);
+    expect(trie.find('roman')).to.deep.equal(['roman', 'esqueroman', 'sesqueroman']);
+    expect(trie.find('man')).to.deep.equal(['roman', 'esqueroman', 'sesqueroman']);
+    expect(trie.find('esqueroman')).to.deep.equal(['esqueroman', 'sesqueroman']);
+    expect(trie.find('eek')).to.deep.equal(['greek']);
+    expect(trie.find('hello')).to.deep.equal([]);
+    expect(trie.find('')).to.deep.equal(['greek', 'roman', 'esqueroman', 'sesqueroman']);
   });
 
   it('should be possible to retrieve items matching the given prefix (hostname).', () => {
@@ -162,54 +162,56 @@ describe('Trie', () => {
     trie.add('cdn.example.com');
     trie.add('example.org');
 
-    expect(trie.find('example.com')).toEqual(['example.com', 'cdn.example.com', 'blog.example.com']);
-    expect(trie.find('com')).toEqual(['example.com', 'cdn.example.com', 'blog.example.com']);
-    expect(trie.find('.example.com')).toEqual(['cdn.example.com', 'blog.example.com']);
-    expect(trie.find('org')).toEqual(['example.org']);
-    expect(trie.find('example.net')).toEqual([]);
-    expect(trie.find('')).toEqual(['example.org', 'example.com', 'cdn.example.com', 'blog.example.com']);
+    expect(trie.find('example.com')).to.deep.equal(['example.com', 'cdn.example.com', 'blog.example.com']);
+    expect(trie.find('com')).to.deep.equal(['example.com', 'cdn.example.com', 'blog.example.com']);
+    expect(trie.find('.example.com')).to.deep.equal(['cdn.example.com', 'blog.example.com']);
+    expect(trie.find('org')).to.deep.equal(['example.org']);
+    expect(trie.find('example.net')).to.deep.equal([]);
+    expect(trie.find('')).to.deep.equal(['example.org', 'example.com', 'cdn.example.com', 'blog.example.com']);
   });
 
   it('should be possible to create a trie from an arbitrary iterable.', () => {
     let trie = createTrie(['roman', 'esqueroman']);
 
-    expect(trie.size).toBe(2);
-    expect(trie.has('roman')).toBe(true);
+    expect(trie.size).to.equal(2);
+    expect(trie.has('roman')).to.equal(true);
 
     trie = createTrie(new Set(['skk.moe', 'example.com']), true);
-    expect(trie.size).toBe(2);
-    expect(trie.has('skk.moe')).toBe(true);
+    expect(trie.size).to.equal(2);
+    expect(trie.has('skk.moe')).to.equal(true);
   });
 });
 
-describe.each([
+([
   ['hostname mode off', false],
   ['hostname mode on', true]
-])('surge domainset dedupe %s', (_, hostnameMode) => {
-  it('should not remove same entry', () => {
-    const trie = createTrie(['.skk.moe', 'noc.one'], hostnameMode);
+] as const).forEach(([description, hostnameMode]) => {
+  describe('surge domainset dedupe ' + description, () => {
+    it('should not remove same entry', () => {
+      const trie = createTrie(['.skk.moe', 'noc.one'], hostnameMode);
 
-    expect(trie.find('.skk.moe')).toStrictEqual(['.skk.moe']);
-    expect(trie.find('noc.one')).toStrictEqual(['noc.one']);
-  });
+      expect(trie.find('.skk.moe')).to.deep.equal(['.skk.moe']);
+      expect(trie.find('noc.one')).to.deep.equal(['noc.one']);
+    });
 
-  it('should match subdomain - 1', () => {
-    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], hostnameMode);
+    it('should match subdomain - 1', () => {
+      const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], hostnameMode);
 
-    expect(trie.find('.skk.moe')).toStrictEqual(['image.cdn.skk.moe', 'blog.skk.moe']);
-    expect(trie.find('.sukkaw.com')).toStrictEqual(['www.sukkaw.com']);
-  });
+      expect(trie.find('.skk.moe')).to.deep.equal(['image.cdn.skk.moe', 'blog.skk.moe']);
+      expect(trie.find('.sukkaw.com')).to.deep.equal(['www.sukkaw.com']);
+    });
 
-  it('should match subdomain - 2', () => {
-    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', '.skk.moe', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], hostnameMode);
+    it('should match subdomain - 2', () => {
+      const trie = createTrie(['www.noc.one', 'www.sukkaw.com', '.skk.moe', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], hostnameMode);
 
-    expect(trie.find('.skk.moe')).toStrictEqual(['.skk.moe', 'image.cdn.skk.moe', 'blog.skk.moe']);
-    expect(trie.find('.sukkaw.com')).toStrictEqual(['www.sukkaw.com']);
-  });
+      expect(trie.find('.skk.moe')).to.deep.equal(['.skk.moe', 'image.cdn.skk.moe', 'blog.skk.moe']);
+      expect(trie.find('.sukkaw.com')).to.deep.equal(['www.sukkaw.com']);
+    });
 
-  it('should not remove non-subdomain', () => {
-    const trie = createTrie(['skk.moe', 'sukkaskk.moe'], hostnameMode);
-    expect(trie.find('.skk.moe')).toStrictEqual([]);
+    it('should not remove non-subdomain', () => {
+      const trie = createTrie(['skk.moe', 'sukkaskk.moe'], hostnameMode);
+      expect(trie.find('.skk.moe')).to.deep.equal([]);
+    });
   });
 });
 
@@ -221,7 +223,7 @@ describe('smol tree', () => {
       '.blog.sub.example.com', 'sub.example.com', 'cdn.sub.example.com', '.sub.example.com'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       '.sub.example.com',
       'cdn.noc.one', 'www.noc.one',
       '.skk.moe'
@@ -233,7 +235,7 @@ describe('smol tree', () => {
       '.skk.moe', 'blog.skk.moe', '.cdn.skk.moe', 'skk.moe'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       '.skk.moe'
     ]);
   });
@@ -243,12 +245,12 @@ describe('smol tree', () => {
       '.blog.sub.example.com', 'cdn.sub.example.com', '.sub.example.com'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       '.sub.example.com'
     ]);
 
     trie.add('.sub.example.com');
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       '.sub.example.com'
     ]);
   });
@@ -261,7 +263,7 @@ describe('smol tree', () => {
       'px.cdn.creative.medialytics.com'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'cdn.creative.medialytics.com',
       'px.cdn.creative.medialytics.com',
       'commercial.shouji.360.cn',
@@ -277,7 +279,7 @@ describe('smol tree', () => {
       'blog.skk.moe'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'anotherskk.moe',
       'blog.anotherskk.moe',
       'skk.moe',
@@ -293,7 +295,7 @@ describe('smol tree', () => {
       'blog.skk.moe'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'anotherskk.moe',
       'blog.anotherskk.moe',
       'skk.moe',
@@ -302,20 +304,20 @@ describe('smol tree', () => {
 
     trie.whitelist('.skk.moe');
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'anotherskk.moe',
       'blog.anotherskk.moe'
     ]);
 
     trie.whitelist('anotherskk.moe');
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'blog.anotherskk.moe'
     ]);
 
     trie.add('anotherskk.moe');
     trie.whitelist('.anotherskk.moe');
 
-    expect(trie.dump()).toStrictEqual([]);
+    expect(trie.dump()).to.deep.equal([]);
   });
 
   it('should whitelist trie correctly', () => {
@@ -328,22 +330,22 @@ describe('smol tree', () => {
       'cdn.example.com'
     ], true, true);
 
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'cdn.example.com', 'blog.cdn.example.com',
       '.skk.moe',
       '.t.co'
     ]);
 
     trie.whitelist('.t.co');
-    expect(trie.dump()).toStrictEqual([
+    expect(trie.dump()).to.deep.equal([
       'cdn.example.com', 'blog.cdn.example.com',
       '.skk.moe'
     ]);
 
     trie.whitelist('skk.moe');
-    expect(trie.dump()).toStrictEqual(['cdn.example.com', 'blog.cdn.example.com']);
+    expect(trie.dump()).to.deep.equal(['cdn.example.com', 'blog.cdn.example.com']);
 
     trie.whitelist('cdn.example.com');
-    expect(trie.dump()).toStrictEqual(['blog.cdn.example.com']);
+    expect(trie.dump()).to.deep.equal(['blog.cdn.example.com']);
   });
 });

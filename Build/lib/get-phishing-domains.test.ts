@@ -1,5 +1,4 @@
-// eslint-disable-next-line import-x/no-unresolved -- bun
-import { describe, it } from 'bun:test';
+import { describe, it } from 'mocha';
 
 import { calcDomainAbuseScore } from './get-phishing-domains';
 
