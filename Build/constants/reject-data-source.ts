@@ -257,10 +257,5 @@ export const PREDEFINED_WHITELIST = [
   // yet stupid AdGuardDNSFilter blocks all of it. Stupid AdGuard
   '.w3s.link', // stupid phishing.army, introduce both "*.ipfs.w3s.link" and ".w3s.link" to the block list
   'ipfs.io', // ipfs.io was blocked by DigitalSide Threat-Intel - OSINT Hub
-  // stupid uBlock Origin blocking public cdn
-  '.bootcdn.net',
-  '.bootcss.com',
-  '.staticfile.net',
-  '.staticfile.org',
   '.r2.dev' // Despite 5000+ r2 instances used for phishing, yet cloudflare refuse to do anything. we have no choice but whitelist this.
 ];
