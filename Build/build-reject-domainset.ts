@@ -148,7 +148,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain (base)', () => domainDeduper(baseTrie));
   const dudupedDominArrayExtra = span.traceChildSync('dedupe from covered subdomain (extra)', () => domainDeduper(extraTrie));
 
-  console.log(`Final size ${dudupedDominArray.length}`);
+  console.log(`Final size ${dudupedDominArray.length} + ${dudupedDominArrayExtra.length}`);
 
   const {
     domainMap: domainArrayMainDomainMap,

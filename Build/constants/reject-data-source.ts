@@ -261,28 +261,6 @@ export const PREDEFINED_WHITELIST = [
   '.bootcdn.net',
   '.bootcss.com',
   '.staticfile.net',
-  '.staticfile.org'
-];
-
-export const PREDEFINED_ENFORCED_WHITELIST = [
-  'r2.dev',
-  'godaddysites.com',
-  'web.app',
-  'firebaseapp.com',
-  'ipfs.nftstorage.link',
-  'ipfs.4everland.io',
-  'ipfs.cf-ipfs.com',
-  'ipfs.dweb.link',
-  'ipfs.infura-ipfs.io',
-  'ipfs.fleek.cool',
-  'repl.co',
-  'w3s.link',
-  'translate.goog',
-  'backblazeb2.com',
-  'workers.dev',
-  'r2.dev',
-  'glitch.me',
-  'netlify.app',
-  'blogspot.com',
-  'appspot.com'
+  '.staticfile.org',
+  '.r2.dev' // Despite 5000+ r2 instances used for phishing, yet cloudflare refuse to do anything. we have no choice but whitelist this.
 ];
