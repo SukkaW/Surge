@@ -174,6 +174,7 @@ export const DOMESTICS = {
       'biligame.cn',
       'biligame.com',
       'biligame.net',
+      'bilicomic.com',
       'bilicomics.com',
       'bilibilipay.cn',
       'bilibilipay.com',
