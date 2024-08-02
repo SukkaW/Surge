@@ -9,7 +9,7 @@ export function appendArrayInPlace<T>(dest: T[], source: T[]) {
     dest.push.apply(dest, source);
   } else {
     while (itemsLeft > 0) {
-      const pushCount = Math.min(MAX_BLOCK_SIZE, itemsLeft);
+      const pushCount = itemsLeft > MAX_BLOCK_SIZE ? MAX_BLOCK_SIZE : itemsLeft;
       const subSource = source.slice(offset, offset + pushCount);
       // eslint-disable-next-line prefer-spread -- performance
       dest.push.apply(dest, subSource);
