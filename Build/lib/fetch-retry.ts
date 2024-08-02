@@ -127,7 +127,7 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
 
 export const defaultRequestInit: RequestInit = {
   headers: {
-    'User-Agent': 'curl/8.1.2 (https://github.com/SukkaW/Surge)'
+    'User-Agent': 'curl/8.9.0 (https://github.com/SukkaW/Surge)'
   }
 };
 

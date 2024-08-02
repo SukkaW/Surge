@@ -1,4 +1,4 @@
-import { parse as tldtsParse } from 'tldts';
+import { parse as tldtsParse } from 'tldts-experimental';
 import { isProbablyIpv4 } from './is-fast-ip';
 export const normalizeDomain = (domain: string) => {
   if (!domain) return null;

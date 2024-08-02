@@ -402,8 +402,10 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     },
     whitelist,
 
-    [inspect.custom]: (depth: number) => JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line).join('\n'),
-
+    [inspect.custom]: (depth: number) => fastStringArrayJoin(
+      JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line),
+      '\n'
+    ),
     hostnameMode,
     smolTree
   };
