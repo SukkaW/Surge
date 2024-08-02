@@ -14,9 +14,6 @@ importers:
       '@cliqz/adblocker':
         specifier: ^1.30.0
         version: 1.30.0
-      '@gorhill/publicsuffixlist':
-        specifier: 3.0.1
-        version: 3.0.1
       async-retry:
         specifier: ^1.3.3
         version: 1.3.3
@@ -182,10 +179,6 @@ packages:
   '@eslint/object-schema@2.1.4':
     resolution: {integrity: sha512-BsWiH1yFGjXXS2yvrf5LyuoSIIbPrGUWob917o+BTKuZ7qJdxX8aJLRxs1fS9n6r7vESrq1OUqb68dANcFXuQQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@gorhill/publicsuffixlist@3.0.1':
-    resolution: {integrity: sha512-TJ3mLuEQ54BVmKejpU1AFuPU/qk8WJEszlVW6WQyLVKlC3Ot4K3OzNljFa1hH0sssmXS6tvii0fWxosUkH7byA==}
-    engines: {node: '>=14.0.0', npm: '>=6.14.4'}
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -1632,8 +1625,6 @@ snapshots:
   '@eslint/js@9.7.0': {}
 
   '@eslint/object-schema@2.1.4': {}
-
-  '@gorhill/publicsuffixlist@3.0.1': {}
 
   '@humanwhocodes/module-importer@1.0.1': {}
 

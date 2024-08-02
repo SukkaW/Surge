@@ -3,13 +3,8 @@
  * because `hostname` is already garanteed to be a valid hostname!
  */
 export function isProbablyIpv4(hostname: string): boolean {
-  // Cannot be shorted than 1.1.1.1
-  if (hostname.length < 7) {
-    return false;
-  }
-
-  // Cannot be longer than: 255.255.255.255
-  if (hostname.length > 15) {
+  // Cannot be shorted than 1.1.1.1 or longer than 255.255.255.255
+  if (hostname.length < 7 || hostname.length > 15) {
     return false;
   }
 

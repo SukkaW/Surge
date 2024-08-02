@@ -2,7 +2,7 @@
 import { fetchRemoteTextByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
-import type { PublicSuffixList } from '@gorhill/publicsuffixlist';
+import tldts from 'tldts-experimental';
 
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
@@ -10,7 +10,6 @@ import { fetchAssets } from './fetch-assets';
 import { deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
-import { getGorhillPublicSuffixPromise } from './get-gorhill-publicsuffix';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
@@ -147,14 +146,12 @@ export async function processFilterRules(
 
       const warningMessages: string[] = [];
 
-      const gorhill = await span.traceChild('get gorhill').tracePromise(getGorhillPublicSuffixPromise());
-
       const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', 1000];
       /**
        * @param {string} line
        */
       const lineCb = (line: string) => {
-        const result = parse(line, gorhill, MUTABLE_PARSE_LINE_RESULT);
+        const result = parse(line, MUTABLE_PARSE_LINE_RESULT);
         const flag = result[1];
 
         if (flag === ParseType.Null) {
@@ -282,7 +279,7 @@ const kwfilter = createKeywordFilter([
   '$cname'
 ]);
 
-function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseType]): [hostname: string, flag: ParseType] {
+function parse($line: string, result: [string, ParseType]): [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -557,8 +554,8 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
         : (lineEndsWithCaretVerticalBar ? -2 : undefined) // replace('^|', '')
     );
 
-    const suffix = gorhill.getPublicSuffix(sliced);
-    if (!gorhill.suffixInPSL(suffix)) {
+    const suffix = tldts.getPublicSuffix(sliced);
+    if (!suffix) {
       // This exclude domain-like resource like `1.1.4.514.js`
       result[1] = ParseType.Null;
       return result;
@@ -632,8 +629,8 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
   ) {
     const _domain = line.slice(0, -1);
 
-    const suffix = gorhill.getPublicSuffix(_domain);
-    if (!suffix || !gorhill.suffixInPSL(suffix)) {
+    const suffix = tldts.getPublicSuffix(_domain);
+    if (!suffix) {
       // This exclude domain-like resource like `_social_tracking.js^`
       result[1] = ParseType.Null;
       return result;
@@ -688,7 +685,7 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
     sliceEnd = -9;
   }
   const sliced = (sliceStart !== 0 || sliceEnd !== undefined) ? line.slice(sliceStart, sliceEnd) : line;
-  const suffix = gorhill.getPublicSuffix(sliced);
+  const suffix = tldts.getPublicSuffix(sliced);
   /**
    * Fast exclude definitely not domain-like resource
    *
@@ -697,7 +694,7 @@ function parse($line: string, gorhill: PublicSuffixList, result: [string, ParseT
    * `-cpm-ads.$badfilter`, suffix is `$badfilter`,
    * `portal.librus.pl$$advertisement-module`, suffix is `pl$$advertisement-module`
    */
-  if (!suffix || !gorhill.suffixInPSL(suffix)) {
+  if (!suffix) {
     // This exclude domain-like resource like `.gatracking.js`, `.beacon.min.js` and `.cookielaw.js`
     result[1] = ParseType.Null;
     return result;
