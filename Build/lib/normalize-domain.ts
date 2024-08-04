@@ -1,11 +1,11 @@
-import { parse as tldtsParse } from 'tldts-experimental';
-import { isProbablyIpv4 } from './is-fast-ip';
+// https://github.com/remusao/tldts/issues/2121
+// import tldts from 'tldts-experimental';
+import tldts from 'tldts';
 export const normalizeDomain = (domain: string) => {
   if (!domain) return null;
-  if (isProbablyIpv4(domain)) return null;
 
-  const parsed = tldtsParse(domain, { allowPrivateDomains: true, detectIp: false });
-  // if (parsed.isIp) return null;
+  const parsed = tldts.parse(domain, { allowPrivateDomains: true, allowIcannDomains: true, detectIp: true });
+  if (parsed.isIp) return null;
   if (!parsed.hostname) return null;
   // Private invalid domain (things like .tor, .dn42, etc)
   if (!parsed.isIcann && !parsed.isPrivate) return null;
