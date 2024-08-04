@@ -26,6 +26,7 @@ export const DOMESTICS = {
       'alipayobjects.com',
       'alibaba-inc.com',
       'alibabausercontent.com',
+      'alibabadns.com',
       'alicloudccp.com',
       'alipan.com',
       'aliyundrive.com',
@@ -143,7 +144,8 @@ export const DOMESTICS = {
     dns: 'quic://dns.alidns.com:853',
     hosts: {},
     domains: [
-      'upos-sz-mirrorali.bilivideo.com'
+      'upos-sz-mirrorali.bilivideo.com',
+      'upos-sz-estgoss.bilivideo.com'
     ]
   },
   BILIBILI_BD: {
@@ -168,7 +170,7 @@ export const DOMESTICS = {
       'bilivideo.com',
       'bilivideo.cn',
       'bilivideo.net',
-      'hdslb.com',
+      // 'hdslb.com', use more than 1 CDN, ali, tencent, baidu
       'biliimg.com',
       'biliapi.com',
       'biliapi.net',
@@ -189,11 +191,13 @@ export const DOMESTICS = {
       'mi.com',
       'duokan.com',
       'mi-img.com',
+      'mi-fds.com',
       'mifile.cn',
       'miui.com',
       'xiaomi.com',
       'xiaomi.cn',
       'xiaomi.net',
+      'xiaomiev.com',
       'xiaomiyoupin.com',
       // mi app store cdn
       'saxyit.com'
