@@ -6,6 +6,8 @@ import { mkdirSync } from 'fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from './misc';
 import { performance } from 'perf_hooks';
+import fs from 'fs';
+import { stringHash } from './string-hash';
 
 const identity = (x: any) => x;
 
@@ -213,3 +215,8 @@ export const serializeSet = (set: Set<string>) => fastStringArrayJoin(Array.from
 export const deserializeSet = (str: string) => new Set(str.split(separator));
 export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separator);
 export const deserializeArray = (str: string) => str.split(separator);
+
+export const createCacheKey = (filename: string) => {
+  const fileHash = stringHash(fs.readFileSync(filename, 'utf-8'));
+  return (key: string) => key + '$' + fileHash;
+};

@@ -9,14 +9,15 @@ import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
-import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
 
 import { createTrie } from './lib/trie';
 
 const s = new Sema(2);
+const cacheKey = createCacheKey(__filename);
 
 const latestTopUserAgentsPromise = fsFetchCache.apply(
-  'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
+  cacheKey('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json'),
   () => fetchWithRetry(
     'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
     { signal: AbortSignal.timeout(1000 * 60) }
@@ -39,7 +40,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
     return await fsFetchCache.apply(
-      url,
+      cacheKey(url),
       () => s.acquire().then(() => fetchWithRetry(url, {
         headers: {
           dnt: '1',

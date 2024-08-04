@@ -7,7 +7,7 @@ import tldts from 'tldts-experimental';
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { fetchAssets } from './fetch-assets';
-import { deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
+import { deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './cache-filesystem';
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
@@ -31,9 +31,11 @@ const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean
   set.push(includeAllSubDomain ? `.${line}` : line);
 };
 
+const cacheKey = createCacheKey(__filename);
+
 export function processDomainLists(span: Span, domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
   return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
-    domainListsUrl,
+    cacheKey(domainListsUrl),
     async () => {
       const domainSets: string[] = [];
 
@@ -88,7 +90,7 @@ const hostsLineCb = (l: string, set: string[], includeAllSubDomain: boolean, met
 
 export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
   return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
-    hostsUrl,
+    cacheKey(hostsUrl),
     async () => {
       const domainSets: string[] = [];
 
@@ -140,7 +142,7 @@ export async function processFilterRules(
     black: string[],
     warningMessages: string[]
   ]>>(
-    filterRulesUrl,
+    cacheKey(filterRulesUrl),
     async () => {
       const whitelistDomainSets = new Set<string>();
       const blacklistDomainSets = new Set<string>();

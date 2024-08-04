@@ -5,15 +5,17 @@ import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-t
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
-import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
 import { fetchAssets } from './lib/fetch-assets';
 import { processLine } from './lib/process-line';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 
+const cacheKey = createCacheKey(__filename);
+
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 
 const getBogusNxDomainIPsPromise = fsFetchCache.apply(
-  BOGUS_NXDOMAIN_URL,
+  cacheKey(BOGUS_NXDOMAIN_URL),
   async () => {
     const result: string[] = [];
     for await (const line of await fetchRemoteTextByLine(BOGUS_NXDOMAIN_URL)) {
@@ -43,7 +45,7 @@ const BOTNET_FILTER_MIRROR_URL = [
 ];
 
 const getBotNetFilterIPsPromise = fsFetchCache.apply(
-  BOTNET_FILTER_URL,
+  cacheKey(BOTNET_FILTER_URL),
   async () => {
     const text = await fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL);
     return text.split('\n').reduce<string[]>((acc, cur) => {
@@ -70,8 +72,13 @@ const localRejectIPSourcesPromise = readFileIntoProcessedArray(path.resolve(__di
 export const buildRejectIPList = task(require.main === module, __filename)(async (span) => {
   const result = await localRejectIPSourcesPromise;
 
-  const bogusNxDomainIPs = await span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise);
-  const botNetIPs = await span.traceChildPromise('get botnet ips', getBotNetFilterIPsPromise);
+  const results = await Promise.all([
+    span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise),
+    span.traceChildPromise('get botnet ips', getBotNetFilterIPsPromise)
+  ]);
+
+  const bogusNxDomainIPs = results[0];
+  const botNetIPs = results[1];
 
   appendArrayInPlace(result, bogusNxDomainIPs);
   appendArrayInPlace(result, botNetIPs);

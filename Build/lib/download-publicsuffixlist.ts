@@ -1,9 +1,11 @@
-import { TTL, deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './cache-filesystem';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 import { createMemoizedPromise } from './memo-promise';
 
+const cacheKey = createCacheKey(__filename);
+
 export const getPublicSuffixListTextPromise = createMemoizedPromise(() => fsFetchCache.apply(
-  'https://publicsuffix.org/list/public_suffix_list.dat array',
+  cacheKey('https://publicsuffix.org/list/public_suffix_list.dat'),
   () => fetchWithRetry('https://publicsuffix.org/list/public_suffix_list.dat', defaultRequestInit)
     .then(r => r.text()).then(text => text.split('\n')),
   {

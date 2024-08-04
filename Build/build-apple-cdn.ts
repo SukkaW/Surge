@@ -5,10 +5,12 @@ import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { TTL, deserializeArray, fsFetchCache, serializeArray } from './lib/cache-filesystem';
+import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
+
+const cacheKey = createCacheKey(__filename);
 
 export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCache.apply(
-  'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf',
+  cacheKey('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
   () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
   {
     ttl: TTL.THREE_DAYS(),
