@@ -150,6 +150,7 @@ export const DOMESTICS = {
     dns: '180.76.76.76',
     hosts: {},
     domains: [
+      'upos-sz-mirrorbd.bilivideo.com',
       'upos-sz-mirrorbos.bilivideo.com'
     ]
   },
