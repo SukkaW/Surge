@@ -56,6 +56,8 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  // AdGuard Cookie Notices
+  ['https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt', [], true, TTL.THREE_HOURS()],
   // Curben's PUP Domains Blocklist
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
@@ -96,8 +98,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
       'https://ublockorigin.pages.dev/thirdparties/easylist.txt',
       'https://easylist-downloads.adblockplus.org/easylist.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
-      'https://secure.fanboy.co.nz/easylist.txt'
+      'https://secure.fanboy.co.nz/easylist.txt',
+      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt'
     ],
     TTL.TWLVE_HOURS()
   ],
@@ -130,8 +132,6 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   ['https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt', null, TTL.THREE_HOURS()],
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
   ['https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt', null, TTL.THREE_HOURS()],
-  // AdGuard Annoyances filter
-  ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS()],
   // GameConsoleAdblockList
   // Update almost once per 1 to 3 months, let's set a 10 days cache ttl
   ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt', null, TTL.TEN_DAYS()],
@@ -152,6 +152,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
 ] as const;
 
 export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
+  // AdGuard Annoyances filter
+  ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS()],
   // EasyList Germany filter
   [
     'https://easylist.to/easylistgermany/easylistgermany.txt',
@@ -170,6 +172,10 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
     ],
     TTL.THREE_HOURS()
   ],
+  // AdGuard Popup Overlay
+  ['https://filters.adtidy.org/extension/ublock/filters/19_optimized.txt', null, TTL.THREE_HOURS()],
+  // AdGuard Mobile Banner
+  ['https://filters.adtidy.org/extension/ublock/filters/20_optimized.txt', null, TTL.THREE_HOURS()],
   // uBlock Origin Badware Risk List
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt',
@@ -200,6 +206,47 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
       'https://ublockorigin.pages.dev/filters/unbreak.min.txt'
     ],
     TTL.THREE_HOURS()
+  ],
+  // uBlock Origin Annoyances
+  [
+    'https://ublockorigin.github.io/uAssetsCDN/filters/annoyances.min.txt',
+    [
+      'https://ublockorigin.pages.dev/filters/annoyances.min.txt'
+    ],
+    TTL.THREE_HOURS()
+  ],
+  // EasyList Annoyances
+  [
+    'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-annoyances.txt',
+    [
+      'https://ublockorigin.pages.dev/thirdparties/easylist-annoyances.txt'
+    ],
+    TTL.THREE_HOURS()
+  ],
+  // EasyList - Newsletters
+  [
+    'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-newsletters.txt',
+    [
+      'https://ublockorigin.pages.dev/thirdparties/easylist-newsletters.txt'
+    ],
+    TTL.THREE_HOURS()
+  ],
+  // EasyList - Notifications
+  [
+    'https://ublockorigin.github.io/uAssets/thirdparties/easylist-notifications.txt',
+    [
+      'https://ublockorigin.pages.dev/thirdparties/easylist-notifications.txt'
+    ],
+    TTL.THREE_HOURS()
+  ],
+  // Fanboy Cookie Monster (EasyList Cookie List)
+  [
+    'https://ublockorigin.github.io/uAssets/thirdparties/easylist-cookies.txt',
+    [
+      'https://ublockorigin.pages.dev/thirdparties/easylist-cookies.txt',
+      'https://secure.fanboy.co.nz/fanboy-cookiemonster_ubo.txt'
+    ],
+    TTL.TWLVE_HOURS()
   ]
 ];
 
