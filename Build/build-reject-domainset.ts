@@ -46,7 +46,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToDomainSetsExtra)),
 
         ADGUARD_FILTERS.map(
-          input => processFilterRules(childSpan, ...input)
+          entry => processFilterRules(childSpan, ...entry)
             .then(({ white, black, foundDebugDomain }) => {
               if (foundDebugDomain) {
                 // eslint-disable-next-line sukka/no-single-return -- not single return
@@ -58,7 +58,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
             })
         ),
         ADGUARD_FILTERS_EXTRA.map(
-          input => processFilterRules(childSpan, ...input)
+          entry => processFilterRules(childSpan, ...entry)
             .then(({ white, black, foundDebugDomain }) => {
               if (foundDebugDomain) {
                 // eslint-disable-next-line sukka/no-single-return -- not single return

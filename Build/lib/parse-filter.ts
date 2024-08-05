@@ -14,14 +14,25 @@ import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
-const temporaryBypass = true;
+const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
 
 const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
   let line = processLine(l);
   if (!line) return;
+  line = line.toLowerCase();
 
-  line = normalizeDomain(line);
-  if (!line) return;
+  const domain = normalizeDomain(line);
+  if (!domain) return;
+  if (domain !== line) {
+    console.log(
+      picocolors.red('[process domain list]'),
+      picocolors.gray(`line: ${line}`),
+      picocolors.gray(`domain: ${domain}`),
+      picocolors.gray(meta)
+    );
+
+    return;
+  }
 
   if (DEBUG_DOMAIN_TO_FIND && line.includes(DEBUG_DOMAIN_TO_FIND)) {
     console.warn(picocolors.red(meta), '(black)', line.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));

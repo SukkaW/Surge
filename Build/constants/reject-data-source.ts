@@ -56,8 +56,6 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
-  // AdGuard Cookie Notices
-  ['https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt', [], true, TTL.THREE_HOURS()],
   // Curben's PUP Domains Blocklist
   // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
@@ -154,6 +152,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
 export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Annoyances filter
   ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS()],
+  // AdGuard Cookie Notices
+  ['https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt', null, TTL.THREE_HOURS()],
   // EasyList Germany filter
   [
     'https://easylist.to/easylistgermany/easylistgermany.txt',
