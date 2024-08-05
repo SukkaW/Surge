@@ -170,7 +170,7 @@ export const DOMESTICS = {
       'bilivideo.com',
       'bilivideo.cn',
       'bilivideo.net',
-      // 'hdslb.com', use more than 1 CDN, ali, tencent, baidu
+      'hdslb.com',
       'biliimg.com',
       'biliapi.com',
       'biliapi.net',
