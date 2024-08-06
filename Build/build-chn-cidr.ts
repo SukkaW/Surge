@@ -10,22 +10,22 @@ import { CN_CIDR_NOT_INCLUDED_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } fr
 import { appendArrayInPlace } from './lib/append-array-in-place';
 
 export const getChnCidrPromise = createMemoizedPromise(async () => {
-  const cidr = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
+  const cidr4 = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
+  const cidr6 = await processLineFromReadline(await fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt'));
 
-  appendArrayInPlace(cidr, CN_CIDR_NOT_INCLUDED_IN_CHNROUTE);
-  return exclude(cidr, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true);
+  appendArrayInPlace(cidr4, CN_CIDR_NOT_INCLUDED_IN_CHNROUTE);
+  return [exclude(cidr4, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true), cidr6] as const;
 });
 
 export const buildChnCidr = task(require.main === module, __filename)(async (span) => {
-  const filteredCidr = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
+  const [filteredCidr4, cidr6] = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
 
   // Can not use SHARED_DESCRIPTION here as different license
   const description = [
     'License: CC BY-SA 2.0',
     'Homepage: https://ruleset.skk.moe',
     'GitHub: https://github.com/SukkaW/Surge',
-    '',
-    'Data from https://misaka.io (misakaio @ GitHub)'
+    ''
   ];
 
   // Can not use createRuleset here, as Clash support advanced ipset syntax
@@ -34,9 +34,12 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
       span,
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
-        description,
+        [
+          ...description,
+          'Data from https://misaka.io (misakaio @ GitHub)'
+        ],
         new Date(),
-        filteredCidr.map(i => `IP-CIDR,${i}`)
+        filteredCidr4.map(i => `IP-CIDR,${i}`)
       ),
       pathResolve(__dirname, '../List/ip/china_ip.conf')
     ),
@@ -44,11 +47,40 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
       span,
       withBannerArray(
         'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
-        description,
+        [
+          ...description,
+          'Data from https://github.com/gaoyifan/china-operator-ip'
+        ],
         new Date(),
-        filteredCidr
+        filteredCidr4.map(i => `IP-CIDR6,${i}`)
+      ),
+      pathResolve(__dirname, '../List/ip/china_ip_ipv6.conf')
+    ),
+    compareAndWriteFile(
+      span,
+      withBannerArray(
+        'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
+        [
+          ...description,
+          'Data from https://misaka.io (misakaio @ GitHub)'
+        ],
+        new Date(),
+        cidr6
       ),
       pathResolve(__dirname, '../Clash/ip/china_ip.txt')
+    ),
+    compareAndWriteFile(
+      span,
+      withBannerArray(
+        'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
+        [
+          ...description,
+          'Data from https://github.com/gaoyifan/china-operator-ip'
+        ],
+        new Date(),
+        cidr6
+      ),
+      pathResolve(__dirname, '../Clash/ip/china_ip_ipv6.txt')
     )
   ]);
 });

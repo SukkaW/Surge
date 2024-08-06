@@ -8,7 +8,7 @@ import { NON_CN_CIDR_INCLUDED_IN_CHNROUTE, RESERVED_IPV4_CIDR } from './constant
 import { writeFile } from './lib/misc';
 
 export const buildInternalReverseChnCIDR = task(require.main === module, __filename)(async () => {
-  const cidr = await getChnCidrPromise();
+  const [cidr] = await getChnCidrPromise();
 
   const reversedCidr = merge(
     exclude(

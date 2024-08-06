@@ -68,7 +68,10 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // domestic - ip cidr
-    getChnCidrPromise().then(cidrs => cidrs.map(cidr => `IP-CIDR,${cidr}`)),
+    getChnCidrPromise().then(([cidrs4, cidrs6]) => [
+      ...cidrs4.map(cidr => `IP-CIDR,${cidr}`),
+      ...cidrs6.map(cidr => `IP-CIDR,${cidr}`)
+    ]),
     AllStreamServices.flatMap((i) => (
       i.ip
         ? [

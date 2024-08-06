@@ -710,13 +710,15 @@ rules:
 #### chnroute CIDR
 
 - 自动生成
-- [原始数据](https://github.com/misakaio/chnroutes2) 由 Misaka Network, Inc.、DMIT, Inc.、NEROCLOUD Ltd.、Rainbow network Ltd.、MOACK Co., Ltd. 提供，由 Misaka Network, Inc. 整理，以 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) 协议发布
-- 二次处理：补充合并了 Misaka Network, Inc. 收不到 BGP 路由的部分国内段、排除了被 Misaka Network, Inc. 误收的在香港广播的 IP 段（通常由 中国移动国际 CMI 广播）
+- IPv4 [原始数据](https://github.com/misakaio/chnroutes2) 由 Misaka Network, Inc. 以 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) 协议发布，二次处理补充合并了 Misaka Network, Inc. 收不到 BGP 路由的部分国内段、排除了被 Misaka Network, Inc. 误收的在香港广播的 IP 段（通常由 中国移动国际 CMI 广播）
+- IPv6 原始数据 由 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) 以 MIT 协议发布
 
 **Surge**
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy]
+# Only use it if you are using IPv6
+# RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,[Replace with your policy]
 ```
 
 **Clash Premium**
@@ -730,9 +732,17 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/ip/china_ip.txt
     path: ./sukkaw_ruleset/china_ip.txt
-
+  china_ip_ipv6:
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/china_ip_ipv6.txt
+    path: ./sukkaw_ruleset/china_ip.txt
 rules:
   - RULE-SET,china_ip,[Replace with your policy]
+  # Only use it if you are using IPv6
+  # - RULE-SET,china_ip_ipv6,[Replace with your policy]
 ```
 
 ## Surge 模块列表
