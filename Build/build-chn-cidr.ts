@@ -46,13 +46,13 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
     compareAndWriteFile(
       span,
       withBannerArray(
-        'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
+        'Sukka\'s Ruleset - Mainland China IPv6 CIDR',
         [
           ...description,
           'Data from https://github.com/gaoyifan/china-operator-ip'
         ],
         new Date(),
-        filteredCidr4.map(i => `IP-CIDR6,${i}`)
+        cidr6.map(i => `IP-CIDR6,${i}`)
       ),
       pathResolve(__dirname, '../List/ip/china_ip_ipv6.conf')
     ),
@@ -72,7 +72,7 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
     compareAndWriteFile(
       span,
       withBannerArray(
-        'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
+        'Sukka\'s Ruleset - Mainland China IPv6 CIDR',
         [
           ...description,
           'Data from https://github.com/gaoyifan/china-operator-ip'
