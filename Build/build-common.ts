@@ -127,6 +127,8 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
           description = SHARED_DESCRIPTION;
         }
 
+        const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
+
         return createRuleset(
           span,
           title,
@@ -135,7 +137,7 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
           deduped,
           'domainset',
           path.resolve(outputSurgeDir, relativePath),
-          path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+          path.resolve(outputClashDir, `${clashFileBasename}.txt`)
         );
       }
     );

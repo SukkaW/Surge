@@ -151,8 +151,10 @@ const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
-  type: ('ruleset' | 'domainset' | string & {}), surgePath: string, clashPath: string
-) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn((childSpan) => {
+  type: ('ruleset' | 'domainset' | string & {}),
+  surgePath: string, clashPath: string,
+  clashMrsPath?: string
+) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn(async (childSpan) => {
   const surgeContent = withBannerArray(
     title, description, date,
     sortRuleSet(type === 'domainset'
@@ -174,8 +176,19 @@ export const createRuleset = (
     return withBannerArray(title, description, date, _clashContent);
   });
 
-  return Promise.all([
+  await Promise.all([
     compareAndWriteFile(childSpan, surgeContent, surgePath),
     compareAndWriteFile(childSpan, clashContent, clashPath)
   ]);
+
+  // if (clashMrsPath) {
+  //   if (type === 'domainset') {
+  //     await childSpan.traceChildAsync('clash meta mrs domain ' + clashMrsPath, async () => {
+  //       await fs.promises.mkdir(path.dirname(clashMrsPath), { recursive: true });
+  //       await convertClashMetaMrs(
+  //         'domain', 'text', clashPath, clashMrsPath
+  //       );
+  //     });
+  //   }
+  // }
 });

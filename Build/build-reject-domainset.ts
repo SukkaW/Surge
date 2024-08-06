@@ -191,7 +191,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       span.traceChildSync('sort reject domainset (base)', () => sortDomains(dudupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
       path.resolve(__dirname, '../List/domainset/reject.conf'),
-      path.resolve(__dirname, '../Clash/domainset/reject.txt')
+      path.resolve(__dirname, '../Clash/domainset/reject.txt'),
+      path.resolve(__dirname, '../Clash/clash_mrs_domain/reject.mrs')
     ),
     createRuleset(
       span,
@@ -211,7 +212,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       span.traceChildSync('sort reject domainset (extra)', () => sortDomains(dudupedDominArrayExtra, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
       path.resolve(__dirname, '../List/domainset/reject_extra.conf'),
-      path.resolve(__dirname, '../Clash/domainset/reject_extra.txt')
+      path.resolve(__dirname, '../Clash/domainset/reject_extra.txt'),
+      path.resolve(__dirname, '../Clash/clash_mrs_domain/reject_extra.mrs')
     ),
     compareAndWriteFile(
       span,

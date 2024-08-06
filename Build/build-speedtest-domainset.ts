@@ -251,6 +251,7 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
     deduped,
     'domainset',
     path.resolve(__dirname, '../List/domainset/speedtest.conf'),
-    path.resolve(__dirname, '../Clash/domainset/speedtest.txt')
+    path.resolve(__dirname, '../Clash/domainset/speedtest.txt'),
+    path.resolve(__dirname, '../Clash/clash_mrs_domain/speedtest.mrs')
   );
 });

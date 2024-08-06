@@ -78,7 +78,8 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
       sortDomains(domainDeduper(cdnDomainsList)),
       'domainset',
       path.resolve(__dirname, '../List/domainset/cdn.conf'),
-      path.resolve(__dirname, '../Clash/domainset/cdn.txt')
+      path.resolve(__dirname, '../Clash/domainset/cdn.txt'),
+      path.resolve(__dirname, '../Clash/clash_mrs_domain/cdn.mrs')
     ),
     createRuleset(
       span,
@@ -92,7 +93,8 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
       sortDomains(domainDeduper(downloadDomainSet)),
       'domainset',
       path.resolve(__dirname, '../List/domainset/download.conf'),
-      path.resolve(__dirname, '../Clash/domainset/download.txt')
+      path.resolve(__dirname, '../Clash/domainset/download.txt'),
+      path.resolve(__dirname, '../Clash/clash_mrs_domain/download.mrs')
     )
   ]);
 });

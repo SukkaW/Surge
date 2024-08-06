@@ -53,7 +53,8 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
       domainset,
       'domainset',
       path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
-      path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt')
+      path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt'),
+      path.resolve(__dirname, '../Clash/clash_mrs_domain/apple_cdn.mrs')
     )
   ]);
 });
