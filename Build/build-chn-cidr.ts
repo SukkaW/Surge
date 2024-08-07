@@ -65,7 +65,7 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
           'Data from https://misaka.io (misakaio @ GitHub)'
         ],
         new Date(),
-        cidr6
+        filteredCidr4
       ),
       pathResolve(__dirname, '../Clash/ip/china_ip.txt')
     ),
