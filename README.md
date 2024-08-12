@@ -83,7 +83,7 @@ rule-providers:
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/domainset/reject_extra.txt
-    path: ./sukkaw_ruleset/reject_domainset.txt
+    path: ./sukkaw_ruleset/reject_domainset_extra.txt
   reject_ip:
     type: http
     behavior: classical
@@ -738,7 +738,7 @@ rule-providers:
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/ip/china_ip_ipv6.txt
-    path: ./sukkaw_ruleset/china_ip.txt
+    path: ./sukkaw_ruleset/china_ipv6.txt
 rules:
   - RULE-SET,china_ip,[Replace with your policy]
   # Only use it if you are using IPv6
