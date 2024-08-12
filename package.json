@@ -30,6 +30,7 @@
     "fast-cidr-tools": "^0.2.5",
     "fdir": "^6.2.0",
     "foxact": "^0.2.36",
+    "json-stringify-pretty-compact": "^3.0.0",
     "mnemonist": "^0.39.8",
     "path-scurry": "^1.11.1",
     "picocolors": "^1.0.1",

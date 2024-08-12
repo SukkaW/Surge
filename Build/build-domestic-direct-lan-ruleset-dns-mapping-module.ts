@@ -49,7 +49,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       res[0],
       'ruleset',
       path.resolve(__dirname, '../List/non_ip/domestic.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/domestic.txt')
+      path.resolve(__dirname, '../Clash/non_ip/domestic.txt'),
+      path.resolve(__dirname, '../sing-box/non_ip/domestic.json')
     ),
     createRuleset(
       span,
@@ -63,7 +64,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       res[1],
       'ruleset',
       path.resolve(__dirname, '../List/non_ip/direct.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/direct.txt')
+      path.resolve(__dirname, '../Clash/non_ip/direct.txt'),
+      path.resolve(__dirname, '../sing-box/non_ip/direct.json')
     ),
     createRuleset(
       span,
@@ -77,7 +79,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       res[2],
       'ruleset',
       path.resolve(__dirname, '../List/non_ip/lan.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/lan.txt')
+      path.resolve(__dirname, '../Clash/non_ip/lan.txt'),
+      path.resolve(__dirname, '../sing-box/non_ip/lan.json')
     ),
     compareAndWriteFile(
       span,

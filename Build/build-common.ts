@@ -18,6 +18,7 @@ const MAGIC_COMMAND_DESCRIPTION = '# $ meta_description ';
 const sourceDir = path.resolve(__dirname, '../Source');
 const outputSurgeDir = path.resolve(__dirname, '../List');
 const outputClashDir = path.resolve(__dirname, '../Clash');
+const outputSingboxDir = path.resolve(__dirname, '../sing-box');
 
 const domainsetSrcFolder = 'domainset' + path.sep;
 
@@ -137,7 +138,8 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
           deduped,
           'domainset',
           path.resolve(outputSurgeDir, relativePath),
-          path.resolve(outputClashDir, `${clashFileBasename}.txt`)
+          path.resolve(outputClashDir, `${clashFileBasename}.txt`),
+          path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
         );
       }
     );
@@ -164,6 +166,8 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
         description = SHARED_DESCRIPTION;
       }
 
+      const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
+
       return createRuleset(
         span,
         title,
@@ -172,7 +176,8 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
         lines,
         'ruleset',
         path.resolve(outputSurgeDir, relativePath),
-        path.resolve(outputClashDir, `${relativePath.slice(0, -path.extname(relativePath).length)}.txt`)
+        path.resolve(outputClashDir, `${clashFileBasename}.txt`),
+        path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
       );
     });
 }

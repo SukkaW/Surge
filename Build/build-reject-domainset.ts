@@ -192,6 +192,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       'domainset',
       path.resolve(__dirname, '../List/domainset/reject.conf'),
       path.resolve(__dirname, '../Clash/domainset/reject.txt'),
+      path.resolve(__dirname, '../sing-box/domainset/reject.json'),
       path.resolve(__dirname, '../Clash/clash_mrs_domain/reject.mrs')
     ),
     createRuleset(
@@ -213,6 +214,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       'domainset',
       path.resolve(__dirname, '../List/domainset/reject_extra.conf'),
       path.resolve(__dirname, '../Clash/domainset/reject_extra.txt'),
+      path.resolve(__dirname, '../sing-box/domainset/reject_extra.json'),
       path.resolve(__dirname, '../Clash/clash_mrs_domain/reject_extra.mrs')
     ),
     compareAndWriteFile(

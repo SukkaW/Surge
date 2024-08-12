@@ -101,6 +101,7 @@ export const buildRejectIPList = task(require.main === module, __filename)(async
     result,
     'ruleset',
     path.resolve(__dirname, '../List/ip/reject.conf'),
-    path.resolve(__dirname, '../Clash/ip/reject.txt')
+    path.resolve(__dirname, '../Clash/ip/reject.txt'),
+    path.resolve(__dirname, '../sing-box/ip/reject.json')
   );
 });

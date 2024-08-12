@@ -6,6 +6,8 @@ import path from 'path';
 import fs from 'fs';
 import { fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
+import stringify from 'json-stringify-pretty-compact';
+import { surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -152,14 +154,13 @@ export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
   type: ('ruleset' | 'domainset' | string & {}),
-  surgePath: string, clashPath: string,
-  clashMrsPath?: string
+  surgePath: string, clashPath: string, singBoxPath: string, _clashMrsPath?: string
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn(async (childSpan) => {
   const surgeContent = withBannerArray(
     title, description, date,
-    sortRuleSet(type === 'domainset'
+    type === 'domainset'
       ? [MARK, ...content]
-      : [`DOMAIN,${MARK}`, ...content])
+      : sortRuleSet([`DOMAIN,${MARK}`, ...content])
   );
   const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
     let _clashContent;
@@ -175,10 +176,25 @@ export const createRuleset = (
     }
     return withBannerArray(title, description, date, _clashContent);
   });
+  const singboxContent = childSpan.traceChildSync('convert incoming ruleset to singbox', () => {
+    let _singBoxContent;
+    switch (type) {
+      case 'domainset':
+        _singBoxContent = surgeDomainsetToSingbox([MARK, ...content]);
+        break;
+      case 'ruleset':
+        _singBoxContent = surgeRulesetToSingbox([`DOMAIN,${MARK}`, ...content]);
+        break;
+      default:
+        throw new TypeError(`Unknown type: ${type}`);
+    }
+    return stringify(_singBoxContent).split('\n');
+  });
 
   await Promise.all([
     compareAndWriteFile(childSpan, surgeContent, surgePath),
-    compareAndWriteFile(childSpan, clashContent, clashPath)
+    compareAndWriteFile(childSpan, clashContent, clashPath),
+    compareAndWriteFile(childSpan, singboxContent, singBoxPath)
   ]);
 
   // if (clashMrsPath) {

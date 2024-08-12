@@ -1,0 +1,94 @@
+import picocolors from 'picocolors';
+
+const unsupported = Symbol('unsupported');
+
+// https://sing-box.sagernet.org/configuration/rule-set/source-format/
+const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: string]) | typeof unsupported> = {
+  DOMAIN: (_1, _2, value) => ['domain', value],
+  'DOMAIN-SUFFIX': (_1, _2, value) => ['domain_suffix', value],
+  'DOMAIN-KEYWORD': (_1, _2, value) => ['domain_keyword', value],
+  GEOIP: unsupported,
+  'IP-CIDR': (_1, _2, value) => ['ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
+  'IP-CIDR6': (_1, _2, value) => ['ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
+  'IP-ASN': unsupported,
+  'SRC-IP-CIDR': (_1, _2, value) => ['source_ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
+  'SRC-PORT': (_1, _2, value) => ['source_port', value],
+  'DST-PORT': (_1, _2, value) => ['port', value],
+  'PROCESS-NAME': (_1, _2, value) => ['process_name', value],
+  'PROCESS-PATH': (_1, _2, value) => ['process_path', value],
+  'DEST-PORT': (_1, _2, value) => ['port', value],
+  'IN-PORT': (_1, _2, value) => ['source_port', value],
+  'URL-REGEX': unsupported,
+  'USER-AGENT': unsupported
+};
+
+interface SingboxHeadlessRule {
+  domain?: string[],
+  domain_suffix?: string[],
+  domain_keyword?: string[],
+  domain_regex?: string[],
+  source_ip_cidr?: string[],
+  ip_cidr?: string[],
+  source_port?: string[],
+  source_port_range?: string[],
+  port?: string[],
+  port_range?: string[],
+  process_name?: string[],
+  process_path?: string[]
+}
+
+interface SingboxSourceFormat {
+  version: 2 | number & {},
+  rules: SingboxHeadlessRule[]
+}
+
+export const surgeRulesetToSingbox = (rules: string[] | Set<string>): SingboxSourceFormat => {
+  const rule: SingboxHeadlessRule = Array.from(rules).reduce<SingboxHeadlessRule>((acc, cur) => {
+    let buf = '';
+    let type = '';
+    let i = 0;
+    for (const len = cur.length; i < len; i++) {
+      if (cur[i] === ',') {
+        type = buf;
+        break;
+      }
+      buf += cur[i];
+    }
+    if (type === '') {
+      return acc;
+    }
+    const value = cur.slice(i + 1);
+    if (type in PROCESSOR) {
+      const proc = PROCESSOR[type];
+      if (proc !== unsupported) {
+        const [k, v] = proc(cur, type, value);
+        acc[k] ||= [];
+        acc[k].push(v);
+      }
+    } else {
+      console.log(picocolors.yellow(`[sing-box] unknown rule type: ${type}`), cur);
+    }
+    return acc;
+  }, {});
+
+  return {
+    version: 2,
+    rules: [rule]
+  };
+};
+
+export const surgeDomainsetToSingbox = (domainset: string[]) => {
+  const rule = domainset.reduce((acc, cur) => {
+    if (cur[0] === '.') {
+      acc.domain_suffix.push(cur.slice(1));
+    } else {
+      acc.domain.push(cur);
+    }
+    return acc;
+  }, { domain: [] as string[], domain_suffix: [] as string[] } satisfies SingboxHeadlessRule);
+
+  return {
+    version: 2,
+    rules: [rule]
+  };
+};

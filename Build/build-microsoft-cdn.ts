@@ -64,6 +64,7 @@ export const buildMicrosoftCdn = task(require.main === module, __filename)(async
     res,
     'ruleset',
     path.resolve(__dirname, '../List/non_ip/microsoft_cdn.conf'),
-    path.resolve(__dirname, '../Clash/non_ip/microsoft_cdn.txt')
+    path.resolve(__dirname, '../Clash/non_ip/microsoft_cdn.txt'),
+    path.resolve(__dirname, '../sing-box/non_ip/microsoft_cdn.json')
   );
 });

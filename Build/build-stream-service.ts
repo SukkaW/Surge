@@ -23,7 +23,8 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
       streamServices.flatMap((i) => i.rules),
       'ruleset',
       path.resolve(__dirname, `../List/non_ip/${fileId}.conf`),
-      path.resolve(__dirname, `../Clash/non_ip/${fileId}.txt`)
+      path.resolve(__dirname, `../Clash/non_ip/${fileId}.txt`),
+      path.resolve(__dirname, `../sing-box/non_ip/${fileId}.json`)
     ),
     // IP
     createRuleset(
@@ -45,7 +46,8 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
       )),
       'ruleset',
       path.resolve(__dirname, `../List/ip/${fileId}.conf`),
-      path.resolve(__dirname, `../Clash/ip/${fileId}.txt`)
+      path.resolve(__dirname, `../Clash/ip/${fileId}.txt`),
+      path.resolve(__dirname, `../sing-box/ip/${fileId}.json`)
     )
   ]));
 };

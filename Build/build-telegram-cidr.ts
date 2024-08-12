@@ -53,6 +53,7 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
     results,
     'ruleset',
     path.resolve(__dirname, '../List/ip/telegram.conf'),
-    path.resolve(__dirname, '../Clash/ip/telegram.txt')
+    path.resolve(__dirname, '../Clash/ip/telegram.txt'),
+    path.resolve(__dirname, '../sing-box/ip/telegram.json')
   );
 });
