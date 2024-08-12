@@ -83,7 +83,7 @@ rule-providers:
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/domainset/reject_extra.txt
-    path: ./sukkaw_ruleset/reject_domainset.txt
+    path: ./sukkaw_ruleset/reject_domainset_extra.txt
   reject_ip:
     type: http
     behavior: classical
