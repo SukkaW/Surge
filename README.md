@@ -1,6 +1,6 @@
 # Sukka Ruleset
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/) 和 [Clash Premium](https://dreamacro.github.io/clash/) 的 Ruleset Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/) 和 [sing-box](https://sing-box.sagernet.org/) 的 Ruleset Snippet。
 
 ## 条款和协议
 
@@ -44,7 +44,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,extend
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -115,7 +115,7 @@ rules:
 RULE-SET,https://ruleset.skk.moe/List/non_ip/sogouinput.conf,REJECT
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -157,7 +157,7 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,[Replace with your po
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -212,7 +212,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,[Replace with your poli
 RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -351,7 +351,7 @@ rules:
 RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -384,7 +384,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,[Replace with your policy
 RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -420,7 +420,7 @@ rules:
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -446,7 +446,7 @@ rules:
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -473,7 +473,7 @@ rules:
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -501,7 +501,7 @@ rules:
 RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -527,7 +527,7 @@ rules:
 RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -554,7 +554,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,[Replace with you
 RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -591,7 +591,7 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,[Replace with yo
 RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -630,7 +630,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -667,7 +667,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,PROXY
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -721,7 +721,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,[Replace with your policy
 # RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,[Replace with your policy]
 ```
 
-**Clash Premium**
+**Clash Meta**
 
 ```yaml
 rule-providers:
@@ -763,7 +763,7 @@ rules:
 
 **有适用于 Clash 的规则组吗？**
 
-规则组支持 Clash Premium 和 Clash Meta（mihomo）。「Surge 模块」不适用于任何版本的 Clash。
+规则组支持 Clash Meta（mihomo）。「Surge 模块」不适用于任何版本的 Clash。
 
 **有适用于 Shadowrocket、Quantumult X、Loon、V2RayNG 的规则组吗？**
 
