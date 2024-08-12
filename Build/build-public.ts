@@ -16,6 +16,7 @@ const folderAndFilesToBeDeployed = [
   `Mock${path.sep}`,
   `List${path.sep}`,
   `Clash${path.sep}`,
+  `sing-box${path.sep}`,
   `Modules${path.sep}`,
   `Script${path.sep}`,
   `Internal${path.sep}`,
@@ -72,12 +73,13 @@ const priorityOrder: Record<'default' | string & {}, number> = {
   List: 10,
   Surge: 11,
   Clash: 12,
-  Modules: 13,
-  Script: 14,
-  Mock: 15,
-  Assets: 16,
-  Internal: 17,
-  LICENSE: 20,
+  'sing-box': 13,
+  Modules: 20,
+  Script: 30,
+  Mock: 40,
+  Assets: 50,
+  Internal: 60,
+  LICENSE: 70,
   default: Number.MAX_VALUE
 };
 const prioritySorter = (a: TreeType, b: TreeType) => {
