@@ -738,7 +738,7 @@ rule-providers:
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/ip/china_ip_ipv6.txt
-    path: ./sukkaw_ruleset/china_ip.txt
+    path: ./sukkaw_ruleset/china_ipv6.txt
 rules:
   - RULE-SET,china_ip,[Replace with your policy]
   # Only use it if you are using IPv6
