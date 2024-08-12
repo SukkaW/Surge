@@ -484,7 +484,8 @@ const NICONICO: StreamService = {
   rules: [
     'DOMAIN-SUFFIX,dmc.nico',
     'DOMAIN-SUFFIX,nicovideo.jp',
-    'DOMAIN-SUFFIX,nimg.jp',
+    'DOMAIN-SUFFIX,asset.domand.nicovideo.jp',
+    // 'DOMAIN-SUFFIX,nimg.jp',
     'DOMAIN-SUFFIX,socdm.com',
 
     'USER-AGENT,Niconico*'
