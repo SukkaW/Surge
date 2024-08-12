@@ -1,4 +1,5 @@
 import picocolors from 'picocolors';
+import { domainWildCardToRegex } from './misc';
 
 const unsupported = Symbol('unsupported');
 
@@ -7,6 +8,7 @@ const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [
   DOMAIN: (_1, _2, value) => ['domain', value],
   'DOMAIN-SUFFIX': (_1, _2, value) => ['domain_suffix', value],
   'DOMAIN-KEYWORD': (_1, _2, value) => ['domain_keyword', value],
+  'DOMAIN-WILDCARD': (_1, _2, value) => ['domain_regex', domainWildCardToRegex(value)],
   GEOIP: unsupported,
   'IP-CIDR': (_1, _2, value) => ['ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
   'IP-CIDR6': (_1, _2, value) => ['ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],

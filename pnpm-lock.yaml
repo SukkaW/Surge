@@ -37,7 +37,7 @@ importers:
         version: 0.2.5
       fdir:
         specifier: ^6.2.0
-        version: 6.2.0
+        version: 6.2.0(picomatch@4.0.2)
       foxact:
         specifier: ^0.2.36
         version: 0.2.36
@@ -53,6 +53,9 @@ importers:
       picocolors:
         specifier: ^1.0.1
         version: 1.0.1
+      picomatch:
+        specifier: ^4.0.2
+        version: 4.0.2
       punycode:
         specifier: ^2.3.1
         version: 2.3.1
@@ -93,6 +96,9 @@ importers:
       '@types/mocha':
         specifier: ^10.0.7
         version: 10.0.7
+      '@types/picomatch':
+        specifier: ^3.0.1
+        version: 3.0.1
       '@types/punycode':
         specifier: ^2.1.4
         version: 2.1.4
@@ -435,6 +441,9 @@ packages:
 
   '@types/node@20.14.11':
     resolution: {integrity: sha512-kprQpL8MMeszbz6ojB5/tU8PLN4kesnN8Gjzw349rDlNgsSzg90lAVj3llK99Dh7JON+t9AuscPPFW6mPbTnSA==}
+
+  '@types/picomatch@3.0.1':
+    resolution: {integrity: sha512-1MRgzpzY0hOp9pW/kLRxeQhUWwil6gnrUYd3oEpeYBqp/FexhaCPv3F8LsYr47gtUU45fO2cm1dbwkSrHEo8Uw==}
 
   '@types/punycode@2.1.4':
     resolution: {integrity: sha512-trzh6NzBnq8yw5e35f8xe8VTYjqM3NE7bohBtvDVf/dtUer3zYTLK1Ka3DG3p7bdtoaOHZucma6FfVKlQ134pQ==}
@@ -1259,6 +1268,10 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
+  picomatch@4.0.2:
+    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
+    engines: {node: '>=12'}
+
   pirates@4.0.6:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
@@ -1881,6 +1894,8 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  '@types/picomatch@3.0.1': {}
+
   '@types/punycode@2.1.4': {}
 
   '@types/retry@0.12.5': {}
@@ -2475,7 +2490,9 @@ snapshots:
     dependencies:
       reusify: 1.0.4
 
-  fdir@6.2.0: {}
+  fdir@6.2.0(picomatch@4.0.2):
+    optionalDependencies:
+      picomatch: 4.0.2
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -2792,6 +2809,8 @@ snapshots:
   picocolors@1.0.1: {}
 
   picomatch@2.3.1: {}
+
+  picomatch@4.0.2: {}
 
   pirates@4.0.6: {}
 

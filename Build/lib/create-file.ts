@@ -110,6 +110,7 @@ const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   'DOMAIN-KEYWORD': 10,
   // experimental domain wildcard support
   'DOMAIN-WILDCARD': 20,
+  'DOMAIN-REGEX': 21,
   'USER-AGENT': 30,
   'PROCESS-NAME': 40,
   [defaultSortTypeOrder]: 50, // default sort order for unknown type
