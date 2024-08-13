@@ -32,7 +32,6 @@
     "foxact": "^0.2.36",
     "json-stringify-pretty-compact": "^3.0.0",
     "mnemonist": "^0.39.8",
-    "path-scurry": "^1.11.1",
     "picocolors": "^1.0.1",
     "punycode": "^2.3.1",
     "table": "^6.8.2",
