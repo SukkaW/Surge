@@ -1,10 +1,11 @@
 import picocolors from 'picocolors';
 import { domainWildCardToRegex } from './misc';
+import { isProbablyIpv4, isProbablyIpv6 } from './is-fast-ip';
 
 const unsupported = Symbol('unsupported');
 
 // https://sing-box.sagernet.org/configuration/rule-set/source-format/
-const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: string]) | typeof unsupported> = {
+const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: string] | null) | typeof unsupported> = {
   DOMAIN: (_1, _2, value) => ['domain', value],
   'DOMAIN-SUFFIX': (_1, _2, value) => ['domain_suffix', value],
   'DOMAIN-KEYWORD': (_1, _2, value) => ['domain_keyword', value],
@@ -13,6 +14,18 @@ const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [
   'IP-CIDR': (_1, _2, value) => ['ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
   'IP-CIDR6': (_1, _2, value) => ['ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
   'IP-ASN': unsupported,
+  'SRC-IP': (_1, _2, value) => {
+    if (value.includes('/')) {
+      return ['source_ip_cidr', value];
+    }
+    if (isProbablyIpv4(value)) {
+      return ['source_ip_cidr', value + '/32'];
+    }
+    if (isProbablyIpv6(value)) {
+      return ['source_ip_cidr', value + '/128'];
+    }
+    return null;
+  },
   'SRC-IP-CIDR': (_1, _2, value) => ['source_ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
   'SRC-PORT': (_1, _2, value) => ['source_port', value],
   'DST-PORT': (_1, _2, value) => ['port', value],
@@ -63,9 +76,12 @@ export const surgeRulesetToSingbox = (rules: string[] | Set<string>): SingboxSou
     if (type in PROCESSOR) {
       const proc = PROCESSOR[type];
       if (proc !== unsupported) {
-        const [k, v] = proc(cur, type, value);
-        acc[k] ||= [];
-        acc[k].push(v);
+        const r = proc(cur, type, value);
+        if (r) {
+          const [k, v] = r;
+          acc[k] ||= [];
+          acc[k].push(v);
+        }
       }
     } else {
       console.log(picocolors.yellow(`[sing-box] unknown rule type: ${type}`), cur);
