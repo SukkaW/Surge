@@ -6,10 +6,10 @@ export const DOMAINS = [
   'DOMAIN-SUFFIX,storage.live.com',
   'DOMAIN-SUFFIX,files.1drv.com',
   'DOMAIN-SUFFIX,my.microsoftpersonalcontent.com',
-  'DOMAIN-WIRDCARD,*-medi*.svc.ms'
+  'DOMAIN-WILDCARD,*-medi*.svc.ms'
 ];
 
 export const PROCESS_NAMES = [
-  'CloudMounter'
+  '*CloudMounter'
   // 'RaiDrive'
 ];
