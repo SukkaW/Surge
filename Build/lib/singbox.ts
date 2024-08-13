@@ -110,3 +110,12 @@ export const surgeDomainsetToSingbox = (domainset: string[]) => {
     rules: [rule]
   };
 };
+
+export const ipCidrListToSingbox = (ipCidrList: string[]): SingboxSourceFormat => {
+  return {
+    version: 2,
+    rules: [{
+      ip_cidr: ipCidrList
+    }]
+  };
+};

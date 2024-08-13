@@ -1,4 +1,3 @@
-import path from 'path';
 import { task } from './trace';
 import { createRuleset } from './lib/create-file';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
@@ -7,6 +6,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
 import { sortDomains } from './lib/stable-sort-domain';
+import { output } from './lib/misc';
 
 const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];
 
@@ -63,8 +63,6 @@ export const buildMicrosoftCdn = task(require.main === module, __filename)(async
     new Date(),
     res,
     'ruleset',
-    path.resolve(__dirname, '../List/non_ip/microsoft_cdn.conf'),
-    path.resolve(__dirname, '../Clash/non_ip/microsoft_cdn.txt'),
-    path.resolve(__dirname, '../sing-box/non_ip/microsoft_cdn.json')
+    ...output('microsoft_cdn', 'non_ip')
   );
 });

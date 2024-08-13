@@ -1,4 +1,4 @@
-import { dirname } from 'path';
+import path, { dirname } from 'path';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import { makeRe } from 'picomatch';
@@ -32,4 +32,16 @@ export const writeFile: Write = async (destination: string, input, dir = dirname
 
 export const domainWildCardToRegex = (domain: string) => {
   return makeRe(domain, { contains: false, strictSlashes: true }).source;
+};
+
+const OUTPUT_SURGE_DIR = path.resolve(__dirname, '../../List');
+const OUTPUT_CLASH_DIR = path.resolve(__dirname, '../../Clash');
+const OUTPUT_SINGBOX_DIR = path.resolve(__dirname, '../../sing-box');
+
+export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => {
+  return [
+    path.join(OUTPUT_SURGE_DIR, type, id + '.conf'),
+    path.join(OUTPUT_CLASH_DIR, type, id + '.txt'),
+    path.join(OUTPUT_SINGBOX_DIR, type, id + '.json')
+  ] as const;
 };

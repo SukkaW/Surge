@@ -12,6 +12,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
 
 import { createTrie } from './lib/trie';
+import { output } from './lib/misc';
 
 const s = new Sema(2);
 const cacheKey = createCacheKey(__filename);
@@ -250,9 +251,6 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
     new Date(),
     deduped,
     'domainset',
-    path.resolve(__dirname, '../List/domainset/speedtest.conf'),
-    path.resolve(__dirname, '../Clash/domainset/speedtest.txt'),
-    path.resolve(__dirname, '../sing-box/domainset/speedtest.json'),
-    path.resolve(__dirname, '../Clash/clash_mrs_domain/speedtest.mrs')
+    ...output('speedtest', 'domainset')
   );
 });

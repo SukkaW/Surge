@@ -1,11 +1,11 @@
 // @ts-check
-import path from 'path';
 import { createRuleset } from './lib/create-file';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
+import { output } from './lib/misc';
 
 const cacheKey = createCacheKey(__filename);
 
@@ -42,9 +42,7 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
       new Date(),
       ruleset,
       'ruleset',
-      path.resolve(__dirname, '../List/non_ip/apple_cdn.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/apple_cdn.txt'),
-      path.resolve(__dirname, '../sing-box/non_ip/apple_cdn.json')
+      ...output('apple_cdn', 'non_ip')
     ),
     createRuleset(
       span,
@@ -53,10 +51,7 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
       new Date(),
       domainset,
       'domainset',
-      path.resolve(__dirname, '../List/domainset/apple_cdn.conf'),
-      path.resolve(__dirname, '../Clash/domainset/apple_cdn.txt'),
-      path.resolve(__dirname, '../sing-box/domainset/apple_cdn.json'),
-      path.resolve(__dirname, '../Clash/clash_mrs_domain/apple_cdn.mrs')
+      ...output('apple_cdn', 'domainset')
     )
   ]);
 });

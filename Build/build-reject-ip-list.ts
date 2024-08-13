@@ -9,6 +9,7 @@ import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } f
 import { fetchAssets } from './lib/fetch-assets';
 import { processLine } from './lib/process-line';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { output } from './lib/misc';
 
 const cacheKey = createCacheKey(__filename);
 
@@ -100,8 +101,6 @@ export const buildRejectIPList = task(require.main === module, __filename)(async
     new Date(),
     result,
     'ruleset',
-    path.resolve(__dirname, '../List/ip/reject.conf'),
-    path.resolve(__dirname, '../Clash/ip/reject.txt'),
-    path.resolve(__dirname, '../sing-box/ip/reject.json')
+    ...output('reject', 'ip')
   );
 });

@@ -9,7 +9,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { writeFile } from './lib/misc';
+import { output, writeFile } from './lib/misc';
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/domestic.conf'));
@@ -48,9 +48,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       new Date(),
       res[0],
       'ruleset',
-      path.resolve(__dirname, '../List/non_ip/domestic.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/domestic.txt'),
-      path.resolve(__dirname, '../sing-box/non_ip/domestic.json')
+      ...output('domestic', 'non_ip')
     ),
     createRuleset(
       span,
@@ -63,9 +61,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       new Date(),
       res[1],
       'ruleset',
-      path.resolve(__dirname, '../List/non_ip/direct.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/direct.txt'),
-      path.resolve(__dirname, '../sing-box/non_ip/direct.json')
+      ...output('direct', 'non_ip')
     ),
     createRuleset(
       span,
@@ -78,9 +74,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       new Date(),
       res[2],
       'ruleset',
-      path.resolve(__dirname, '../List/non_ip/lan.conf'),
-      path.resolve(__dirname, '../Clash/non_ip/lan.txt'),
-      path.resolve(__dirname, '../sing-box/non_ip/lan.json')
+      ...output('lan', 'non_ip')
     ),
     compareAndWriteFile(
       span,

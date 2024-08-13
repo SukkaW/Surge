@@ -2,11 +2,11 @@
 import type { Span } from './trace';
 import { task } from './trace';
 
-import path from 'path';
 import { createRuleset } from './lib/create-file';
 
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
+import { output } from './lib/misc';
 
 export const createRulesetForStreamService = (span: Span, fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
   return span.traceChildAsync(fileId, async (childSpan) => Promise.all([
@@ -22,9 +22,7 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
       new Date(),
       streamServices.flatMap((i) => i.rules),
       'ruleset',
-      path.resolve(__dirname, `../List/non_ip/${fileId}.conf`),
-      path.resolve(__dirname, `../Clash/non_ip/${fileId}.txt`),
-      path.resolve(__dirname, `../sing-box/non_ip/${fileId}.json`)
+      ...output(fileId, 'non_ip')
     ),
     // IP
     createRuleset(
@@ -45,9 +43,7 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
           : []
       )),
       'ruleset',
-      path.resolve(__dirname, `../List/ip/${fileId}.conf`),
-      path.resolve(__dirname, `../Clash/ip/${fileId}.txt`),
-      path.resolve(__dirname, `../sing-box/ip/${fileId}.json`)
+      ...output(fileId, 'ip')
     )
   ]));
 };

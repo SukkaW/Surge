@@ -7,7 +7,7 @@ import fs from 'fs';
 import { fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
 import stringify from 'json-stringify-pretty-compact';
-import { surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
+import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -79,7 +79,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   });
 }
 
-export const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {
+const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {
   return [
     '#########################################',
     `# ${title}`,
@@ -154,15 +154,32 @@ const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
-  type: ('ruleset' | 'domainset' | string & {}),
+  type: 'ruleset' | 'domainset' | 'ipcidr' | 'ipcidr6',
   surgePath: string, clashPath: string, singBoxPath: string, _clashMrsPath?: string
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn(async (childSpan) => {
-  const surgeContent = withBannerArray(
-    title, description, date,
-    type === 'domainset'
-      ? [MARK, ...content]
-      : sortRuleSet([`DOMAIN,${MARK}`, ...content])
-  );
+  content = sortRuleSet(content);
+  const surgeContent = childSpan.traceChildSync('process surge ruleset', () => {
+    let _surgeContent;
+    switch (type) {
+      case 'domainset':
+        _surgeContent = [MARK, ...content];
+        break;
+      case 'ruleset':
+        _surgeContent = [`DOMAIN,${MARK}`, ...content];
+        break;
+      case 'ipcidr':
+        _surgeContent = [`DOMAIN,${MARK}`, ...content.map(i => `IP-CIDR,${i}`)];
+        break;
+      case 'ipcidr6':
+        _surgeContent = [`DOMAIN,${MARK}`, ...content.map(i => `IP-CIDR6,${i}`)];
+        break;
+      default:
+        throw new TypeError(`Unknown type: ${type}`);
+    }
+
+    return withBannerArray(title, description, date, _surgeContent);
+  });
+
   const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
     let _clashContent;
     switch (type) {
@@ -171,6 +188,10 @@ export const createRuleset = (
         break;
       case 'ruleset':
         _clashContent = [`DOMAIN,${MARK}`, ...surgeRulesetToClashClassicalTextRuleset(content)];
+        break;
+      case 'ipcidr':
+      case 'ipcidr6':
+        _clashContent = content;
         break;
       default:
         throw new TypeError(`Unknown type: ${type}`);
@@ -185,6 +206,10 @@ export const createRuleset = (
         break;
       case 'ruleset':
         _singBoxContent = surgeRulesetToSingbox([`DOMAIN,${MARK}`, ...content]);
+        break;
+      case 'ipcidr':
+      case 'ipcidr6':
+        _singBoxContent = ipCidrListToSingbox(content);
         break;
       default:
         throw new TypeError(`Unknown type: ${type}`);

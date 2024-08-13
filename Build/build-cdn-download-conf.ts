@@ -8,6 +8,7 @@ import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist'
 import { domainDeduper } from './lib/domain-deduper';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { sortDomains } from './lib/stable-sort-domain';
+import { output } from './lib/misc';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie(
@@ -77,10 +78,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
       new Date(),
       sortDomains(domainDeduper(cdnDomainsList)),
       'domainset',
-      path.resolve(__dirname, '../List/domainset/cdn.conf'),
-      path.resolve(__dirname, '../Clash/domainset/cdn.txt'),
-      path.resolve(__dirname, '../sing-box/domainset/cdn.json'),
-      path.resolve(__dirname, '../Clash/clash_mrs_domain/cdn.mrs')
+      ...output('cdn', 'domainset')
     ),
     createRuleset(
       span,
@@ -93,10 +91,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
       new Date(),
       sortDomains(domainDeduper(downloadDomainSet)),
       'domainset',
-      path.resolve(__dirname, '../List/domainset/download.conf'),
-      path.resolve(__dirname, '../Clash/domainset/download.txt'),
-      path.resolve(__dirname, '../sing-box/domainset/download.json'),
-      path.resolve(__dirname, '../Clash/clash_mrs_domain/download.mrs')
+      ...output('download', 'domainset')
     )
   ]);
 });
