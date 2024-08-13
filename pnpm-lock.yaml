@@ -53,9 +53,6 @@ importers:
       picocolors:
         specifier: ^1.0.1
         version: 1.0.1
-      picomatch:
-        specifier: ^4.0.2
-        version: 4.0.2
       punycode:
         specifier: ^2.3.1
         version: 2.3.1
@@ -96,9 +93,6 @@ importers:
       '@types/mocha':
         specifier: ^10.0.7
         version: 10.0.7
-      '@types/picomatch':
-        specifier: ^3.0.1
-        version: 3.0.1
       '@types/punycode':
         specifier: ^2.1.4
         version: 2.1.4
@@ -445,9 +439,6 @@ packages:
 
   '@types/node@20.14.11':
     resolution: {integrity: sha512-kprQpL8MMeszbz6ojB5/tU8PLN4kesnN8Gjzw349rDlNgsSzg90lAVj3llK99Dh7JON+t9AuscPPFW6mPbTnSA==}
-
-  '@types/picomatch@3.0.1':
-    resolution: {integrity: sha512-1MRgzpzY0hOp9pW/kLRxeQhUWwil6gnrUYd3oEpeYBqp/FexhaCPv3F8LsYr47gtUU45fO2cm1dbwkSrHEo8Uw==}
 
   '@types/punycode@2.1.4':
     resolution: {integrity: sha512-trzh6NzBnq8yw5e35f8xe8VTYjqM3NE7bohBtvDVf/dtUer3zYTLK1Ka3DG3p7bdtoaOHZucma6FfVKlQ134pQ==}
@@ -1905,8 +1896,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/picomatch@3.0.1': {}
-
   '@types/punycode@2.1.4': {}
 
   '@types/retry@0.12.5': {}
@@ -2821,7 +2810,8 @@ snapshots:
 
   picomatch@2.3.1: {}
 
-  picomatch@4.0.2: {}
+  picomatch@4.0.2:
+    optional: true
 
   pirates@4.0.6: {}
 

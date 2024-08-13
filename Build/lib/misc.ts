@@ -1,7 +1,6 @@
 import path, { dirname } from 'path';
 import fs from 'fs';
 import fsp from 'fs/promises';
-import { makeRe } from 'picomatch';
 
 export const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 
@@ -31,7 +30,24 @@ export const writeFile: Write = async (destination: string, input, dir = dirname
 };
 
 export const domainWildCardToRegex = (domain: string) => {
-  return makeRe(domain, { contains: false, strictSlashes: true }).source;
+  let result = '^';
+  for (let i = 0, len = domain.length; i < len; i++) {
+    switch (domain[i]) {
+      case '.':
+        result += String.raw`\.`;
+        break;
+      case '*':
+        result += '[a-zA-Z0-9-.]*?';
+        break;
+      case '?':
+        result += '[a-zA-Z0-9-.]';
+        break;
+      default:
+        result += domain[i];
+    }
+  }
+  result += '$';
+  return result;
 };
 
 const OUTPUT_SURGE_DIR = path.resolve(__dirname, '../../List');
