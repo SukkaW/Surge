@@ -1,5 +1,5 @@
 import fsp from 'fs/promises';
-import { sep } from 'path';
+import { sep, relative } from 'path';
 
 interface TreeFileType {
   type: 'file',
@@ -19,19 +19,20 @@ export type TreeTypeArray = TreeType[];
 
 type VoidOrVoidArray = void | VoidOrVoidArray[];
 
-export const treeDir = async (path: string): Promise<TreeTypeArray> => {
+export const treeDir = async (rootPath: string): Promise<TreeTypeArray> => {
   const tree: TreeTypeArray = [];
 
   const walk = async (dir: string, node: TreeTypeArray): Promise<VoidOrVoidArray> => {
     const promises: Array<Promise<VoidOrVoidArray>> = [];
     for await (const child of await fsp.opendir(dir)) {
       const childFullPath = child.parentPath + sep + child.name;
+      const childRelativeToRoot = relative(rootPath, childFullPath);
 
       if (child.isDirectory()) {
         const newNode: TreeDirectoryType = {
           type: 'directory',
           name: child.name,
-          path: childFullPath,
+          path: childRelativeToRoot,
           children: []
         };
         node.push(newNode);
@@ -42,7 +43,7 @@ export const treeDir = async (path: string): Promise<TreeTypeArray> => {
         const newNode: TreeFileType = {
           type: 'file',
           name: child.name,
-          path: childFullPath
+          path: childRelativeToRoot
         };
         node.push(newNode);
         continue;
@@ -51,7 +52,7 @@ export const treeDir = async (path: string): Promise<TreeTypeArray> => {
     return Promise.all(promises);
   };
 
-  await walk(path, tree);
+  await walk(rootPath, tree);
 
   return tree;
 };
