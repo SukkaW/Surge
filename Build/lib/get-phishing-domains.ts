@@ -93,7 +93,7 @@ const BLACK_TLD = new Set([
   'design'
 ]);
 
-export const WHITELIST_MAIN_DOMAINS = new Set([
+const WHITELIST_MAIN_DOMAINS = new Set([
   'w3s.link', // ipfs gateway
   'dweb.link', // ipfs gateway
   'nftstorage.link', // ipfs gateway
@@ -101,7 +101,8 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'business.site', // Drag'n'Drop site building platform
   'page.link', // Firebase URL Shortener
   'notion.site',
-  'vercel.app'
+  'vercel.app',
+  'gitbook.io'
 ]);
 
 const sensitiveKeywords = createKeywordFilter([
