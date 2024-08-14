@@ -37,10 +37,10 @@ export const domainWildCardToRegex = (domain: string) => {
         result += String.raw`\.`;
         break;
       case '*':
-        result += '[a-zA-Z0-9-.]*?';
+        result += '[a-zA-Z0-9-_.]*?';
         break;
       case '?':
-        result += '[a-zA-Z0-9-.]';
+        result += '[a-zA-Z0-9-_.]';
         break;
       default:
         result += domain[i];
