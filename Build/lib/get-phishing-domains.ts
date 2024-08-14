@@ -162,7 +162,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
       }
 
       let sensitiveKeywordsHit: boolean | null = null;
-      if (tld.length < 7 && !BLACK_TLD.has(tld) && !(sensitiveKeywordsHit = sensitiveKeywords(line))) continue;
+      if (tld.length < 6 && !tld.includes('.') && !BLACK_TLD.has(tld) && !(sensitiveKeywordsHit = sensitiveKeywords(line))) continue;
 
       domainCountMap[apexDomain] ||= 0;
       domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain, sensitiveKeywordsHit);
