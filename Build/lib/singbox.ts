@@ -4,8 +4,13 @@ import { isProbablyIpv4, isProbablyIpv6 } from './is-fast-ip';
 
 const unsupported = Symbol('unsupported');
 
+const toNumberTuple = <T extends string>(key: T, value: string): [T, number] | null => {
+  const tmp = Number(value);
+  return Number.isNaN(tmp) ? null : [key, tmp];
+};
+
 // https://sing-box.sagernet.org/configuration/rule-set/source-format/
-const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: string] | null) | typeof unsupported> = {
+const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: Required<SingboxHeadlessRule>[keyof SingboxHeadlessRule][number]] | null) | typeof unsupported> = {
   DOMAIN: (_1, _2, value) => ['domain', value],
   'DOMAIN-SUFFIX': (_1, _2, value) => ['domain_suffix', value],
   'DOMAIN-KEYWORD': (_1, _2, value) => ['domain_keyword', value],
@@ -27,12 +32,12 @@ const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [
     return null;
   },
   'SRC-IP-CIDR': (_1, _2, value) => ['source_ip_cidr', value.endsWith(',no-resolve') ? value.slice(0, -11) : value],
-  'SRC-PORT': (_1, _2, value) => ['source_port', value],
-  'DST-PORT': (_1, _2, value) => ['port', value],
+  'SRC-PORT': (_1, _2, value) => toNumberTuple('source_port', value),
+  'DST-PORT': (_1, _2, value) => toNumberTuple('port', value),
   'PROCESS-NAME': (_1, _2, value) => ['process_name', value],
   'PROCESS-PATH': (_1, _2, value) => ['process_path', value],
-  'DEST-PORT': (_1, _2, value) => ['port', value],
-  'IN-PORT': (_1, _2, value) => ['source_port', value],
+  'DEST-PORT': (_1, _2, value) => toNumberTuple('port', value),
+  'IN-PORT': (_1, _2, value) => toNumberTuple('source_port', value),
   'URL-REGEX': unsupported,
   'USER-AGENT': unsupported
 };
@@ -44,9 +49,9 @@ interface SingboxHeadlessRule {
   domain_regex?: string[],
   source_ip_cidr?: string[],
   ip_cidr?: string[],
-  source_port?: string[],
+  source_port?: number[],
   source_port_range?: string[],
-  port?: string[],
+  port?: number[],
   port_range?: string[],
   process_name?: string[],
   process_path?: string[]
@@ -80,7 +85,7 @@ export const surgeRulesetToSingbox = (rules: string[] | Set<string>): SingboxSou
         if (r) {
           const [k, v] = r;
           acc[k] ||= [];
-          acc[k].push(v);
+          (acc[k] as any).push(v);
         }
       }
     } else {
