@@ -143,8 +143,8 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       `hostname = %APPEND% ${domains.join(', ')}`,
       '',
       '[URL Rewrite]',
-      ...REDIRECT_MIRROR.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1`),
-      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to}`)
+      ...REDIRECT_MIRROR.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 header`),
+      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to} 307`)
     ],
     path.resolve(__dirname, '../Modules/sukka_url_redirect.sgmodule')
   );
