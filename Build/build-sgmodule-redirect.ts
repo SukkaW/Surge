@@ -72,6 +72,8 @@ const REDIRECT_MIRROR = [
   ['fastly-polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
   ['fastly-polyfill.net/', 'https://cdnjs.cloudflare.com/polyfill/'],
   // BootCDN has been controlled by a malicious actor and being used to spread malware
+  ['cdn.bootcss.com/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
+
   ['cdn.bootcdn.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
   ['cdn.bootcdn.com/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
   ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
