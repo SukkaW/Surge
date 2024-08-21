@@ -305,5 +305,6 @@ export const PREDEFINED_WHITELIST = [
   '.w3s.link', // stupid phishing.army, introduce both "*.ipfs.w3s.link" and ".w3s.link" to the block list
   'ipfs.io', // ipfs.io was blocked by DigitalSide Threat-Intel - OSINT Hub
   '.r2.dev', // Despite 5000+ r2 instances used for phishing, yet cloudflare refuse to do anything. we have no choice but whitelist this.
-  'mlsend.com' // Fuck Peter Lowe Hosts
+  'mlsend.com', // Fuck Peter Lowe Hosts
+  'ab.chatgpt.com' // EasyPrivacy blocks this
 ];
