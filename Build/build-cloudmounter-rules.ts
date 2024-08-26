@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { DOMAINS, PROCESS_NAMES } from '../Source/non_ip/cloudmounter';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createRuleset } from './lib/create-file';

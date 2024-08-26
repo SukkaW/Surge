@@ -1,14 +1,14 @@
-import { existsSync, createWriteStream } from 'fs';
-import { mkdir } from 'fs/promises';
-import path from 'path';
-import { pipeline } from 'stream/promises';
+import { existsSync, createWriteStream } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { isCI } from 'ci-info';
 import { task } from './trace';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import tarStream from 'tar-stream';
-import zlib from 'zlib';
-import { Readable } from 'stream';
+import zlib from 'node:zlib';
+import { Readable } from 'node:stream';
 
 const IS_READING_BUILD_OUTPUT = 1 << 2;
 const ALL_FILES_EXISTS = 1 << 3;
@@ -32,10 +32,8 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
 
         buildOutputList.push(line);
 
-        if (!isCI) {
-          if (!existsSync(path.join(__dirname, '..', line))) {
-            flag = flag & ~ALL_FILES_EXISTS;
-          }
+        if (!isCI && !existsSync(path.join(__dirname, '..', line))) {
+          flag = flag & ~ALL_FILES_EXISTS;
         }
       }
     });

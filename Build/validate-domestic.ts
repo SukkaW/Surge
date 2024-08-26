@@ -1,7 +1,7 @@
 import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
 import { parse } from 'csv-parse/sync';
 import { createTrie } from './lib/trie';
-import path from 'path';
+import path from 'node:path';
 import { processLine } from './lib/process-line';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
 

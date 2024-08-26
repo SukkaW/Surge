@@ -1,5 +1,5 @@
 // @ts-check
-import path from 'path';
+import path from 'node:path';
 import { createRuleset } from './lib/create-file';
 import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';

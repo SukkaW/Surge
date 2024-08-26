@@ -3,7 +3,7 @@ import { getDomesticAndDirectDomainsRulesetPromise } from './build-domestic-dire
 import { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashRuleset } from './lib/clash';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
-import path from 'path';
+import path from 'node:path';
 
 import { ALL as AllStreamServices } from '../Source/stream';
 import { getChnCidrPromise } from './build-chn-cidr';

@@ -1,9 +1,11 @@
-import path from 'path';
-import fs from 'fs';
-import fsp from 'fs/promises';
-import { Readable } from 'stream';
-import { pipeline } from 'stream/promises';
-import zlib from 'zlib';
+import path from 'node:path';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import zlib from 'node:zlib';
+import process from 'node:process';
+
 import { async as ezspawn } from '@jsdevtools/ez-spawn';
 
 const mihomoBinaryDir = path.join(__dirname, '../../node_modules/.cache/mihomo');

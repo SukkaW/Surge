@@ -4,7 +4,7 @@ import { createTrie } from './lib/trie';
 // import { Readable } from 'stream';
 import { parse } from 'csv-parse/sync';
 import { readFileByLine } from './lib/fetch-text-by-line';
-import path from 'path';
+import path from 'node:path';
 
 export const parseGfwList = async () => {
   const whiteSet = new Set<string>();

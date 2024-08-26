@@ -1,3 +1,5 @@
+import process from 'node:process';
+
 console.log('Version:', process.version);
 
 import { downloadPreviousBuild } from './download-previous-build';

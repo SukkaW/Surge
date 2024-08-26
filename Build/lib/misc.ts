@@ -1,6 +1,6 @@
-import path, { dirname } from 'path';
-import fs from 'fs';
-import fsp from 'fs/promises';
+import path, { dirname } from 'node:path';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 
 export const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 

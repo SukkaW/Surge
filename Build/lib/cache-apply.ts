@@ -1,3 +1,5 @@
+import process from 'node:process';
+
 export const createCache = (namespace?: string, printStats = false) => {
   const cache = new Map();
 

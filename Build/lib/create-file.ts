@@ -2,8 +2,8 @@
 import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
 import picocolors from 'picocolors';
 import type { Span } from '../trace';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import { fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
 import stringify from 'json-stringify-pretty-compact';

@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { createRuleset } from './lib/create-file';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';

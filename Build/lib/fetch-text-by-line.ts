@@ -1,11 +1,11 @@
-import fs from 'fs';
-import { Readable } from 'stream';
+import fs from 'node:fs';
+import { Readable } from 'node:stream';
 import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
-import type { FileHandle } from 'fs/promises';
+import type { FileHandle } from 'node:fs/promises';
 
 import { TextLineStream } from './text-line-transform-stream';
-import type { ReadableStream } from 'stream/web';
-import { TextDecoderStream } from 'stream/web';
+import type { ReadableStream } from 'node:stream/web';
+import { TextDecoderStream } from 'node:stream/web';
 import { processLine } from './process-line';
 
 const getReadableStream = (file: string | FileHandle): ReadableStream => {

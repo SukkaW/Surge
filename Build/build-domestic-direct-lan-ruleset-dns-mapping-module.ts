@@ -1,5 +1,5 @@
 // @ts-check
-import path from 'path';
+import path from 'node:path';
 import { DOMESTICS } from '../Source/non_ip/domestic';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';

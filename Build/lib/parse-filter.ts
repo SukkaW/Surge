@@ -132,7 +132,6 @@ export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | n
   ));
 }
 
-// eslint-disable-next-line sukka-ts/no-const-enum -- bun bundler is smart, maybe?
 const enum ParseType {
   WhiteIncludeSubdomain = 0,
   WhiteAbsolute = -1,
@@ -174,25 +173,23 @@ export async function processFilterRules(
 
         const hostname = result[0];
 
-        if (DEBUG_DOMAIN_TO_FIND) {
-          if (hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-            console.warn(
-              picocolors.red(filterRulesUrl),
-              flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
-                ? '(white)'
-                : '(black)',
-              hostname.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND))
-            );
-            foundDebugDomain = true;
-          }
+        if (DEBUG_DOMAIN_TO_FIND && hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
+          console.warn(
+            picocolors.red(filterRulesUrl),
+            flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
+              ? '(white)'
+              : '(black)',
+            hostname.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND))
+          );
+          foundDebugDomain = true;
         }
 
         switch (flag) {
           case ParseType.WhiteIncludeSubdomain:
-            if (hostname[0] !== '.') {
-              whitelistDomainSets.add(`.${hostname}`);
-            } else {
+            if (hostname[0] === '.') {
               whitelistDomainSets.add(hostname);
+            } else {
+              whitelistDomainSets.add(`.${hostname}`);
             }
             break;
           case ParseType.WhiteAbsolute:
@@ -202,10 +199,10 @@ export async function processFilterRules(
             blacklistDomainSets.add(hostname);
             break;
           case ParseType.BlackIncludeSubdomain:
-            if (hostname[0] !== '.') {
-              blacklistDomainSets.add(`.${hostname}`);
-            } else {
+            if (hostname[0] === '.') {
               blacklistDomainSets.add(hostname);
+            } else {
+              blacklistDomainSets.add(`.${hostname}`);
             }
             break;
           case ParseType.ErrorMessage:

@@ -1,8 +1,13 @@
 import picocolors from 'picocolors';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 
 class CustomAbortError extends Error {
+  constructor() {
+    super();
+    this.name = 'CustomAbortError';
+  }
+
   public readonly name = 'AbortError';
   public readonly digest = 'AbortError';
 }

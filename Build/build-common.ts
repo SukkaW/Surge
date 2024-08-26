@@ -1,6 +1,6 @@
 // @ts-check
 
-import * as path from 'path';
+import * as path from 'node:path';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';

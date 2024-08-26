@@ -1,6 +1,6 @@
 import { compareAndWriteFile } from './lib/create-file';
 import { task } from './trace';
-import path from 'path';
+import path from 'node:path';
 
 const DEPRECATED_FILES = [
   ['non_ip/global_plus', 'This file has been merged with non_ip/global'],

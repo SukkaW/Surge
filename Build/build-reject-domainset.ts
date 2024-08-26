@@ -1,5 +1,6 @@
 // @ts-check
-import path from 'path';
+import path from 'node:path';
+import process from 'node:process';
 
 import { processHosts, processFilterRules, processDomainLists } from './lib/parse-filter';
 import { createTrie } from './lib/trie';

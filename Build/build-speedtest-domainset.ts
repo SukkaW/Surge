@@ -1,5 +1,5 @@
 import { domainDeduper } from './lib/domain-deduper';
-import path from 'path';
+import path from 'node:path';
 import { createRuleset } from './lib/create-file';
 import { sortDomains } from './lib/stable-sort-domain';
 

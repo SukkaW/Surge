@@ -1,5 +1,5 @@
-import fsp from 'fs/promises';
-import { sep } from 'path';
+import fsp from 'node:fs/promises';
+import { sep } from 'node:path';
 
 interface TreeFileType {
   type: 'file',

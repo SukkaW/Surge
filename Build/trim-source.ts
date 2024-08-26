@@ -1,5 +1,5 @@
-import path from 'path';
-import fsp from 'fs/promises';
+import path from 'node:path';
+import fsp from 'node:fs/promises';
 import { fdir as Fdir } from 'fdir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 

@@ -1,5 +1,5 @@
 import { readFileByLine } from './lib/fetch-text-by-line';
-import pathFn from 'path';
+import pathFn from 'node:path';
 import table from 'table';
 import { fdir as Fdir } from 'fdir';
 import { green, yellow } from 'picocolors';

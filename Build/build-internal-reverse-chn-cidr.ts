@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { task } from './trace';
 
 import { exclude, merge } from 'fast-cidr-tools';

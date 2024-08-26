@@ -1,17 +1,16 @@
 import createDb from 'better-sqlite3';
 import type { Database } from 'better-sqlite3';
-import os from 'os';
-import path from 'path';
-import { mkdirSync } from 'fs';
+import os from 'node:os';
+import path from 'node:path';
+import { mkdirSync } from 'node:fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from './misc';
-import { performance } from 'perf_hooks';
-import fs from 'fs';
+import { performance } from 'node:perf_hooks';
+import fs from 'node:fs';
 import { stringHash } from './string-hash';
 
 const identity = (x: any) => x;
 
-// eslint-disable-next-line sukka-ts/no-const-enum -- bun is smart, right?
 const enum CacheStatus {
   Hit = 'hit',
   Stale = 'stale',
@@ -156,7 +155,7 @@ export class Cache<S = string> {
     const now = Date.now();
     const rv = this.db.prepare<string, { ttl: number }>(`SELECT ttl FROM ${this.tableName} WHERE key = ?`).get(key);
 
-    return !rv ? CacheStatus.Miss : (rv.ttl > now ? CacheStatus.Hit : CacheStatus.Stale);
+    return rv ? (rv.ttl > now ? CacheStatus.Hit : CacheStatus.Stale) : CacheStatus.Miss;
   }
 
   del(key: string): void {

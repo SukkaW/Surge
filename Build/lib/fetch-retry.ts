@@ -1,6 +1,6 @@
 import retry from 'async-retry';
 import picocolors from 'picocolors';
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 
 function isClientError(err: unknown): err is NodeJS.ErrnoException {
   if (!err || typeof err !== 'object') return false;
@@ -24,6 +24,7 @@ export class ResponseError extends Error {
       Error.captureStackTrace(this, ResponseError);
     }
 
+    // eslint-disable-next-line sukka/unicorn/custom-error-definition -- deliberatly use previous name
     this.name = this.constructor.name;
     this.res = res;
     this.code = res.status;
@@ -90,16 +91,12 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             return res;
           }
         } catch (err: unknown) {
-          if (err instanceof Error) {
-            if (
-              err.name === 'AbortError'
-              || ('digest' in err && err.digest === 'AbortError')
-            ) {
-              if (!retryOpts.retryOnAborted) {
-                console.log(picocolors.gray('[fetch abort]'), url);
-                return bail(err) as never;
-              }
-            }
+          if (err instanceof Error && (
+            err.name === 'AbortError'
+            || ('digest' in err && err.digest === 'AbortError')
+          ) && !retryOpts.retryOnAborted) {
+            console.log(picocolors.gray('[fetch abort]'), url);
+            return bail(err) as never;
           }
           if (isClientError(err)) {
             return bail(err) as never;

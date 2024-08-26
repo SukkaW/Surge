@@ -1,8 +1,8 @@
 import { task } from './trace';
-import path from 'path';
-import fs from 'fs';
-import { Readable } from 'stream';
-import { pipeline } from 'stream/promises';
+import path from 'node:path';
+import fs from 'node:fs';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { fetchWithRetry } from './lib/fetch-retry';
 
 const ASSETS_LIST = {
