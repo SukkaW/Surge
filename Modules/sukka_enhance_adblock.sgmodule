@@ -2,7 +2,7 @@
 #!desc=增强 ADBlock 效果、恢复网站正常功能
 
 [MITM]
-hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesyndication.com, *.googletagservices.com, *.doubleclick.net, cdn.ampproject.org, *.addthis.com
+hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesyndication.com, *.googletagservices.com, *.doubleclick.net, cdn.ampproject.org, *.addthis.com, static.chartbeat.com
 
 [URL Rewrite]
 ^https?://.*\.google-analytics\.com/analytics\.js https://ruleset.skk.moe/Mock/www-google-analytics-com_analytics.js 302
@@ -16,3 +16,4 @@ hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesynd
 ^https?://cdn\.ampproject\.org/v0.js https://ruleset.skk.moe/Mock/ampproject-org_v0.js 302
 ^https?://.*\.addthis\.com/addthis_widget.js https://ruleset.skk.moe/Mock/addthis-com_addthis_widget.js 302
 ^https?://.*\.amazon-adsystem.com/aax2/apstag.js https://ruleset.skk.moe/Mock/amazon-adsystem-com_amazon-apstag.js 302
+^https?://static.chartbeat.com/chartbeat.js https://ruleset.skk.moe/Mock/static-chartbeat-com_chartbeat_mab.js 302
