@@ -68,6 +68,7 @@ const REDIRECT_MIRROR = [
   ['raw.kkgithub.com/', 'https://raw.githubusercontent.com/'],
   // Polyfill
   ['polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
+  ['polyfill-js.cn/', 'https://cdnjs.cloudflare.com/polyfill/'],
   ['cdn.polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
   ['fastly-polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
   ['fastly-polyfill.net/', 'https://cdnjs.cloudflare.com/polyfill/'],
