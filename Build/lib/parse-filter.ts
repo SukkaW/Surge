@@ -16,6 +16,8 @@ const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
 
+const identity = <T>(x: T) => x;
+
 const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
   let line = processLine(l);
   if (!line) return;
@@ -44,9 +46,9 @@ const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean
 
 const cacheKey = createCacheKey(__filename);
 
-export function processDomainLists(span: Span, domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
+export function processDomainLists(span: Span, domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null, extraCacheKey: (input: string) => string = identity) {
   return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
-    cacheKey(domainListsUrl),
+    extraCacheKey(cacheKey(domainListsUrl)),
     async () => {
       const domainSets: string[] = [];
 

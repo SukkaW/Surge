@@ -7,6 +7,7 @@ import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
+import { createCacheKey } from './cache-filesystem';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -130,11 +131,13 @@ const lowKeywords = createKeywordFilter([
   '.www-'
 ]);
 
+const cacheKey = createCacheKey(__filename);
+
 export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
   const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
     const domainArr: string[] = [];
 
-    (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry))))
+    (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry, cacheKey))))
       .forEach(appendArrayInPlaceCurried(domainArr));
 
     return domainArr;

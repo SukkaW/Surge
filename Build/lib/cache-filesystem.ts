@@ -217,5 +217,5 @@ export const deserializeArray = (str: string) => str.split(separator);
 
 export const createCacheKey = (filename: string) => {
   const fileHash = stringHash(fs.readFileSync(filename, 'utf-8'));
-  return (key: string) => key + '$' + fileHash;
+  return (key: string) => key + '$' + fileHash + '$';
 };
