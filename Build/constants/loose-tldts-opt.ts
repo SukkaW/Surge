@@ -7,3 +7,8 @@ export const looseTldtsOpt: Parameters<typeof tldts.getSubdomain>[1] = {
   detectIp: false,
   mixedInputs: false
 };
+
+export const loosTldOptWithPrivateDomains: Parameters<typeof tldts.getSubdomain>[1] = {
+  ...looseTldtsOpt,
+  allowPrivateDomains: true
+};

@@ -4,7 +4,7 @@ import * as tldts from 'tldts-experimental';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
-import { looseTldtsOpt } from '../constants/loose-tldts-opt';
+import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
 import { createCacheKey } from './cache-filesystem';
@@ -78,6 +78,7 @@ const BLACK_TLD = new Set([
   'space',
   'store',
   'stream',
+  'surf',
   'tech',
   'tk',
   'tokyo',
@@ -96,13 +97,13 @@ const BLACK_TLD = new Set([
 
 const WHITELIST_MAIN_DOMAINS = new Set([
   'w3s.link', // ipfs gateway
-  'dweb.link', // ipfs gateway
-  'nftstorage.link', // ipfs gateway
+  // 'dweb.link', // ipfs gateway
+  // 'nftstorage.link', // ipfs gateway
   'fleek.cool', // ipfs gateway
   'business.site', // Drag'n'Drop site building platform
   'page.link', // Firebase URL Shortener
-  'notion.site',
-  'vercel.app',
+  // 'notion.site',
+  // 'vercel.app',
   'gitbook.io'
 ]);
 
@@ -121,14 +122,18 @@ const sensitiveKeywords = createKeywordFilter([
   'virus-',
   'icloud-',
   'apple-',
+  'www.apple.',
   '-coinbase',
-  'coinbase-'
+  'coinbase-',
+  'lcloud.',
+  'lcloud-'
 ]);
 const lowKeywords = createKeywordFilter([
   '-co-jp',
   'customer.',
   'customer-',
-  '.www-'
+  '.www-',
+  'instagram'
 ]);
 
 const cacheKey = createCacheKey(__filename);
@@ -144,6 +149,7 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   });
 
   const domainCountMap: Record<string, number> = {};
+  const domainScoreMap: Record<string, number> = {};
 
   span.traceChildSync('process phishing domain set', () => {
     for (let i = 0, len = domainArr.length; i < len; i++) {
@@ -152,8 +158,13 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
       const {
         publicSuffix: tld,
         domain: apexDomain,
-        subdomain
-      } = tldts.parse(line, looseTldtsOpt);
+        subdomain,
+        isPrivate
+      } = tldts.parse(line, loosTldOptWithPrivateDomains);
+
+      if (isPrivate) {
+        continue;
+      }
 
       if (!tld) {
         console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, tld });
@@ -164,16 +175,30 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         continue;
       }
 
-      let sensitiveKeywordsHit: boolean | null = null;
-      if (tld.length < 6 && !tld.includes('.') && !BLACK_TLD.has(tld) && !(sensitiveKeywordsHit = sensitiveKeywords(line))) continue;
-
       domainCountMap[apexDomain] ||= 0;
-      domainCountMap[apexDomain] += calcDomainAbuseScore(line, subdomain, sensitiveKeywordsHit);
+      domainCountMap[apexDomain] += 1;
+
+      if (!(apexDomain in domainScoreMap)) {
+        domainScoreMap[apexDomain] = 0;
+        if (BLACK_TLD.has(tld)) {
+          domainScoreMap[apexDomain] += 4;
+        } else if (tld.length > 6) {
+          domainScoreMap[apexDomain] += 2;
+        }
+      }
+      domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain);
     }
   });
 
   for (const domain in domainCountMap) {
-    if (domainCountMap[domain] >= 10 && !WHITELIST_MAIN_DOMAINS.has(domain)) {
+    if (
+      !WHITELIST_MAIN_DOMAINS.has(domain)
+      && (
+        domainScoreMap[domain] >= 12
+        || (domainScoreMap[domain] >= 5 && domainCountMap[domain] >= 4)
+      )
+    ) {
+      console.log({ domain });
       domainArr.push(`.${domain}`);
     }
   }
@@ -181,50 +206,47 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   return domainArr;
 });
 
-export function calcDomainAbuseScore(line: string, subdomain: string | null, sensitiveKeywordsHit: boolean | null) {
-  let weight = 1;
-
-  const hitLowKeywords = lowKeywords(line);
-
-  sensitiveKeywordsHit ??= sensitiveKeywords(line);
-  if (sensitiveKeywordsHit) {
-    weight += 4;
-    if (hitLowKeywords) {
-      weight += 5;
-    }
-  } else if (hitLowKeywords) {
-    weight += 0.5;
-  }
-
-  const lineLen = line.length;
-
-  if (lineLen > 19) {
-    // Add more weight if the domain is long enough
-    if (lineLen > 44) {
-      weight += 3.5;
-    } else if (lineLen > 34) {
-      weight += 2.5;
-    } else if (lineLen > 29) {
-      weight += 1.5;
-    } else if (lineLen > 24) {
-      weight += 0.75;
-    } else {
-      weight += 0.25;
-    }
-  }
+export function calcDomainAbuseScore(subdomain: string | null) {
+  let weight = 0;
 
   if (subdomain) {
-    if (subdomain.length > 40) {
-      weight += 3;
-    } else if (subdomain.length > 30) {
-      weight += 1.5;
-    } else if (subdomain.length > 20) {
+    const hitLowKeywords = lowKeywords(subdomain);
+    const sensitiveKeywordsHit = sensitiveKeywords(subdomain);
+
+    if (sensitiveKeywordsHit) {
+      weight += 8;
+      if (hitLowKeywords) {
+        weight += 4;
+      }
+    } else if (hitLowKeywords) {
       weight += 1;
-    } else if (subdomain.length > 10) {
-      weight += 0.1;
     }
-    if (subdomain.slice(1).includes('.')) {
-      weight += 1;
+
+    const subdomainLength = subdomain.length;
+
+    if (subdomainLength > 4) {
+      weight += 0.5;
+      if (subdomainLength > 10) {
+        weight += 0.5;
+        if (subdomainLength > 20) {
+          weight += 1;
+          if (subdomainLength > 30) {
+            weight += 2;
+            if (subdomainLength > 40) {
+              weight += 4;
+            }
+          }
+        }
+      }
+
+      if (subdomain.startsWith('www.')) {
+        weight += 4;
+      } else if (subdomain.slice(1).includes('.')) {
+        weight += 1;
+        if (subdomain.includes('www.')) {
+          weight += 4;
+        }
+      }
     }
   }
 
