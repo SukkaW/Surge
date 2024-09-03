@@ -94,11 +94,12 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
   return span;
 };
 
+export const dummySpan = createSpan('');
+
 export const task = (importMetaMain: boolean, importMetaPath: string) => <T>(fn: (span: Span) => Promise<T>, customName?: string) => {
   const taskName = customName ?? basename(importMetaPath, extname(importMetaPath));
 
   const dummySpan = createSpan(taskName);
-
   if (importMetaMain) {
     fn(dummySpan);
   }
