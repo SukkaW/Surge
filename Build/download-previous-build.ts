@@ -52,7 +52,19 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
   return span
     .traceChild('download & extract previoud build')
     .traceAsyncFn(async () => {
-      const resp = await fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', defaultRequestInit);
+      const resp = await fetchWithRetry('https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master', {
+        ...defaultRequestInit,
+        retry: {
+          retryOnNon2xx: false
+        }
+      });
+
+      if (resp.status !== 200) {
+        console.warn('Download previous build failed! Status:', resp.status);
+        if (resp.status === 404) {
+          return;
+        }
+      }
 
       if (!resp.body) {
         throw new Error('Download previous build failed! No body found');
