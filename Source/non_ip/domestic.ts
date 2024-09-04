@@ -271,7 +271,8 @@ export const DOMESTICS = {
       'jomodns.com',
       'bdydns.com',
       'jomoxc.com',
-      'duapp.com'
+      'duapp.com',
+      'antpcdn.com' // Baidu PCDN
     ]
   },
   QIHOO360: {
