@@ -72,8 +72,14 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     const resp = await fetchWithRetry(tarGzUrl, {
       headers: {
         'User-Agent': 'curl/8.9.1',
-        Accept: 'application/octet-stream'
+        // https://github.com/unjs/giget/issues/97
+        // https://gitlab.com/gitlab-org/gitlab/-/commit/50c11f278d18fe1f3fb12eb595067216bb58ade2
+        'sec-fetch-mode': 'same-origin'
       },
+      // https://github.com/unjs/giget/issues/97
+      // https://gitlab.com/gitlab-org/gitlab/-/commit/50c11f278d18fe1f3fb12eb595067216bb58ade2
+
+      mode: 'same-origin',
       retry: {
         retryOnNon2xx: false
       }
