@@ -74,8 +74,8 @@ jobs:
         run: |
           mkdir ./deploy-git
           cd ./deploy-git
-          git init
           git config --global init.defaultBranch master
+          git init
           git config --global push.default matching
           git config --global user.email "${GITLAB_EMAIL}"
           git config --global user.name "${GITLAB_USER}"
@@ -95,6 +95,7 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
       - name: Upload Dist to GitHub
         uses: peaceiris/actions-gh-pages@v4
+        continue-on-error: true
         with:
           personal_token: ${{ secrets.GIT_TOKEN }}
           user_name: ${{ secrets.GIT_USER }}
