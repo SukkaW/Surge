@@ -40,7 +40,7 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
       new Date(),
       filteredCidr4,
       'ipcidr',
-      ...output('china_ip', 'ip')
+      output('china_ip', 'ip')
     ),
     createRuleset(
       span,
@@ -52,7 +52,7 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
       new Date(),
       cidr6,
       'ipcidr6',
-      ...output('china_ip_ipv6', 'ip')
+      output('china_ip_ipv6', 'ip')
     )
   ]);
 });

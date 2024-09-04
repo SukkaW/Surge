@@ -192,7 +192,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       new Date(),
       span.traceChildSync('sort reject domainset (base)', () => sortDomains(dudupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
-      ...output('reject', 'domainset')
+      output('reject', 'domainset')
     ),
     createRuleset(
       span,
@@ -211,7 +211,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       new Date(),
       span.traceChildSync('sort reject domainset (extra)', () => sortDomains(dudupedDominArrayExtra, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
-      ...output('reject_extra', 'domainset')
+      output('reject_extra', 'domainset')
     ),
     compareAndWriteFile(
       span,

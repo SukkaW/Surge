@@ -9,9 +9,10 @@ import { output } from './lib/misc';
 
 const cacheKey = createCacheKey(__filename);
 
+const url = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf';
 export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCache.apply(
-  cacheKey('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
-  () => parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf'),
+  cacheKey(url),
+  () => parseFelixDnsmasq(url),
   {
     ttl: TTL.THREE_DAYS(),
     serializer: serializeArray,
@@ -42,7 +43,7 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
       new Date(),
       ruleset,
       'ruleset',
-      ...output('apple_cdn', 'non_ip')
+      output('apple_cdn', 'non_ip')
     ),
     createRuleset(
       span,
@@ -51,7 +52,7 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
       new Date(),
       domainset,
       'domainset',
-      ...output('apple_cdn', 'domainset')
+      output('apple_cdn', 'domainset')
     )
   ]);
 });

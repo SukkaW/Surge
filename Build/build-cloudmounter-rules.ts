@@ -1,12 +1,8 @@
-import path from 'node:path';
 import { DOMAINS, PROCESS_NAMES } from '../Source/non_ip/cloudmounter';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createRuleset } from './lib/create-file';
 import { task } from './trace';
-
-const outputSurgeDir = path.resolve(__dirname, '../List');
-const outputClashDir = path.resolve(__dirname, '../Clash');
-const outputSingboxDir = path.resolve(__dirname, '../sing-box');
+import { output } from './lib/misc';
 
 export const buildCloudMounterRules = task(require.main === module, __filename)(async (span) => {
   // AND,((SRC-IP,192.168.1.110), (DOMAIN, example.com))
@@ -32,8 +28,6 @@ export const buildCloudMounterRules = task(require.main === module, __filename)(
     new Date(),
     results,
     'ruleset',
-    path.resolve(outputSurgeDir, 'non_ip', 'cloudmounter.conf'),
-    path.resolve(outputClashDir, 'non_ip', 'cloudmounter.txt'),
-    path.resolve(outputSingboxDir, 'non_ip', 'cloudmounter.json')
+    output('cloudmounter', 'non_ip')
   );
 });

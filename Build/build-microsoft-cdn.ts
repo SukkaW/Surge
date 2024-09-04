@@ -63,6 +63,6 @@ export const buildMicrosoftCdn = task(require.main === module, __filename)(async
     new Date(),
     res,
     'ruleset',
-    ...output('microsoft_cdn', 'non_ip')
+    output('microsoft_cdn', 'non_ip')
   );
 });

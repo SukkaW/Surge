@@ -101,6 +101,6 @@ export const buildRejectIPList = task(require.main === module, __filename)(async
     new Date(),
     result,
     'ruleset',
-    ...output('reject', 'ip')
+    output('reject', 'ip')
   );
 });

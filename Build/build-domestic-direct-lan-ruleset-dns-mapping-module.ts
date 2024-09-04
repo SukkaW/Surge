@@ -48,7 +48,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       new Date(),
       res[0],
       'ruleset',
-      ...output('domestic', 'non_ip')
+      output('domestic', 'non_ip')
     ),
     createRuleset(
       span,
@@ -61,7 +61,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       new Date(),
       res[1],
       'ruleset',
-      ...output('direct', 'non_ip')
+      output('direct', 'non_ip')
     ),
     createRuleset(
       span,
@@ -74,7 +74,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       new Date(),
       res[2],
       'ruleset',
-      ...output('lan', 'non_ip')
+      output('lan', 'non_ip')
     ),
     compareAndWriteFile(
       span,

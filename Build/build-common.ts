@@ -137,9 +137,11 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
           new Date(),
           deduped,
           'domainset',
-          path.resolve(outputSurgeDir, relativePath),
-          path.resolve(outputClashDir, `${clashFileBasename}.txt`),
-          path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
+          [
+            path.resolve(outputSurgeDir, relativePath),
+            path.resolve(outputClashDir, `${clashFileBasename}.txt`),
+            path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
+          ]
         );
       }
     );
@@ -175,9 +177,11 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
         new Date(),
         lines,
         'ruleset',
-        path.resolve(outputSurgeDir, relativePath),
-        path.resolve(outputClashDir, `${clashFileBasename}.txt`),
-        path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
+        [
+          path.resolve(outputSurgeDir, relativePath),
+          path.resolve(outputClashDir, `${clashFileBasename}.txt`),
+          path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
+        ]
       );
     });
 }

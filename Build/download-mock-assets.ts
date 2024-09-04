@@ -17,17 +17,15 @@ const mockDir = path.resolve(__dirname, '../Mock');
 
 export const downloadMockAssets = task(require.main === module, __filename)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
   ([filename, url]) => span
-    .traceChild(url)
-    .traceAsyncFn(() => fetchWithRetry(url).then(res => {
+    .traceChildAsync(url, () => fetchWithRetry(url).then(res => {
       const src = path.join(mockDir, filename);
       if (!res.body) {
         throw new Error(`Empty body from ${url}`);
       }
 
-      const writeStream = fs.createWriteStream(src, { encoding: 'utf-8' });
       return pipeline(
         Readable.fromWeb(res.body),
-        writeStream
+        fs.createWriteStream(src, 'utf-8')
       );
     }))
 )));

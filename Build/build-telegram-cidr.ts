@@ -52,6 +52,6 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
     date,
     results,
     'ruleset',
-    ...output('telegram', 'ip')
+    output('telegram', 'ip')
   );
 });

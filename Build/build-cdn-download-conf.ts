@@ -78,7 +78,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
       new Date(),
       sortDomains(domainDeduper(cdnDomainsList)),
       'domainset',
-      ...output('cdn', 'domainset')
+      output('cdn', 'domainset')
     ),
     createRuleset(
       span,
@@ -91,7 +91,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
       new Date(),
       sortDomains(domainDeduper(downloadDomainSet)),
       'domainset',
-      ...output('download', 'domainset')
+      output('download', 'domainset')
     )
   ]);
 });

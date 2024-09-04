@@ -22,7 +22,7 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
       new Date(),
       streamServices.flatMap((i) => i.rules),
       'ruleset',
-      ...output(fileId, 'non_ip')
+      output(fileId, 'non_ip')
     ),
     // IP
     createRuleset(
@@ -43,7 +43,7 @@ export const createRulesetForStreamService = (span: Span, fileId: string, title:
           : []
       )),
       'ruleset',
-      ...output(fileId, 'ip')
+      output(fileId, 'ip')
     )
   ]));
 };

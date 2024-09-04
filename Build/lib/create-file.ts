@@ -155,7 +155,12 @@ export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
   type: 'ruleset' | 'domainset' | 'ipcidr' | 'ipcidr6',
-  surgePath: string, clashPath: string, singBoxPath: string, _clashMrsPath?: string
+  [surgePath, clashPath, singBoxPath, _clashMrsPath]: readonly [
+    surgePath: string,
+    clashPath: string,
+    singBoxPath: string,
+    _clashMrsPath?: string
+  ]
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn(async (childSpan) => {
   content = sortRuleSet(content);
   const surgeContent = childSpan.traceChildSync('process surge ruleset', () => {
