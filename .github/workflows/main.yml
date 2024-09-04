@@ -70,7 +70,30 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-      - name: Deploy
+      - name: Upload Dist to GitLab
+        run: |
+          mkdir ./deploy-git
+          cd ./deploy-git
+          git init
+          git config --global init.defaultBranch master
+          git config --global push.default matching
+          git config --global user.email "${GITLAB_EMAIL}"
+          git config --global user.name "${GITLAB_USER}"
+          git remote add origin https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git
+          git pull origin master
+          rm -rf ./*
+          cp -rf ../public/* ./
+          git add --all .
+          git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
+          git push --quiet --force origin HEAD:master
+          cd ..
+          rm -rf ./deploy-git
+        env:
+          GITLAB_EMAIL: ${{ secrets.GITLAB_EMAIL }}
+          GITLAB_USER: ${{ secrets.GITLAB_USER }}
+          GITLAB_TOKEN_NAME: ${{ secrets.GITLAB_TOKEN_NAME }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      - name: Upload Dist to GitHub
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.GIT_TOKEN }}
