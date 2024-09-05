@@ -1,7 +1,7 @@
 import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts-experimental';
 
-import type { Span } from '../trace';
+import { dummySpan, type Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
@@ -13,6 +13,7 @@ const BLACK_TLD = new Set([
   'accountant',
   'autos',
   'bar',
+  'beauty',
   'bid',
   'biz',
   'bond',
@@ -55,10 +56,13 @@ const BLACK_TLD = new Set([
   'live',
   'link',
   'loan',
+  'lol',
   'ltd',
+  'me',
   'men',
   'ml',
   'mobi',
+  'mom',
   'net.pl',
   'one',
   'online',
@@ -122,18 +126,24 @@ const sensitiveKeywords = createKeywordFilter([
   'virus-',
   'icloud-',
   'apple-',
-  'www.apple.',
+  'www.apple',
   '-coinbase',
   'coinbase-',
   'lcloud.',
-  'lcloud-'
+  'lcloud-',
+  'booking-com',
+  'booking.com-',
+  'booking-eu',
+  'vinted-cz',
+  'inpost-pl'
 ]);
 const lowKeywords = createKeywordFilter([
   '-co-jp',
   'customer.',
   'customer-',
   '.www-',
-  'instagram'
+  'instagram',
+  'microsoft'
 ]);
 
 const cacheKey = createCacheKey(__filename);
@@ -198,10 +208,11 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
         || (domainScoreMap[domain] >= 5 && domainCountMap[domain] >= 4)
       )
     ) {
-      console.log({ domain });
       domainArr.push(`.${domain}`);
     }
   }
+
+  // console.log(domainScoreMap['']);
 
   return domainArr;
 });
@@ -251,4 +262,9 @@ export function calcDomainAbuseScore(subdomain: string | null) {
   }
 
   return weight;
+}
+
+if (require.main === module) {
+  getPhishingDomains(dummySpan)
+    .catch(console.error);
 }
