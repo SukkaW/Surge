@@ -63,7 +63,7 @@ export class TextLineStream extends TransformStream<string, string> {
       },
       flush(controller) {
         if (__buf.length > 0) {
-          // eslint-disable-next-line sukka-ts/string/prefer-string-starts-ends-with -- performance
+          // eslint-disable-next-line sukka/string/prefer-string-starts-ends-with -- performance
           if (allowCR && __buf[__buf.length - 1] === '\r') {
             controller.enqueue(__buf.slice(0, -1));
           } else {

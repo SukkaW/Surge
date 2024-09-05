@@ -2,12 +2,8 @@ import picocolors from 'picocolors';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 import { setTimeout } from 'node:timers/promises';
 
+// eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 class CustomAbortError extends Error {
-  constructor() {
-    super();
-    this.name = 'CustomAbortError';
-  }
-
   public readonly name = 'AbortError';
   public readonly digest = 'AbortError';
 }
@@ -18,10 +14,12 @@ const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((r
     return;
   }
 
-  function stop(this: AbortSignal) { reject(this.reason as Error); }
-
   signal.addEventListener('abort', stop, { once: true });
+
+  // eslint-disable-next-line sukka/prefer-timer-id -- node:timers/promises
   setTimeout(ms, undefined, { ref: false }).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
+
+  function stop(this: AbortSignal) { reject(this.reason as Error); }
 });
 
 export async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {

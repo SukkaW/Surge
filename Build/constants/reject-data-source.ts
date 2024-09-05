@@ -10,7 +10,7 @@ export const HOSTS: HostsSource[] = [
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()]
-] as const;
+];
 
 export const HOSTS_EXTRA: HostsSource[] = [
   // This stupid hosts blocks t.co, so we determine that this is also bullshit, so it is also extra
@@ -40,7 +40,7 @@ export const DOMAIN_LISTS: HostsSource[] = [
     ],
     true, TTL.THREE_HOURS()
   ]
-] as const;
+];
 
 export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // BarbBlock
@@ -84,7 +84,7 @@ export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [
     [],
     true, TTL.THREE_HOURS()
   ]
-] as const;
+];
 
 type AdGuardFilterSource = [main: string, mirrors: string[] | null, ttl: number];
 
@@ -147,7 +147,7 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   ['https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt', null, TTL.TEN_DAYS()],
   // Brave First Party & First Party CNAME
   ['https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt', null, TTL.ONE_DAY()]
-] as const;
+];
 
 export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Annoyances filter
