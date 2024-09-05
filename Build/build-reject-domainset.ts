@@ -20,6 +20,7 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import { setAddFromArray, setAddFromArrayCurried } from './lib/set-add-from-array';
 import { output } from './lib/misc';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'));
 
@@ -161,18 +162,15 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   );
 
   // Create reject stats
-  const rejectDomainsStats: Array<[string, number]> = span
+  const rejectDomainsStats: string[] = span
     .traceChild('create reject stats')
     .traceSyncFn(() => {
-      const statMap = dudupedDominArray.reduce<Map<string, number>>((acc, cur) => {
-        const suffix = domainArrayMainDomainMap.get(cur);
-        if (suffix) {
-          acc.set(suffix, (acc.get(suffix) ?? 0) + 1);
-        }
-        return acc;
-      }, new Map());
-
-      return Array.from(statMap.entries()).filter(a => a[1] > 9).sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
+      const results = [];
+      results.push('=== base ===');
+      appendArrayInPlace(results, getStatMap(dudupedDominArray, domainArrayMainDomainMap));
+      results.push('=== extra ===');
+      appendArrayInPlace(results, getStatMap(dudupedDominArrayExtra, domainArrayMainDomainMap));
+      return results;
     });
 
   return Promise.all([
@@ -215,8 +213,27 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     ),
     compareAndWriteFile(
       span,
-      rejectDomainsStats.map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`),
+      rejectDomainsStats,
       path.resolve(__dirname, '../Internal/reject-stats.txt')
     )
   ]);
 });
+
+function getStatMap(domains: string[], domainArrayMainDomainMap: Map<string, string>): string[] {
+  return Array.from(
+    (
+      domains.reduce<Map<string, number>>((acc, cur) => {
+        const suffix = domainArrayMainDomainMap.get(cur);
+        if (suffix) {
+          acc.set(suffix, (acc.get(suffix) ?? 0) + 1);
+        }
+        return acc;
+      }, new Map())
+    ).entries()
+  )
+    .filter(a => a[1] > 9)
+    .sort(
+      (a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0])
+    )
+    .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`);
+};
