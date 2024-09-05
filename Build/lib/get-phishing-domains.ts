@@ -100,7 +100,7 @@ const BLACK_TLD = new Set([
 ]);
 
 const WHITELIST_MAIN_DOMAINS = new Set([
-  'w3s.link', // ipfs gateway
+  // 'w3s.link', // ipfs gateway
   // 'dweb.link', // ipfs gateway
   // 'nftstorage.link', // ipfs gateway
   'fleek.cool', // ipfs gateway
@@ -196,19 +196,22 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
           domainScoreMap[apexDomain] += 2;
         }
       }
-      domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain);
+      if (
+        subdomain
+        && !WHITELIST_MAIN_DOMAINS.has(apexDomain)
+      ) {
+        domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain);
+      }
     }
   });
 
-  for (const domain in domainCountMap) {
+  for (const apexDomain in domainCountMap) {
     if (
-      !WHITELIST_MAIN_DOMAINS.has(domain)
-      && (
-        domainScoreMap[domain] >= 12
-        || (domainScoreMap[domain] >= 5 && domainCountMap[domain] >= 4)
-      )
+      // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
+      domainScoreMap[apexDomain] >= 12
+      || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 4)
     ) {
-      domainArr.push(`.${domain}`);
+      domainArr.push(`.${apexDomain}`);
     }
   }
 
@@ -217,46 +220,44 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
   return domainArr;
 });
 
-export function calcDomainAbuseScore(subdomain: string | null) {
+export function calcDomainAbuseScore(subdomain: string) {
   let weight = 0;
 
-  if (subdomain) {
-    const hitLowKeywords = lowKeywords(subdomain);
-    const sensitiveKeywordsHit = sensitiveKeywords(subdomain);
+  const hitLowKeywords = lowKeywords(subdomain);
+  const sensitiveKeywordsHit = sensitiveKeywords(subdomain);
 
-    if (sensitiveKeywordsHit) {
-      weight += 8;
-      if (hitLowKeywords) {
-        weight += 4;
-      }
-    } else if (hitLowKeywords) {
-      weight += 1;
+  if (sensitiveKeywordsHit) {
+    weight += 8;
+    if (hitLowKeywords) {
+      weight += 4;
     }
+  } else if (hitLowKeywords) {
+    weight += 1;
+  }
 
-    const subdomainLength = subdomain.length;
+  const subdomainLength = subdomain.length;
 
-    if (subdomainLength > 4) {
+  if (subdomainLength > 4) {
+    weight += 0.5;
+    if (subdomainLength > 10) {
       weight += 0.5;
-      if (subdomainLength > 10) {
-        weight += 0.5;
-        if (subdomainLength > 20) {
-          weight += 1;
-          if (subdomainLength > 30) {
-            weight += 2;
-            if (subdomainLength > 40) {
-              weight += 4;
-            }
+      if (subdomainLength > 20) {
+        weight += 1;
+        if (subdomainLength > 30) {
+          weight += 2;
+          if (subdomainLength > 40) {
+            weight += 4;
           }
         }
       }
+    }
 
-      if (subdomain.startsWith('www.')) {
+    if (subdomain.startsWith('www.')) {
+      weight += 4;
+    } else if (subdomain.slice(1).includes('.')) {
+      weight += 1;
+      if (subdomain.includes('www.')) {
         weight += 4;
-      } else if (subdomain.slice(1).includes('.')) {
-        weight += 1;
-        if (subdomain.includes('www.')) {
-          weight += 4;
-        }
       }
     }
   }
