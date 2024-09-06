@@ -5,11 +5,11 @@ export function domainDeduper(inputDomains: string[] | Trie, toArray: false): Se
 export function domainDeduper(inputDomains: string[] | Trie, toArray = true): string[] | Set<string> {
   let trie: Trie;
   if (Array.isArray(inputDomains)) {
-    trie = createTrie(inputDomains, true, true);
-  } else if (!inputDomains.hostnameMode || !inputDomains.smolTree) {
-    throw new Error('Invalid trie');
-  } else {
+    trie = createTrie(inputDomains, true);
+  } else if (inputDomains.smolTree) {
     trie = inputDomains;
+  } else {
+    throw new Error('Invalid trie');
   }
 
   const dumped = trie.dump();

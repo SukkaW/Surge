@@ -26,7 +26,7 @@ const BLACKLIST = [
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   // First trie is to find the microsoft domains that matches probe domains
-  const trie = createTrie(null, true);
+  const trie = createTrie(null, false);
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
     const domain = extractDomainsFromFelixDnsmasq(line);
     if (domain) {
@@ -36,7 +36,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   const foundMicrosoftCdnDomains = PROBE_DOMAINS.flatMap(domain => trie.find(domain));
 
   // Second trie is to remove blacklisted domains
-  const trie2 = createTrie(foundMicrosoftCdnDomains, true, true);
+  const trie2 = createTrie(foundMicrosoftCdnDomains, true);
   BLACKLIST.forEach(trie2.whitelist);
 
   return sortDomains(trie2.dump())

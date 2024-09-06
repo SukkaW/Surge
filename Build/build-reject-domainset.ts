@@ -115,8 +115,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   });
 
   const [baseTrie, extraTrie] = span.traceChildSync('create smol trie while deduping black keywords', (childSpan) => {
-    const baseTrie = createTrie(null, true, true);
-    const extraTrie = createTrie(null, true, true);
+    const baseTrie = createTrie(null, true);
+    const extraTrie = createTrie(null, true);
 
     const kwfilter = createKeywordFilter(domainKeywordsSet);
 

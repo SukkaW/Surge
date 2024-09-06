@@ -1,5 +1,5 @@
 /**
- * Suffix Trie based on Mnemonist Trie
+ * Hostbane-Optimized Trie based on Mnemonist Trie
  */
 
 import { fastStringArrayJoin } from './misc';
@@ -28,26 +28,53 @@ const createNode = (parent: TrieNode | null = null): TrieNode => {
   return [false, parent, new Map<string, TrieNode>()] as TrieNode;
 };
 
-const hostnameToTokens = (hostname: string): string[] => {
-  return hostname.split('.').reduce<string[]>((acc, token, index) => {
-    if (index > 0) {
-      acc.push('.', token);
-    } else if (token.length > 0) {
-      acc.push(token);
+export const hostnameToTokens = (hostname: string): string[] => {
+  const tokens = hostname.split('.');
+  const results: string[] = [];
+  let token = '';
+  for (let i = 0, l = tokens.length; i < l; i++) {
+    if (i > 0) {
+      results.push('.');
     }
-    return acc;
-  }, []);
+
+    token = tokens[i];
+    if (token.length > 0) {
+      results.push(token);
+    }
+  }
+  return results;
 };
 
-export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = false, smolTree = false) => {
+const walkHostnameTokens = (hostname: string, onToken: (token: string) => boolean | null): boolean | null => {
+  const tokens = hostname.split('.');
+  let token = '';
+
+  const l = tokens.length - 1;
+  for (let i = l; i >= 0; i--) {
+    if (
+      i < l
+      // when onToken returns true, we should skip the rest of the loop
+      && onToken('.')
+    ) {
+      return true;
+    }
+
+    token = tokens[i];
+    if (
+      token.length > 0
+      // when onToken returns true, we should skip the rest of the loop
+      && onToken(token)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+export const createTrie = (from?: string[] | Set<string> | null, smolTree = false) => {
   let size = 0;
   const root: TrieNode = createNode();
-
-  const isHostnameMode = (_token: string | string[]): _token is string[] => hostnameMode;
-
-  const suffixToTokens = hostnameMode
-    ? hostnameToTokens
-    : (suffix: string) => suffix;
 
   /**
    * Method used to add the given suffix to the trie.
@@ -55,30 +82,32 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
   const add = smolTree
     ? (suffix: string): void => {
       let node: TrieNode = root;
-      let token: string;
 
-      const tokens = suffixToTokens(suffix);
-
-      for (let i = tokens.length - 1; i >= 0; i--) {
-        token = tokens[i];
-
+      const onToken = (token: string) => {
         if (node[2].has(token)) {
           node = node[2].get(token)!;
 
           // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie
           // Dedupe the covered subdomain by skipping
           if (token === '.' && node[0]) {
-            return;
+            return true;
           }
         } else {
           const newNode = createNode(node);
           node[2].set(token, newNode);
           node = newNode;
         }
+
+        return false;
+      };
+
+      // When walkHostnameTokens returns true, we should skip the rest
+      if (walkHostnameTokens(suffix, onToken)) {
+        return;
       }
 
       // If we are in smolTree mode, we need to do something at the end of the loop
-      if (tokens[0] === '.') {
+      if (suffix[0] === '.') {
         // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
 
         const parent = node[1]!;
@@ -101,13 +130,8 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     }
     : (suffix: string): void => {
       let node: TrieNode = root;
-      let token: string;
 
-      const tokens = suffixToTokens(suffix);
-
-      for (let i = tokens.length - 1; i >= 0; i--) {
-        token = tokens[i];
-
+      const onToken = (token: string) => {
         if (node[2].has(token)) {
           node = node[2].get(token)!;
         } else {
@@ -115,6 +139,13 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
           node[2].set(token, newNode);
           node = newNode;
         }
+
+        return false;
+      };
+
+      // When walkHostnameTokens returns true, we should skip the rest
+      if (walkHostnameTokens(suffix, onToken)) {
+        return;
       }
 
       if (!node[0]) { // smol tree don't have size, so else-if here
@@ -124,7 +155,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     };
 
   const walkIntoLeafWithTokens = (
-    tokens: string | string[],
+    tokens: string[],
     onLoop: (node: TrieNode, parent: TrieNode, token: string) => void = noop
   ) => {
     let node: TrieNode = root;
@@ -135,7 +166,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     for (let i = tokens.length - 1; i >= 0; i--) {
       token = tokens[i];
 
-      if (hostnameMode && token === '') {
+      if (token === '') {
         break;
       }
 
@@ -153,19 +184,50 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     return { node, parent };
   };
 
+  const walkIntoLeafWithSuffix = (
+    suffix: string,
+    onLoop: (node: TrieNode, parent: TrieNode, token: string) => void = noop
+  ) => {
+    let node: TrieNode = root;
+    let parent: TrieNode = node;
+
+    const onToken = (token: string) => {
+      if (token === '') {
+        return true;
+      }
+
+      parent = node;
+
+      if (node[2].has(token)) {
+        node = node[2].get(token)!;
+      } else {
+        return null;
+      }
+
+      onLoop(node, parent, token);
+
+      return false;
+    };
+
+    if (walkHostnameTokens(suffix, onToken) === null) {
+      return null;
+    }
+
+    return { node, parent };
+  };
+
   const contains = (suffix: string): boolean => {
-    const tokens = suffixToTokens(suffix);
-    return walkIntoLeafWithTokens(tokens) !== null;
+    return walkIntoLeafWithSuffix(suffix) !== null;
   };
 
   const walk = (
-    onMatches: (suffix: string | string[]) => void,
+    onMatches: (suffix: string[]) => void,
     initialNode = root,
-    initialSuffix: string | string[] = hostnameMode ? [] : ''
+    initialSuffix: string[] = []
   ) => {
     const nodeStack: TrieNode[] = [initialNode];
     // Resolving initial string (begin the start of the stack)
-    const suffixStack: Array<string | string[]> = [initialSuffix];
+    const suffixStack: string[][] = [initialSuffix];
 
     let node: TrieNode = root;
 
@@ -177,7 +239,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
         // Pushing the child node to the stack for next iteration of DFS
         nodeStack.push(childNode);
 
-        suffixStack.push(isHostnameMode(suffix) ? [k, ...suffix] : k + suffix);
+        suffixStack.push([k, ...suffix]);
       });
 
       // If the node is a sentinel, we push the suffix to the results
@@ -194,7 +256,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     parent: TrieNode
   }
 
-  const getSingleChildLeaf = (tokens: string | string[]): FindSingleChildLeafResult | null => {
+  const getSingleChildLeaf = (tokens: string[]): FindSingleChildLeafResult | null => {
     let toPrune: TrieNode | null = null;
     let tokenToPrune: string | null = null;
 
@@ -203,7 +265,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
 
       // Even if the node size is 1, but the single child is ".", we should retain the branch
       // Since the "." could be special if it is the leaf-est node
-      const onlyChild = node[2].size < 2 && (!hostnameMode || !node[2].has('.'));
+      const onlyChild = node[2].size < 2 && !node[2].has('.');
 
       if (toPrune != null) { // the top-est branch that could potentially being pruned
         if (!onlyChild) {
@@ -234,35 +296,27 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       throw new Error('A Trie with smolTree enabled cannot perform find!');
     }
 
-    const inputTokens = suffixToTokens(inputSuffix);
+    const inputTokens = hostnameToTokens(inputSuffix);
     const res = walkIntoLeafWithTokens(inputTokens);
     if (res === null) return [];
 
-    const matches: Array<string | string[]> = [];
+    const matches: string[][] = [];
 
     const onMatches = includeEqualWithSuffix
-      ? (suffix: string | string[]) => matches.push(suffix)
-      : (
-        hostnameMode
-          ? (suffix: string[]) => {
-            if (suffix.some((t, i) => t !== inputTokens[i])) {
-              matches.push(suffix);
-            }
-          }
-          : (suffix: string) => {
-            if (suffix !== inputTokens) {
-              matches.push(suffix);
-            }
-          }
-      );
+      ? (suffix: string[]) => matches.push(suffix)
+      : (suffix: string[]) => {
+        if (suffix.some((t, i) => t !== inputTokens[i])) {
+          matches.push(suffix);
+        }
+      };
 
     walk(
-      onMatches as any,
+      onMatches,
       res.node, // Performing DFS from prefix
       inputTokens
     );
 
-    return hostnameMode ? matches.map((m) => fastStringArrayJoin(m as string[], '')) : matches as string[];
+    return matches.map((m) => fastStringArrayJoin(m, ''));
   };
 
   /**
@@ -273,17 +327,15 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       throw new Error('A Trie with smolTree enabled cannot perform substractSetInPlaceFromFound!');
     }
 
-    const inputTokens = suffixToTokens(inputSuffix);
+    const inputTokens = hostnameToTokens(inputSuffix);
 
     const res = walkIntoLeafWithTokens(inputTokens);
     if (res === null) return;
 
-    const onMatches = hostnameMode
-      ? (suffix: string[]) => set.delete(fastStringArrayJoin(suffix, ''))
-      : (suffix: string) => set.delete(suffix);
+    const onMatches = (suffix: string[]) => set.delete(fastStringArrayJoin(suffix, ''));
 
     walk(
-      onMatches as any,
+      onMatches,
       res.node, // Performing DFS from prefix
       inputTokens
     );
@@ -293,7 +345,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
    * Method used to delete a prefix from the trie.
    */
   const remove = (suffix: string): boolean => {
-    const res = getSingleChildLeaf(suffixToTokens(suffix));
+    const res = getSingleChildLeaf(hostnameToTokens(suffix));
     if (res === null) return false;
 
     if (!res.node[0]) return false;
@@ -314,8 +366,7 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
  * Method used to assert whether the given prefix exists in the Trie.
  */
   const has = (suffix: string): boolean => {
-    const tokens = suffixToTokens(suffix);
-    const res = walkIntoLeafWithTokens(tokens);
+    const res = walkIntoLeafWithSuffix(suffix);
 
     return res
       ? res.node[0]
@@ -326,20 +377,18 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
     const results: string[] = [];
 
     walk(suffix => {
-      results.push(
-        isHostnameMode(suffix) ? fastStringArrayJoin(suffix, '') : suffix
-      );
+      results.push(fastStringArrayJoin(suffix, ''));
     });
 
     return results;
   };
 
   const whitelist = (suffix: string) => {
-    if (!hostnameMode && !smolTree) {
-      throw new Error('whitelist method is only available in hostname mode or smolTree mode.');
+    if (!smolTree) {
+      throw new Error('whitelist method is only available in smolTree mode.');
     }
 
-    const tokens = suffixToTokens(suffix);
+    const tokens = hostnameToTokens(suffix);
     const res = getSingleChildLeaf(tokens);
 
     if (res === null) return;
@@ -406,7 +455,6 @@ export const createTrie = (from?: string[] | Set<string> | null, hostnameMode = 
       JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line),
       '\n'
     ),
-    hostnameMode,
     smolTree
   };
 };

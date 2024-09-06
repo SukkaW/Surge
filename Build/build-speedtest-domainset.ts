@@ -177,7 +177,6 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
       // OpenSpeedtest
       'open.cachefly.net'
     ],
-    true,
     true
   );
 

@@ -14,7 +14,6 @@ import { SOURCE_DIR } from './constants/dir';
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie(
     await getPublicSuffixListTextPromise(),
-    true,
     false
   );
 
