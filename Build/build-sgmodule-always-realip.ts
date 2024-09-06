@@ -4,6 +4,7 @@ import { compareAndWriteFile } from './lib/create-file';
 import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import * as yaml from 'yaml';
 import { writeFile } from './lib/misc';
+import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
@@ -59,10 +60,10 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
         '[General]',
         `always-real-ip = %APPEND% ${HOSTNAMES.concat(surge).join(', ')}`
       ],
-      path.resolve(__dirname, '../Modules/sukka_common_always_realip.sgmodule')
+      path.resolve(OUTPUT_MODULES_DIR, 'sukka_common_always_realip.sgmodule')
     ),
     writeFile(
-      path.resolve(__dirname, '../Internal/clash_fake_ip_filter.yaml'),
+      path.join(OUTPUT_INTERNAL_DIR, 'clash_fake_ip_filter.yaml'),
       yaml.stringify(
         {
           dns: {

@@ -21,8 +21,9 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 import { setAddFromArray, setAddFromArrayCurried } from './lib/set-add-from-array';
 import { output } from './lib/misc';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 
-const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/reject_sukka.conf'));
+const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   /** Whitelists */
@@ -214,7 +215,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     compareAndWriteFile(
       span,
       rejectDomainsStats,
-      path.resolve(__dirname, '../Internal/reject-stats.txt')
+      path.join(OUTPUT_INTERNAL_DIR, 'reject-stats.txt')
     )
   ]);
 });

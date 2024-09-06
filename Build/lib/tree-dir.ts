@@ -25,6 +25,11 @@ export const treeDir = async (rootPath: string): Promise<TreeTypeArray> => {
   const walk = async (dir: string, node: TreeTypeArray, dirRelativeToRoot = ''): Promise<VoidOrVoidArray> => {
     const promises: Array<Promise<VoidOrVoidArray>> = [];
     for await (const child of await fsp.opendir(dir)) {
+      // Ignore hidden files
+      if (child.name[0] === '.' || child.name === 'CNAME') {
+        continue;
+      }
+
       const childFullPath = child.parentPath + sep + child.name;
       const childRelativeToRoot = dirRelativeToRoot + sep + child.name;
 

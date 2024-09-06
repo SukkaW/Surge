@@ -5,17 +5,3 @@ node_modules
 .cache
 public
 tmp*
-
-# $ build output
-List/
-Clash/
-Internal/
-sing-box/
-Modules/sukka_local_dns_mapping.sgmodule
-Modules/sukka_url_redirect.sgmodule
-Modules/sukka_common_always_realip.sgmodule
-Mock/www-google-analytics-com_ga.js
-Mock/www-googletagservices-com_gpt.js
-Mock/www-google-analytics-com_analytics.js
-Mock/www-googlesyndication-com_adsbygoogle.js
-Mock/amazon-adsystem-com_amazon-apstag.js

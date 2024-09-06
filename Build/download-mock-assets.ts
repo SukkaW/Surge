@@ -1,9 +1,11 @@
 import { task } from './trace';
 import path from 'node:path';
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fetchWithRetry } from './lib/fetch-retry';
+import { OUTPUT_MOCK_DIR } from './constants/dir';
 
 const ASSETS_LIST = {
   'www-google-analytics-com_ga.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/google-analytics-ga.js',
@@ -13,19 +15,20 @@ const ASSETS_LIST = {
   'amazon-adsystem-com_amazon-apstag.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/amazon-apstag.js'
 } as const;
 
-const mockDir = path.resolve(__dirname, '../Mock');
-
 export const downloadMockAssets = task(require.main === module, __filename)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
   ([filename, url]) => span
-    .traceChildAsync(url, () => fetchWithRetry(url).then(res => {
-      const src = path.join(mockDir, filename);
+    .traceChildAsync(url, async () => {
+      const res = await fetchWithRetry(url);
+
+      const src = path.join(OUTPUT_MOCK_DIR, filename);
       if (!res.body) {
         throw new Error(`Empty body from ${url}`);
       }
 
+      await fsp.mkdir(OUTPUT_MOCK_DIR, { recursive: true });
       return pipeline(
         Readable.fromWeb(res.body),
         fs.createWriteStream(src, 'utf-8')
       );
-    }))
+    })
 )));

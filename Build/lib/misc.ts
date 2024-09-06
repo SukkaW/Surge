@@ -1,6 +1,7 @@
 import path, { dirname } from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../constants/dir';
 
 export const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 
@@ -51,10 +52,6 @@ export const domainWildCardToRegex = (domain: string) => {
   result += '$';
   return result;
 };
-
-const OUTPUT_SURGE_DIR = path.resolve(__dirname, '../../List');
-const OUTPUT_CLASH_DIR = path.resolve(__dirname, '../../Clash');
-const OUTPUT_SINGBOX_DIR = path.resolve(__dirname, '../../sing-box');
 
 export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => {
   return [

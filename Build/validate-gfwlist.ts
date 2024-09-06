@@ -5,6 +5,7 @@ import { createTrie } from './lib/trie';
 import { parse } from 'csv-parse/sync';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
+import { SOURCE_DIR } from './constants/dir';
 
 export const parseGfwList = async () => {
   const whiteSet = new Set<string>();
@@ -105,8 +106,8 @@ export const parseGfwList = async () => {
   };
 
   await Promise.all([
-    runAgainstRuleset(path.resolve(__dirname, '../Source/non_ip/global.conf')),
-    runAgainstRuleset(path.resolve(__dirname, '../Source/non_ip/telegram.conf')),
+    runAgainstRuleset(path.join(SOURCE_DIR, 'non_ip/global.conf')),
+    runAgainstRuleset(path.join(SOURCE_DIR, 'non_ip/telegram.conf')),
     runAgainstRuleset(path.resolve(__dirname, '../List/non_ip/stream.conf'))
   ]);
 

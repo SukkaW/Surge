@@ -1,3 +1,4 @@
+import { OUTPUT_CLASH_DIR, OUTPUT_SURGE_DIR } from './constants/dir';
 import { compareAndWriteFile } from './lib/create-file';
 import { task } from './trace';
 import path from 'node:path';
@@ -8,15 +9,12 @@ const DEPRECATED_FILES = [
   ['domainset/reject_phishing', 'This file has been merged with domainset/reject']
 ];
 
-const outputSurgeDir = path.resolve(__dirname, '../List');
-const outputClashDir = path.resolve(__dirname, '../Clash');
-
 export const buildDeprecateFiles = task(require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
   const promises: Array<Promise<unknown>> = [];
 
   for (const [filePath, description] of DEPRECATED_FILES) {
-    const surgeFile = path.resolve(outputSurgeDir, `${filePath}.conf`);
-    const clashFile = path.resolve(outputClashDir, `${filePath}.txt`);
+    const surgeFile = path.resolve(OUTPUT_SURGE_DIR, `${filePath}.conf`);
+    const clashFile = path.resolve(OUTPUT_CLASH_DIR, `${filePath}.txt`);
 
     const content = [
       '#########################################',

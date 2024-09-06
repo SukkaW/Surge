@@ -2,8 +2,7 @@ import path from 'node:path';
 import fsp from 'node:fs/promises';
 import { fdir as Fdir } from 'fdir';
 import { readFileByLine } from './lib/fetch-text-by-line';
-
-const sourceDir = path.resolve(__dirname, '../Source');
+import { SOURCE_DIR } from './constants/dir';
 
 (async () => {
   const promises: Array<Promise<unknown>> = [];
@@ -27,7 +26,7 @@ const sourceDir = path.resolve(__dirname, '../Source');
 
       return true;
     })
-    .crawl(sourceDir)
+    .crawl(SOURCE_DIR)
     .withPromise();
 
   for (let i = 0, len = paths.length; i < len; i++) {

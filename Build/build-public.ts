@@ -1,69 +1,52 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+
 import { task } from './trace';
 import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
-import { fdir as Fdir } from 'fdir';
 
-import Trie from 'mnemonist/trie';
+import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
 import { writeFile } from './lib/misc';
+import picocolors from 'picocolors';
 
-const rootPath = path.resolve(__dirname, '../');
-const publicPath = path.resolve(__dirname, '../public');
+const mockDir = path.join(ROOT_DIR, 'Mock');
+const modulesDir = path.join(ROOT_DIR, 'Modules');
 
-const folderAndFilesToBeDeployed = [
-  `Mock${path.sep}`,
-  `List${path.sep}`,
-  `Clash${path.sep}`,
-  `sing-box${path.sep}`,
-  `Modules${path.sep}`,
-  `Script${path.sep}`,
-  `Internal${path.sep}`,
-  'LICENSE'
-];
+const copyDirContents = async (srcDir: string, destDir: string) => {
+  const promises: Array<Promise<void>> = [];
+
+  for await (const entry of await fsp.opendir(srcDir)) {
+    const src = path.join(srcDir, entry.name);
+    const dest = path.join(destDir, entry.name);
+    if (entry.isDirectory()) {
+      console.warn(picocolors.red('[build public] cant copy directory'), src);
+    } else {
+      promises.push(fsp.copyFile(src, dest, fs.constants.COPYFILE_FICLONE));
+    }
+  }
+
+  return Promise.all(promises);
+};
 
 export const buildPublic = task(require.main === module, __filename)(async (span) => {
-  fs.mkdirSync(publicPath, { recursive: true });
+  await span.traceChildAsync('copy rest of the files', async () => {
+    await Promise.all([
+      fsp.mkdir(OUTPUT_MODULES_DIR, { recursive: true }),
+      fsp.mkdir(OUTPUT_MOCK_DIR, { recursive: true })
+    ]);
 
-  await span
-    .traceChild('copy public files')
-    .traceAsyncFn(async () => {
-      const trie = Trie.from(await new Fdir()
-        .withRelativePaths()
-        .exclude((dirName) => (
-          dirName === 'node_modules'
-          || dirName === 'Build'
-          || dirName === 'public'
-          || dirName[0] === '.'
-        ))
-        .crawl(rootPath)
-        .withPromise());
-
-      const filesToBeCopied = folderAndFilesToBeDeployed.flatMap(folderOrFile => trie.find(folderOrFile));
-
-      return Promise.all(filesToBeCopied.map(file => {
-        const src = path.join(rootPath, file);
-        const dest = path.join(publicPath, file);
-
-        const destParen = path.dirname(dest);
-        if (!fs.existsSync(destParen)) {
-          fs.mkdirSync(destParen, { recursive: true });
-        }
-
-        return fsp.copyFile(
-          src,
-          dest,
-          fs.constants.COPYFILE_FICLONE
-        );
-      }));
-    });
+    await Promise.all([
+      copyDirContents(modulesDir, OUTPUT_MODULES_DIR),
+      copyDirContents(mockDir, OUTPUT_MOCK_DIR)
+    ]);
+  });
 
   const html = await span
     .traceChild('generate index.html')
-    .traceAsyncFn(() => treeDir(publicPath).then(generateHtml));
+    .traceAsyncFn(() => treeDir(PUBLIC_DIR).then(generateHtml));
 
-  return writeFile(path.join(publicPath, 'index.html'), html);
+  return writeFile(path.join(PUBLIC_DIR, 'index.html'), html);
 });
 
 const priorityOrder: Record<'default' | string & {}, number> = {

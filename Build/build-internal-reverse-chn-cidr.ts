@@ -6,6 +6,7 @@ import { getChnCidrPromise } from './build-chn-cidr';
 import { NON_CN_CIDR_INCLUDED_IN_CHNROUTE, RESERVED_IPV4_CIDR } from './constants/cidr';
 
 import { writeFile } from './lib/misc';
+import { OUTPUT_INTERNAL_DIR } from './constants/dir';
 
 export const buildInternalReverseChnCIDR = task(require.main === module, __filename)(async () => {
   const [cidr] = await getChnCidrPromise();
@@ -21,8 +22,7 @@ export const buildInternalReverseChnCIDR = task(require.main === module, __filen
     )
   );
 
-  const outputDir = path.resolve(__dirname, '../Internal');
-  const outputFile = path.join(outputDir, 'reversed-chn-cidr.txt');
+  const outputFile = path.join(OUTPUT_INTERNAL_DIR, 'reversed-chn-cidr.txt');
 
   return writeFile(
     outputFile,

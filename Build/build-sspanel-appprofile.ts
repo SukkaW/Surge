@@ -12,6 +12,7 @@ import { compareAndWriteFile } from './lib/create-file';
 import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
 import { isTruthy } from './lib/misc';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 
 const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: boolean]> = [
   ['Default Proxy', true, false],
@@ -55,18 +56,18 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
       ),
     getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
     getMicrosoftCdnRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/apple_cn.conf')),
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/neteasemusic.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/apple_cn.conf')),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/neteasemusic.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // microsoft & apple - domains
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/microsoft.conf')),
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/apple_services.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/microsoft.conf')),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/apple_services.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // stream - domains
     surgeRulesetToClashClassicalTextRuleset(AllStreamServices.flatMap((i) => i.rules)),
     // steam - domains
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/domainset/steam.conf')).then(surgeDomainsetToClashRuleset),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/steam.conf')).then(surgeDomainsetToClashRuleset),
     // global - domains
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
     // domestic - ip cidr
     getChnCidrPromise().then(([cidrs4, cidrs6]) => [
       ...cidrs4.map(cidr => `IP-CIDR,${cidr}`),
@@ -83,7 +84,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     // global - ip cidr
     getTelegramCIDRPromise(),
     // lan - ip cidr
-    readFileIntoProcessedArray(path.resolve(__dirname, '../Source/ip/lan.conf'))
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'ip/lan.conf'))
   ] as const);
 
   const telegramCidrs = rawTelegramCidrs.map(removeNoResolved);
@@ -121,7 +122,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
   await compareAndWriteFile(
     span,
     output,
-    path.resolve(__dirname, '../Internal/appprofile.php')
+    path.resolve(OUTPUT_INTERNAL_DIR, 'appprofile.php')
   );
 });
 

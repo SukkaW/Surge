@@ -3,6 +3,7 @@ import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts';
 import { isTruthy } from './lib/misc';
+import { OUTPUT_MODULES_DIR } from './constants/dir';
 
 function escapeRegExp(string = '') {
   const reRegExpChar = /[$()*+.?[\\\]^{|}]/g;
@@ -148,6 +149,6 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       ...REDIRECT_MIRROR.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 header`),
       ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to} 307`)
     ],
-    path.resolve(__dirname, '../Modules/sukka_url_redirect.sgmodule')
+    path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect.sgmodule')
   );
 });
