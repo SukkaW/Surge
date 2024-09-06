@@ -1,7 +1,6 @@
 // @ts-check
 
 import * as path from 'node:path';
-import fsp from 'node:fs/promises';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
@@ -11,6 +10,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { fdir as Fdir } from 'fdir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { removeFiles } from './lib/misc';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_RM = '# $ custom_no_output';
@@ -126,11 +126,11 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
         const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
 
         if (res === $rm) {
-          return Promise.all([
+          return removeFiles([
             path.resolve(outputSurgeDir, relativePath),
             path.resolve(outputClashDir, `${clashFileBasename}.txt`),
             path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
-          ].map(f => fsp.rm(f, { force: true })));
+          ]);
         }
 
         const [title, descriptions, lines] = res;
@@ -175,11 +175,11 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
       const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
 
       if (res === $rm) {
-        return Promise.all([
+        return removeFiles([
           path.resolve(outputSurgeDir, relativePath),
           path.resolve(outputClashDir, `${clashFileBasename}.txt`),
           path.resolve(outputSingboxDir, `${clashFileBasename}.json`)
-        ].map(f => fsp.rm(f, { force: true })));
+        ]);
       }
 
       const [title, descriptions, lines] = res;

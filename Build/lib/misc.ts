@@ -29,6 +29,8 @@ export const writeFile: Write = async (destination: string, input, dir = dirname
   return fsp.writeFile(destination, input, { encoding: 'utf-8' });
 };
 
+export const removeFiles = async (files: string[]) => Promise.all(files.map((file) => fsp.rm(file, { force: true })));
+
 export const domainWildCardToRegex = (domain: string) => {
   let result = '^';
   for (let i = 0, len = domain.length; i < len; i++) {
