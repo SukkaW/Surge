@@ -71,8 +71,6 @@ process.on('unhandledRejection', (reason) => {
 
     const buildCloudMounterRulesPromise = downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan));
 
-    const buildDeprecateFilesPromise = downloadPreviousBuildPromise.then(() => buildDeprecateFiles(rootSpan));
-
     await Promise.all([
       downloadPreviousBuildPromise,
       buildCommonPromise,
@@ -93,10 +91,10 @@ process.on('unhandledRejection', (reason) => {
       buildMicrosoftCdnPromise,
       buildSSPanelUIMAppProfilePromise,
       buildCloudMounterRulesPromise,
-      buildDeprecateFilesPromise,
       downloadMockAssetsPromise
     ]);
 
+    await buildDeprecateFiles(rootSpan);
     await buildPublic(rootSpan);
 
     rootSpan.stop();

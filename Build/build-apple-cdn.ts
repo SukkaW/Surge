@@ -32,27 +32,15 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
     ' - https://github.com/felixonmars/dnsmasq-china-list'
   ];
 
-  const ruleset = res.map(domain => `DOMAIN-SUFFIX,${domain}`);
   const domainset = res.map(i => `.${i}`);
 
-  return Promise.all([
-    createRuleset(
-      span,
-      'Sukka\'s Ruleset - Apple CDN',
-      description,
-      new Date(),
-      ruleset,
-      'ruleset',
-      output('apple_cdn', 'non_ip')
-    ),
-    createRuleset(
-      span,
-      'Sukka\'s Ruleset - Apple CDN',
-      description,
-      new Date(),
-      domainset,
-      'domainset',
-      output('apple_cdn', 'domainset')
-    )
-  ]);
+  return createRuleset(
+    span,
+    'Sukka\'s Ruleset - Apple CDN',
+    description,
+    new Date(),
+    domainset,
+    'domainset',
+    output('apple_cdn', 'domainset')
+  );
 });
