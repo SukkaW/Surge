@@ -8,6 +8,8 @@ import { fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
 import stringify from 'json-stringify-pretty-compact';
 import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
+import { createTrie } from './trie';
+import { pack, unpack } from './bitwise';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -92,17 +94,6 @@ const withBannerArray = (title: string, description: string[] | readonly string[
   ];
 };
 
-const collectType = (rule: string) => {
-  let buf = '';
-  for (let i = 0, len = rule.length; i < len; i++) {
-    if (rule[i] === ',') {
-      return buf;
-    }
-    buf += rule[i];
-  }
-  return null;
-};
-
 const defaultSortTypeOrder = Symbol('defaultSortTypeOrder');
 const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   DOMAIN: 1,
@@ -120,33 +111,62 @@ const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   'IP-CIDR': 400,
   'IP-CIDR6': 400
 };
-// sort DOMAIN-SUFFIX and DOMAIN first, then DOMAIN-KEYWORD, then IP-CIDR and IP-CIDR6 if any
-export const sortRuleSet = (ruleSet: string[]) => {
-  return ruleSet.map((rule) => {
-    const type = collectType(rule);
-    if (!type) {
-      return [10, rule] as const;
-    }
-    if (!(type in sortTypeOrder)) {
-      return [sortTypeOrder[defaultSortTypeOrder], rule] as const;
-    }
-    if (type === 'URL-REGEX') {
-      let extraWeight = 0;
-      if (rule.includes('.+') || rule.includes('.*')) {
-        extraWeight += 10;
-      }
-      if (rule.includes('|')) {
-        extraWeight += 1;
-      }
 
-      return [
-        sortTypeOrder[type] + extraWeight,
-        rule
-      ] as const;
+const flagDomain = 1 << 2;
+const flagDomainSuffix = 1 << 3;
+
+// dedupe and sort based on rule type
+const processRuleSet = (ruleSet: string[]) => {
+  const trie = createTrie<number>(null, true);
+
+  const sortMap: Array<[value: number, weight: number]> = [];
+  for (let i = 0, len = ruleSet.length; i < len; i++) {
+    const line = ruleSet[i];
+    const [type, value] = line.split(',');
+
+    let extraWeight = 0;
+
+    switch (type) {
+      case 'DOMAIN':
+        trie.add(value, pack(i, flagDomain));
+        break;
+      case 'DOMAIN-SUFFIX':
+        trie.add('.' + value, pack(i, flagDomainSuffix));
+        break;
+      case 'URL-REGEX':
+        if (value.includes('.+') || value.includes('.*')) {
+          extraWeight += 10;
+        }
+        if (value.includes('|')) {
+          extraWeight += 1;
+        }
+        sortMap.push([i, sortTypeOrder[type] + extraWeight]);
+        break;
+      case null:
+        sortMap.push([i, 10]);
+        break;
+      default:
+        if (type in sortTypeOrder) {
+          sortMap.push([i, sortTypeOrder[type]]);
+        } else {
+          sortMap.push([i, sortTypeOrder[defaultSortTypeOrder]]);
+        }
     }
-    return [sortTypeOrder[type], rule] as const;
-  }).sort((a, b) => a[0] - b[0])
-    .map(c => c[1]);
+  }
+
+  const dumped = trie.dumpWithMeta();
+  for (let i = 0, len = dumped.length; i < len; i++) {
+    const [originalIndex, flag] = unpack(dumped[i][1]);
+    console.log(dumped[i][0], ruleSet[originalIndex]);
+
+    const type = flag === flagDomain ? 'DOMAIN' : 'DOMAIN-SUFFIX';
+
+    sortMap.push([originalIndex, sortTypeOrder[type]]);
+  }
+
+  return sortMap
+    .sort((a, b) => a[1] - b[1])
+    .map(c => ruleSet[c[0]]);
 };
 
 const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
@@ -162,7 +182,7 @@ export const createRuleset = (
     _clashMrsPath?: string
   ]
 ) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn(async (childSpan) => {
-  content = sortRuleSet(content);
+  content = processRuleSet(content);
   const surgeContent = childSpan.traceChildSync('process surge ruleset', () => {
     let _surgeContent;
     switch (type) {

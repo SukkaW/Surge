@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
-import { domainDeduper } from './lib/domain-deduper';
+import { domainsetDeduper } from './lib/domain-deduper';
 import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
@@ -116,7 +116,7 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
         const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
 
         const [title, descriptions, lines] = res;
-        const deduped = domainDeduper(lines);
+        const deduped = domainsetDeduper(lines);
 
         let description: string[];
         if (descriptions.length) {

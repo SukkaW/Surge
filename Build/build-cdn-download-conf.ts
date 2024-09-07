@@ -5,7 +5,7 @@ import { createTrie } from './lib/trie';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
-import { domainDeduper } from './lib/domain-deduper';
+import { domainsetDeduper } from './lib/domain-deduper';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { sortDomains } from './lib/stable-sort-domain';
 import { output } from './lib/misc';
@@ -76,7 +76,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
         'This file contains object storage and static assets CDN domains.'
       ],
       new Date(),
-      sortDomains(domainDeduper(cdnDomainsList)),
+      sortDomains(domainsetDeduper(cdnDomainsList)),
       'domainset',
       output('cdn', 'domainset')
     ),
@@ -89,7 +89,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
         'This file contains domains for software updating & large file hosting.'
       ],
       new Date(),
-      sortDomains(domainDeduper(downloadDomainSet)),
+      sortDomains(domainsetDeduper(downloadDomainSet)),
       'domainset',
       output('download', 'domainset')
     )

@@ -7,10 +7,11 @@ import { inspect } from 'node:util';
 
 const noop = () => { /** noop */ };
 
-type TrieNode = [
+type TrieNode<Meta = any> = [
   boolean, /** sentinel */
   TrieNode | null, /** parent */
-  Map<string, TrieNode> /** children */
+  Map<string, TrieNode>, /** children */
+  Meta /** meta */
 ];
 
 const deepTrieNodeToJSON = (node: TrieNode) => {
@@ -18,14 +19,17 @@ const deepTrieNodeToJSON = (node: TrieNode) => {
   if (node[0]) {
     obj['[start]'] = node[0];
   }
+  if (node[3] !== undefined) {
+    obj['[meta]'] = node[3];
+  }
   node[2].forEach((value, key) => {
     obj[key] = deepTrieNodeToJSON(value);
   });
   return obj;
 };
 
-const createNode = (parent: TrieNode | null = null): TrieNode => {
-  return [false, parent, new Map<string, TrieNode>()] as TrieNode;
+const createNode = <Meta = any>(parent: TrieNode | null = null, meta: Meta | null = null): TrieNode => {
+  return [false, parent, new Map<string, TrieNode>(), meta] as TrieNode<Meta>;
 };
 
 export const hostnameToTokens = (hostname: string): string[] => {
@@ -72,16 +76,16 @@ const walkHostnameTokens = (hostname: string, onToken: (token: string) => boolea
   return false;
 };
 
-export const createTrie = (from?: string[] | Set<string> | null, smolTree = false) => {
+export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smolTree = false) => {
   let size = 0;
-  const root: TrieNode = createNode();
+  const root: TrieNode<Meta> = createNode();
 
   /**
    * Method used to add the given suffix to the trie.
    */
   const add = smolTree
-    ? (suffix: string): void => {
-      let node: TrieNode = root;
+    ? (suffix: string, meta?: Meta): void => {
+      let node: TrieNode<Meta> = root;
 
       const onToken = (token: string) => {
         if (node[2].has(token)) {
@@ -98,6 +102,7 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
           node = newNode;
         }
 
+        node[3] = meta!;
         return false;
       };
 
@@ -128,8 +133,8 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
 
       node[0] = true;
     }
-    : (suffix: string): void => {
-      let node: TrieNode = root;
+    : (suffix: string, meta?: Meta): void => {
+      let node: TrieNode<Meta> = root;
 
       const onToken = (token: string) => {
         if (node[2].has(token)) {
@@ -140,6 +145,7 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
           node = newNode;
         }
 
+        node[3] = meta!;
         return false;
       };
 
@@ -221,15 +227,15 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
   };
 
   const walk = (
-    onMatches: (suffix: string[]) => void,
+    onMatches: (suffix: string[], meta: Meta) => void,
     initialNode = root,
     initialSuffix: string[] = []
   ) => {
-    const nodeStack: TrieNode[] = [initialNode];
+    const nodeStack: Array<TrieNode<Meta>> = [initialNode];
     // Resolving initial string (begin the start of the stack)
     const suffixStack: string[][] = [initialSuffix];
 
-    let node: TrieNode = root;
+    let node: TrieNode<Meta> = root;
 
     do {
       node = nodeStack.pop()!;
@@ -244,7 +250,7 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
 
       // If the node is a sentinel, we push the suffix to the results
       if (node[0]) {
-        onMatches(suffix);
+        onMatches(suffix, node[3]);
       }
     } while (nodeStack.length);
   };
@@ -383,6 +389,16 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
     return results;
   };
 
+  const dumpWithMeta = () => {
+    const results: Array<[string, Meta]> = [];
+
+    walk((suffix, meta) => {
+      results.push([fastStringArrayJoin(suffix, ''), meta]);
+    });
+
+    return results;
+  };
+
   const whitelist = (suffix: string) => {
     if (!smolTree) {
       throw new Error('whitelist method is only available in smolTree mode.');
@@ -428,7 +444,7 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
       add(from[i]);
     }
   } else if (from) {
-    from.forEach(add);
+    from.forEach((value) => add(value));
   }
 
   return {
@@ -440,6 +456,7 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
     delete: remove,
     has,
     dump,
+    dumpWithMeta,
     get size() {
       if (smolTree) {
         throw new Error('A Trie with smolTree enabled cannot have correct size!');
@@ -460,5 +477,3 @@ export const createTrie = (from?: string[] | Set<string> | null, smolTree = fals
 };
 
 export type Trie = ReturnType<typeof createTrie>;
-
-export default createTrie;
