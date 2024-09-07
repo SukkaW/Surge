@@ -72,15 +72,11 @@ jobs:
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
       - name: Upload Dist to GitLab
         run: |
-          mkdir ./deploy-git
+          git clone --filter=blob:none https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git ./deploy-git
           cd ./deploy-git
-          git config --global init.defaultBranch master
-          git init
           git config --global push.default matching
           git config --global user.email "${GITLAB_EMAIL}"
           git config --global user.name "${GITLAB_USER}"
-          git remote add origin https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git
-          git pull origin master
           rm -rf ./*
           cp -rf ../public/* ./
           git add --all .
