@@ -4,10 +4,15 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 12 * * *'
+    - cron: "0 12 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -18,12 +23,12 @@ jobs:
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
-            run_install: false
+          run_install: false
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.node-version'
-          cache: 'pnpm'
+          node-version-file: ".node-version"
+          cache: "pnpm"
       - name: Get current date
         id: date
         run: |
@@ -64,12 +69,42 @@ jobs:
             echo "public directory is empty"
             exit 1
           fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact-${{ github. ref_name }}
+          path: public
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 4
+          include-hidden-files: false
+  deploy_to_cloudflare_pages:
+    needs:
+      - build
+    name: Deploy to Cloudflare Pages
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-${{ github. ref_name }}
+          path: public
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
+  deploy_to_github_gitlab:
+    needs:
+      - build
+    name: Deploy to GitHub and GitLab
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-${{ github.ref_name }}
+          path: public
       - name: Upload Dist to GitLab
         run: |
           git clone --filter=blob:none https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git ./deploy-git
