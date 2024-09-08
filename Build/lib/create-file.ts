@@ -157,8 +157,6 @@ const processRuleSet = (ruleSet: string[]) => {
   const dumped = trie.dumpWithMeta();
   for (let i = 0, len = dumped.length; i < len; i++) {
     const [originalIndex, flag] = unpack(dumped[i][1]);
-    console.log(dumped[i][0], ruleSet[originalIndex]);
-
     const type = flag === flagDomain ? 'DOMAIN' : 'DOMAIN-SUFFIX';
 
     sortMap.push([originalIndex, sortTypeOrder[type]]);

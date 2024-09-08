@@ -215,8 +215,6 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     }
   }
 
-  // console.log(domainScoreMap['']);
-
   return domainArr;
 });
 

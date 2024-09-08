@@ -1,6 +1,5 @@
 import process from 'node:process';
-
-console.log('Version:', process.version);
+import os from 'node:os';
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
@@ -39,6 +38,26 @@ process.on('unhandledRejection', (reason) => {
 });
 
 (async () => {
+  console.log('Version:', process.version);
+
+  console.log(`OS: ${os.type()} ${os.release()} ${os.arch()}`);
+  console.log(`Node.js: ${process.versions.node}`);
+  console.log(`V8: ${process.versions.v8}`);
+
+  const cpus = os.cpus()
+    .map(cpu => cpu.model)
+    .reduce<Record<string, number>>((o, model) => {
+      o[model] = (o[model] || 0) + 1;
+      return o;
+    }, {});
+
+  console.log(`CPU: ${
+    Object.keys(cpus)
+      .map((key) => `${key} x ${cpus[key]}`)
+      .join('\n')
+  }`);
+  console.log(`Memory: ${os.totalmem() / (1024 * 1024)} MiB`);
+
   const rootSpan = createSpan('root');
 
   try {
