@@ -242,7 +242,9 @@ export const DOMESTICS = {
       'baike.com',
       'zjcdn.com',
       'zijieapi.com',
-      'feelgood.cn'
+      'feelgood.cn',
+      'bytetcc.com', // Use hichina.com as NS
+      'bytednsdoc.com' // Uses alidns.com as NS
     ]
   },
   BAIDU: {
