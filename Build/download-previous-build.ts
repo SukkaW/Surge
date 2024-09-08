@@ -1,10 +1,8 @@
-import { createWriteStream } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { task } from './trace';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
-import tarStream from 'tar-stream';
+import { extract as tarExtract } from 'tar-fs';
 import zlib from 'node:zlib';
 import { Readable } from 'node:stream';
 
@@ -58,28 +56,26 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
       throw new Error('Download previous build failed! No body found');
     }
 
-    const gunzip = zlib.createGunzip();
-    const extract = tarStream.extract();
+    const pathPrefix = 'ruleset.skk.moe-master/';
 
-    pipeline(
+    const gunzip = zlib.createGunzip();
+    const extract = tarExtract(
+      publicDir,
+      {
+        ignore(_, header) {
+          return header?.type !== 'file' && header?.type !== 'directory';
+        },
+        map(header) {
+          header.name = header.name.replace(pathPrefix, '');
+          return header;
+        }
+      }
+    );
+
+    return pipeline(
       Readable.fromWeb(resp.body),
       gunzip,
       extract
     );
-
-    const pathPrefix = 'ruleset.skk.moe-master/';
-
-    for await (const entry of extract) {
-      if (entry.header.type !== 'file') {
-        entry.resume(); // Drain the entry
-        continue;
-      }
-
-      const relativeEntryPath = entry.header.name.replace(pathPrefix, '');
-      const targetPath = path.join(publicDir, relativeEntryPath);
-
-      await mkdir(path.dirname(targetPath), { recursive: true });
-      await pipeline(entry, createWriteStream(targetPath));
-    }
   });
 });
