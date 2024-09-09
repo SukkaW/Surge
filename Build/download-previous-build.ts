@@ -2,7 +2,7 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { task } from './trace';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
-import { extract as tarExtract } from 'tar-fs';
+import { extract as tarExtract, type Headers as TarEntryHeaders } from 'tar-fs';
 import zlib from 'node:zlib';
 import { Readable } from 'node:stream';
 
@@ -62,9 +62,7 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     const extract = tarExtract(
       publicDir,
       {
-        ignore(_, header) {
-          return header?.type !== 'file' && header?.type !== 'directory';
-        },
+        ignore: tarOnIgnore,
         map(header) {
           header.name = header.name.replace(pathPrefix, '');
           return header;
@@ -79,3 +77,18 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     );
   });
 });
+
+function tarOnIgnore(_: string, header?: TarEntryHeaders) {
+  if (header) {
+    if (header.type !== 'file' && header.type !== 'directory') {
+      return true;
+    }
+
+    const extname = path.extname(header.name);
+    if (extname === '.ts') {
+      return true;
+    }
+  }
+
+  return false;
+}
