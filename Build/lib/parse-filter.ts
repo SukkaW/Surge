@@ -143,6 +143,8 @@ const enum ParseType {
   Null = 1000
 }
 
+export { type ParseType };
+
 export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
@@ -289,10 +291,12 @@ const kwfilter = createKeywordFilter([
   '$popup',
   '$removeparam',
   '$popunder',
-  '$cname'
+  '$cname',
+  // some bad syntax
+  '^popup'
 ]);
 
-function parse($line: string, result: [string, ParseType]): [hostname: string, flag: ParseType] {
+export function parse($line: string, result: [string, ParseType]): [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -685,6 +689,7 @@ function parse($line: string, result: [string, ParseType]): [hostname: string, f
    */
   let sliceStart = 0;
   let sliceEnd: number | undefined;
+
   if (lineStartsWithSingleDot) {
     sliceStart = 1;
   }
@@ -696,28 +701,17 @@ function parse($line: string, result: [string, ParseType]): [hostname: string, f
     line.endsWith('$document')
   ) {
     sliceEnd = -9;
+  } else if (line.endsWith('$badfilter')) {
+    sliceEnd = -10;
   }
   const sliced = (sliceStart !== 0 || sliceEnd !== undefined) ? line.slice(sliceStart, sliceEnd) : line;
-  const suffix = tldts.getPublicSuffix(sliced, looseTldtsOpt);
-  /**
-   * Fast exclude definitely not domain-like resource
-   *
-   * `.gatracking.js`, suffix is `js`,
-   * `.ads.css`, suffix is `css`,
-   * `-cpm-ads.$badfilter`, suffix is `$badfilter`,
-   * `portal.librus.pl$$advertisement-module`, suffix is `pl$$advertisement-module`
-   */
-  if (!suffix) {
-    // This exclude domain-like resource like `.gatracking.js`, `.beacon.min.js` and `.cookielaw.js`
-    result[1] = ParseType.Null;
-    return result;
-  }
 
   const tryNormalizeDomain = normalizeDomain(sliced);
   if (tryNormalizeDomain === sliced) {
     // the entire rule is domain
     result[0] = sliced;
     result[1] = ParseType.BlackIncludeSubdomain;
+
     return result;
   }
 

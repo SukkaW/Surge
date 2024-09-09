@@ -1,26 +1,32 @@
 // https://github.com/remusao/tldts/issues/2121
 // import tldts from 'tldts-experimental';
 import tldts from 'tldts';
-export const normalizeDomain = (domain: string) => {
-  if (!domain) return null;
+import { normalizeTldtsOpt } from '../constants/loose-tldts-opt';
 
-  const parsed = tldts.parse(domain, { allowPrivateDomains: true, allowIcannDomains: true, detectIp: true });
+type TldTsParsed = ReturnType<typeof tldts.parse>;
+
+export const normalizeDomain = (domain: string, parsed: TldTsParsed | null = null) => {
+  if (domain.length === 0) return null;
+
+  parsed ??= tldts.parse(domain, normalizeTldtsOpt);
+
   if (parsed.isIp) return null;
-  if (!parsed.hostname) return null;
+
+  let h = parsed.hostname;
+  if (h === null) return null;
   // Private invalid domain (things like .tor, .dn42, etc)
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
-  let h = parsed.hostname;
-
-  let sliceStart: number | undefined;
-  let sliceEnd: number | undefined;
+  let sliceStart = 0;
+  let sliceEnd = 0;
 
   if (h[0] === '.') sliceStart = 1;
-  if (h.endsWith('.')) sliceEnd = -1;
+  // eslint-disable-next-line sukka/string/prefer-string-starts-ends-with -- performance
+  if (h[h.length - 1] === '.') sliceEnd = -1;
 
-  if (sliceStart !== undefined || sliceEnd !== undefined) {
+  if (sliceStart !== 0 || sliceEnd !== 0) {
     h = h.slice(sliceStart, sliceEnd);
   }
 
-  return h || null;
+  return h.length > 0 ? h : null;
 };
