@@ -62,7 +62,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   }
 
   if (isEqual) {
-    console.log(picocolors.dim(`same content, bail out writing: ${filePath}`));
+    console.log(picocolors.gray(picocolors.dim(`same content, bail out writing: ${filePath}`)));
     return;
   }
 
@@ -152,6 +152,14 @@ const processRuleSet = (ruleSet: string[]) => {
           sortMap.push([i, sortTypeOrder[defaultSortTypeOrder]]);
         }
     }
+  }
+
+  if (ruleSet.includes('DOMAIN,github.com')) {
+    console.log(trie.inspect(0, (meta) => ({
+      index: ruleSet[unpack(meta!)[0]],
+      flag: unpack(meta!)[1] === flagDomain ? 'DOMAIN' : 'DOMAIN-SUFFIX'
+    })));
+    console.log(trie.root);
   }
 
   const dumped = trie.dumpWithMeta();

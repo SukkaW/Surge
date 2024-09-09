@@ -3,7 +3,7 @@
  */
 
 import { fastStringArrayJoin } from './misc';
-import { inspect } from 'node:util';
+import util from 'node:util';
 
 const noop = () => { /** noop */ };
 
@@ -14,22 +14,29 @@ type TrieNode<Meta = any> = [
   Meta /** meta */
 ];
 
-const deepTrieNodeToJSON = (node: TrieNode) => {
+const deepTrieNodeToJSON = (
+  node: TrieNode,
+  unpackMeta: ((meta?: any) => string) | undefined
+) => {
   const obj: Record<string, any> = {};
   if (node[0]) {
     obj['[start]'] = node[0];
   }
-  if (node[3] !== undefined) {
-    obj['[meta]'] = node[3];
+  if (node[3] != null) {
+    if (unpackMeta) {
+      obj['[meta]'] = unpackMeta(node[3]);
+    } else {
+      obj['[meta]'] = node[3];
+    }
   }
   node[2].forEach((value, key) => {
-    obj[key] = deepTrieNodeToJSON(value);
+    obj[key] = deepTrieNodeToJSON(value, unpackMeta);
   });
   return obj;
 };
 
-const createNode = <Meta = any>(parent: TrieNode | null = null, meta: Meta | null = null): TrieNode => {
-  return [false, parent, new Map<string, TrieNode>(), meta] as TrieNode<Meta>;
+const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => {
+  return [false, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 };
 
 export const hostnameToTokens = (hostname: string): string[] => {
@@ -102,7 +109,6 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
           node = newNode;
         }
 
-        node[3] = meta!;
         return false;
       };
 
@@ -132,6 +138,7 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
       }
 
       node[0] = true;
+      node[3] = meta!;
     }
     : (suffix: string, meta?: Meta): void => {
       let node: TrieNode<Meta> = root;
@@ -145,7 +152,6 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
           node = newNode;
         }
 
-        node[3] = meta!;
         return false;
       };
 
@@ -154,9 +160,10 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
         return;
       }
 
-      if (!node[0]) { // smol tree don't have size, so else-if here
+      if (!node[0]) {
         size++;
         node[0] = true;
+        node[3] = meta!;
       }
     };
 
@@ -447,6 +454,11 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     from.forEach((value) => add(value));
   }
 
+  const inspect = (depth: number, unpackMeta?: (meta?: Meta) => any) => fastStringArrayJoin(
+    JSON.stringify(deepTrieNodeToJSON(root, unpackMeta), null, 2).split('\n').map((line) => ' '.repeat(depth) + line),
+    '\n'
+  );
+
   return {
     add,
     contains,
@@ -467,11 +479,8 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
       return root;
     },
     whitelist,
-
-    [inspect.custom]: (depth: number) => fastStringArrayJoin(
-      JSON.stringify(deepTrieNodeToJSON(root), null, 2).split('\n').map((line) => ' '.repeat(depth) + line),
-      '\n'
-    ),
+    inspect,
+    [util.inspect.custom]: inspect,
     smolTree
   };
 };
