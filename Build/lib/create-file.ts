@@ -9,7 +9,7 @@ import { readFileByLine } from './fetch-text-by-line';
 import stringify from 'json-stringify-pretty-compact';
 import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
 import { createTrie } from './trie';
-import { pack, unpack } from './bitwise';
+import { pack, unpackFirst, unpackSecond } from './bitwise';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -119,7 +119,8 @@ const flagDomainSuffix = 1 << 3;
 const processRuleSet = (ruleSet: string[]) => {
   const trie = createTrie<number>(null, true);
 
-  const sortMap: Array<[value: number, weight: number]> = [];
+  /** Packed Array<[valueIndex: number, weight: number]> */
+  const sortMap: number[] = [];
   for (let i = 0, len = ruleSet.length; i < len; i++) {
     const line = ruleSet[i];
     const [type, value] = line.split(',');
@@ -140,39 +141,34 @@ const processRuleSet = (ruleSet: string[]) => {
         if (value.includes('|')) {
           extraWeight += 1;
         }
-        sortMap.push([i, sortTypeOrder[type] + extraWeight]);
+        sortMap.push(pack(i, sortTypeOrder[type] + extraWeight));
         break;
       case null:
-        sortMap.push([i, 10]);
+        sortMap.push(pack(i, 10));
         break;
       default:
         if (type in sortTypeOrder) {
-          sortMap.push([i, sortTypeOrder[type]]);
+          sortMap.push(pack(i, sortTypeOrder[type]));
         } else {
-          sortMap.push([i, sortTypeOrder[defaultSortTypeOrder]]);
+          sortMap.push(pack(i, sortTypeOrder[defaultSortTypeOrder]));
         }
     }
   }
 
-  if (ruleSet.includes('DOMAIN,github.com')) {
-    console.log(trie.inspect(0, (meta) => ({
-      index: ruleSet[unpack(meta!)[0]],
-      flag: unpack(meta!)[1] === flagDomain ? 'DOMAIN' : 'DOMAIN-SUFFIX'
-    })));
-    console.log(trie.root);
-  }
-
   const dumped = trie.dumpWithMeta();
+
   for (let i = 0, len = dumped.length; i < len; i++) {
-    const [originalIndex, flag] = unpack(dumped[i][1]);
+    const originalIndex = unpackFirst(dumped[i][1]);
+    const flag = unpackSecond(dumped[i][1]);
+
     const type = flag === flagDomain ? 'DOMAIN' : 'DOMAIN-SUFFIX';
 
-    sortMap.push([originalIndex, sortTypeOrder[type]]);
+    sortMap.push(pack(originalIndex, sortTypeOrder[type]));
   }
 
   return sortMap
-    .sort((a, b) => a[1] - b[1])
-    .map(c => ruleSet[c[0]]);
+    .sort((a, b) => unpackSecond(a) - unpackSecond(b))
+    .map(c => ruleSet[unpackFirst(c)]);
 };
 
 const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
