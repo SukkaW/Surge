@@ -230,7 +230,7 @@ async function processPhihsingDomains(domainArr: string[]) {
       return Promise.resolve(domainArr);
     },
     {
-      ttl: 2 * 86400,
+      ttl: 2 * 86400 * 1000,
       serializer: serializeArray,
       deserializer: deserializeArray,
       incrementTtlWhenHit: true
