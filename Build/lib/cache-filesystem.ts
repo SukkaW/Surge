@@ -29,7 +29,8 @@ export interface CacheOptions<S = string> {
 
 interface CacheApplyRawOption {
   ttl?: number | null,
-  temporaryBypass?: boolean
+  temporaryBypass?: boolean,
+  incrementTtlWhenHit?: boolean
 }
 
 interface CacheApplyNonRawOption<T, S> extends CacheApplyRawOption {
@@ -158,6 +159,10 @@ export class Cache<S = string> {
     return rv ? (rv.ttl > now ? CacheStatus.Hit : CacheStatus.Stale) : CacheStatus.Miss;
   }
 
+  private updateTtl(key: string, ttl: number): void {
+    this.db.prepare(`UPDATE ${this.tableName} SET ttl = ? WHERE key = ?;`).run(Date.now() + ttl, key);
+  }
+
   del(key: string): void {
     this.db.prepare(`DELETE FROM ${this.tableName} WHERE key = ?`).run(key);
   }
@@ -167,7 +172,7 @@ export class Cache<S = string> {
     fn: () => Promise<T>,
     opt: CacheApplyOption<T, S>
   ): Promise<T> {
-    const { ttl, temporaryBypass } = opt;
+    const { ttl, temporaryBypass, incrementTtlWhenHit } = opt;
 
     if (temporaryBypass) {
       return fn();
@@ -192,6 +197,10 @@ export class Cache<S = string> {
     }
 
     console.log(picocolors.green('[cache] hit'), picocolors.gray(key));
+
+    if (incrementTtlWhenHit) {
+      this.updateTtl(key, ttl);
+    }
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity;
     return deserializer(cached);

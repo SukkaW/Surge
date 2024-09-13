@@ -30,6 +30,7 @@
     "fast-cidr-tools": "^0.2.5",
     "fdir": "^6.3.0",
     "foxact": "^0.2.38",
+    "hash-wasm": "^4.11.0",
     "json-stringify-pretty-compact": "^3.0.0",
     "mnemonist": "^0.39.8",
     "picocolors": "^1.1.0",

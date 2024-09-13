@@ -7,7 +7,10 @@ import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
-import { createCacheKey } from './cache-filesystem';
+import { createCacheKey, deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
+import { fastStringArrayJoin } from './misc';
+
+import { sha256 } from 'hash-wasm';
 
 const BLACK_TLD = new Set([
   'accountant',
@@ -158,65 +161,82 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     return domainArr;
   });
 
-  const domainCountMap: Record<string, number> = {};
-  const domainScoreMap: Record<string, number> = {};
+  return span.traceChildAsync(
+    'process phishing domain set',
+    () => processPhihsingDomains(domainArr)
+  );
+});
 
-  span.traceChildSync('process phishing domain set', () => {
-    for (let i = 0, len = domainArr.length; i < len; i++) {
-      const line = domainArr[i];
+async function processPhihsingDomains(domainArr: string[]) {
+  const hash = await sha256(fastStringArrayJoin(domainArr, '|'));
+  return fsFetchCache.apply(
+    cacheKey('processPhihsingDomains|' + hash),
+    () => {
+      const domainCountMap: Record<string, number> = {};
+      const domainScoreMap: Record<string, number> = {};
 
-      const {
-        publicSuffix: tld,
-        domain: apexDomain,
-        subdomain,
-        isPrivate
-      } = tldts.parse(line, loosTldOptWithPrivateDomains);
+      for (let i = 0, len = domainArr.length; i < len; i++) {
+        const line = domainArr[i];
 
-      if (isPrivate) {
-        continue;
-      }
+        const {
+          publicSuffix: tld,
+          domain: apexDomain,
+          subdomain,
+          isPrivate
+        } = tldts.parse(line, loosTldOptWithPrivateDomains);
 
-      if (!tld) {
-        console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, tld });
-        continue;
-      }
-      if (!apexDomain) {
-        console.log(picocolors.yellow('[phishing domains] E0002'), 'missing domain', { line, apexDomain });
-        continue;
-      }
+        if (isPrivate) {
+          continue;
+        }
 
-      domainCountMap[apexDomain] ||= 0;
-      domainCountMap[apexDomain] += 1;
+        if (!tld) {
+          console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, tld });
+          continue;
+        }
+        if (!apexDomain) {
+          console.log(picocolors.yellow('[phishing domains] E0002'), 'missing domain', { line, apexDomain });
+          continue;
+        }
 
-      if (!(apexDomain in domainScoreMap)) {
-        domainScoreMap[apexDomain] = 0;
-        if (BLACK_TLD.has(tld)) {
-          domainScoreMap[apexDomain] += 4;
-        } else if (tld.length > 6) {
-          domainScoreMap[apexDomain] += 2;
+        domainCountMap[apexDomain] ||= 0;
+        domainCountMap[apexDomain] += 1;
+
+        if (!(apexDomain in domainScoreMap)) {
+          domainScoreMap[apexDomain] = 0;
+          if (BLACK_TLD.has(tld)) {
+            domainScoreMap[apexDomain] += 4;
+          } else if (tld.length > 6) {
+            domainScoreMap[apexDomain] += 2;
+          }
+        }
+        if (
+          subdomain
+          && !WHITELIST_MAIN_DOMAINS.has(apexDomain)
+        ) {
+          domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain);
         }
       }
-      if (
-        subdomain
-        && !WHITELIST_MAIN_DOMAINS.has(apexDomain)
-      ) {
-        domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain);
+
+      for (const apexDomain in domainCountMap) {
+        if (
+          // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
+          domainScoreMap[apexDomain] >= 12
+          || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 4)
+        ) {
+          domainArr.push(`.${apexDomain}`);
+        }
       }
-    }
-  });
 
-  for (const apexDomain in domainCountMap) {
-    if (
-      // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
-      domainScoreMap[apexDomain] >= 12
-      || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 4)
-    ) {
-      domainArr.push(`.${apexDomain}`);
+      return Promise.resolve(domainArr);
+    },
+    {
+      ttl: 2 * 86400,
+      serializer: serializeArray,
+      deserializer: deserializeArray,
+      incrementTtlWhenHit: true
     }
-  }
-
-  return domainArr;
-});
+  );
+}
 
 export function calcDomainAbuseScore(subdomain: string) {
   let weight = 0;
