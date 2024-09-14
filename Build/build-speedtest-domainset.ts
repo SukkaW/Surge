@@ -175,7 +175,7 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
       // Apple,
       'mensura.cdn-apple.com', // From netQuality command
       // OpenSpeedtest
-      'open.cachefly.net'
+      'open.cachefly.net' // This is also used for openspeedtest server download
     ],
     true
   );
