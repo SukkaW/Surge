@@ -7,6 +7,7 @@ import zlib from 'node:zlib';
 import process from 'node:process';
 
 import { async as ezspawn } from '@jsdevtools/ez-spawn';
+import { mkdirp } from './misc';
 
 const mihomoBinaryDir = path.join(__dirname, '../../node_modules/.cache/mihomo');
 const mihomoBinaryPath = path.join(mihomoBinaryDir, 'mihomo');
@@ -22,7 +23,7 @@ const mihomoBinaryUrl: Partial<Record<NodeJS.Platform, Partial<Record<NodeJS.Arc
 };
 
 const ensureMihomoBinary = async () => {
-  await fsp.mkdir(mihomoBinaryDir, { recursive: true });
+  await mkdirp(mihomoBinaryDir);
   if (!fs.existsSync(mihomoBinaryPath)) {
     const writeStream = fs.createWriteStream(mihomoBinaryPath);
 

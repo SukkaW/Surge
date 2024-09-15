@@ -23,9 +23,17 @@ interface Write {
   ): Promise<unknown>
 }
 
+export const mkdirp = (dir: string) => {
+  if (fs.existsSync(dir)) {
+    return;
+  }
+  return fsp.mkdir(dir, { recursive: true });
+};
+
 export const writeFile: Write = async (destination: string, input, dir = dirname(destination)) => {
-  if (!fs.existsSync(dir)) {
-    await fsp.mkdir(dir, { recursive: true });
+  const p = mkdirp(dir);
+  if (p) {
+    await p;
   }
   return fsp.writeFile(destination, input, { encoding: 'utf-8' });
 };

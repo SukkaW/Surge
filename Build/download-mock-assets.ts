@@ -1,11 +1,11 @@
 import { task } from './trace';
 import path from 'node:path';
 import fs from 'node:fs';
-import fsp from 'node:fs/promises';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { OUTPUT_MOCK_DIR } from './constants/dir';
+import { mkdirp } from './lib/misc';
 
 const ASSETS_LIST = {
   'www-google-analytics-com_ga.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/google-analytics-ga.js',
@@ -25,7 +25,8 @@ export const downloadMockAssets = task(require.main === module, __filename)((spa
         throw new Error(`Empty body from ${url}`);
       }
 
-      await fsp.mkdir(OUTPUT_MOCK_DIR, { recursive: true });
+      await mkdirp(OUTPUT_MOCK_DIR);
+
       return pipeline(
         Readable.fromWeb(res.body),
         fs.createWriteStream(src, 'utf-8')

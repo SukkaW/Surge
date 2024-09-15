@@ -7,7 +7,7 @@ import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
 import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
-import { writeFile } from './lib/misc';
+import { mkdirp, writeFile } from './lib/misc';
 import picocolors from 'picocolors';
 
 const mockDir = path.join(ROOT_DIR, 'Mock');
@@ -32,8 +32,8 @@ const copyDirContents = async (srcDir: string, destDir: string) => {
 export const buildPublic = task(require.main === module, __filename)(async (span) => {
   await span.traceChildAsync('copy rest of the files', async () => {
     await Promise.all([
-      fsp.mkdir(OUTPUT_MODULES_DIR, { recursive: true }),
-      fsp.mkdir(OUTPUT_MOCK_DIR, { recursive: true })
+      mkdirp(OUTPUT_MODULES_DIR),
+      mkdirp(OUTPUT_MOCK_DIR)
     ]);
 
     await Promise.all([

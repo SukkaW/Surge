@@ -10,6 +10,7 @@ import stringify from 'json-stringify-pretty-compact';
 import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
 import { createTrie } from './trie';
 import { pack, unpackFirst, unpackSecond } from './bitwise';
+import { asyncWriteToStream } from './async-write-to-stream';
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
@@ -67,17 +68,24 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   }
 
   await span.traceChildAsync(`writing ${filePath}`, async () => {
-    // if (linesALen < 10000) {
-    return writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
-    // }
-    // const writer = file.writer();
+    // The default highwater mark is normally 16384,
+    // So we make sure direct write to file if the content is
+    // most likely less than 500 lines
+    if (linesALen < 500) {
+      return writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
+    }
 
-    // for (let i = 0; i < linesALen; i++) {
-    //   writer.write(linesA[i]);
-    //   writer.write('\n');
-    // }
-
-    // return writer.end();
+    const writeStream = fs.createWriteStream(filePath);
+    for (let i = 0; i < linesALen; i++) {
+      let p = asyncWriteToStream(writeStream, linesA[i]);
+      // eslint-disable-next-line no-await-in-loop -- stream high water mark
+      if (p) await p;
+      p = asyncWriteToStream(writeStream, '\n');
+      // eslint-disable-next-line no-await-in-loop -- stream high water mark
+      if (p) await p;
+    }
+    await asyncWriteToStream(writeStream, '\n');
+    writeStream.end();
   });
 }
 
