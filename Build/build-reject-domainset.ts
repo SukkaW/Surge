@@ -134,7 +134,6 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         // exclude keyword when creating trie
         if (!kwfilter(domain)) {
           baseTrie.add(domain);
-
           extraTrie.whitelist(domain);
         }
       }
@@ -149,17 +148,17 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   });
 
   // Dedupe domainSets
-  const dudupedDominArray = span.traceChildSync('dedupe from covered subdomain (base)', () => domainsetDeduper(baseTrie));
+  const dedupedDominArray = span.traceChildSync('dedupe from covered subdomain (base)', () => domainsetDeduper(baseTrie));
   const dudupedDominArrayExtra = span.traceChildSync('dedupe from covered subdomain (extra)', () => domainsetDeduper(extraTrie));
 
-  console.log(`Final size ${dudupedDominArray.length} + ${dudupedDominArrayExtra.length}`);
+  console.log(`Final size ${dedupedDominArray.length} + ${dudupedDominArrayExtra.length}`);
 
   const {
     domainMap: domainArrayMainDomainMap,
     subdomainMap: domainArraySubdomainMap
   } = span.traceChildSync(
     'build map for stat and sort',
-    () => buildParseDomainMap(dudupedDominArray.concat(dudupedDominArrayExtra))
+    () => buildParseDomainMap(dedupedDominArray.concat(dudupedDominArrayExtra))
   );
 
   // Create reject stats
@@ -168,7 +167,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .traceSyncFn(() => {
       const results = [];
       results.push('=== base ===');
-      appendArrayInPlace(results, getStatMap(dudupedDominArray, domainArrayMainDomainMap));
+      appendArrayInPlace(results, getStatMap(dedupedDominArray, domainArrayMainDomainMap));
       results.push('=== extra ===');
       appendArrayInPlace(results, getStatMap(dudupedDominArrayExtra, domainArrayMainDomainMap));
       return results;
@@ -189,7 +188,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
       ],
       new Date(),
-      span.traceChildSync('sort reject domainset (base)', () => sortDomains(dudupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
+      span.traceChildSync('sort reject domainset (base)', () => sortDomains(dedupedDominArray, domainArrayMainDomainMap, domainArraySubdomainMap)),
       'domainset',
       output('reject', 'domainset')
     ),

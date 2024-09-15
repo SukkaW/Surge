@@ -188,72 +188,73 @@ export const createRuleset = (
     singBoxPath: string,
     _clashMrsPath?: string
   ]
-) => parentSpan.traceChild(`create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`).traceAsyncFn(async (childSpan) => {
-  content = processRuleSet(content);
-  const surgeContent = childSpan.traceChildSync('process surge ruleset', () => {
-    let _surgeContent;
-    switch (type) {
-      case 'domainset':
-        _surgeContent = [MARK, ...content];
-        break;
-      case 'ruleset':
-        _surgeContent = [`DOMAIN,${MARK}`, ...content];
-        break;
-      case 'ipcidr':
-        _surgeContent = [`DOMAIN,${MARK}`, ...content.map(i => `IP-CIDR,${i}`)];
-        break;
-      case 'ipcidr6':
-        _surgeContent = [`DOMAIN,${MARK}`, ...content.map(i => `IP-CIDR6,${i}`)];
-        break;
-      default:
-        throw new TypeError(`Unknown type: ${type}`);
-    }
+) => parentSpan.traceChildAsync(
+  `create ruleset: ${path.basename(surgePath, path.extname(surgePath))}`,
+  async (childSpan) => {
+    const surgeContent = childSpan.traceChildSync('process surge ruleset', () => {
+      let _surgeContent;
+      switch (type) {
+        case 'domainset':
+          _surgeContent = [MARK, ...content];
+          break;
+        case 'ruleset':
+          _surgeContent = [`DOMAIN,${MARK}`, ...processRuleSet(content)];
+          break;
+        case 'ipcidr':
+          _surgeContent = [`DOMAIN,${MARK}`, ...processRuleSet(content.map(i => `IP-CIDR,${i}`))];
+          break;
+        case 'ipcidr6':
+          _surgeContent = [`DOMAIN,${MARK}`, ...processRuleSet(content.map(i => `IP-CIDR6,${i}`))];
+          break;
+        default:
+          throw new TypeError(`Unknown type: ${type}`);
+      }
 
-    return withBannerArray(title, description, date, _surgeContent);
-  });
+      return withBannerArray(title, description, date, _surgeContent);
+    });
 
-  const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
-    let _clashContent;
-    switch (type) {
-      case 'domainset':
-        _clashContent = [MARK, ...surgeDomainsetToClashDomainset(content)];
-        break;
-      case 'ruleset':
-        _clashContent = [`DOMAIN,${MARK}`, ...surgeRulesetToClashClassicalTextRuleset(content)];
-        break;
-      case 'ipcidr':
-      case 'ipcidr6':
-        _clashContent = content;
-        break;
-      default:
-        throw new TypeError(`Unknown type: ${type}`);
-    }
-    return withBannerArray(title, description, date, _clashContent);
-  });
-  const singboxContent = childSpan.traceChildSync('convert incoming ruleset to singbox', () => {
-    let _singBoxContent;
-    switch (type) {
-      case 'domainset':
-        _singBoxContent = surgeDomainsetToSingbox([MARK, ...content]);
-        break;
-      case 'ruleset':
-        _singBoxContent = surgeRulesetToSingbox([`DOMAIN,${MARK}`, ...content]);
-        break;
-      case 'ipcidr':
-      case 'ipcidr6':
-        _singBoxContent = ipCidrListToSingbox(content);
-        break;
-      default:
-        throw new TypeError(`Unknown type: ${type}`);
-    }
-    return stringify(_singBoxContent).split('\n');
-  });
+    const clashContent = childSpan.traceChildSync('convert incoming ruleset to clash', () => {
+      let _clashContent;
+      switch (type) {
+        case 'domainset':
+          _clashContent = [MARK, ...surgeDomainsetToClashDomainset(content)];
+          break;
+        case 'ruleset':
+          _clashContent = [`DOMAIN,${MARK}`, ...surgeRulesetToClashClassicalTextRuleset(processRuleSet(content))];
+          break;
+        case 'ipcidr':
+        case 'ipcidr6':
+          _clashContent = content;
+          break;
+        default:
+          throw new TypeError(`Unknown type: ${type}`);
+      }
+      return withBannerArray(title, description, date, _clashContent);
+    });
+    const singboxContent = childSpan.traceChildSync('convert incoming ruleset to singbox', () => {
+      let _singBoxContent;
+      switch (type) {
+        case 'domainset':
+          _singBoxContent = surgeDomainsetToSingbox([MARK, ...processRuleSet(content)]);
+          break;
+        case 'ruleset':
+          _singBoxContent = surgeRulesetToSingbox([`DOMAIN,${MARK}`, ...processRuleSet(content)]);
+          break;
+        case 'ipcidr':
+        case 'ipcidr6':
+          _singBoxContent = ipCidrListToSingbox(content);
+          break;
+        default:
+          throw new TypeError(`Unknown type: ${type}`);
+      }
+      return stringify(_singBoxContent).split('\n');
+    });
 
-  await Promise.all([
-    compareAndWriteFile(childSpan, surgeContent, surgePath),
-    compareAndWriteFile(childSpan, clashContent, clashPath),
-    compareAndWriteFile(childSpan, singboxContent, singBoxPath)
-  ]);
+    await Promise.all([
+      compareAndWriteFile(childSpan, surgeContent, surgePath),
+      compareAndWriteFile(childSpan, clashContent, clashPath),
+      compareAndWriteFile(childSpan, singboxContent, singBoxPath)
+    ]);
 
   // if (clashMrsPath) {
   //   if (type === 'domainset') {
@@ -265,4 +266,5 @@ export const createRuleset = (
   //     });
   //   }
   // }
-});
+  }
+);
