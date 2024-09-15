@@ -77,10 +77,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
     const writeStream = fs.createWriteStream(filePath);
     for (let i = 0; i < linesALen; i++) {
-      let p = asyncWriteToStream(writeStream, linesA[i]);
-      // eslint-disable-next-line no-await-in-loop -- stream high water mark
-      if (p) await p;
-      p = asyncWriteToStream(writeStream, '\n');
+      const p = asyncWriteToStream(writeStream, linesA[i] + '\n');
       // eslint-disable-next-line no-await-in-loop -- stream high water mark
       if (p) await p;
     }
