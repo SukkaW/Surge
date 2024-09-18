@@ -63,7 +63,7 @@ const walkHostnameTokens = (hostname: string, onToken: (token: string) => boolea
   const l = tokens.length - 1;
   for (let i = l; i >= 0; i--) {
     if (
-      i < l
+      i < l // when i === l, we are at the first of hostname, no splitor there
       // when onToken returns true, we should skip the rest of the loop
       && onToken('.')
     ) {
@@ -304,7 +304,10 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
   /**
    * Method used to retrieve every item in the trie with the given prefix.
    */
-  const find = (inputSuffix: string, /** @default true */ includeEqualWithSuffix = true): string[] => {
+  const find = (
+    inputSuffix: string,
+    /** @default true */ includeEqualWithSuffix = true
+  ): string[] => {
     if (smolTree) {
       throw new Error('A Trie with smolTree enabled cannot perform find!');
     }
@@ -316,9 +319,11 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     const matches: string[][] = [];
 
     const onMatches = includeEqualWithSuffix
+      // fast path (default option)
       ? (suffix: string[]) => matches.push(suffix)
+      // slow path
       : (suffix: string[]) => {
-        if (suffix.some((t, i) => t !== inputTokens[i])) {
+        if (!deepEqualArray(suffix, inputTokens)) {
           matches.push(suffix);
         }
       };
@@ -330,28 +335,6 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     );
 
     return matches.map((m) => fastStringArrayJoin(m, ''));
-  };
-
-  /**
-   * Works like trie.find, but instead of returning the matches as an array, it removes them from the given set in-place.
-   */
-  const substractSetInPlaceFromFound = (inputSuffix: string, set: Set<string>) => {
-    if (smolTree) {
-      throw new Error('A Trie with smolTree enabled cannot perform substractSetInPlaceFromFound!');
-    }
-
-    const inputTokens = hostnameToTokens(inputSuffix);
-
-    const res = walkIntoLeafWithTokens(inputTokens);
-    if (res === null) return;
-
-    const onMatches = (suffix: string[]) => set.delete(fastStringArrayJoin(suffix, ''));
-
-    walk(
-      onMatches,
-      res.node, // Performing DFS from prefix
-      inputTokens
-    );
   };
 
   /**
@@ -391,6 +374,16 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
 
     walk(suffix => {
       results.push(fastStringArrayJoin(suffix, ''));
+    });
+
+    return results;
+  };
+
+  const dumpMeta = () => {
+    const results: Meta[] = [];
+
+    walk((suffix, meta) => {
+      results.push(meta);
     });
 
     return results;
@@ -463,11 +456,11 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     add,
     contains,
     find,
-    substractSetInPlaceFromFound,
     remove,
     delete: remove,
     has,
     dump,
+    dumpMeta,
     dumpWithMeta,
     get size() {
       if (smolTree) {
@@ -486,3 +479,12 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
 };
 
 export type Trie = ReturnType<typeof createTrie>;
+
+function deepEqualArray(a: string[], b: string[]) {
+  let len = a.length;
+  if (len !== b.length) return false;
+  while (len--) {
+    if (a[len] !== b[len]) return false;
+  }
+  return true;
+};

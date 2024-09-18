@@ -160,11 +160,11 @@ const processRuleSet = (ruleSet: string[]) => {
     }
   }
 
-  const dumped = trie.dumpWithMeta();
+  const dumped = trie.dumpMeta();
 
   for (let i = 0, len = dumped.length; i < len; i++) {
-    const originalIndex = unpackFirst(dumped[i][1]);
-    const flag = unpackSecond(dumped[i][1]);
+    const originalIndex = unpackFirst(dumped[i]);
+    const flag = unpackSecond(dumped[i]);
 
     const type = flag === flagDomain ? 'DOMAIN' : 'DOMAIN-SUFFIX';
 
