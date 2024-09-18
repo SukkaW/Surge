@@ -10,10 +10,20 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { sortDomains } from './lib/stable-sort-domain';
 import { output } from './lib/misc';
 import { SOURCE_DIR } from './constants/dir';
+import { processLine } from './lib/process-line';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie(
-    await getPublicSuffixListTextPromise(),
+    (await getPublicSuffixListTextPromise()).reduce<string[]>(
+      (acc, cur) => {
+        const tmp = processLine(cur);
+        if (tmp) {
+          acc.push(tmp);
+        }
+        return acc;
+      },
+      []
+    ),
     false
   );
 

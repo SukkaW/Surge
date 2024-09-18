@@ -1,4 +1,3 @@
-import { domainsetDeduper } from './lib/domain-deduper';
 import path from 'node:path';
 import { createRuleset } from './lib/create-file';
 import { sortDomains } from './lib/stable-sort-domain';
@@ -235,7 +234,7 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
     }
   }))));
 
-  const deduped = span.traceChildSync('sort result', () => sortDomains(domainsetDeduper(domainTrie)));
+  const deduped = span.traceChildSync('sort result', () => sortDomains(domainTrie.dump()));
 
   const description = [
     ...SHARED_DESCRIPTION,

@@ -7,7 +7,6 @@ import { createTrie } from './lib/trie';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA } from './constants/reject-data-source';
 import { createRuleset, compareAndWriteFile } from './lib/create-file';
-import { domainsetDeduper } from './lib/domain-deduper';
 import createKeywordFilter from './lib/aho-corasick';
 import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { buildParseDomainMap, sortDomains } from './lib/stable-sort-domain';
@@ -148,8 +147,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   });
 
   // Dedupe domainSets
-  const dedupedDominArray = span.traceChildSync('dedupe from covered subdomain (base)', () => domainsetDeduper(baseTrie));
-  const dudupedDominArrayExtra = span.traceChildSync('dedupe from covered subdomain (extra)', () => domainsetDeduper(extraTrie));
+  const dedupedDominArray = span.traceChildSync('dedupe from covered subdomain (base)', () => baseTrie.dump());
+  const dudupedDominArrayExtra = span.traceChildSync('dedupe from covered subdomain (extra)', () => extraTrie.dump());
 
   console.log(`Final size ${dedupedDominArray.length} + ${dudupedDominArrayExtra.length}`);
 

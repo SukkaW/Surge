@@ -16,6 +16,7 @@ export const processLine = (line: string): string | null => {
     || line_0 === '\r'
     || line_0 === '\n'
     || line_0 === '!'
+    || (line_0 === '/' && trimmed[1] === '/')
   ) {
     return null;
   }
