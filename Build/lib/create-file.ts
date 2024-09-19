@@ -12,54 +12,57 @@ import { createTrie } from './trie';
 import { pack, unpackFirst, unpackSecond } from './bitwise';
 import { asyncWriteToStream } from './async-write-to-stream';
 
+export const fileEqual = async (linesA: string[], source: AsyncIterable<string>): Promise<boolean> => {
+  if (linesA.length === 0) {
+    return false;
+  }
+
+  let index = 0;
+  for await (const lineB of source) {
+    const lineA = linesA[index] as string | undefined;
+    index++;
+
+    if (lineA == null) {
+      // The file becomes smaller
+      return false;
+    }
+
+    if (lineA[0] === '#' && lineB[0] === '#') {
+      continue;
+    }
+    if (
+      lineA[0] === '/'
+      && lineA[1] === '/'
+      && lineB[0] === '/'
+      && lineB[1] === '/'
+      && lineA[3] === '#'
+      && lineB[3] === '#'
+    ) {
+      continue;
+    }
+
+    if (lineA !== lineB) {
+      return false;
+    }
+  }
+
+  if (index !== linesA.length) {
+    // The file becomes larger
+    return false;
+  }
+
+  return true;
+};
+
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   let isEqual = true;
   const linesALen = linesA.length;
 
-  if (!fs.existsSync(filePath)) {
+  if (fs.existsSync(filePath)) {
+    isEqual = await fileEqual(linesA, readFileByLine(filePath));
+  } else {
     console.log(`${filePath} does not exists, writing...`);
     isEqual = false;
-  } else if (linesALen === 0) {
-    console.log(`Nothing to write to ${filePath}...`);
-    isEqual = false;
-  } else {
-    isEqual = await span.traceChildAsync(`comparing ${filePath}`, async () => {
-      let index = 0;
-      for await (const lineB of readFileByLine(filePath)) {
-        const lineA = linesA[index] as string | undefined;
-        index++;
-
-        if (lineA == null) {
-          // The file becomes smaller
-          return false;
-        }
-
-        if (lineA[0] === '#' && lineB[0] === '#') {
-          continue;
-        }
-        if (
-          lineA[0] === '/'
-          && lineA[1] === '/'
-          && lineB[0] === '/'
-          && lineB[1] === '/'
-          && lineA[3] === '#'
-          && lineB[3] === '#'
-        ) {
-          continue;
-        }
-
-        if (lineA !== lineB) {
-          return false;
-        }
-      }
-
-      if (index !== linesALen) {
-        // The file becomes larger
-        return false;
-      }
-
-      return true;
-    });
   }
 
   if (isEqual) {
