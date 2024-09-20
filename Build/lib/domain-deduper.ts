@@ -1,4 +1,5 @@
-import { createTrie, type Trie } from './trie';
+import { createTrie } from './trie';
+import type { Trie } from './trie';
 
 export function domainsetDeduper(inputDomains: string[] | Trie): string[] {
   let trie: Trie;

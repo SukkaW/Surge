@@ -2,7 +2,8 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { task } from './trace';
 import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
-import { extract as tarExtract, type Headers as TarEntryHeaders } from 'tar-fs';
+import { extract as tarExtract } from 'tar-fs';
+import type { Headers as TarEntryHeaders } from 'tar-fs';
 import zlib from 'node:zlib';
 import { Readable } from 'node:stream';
 

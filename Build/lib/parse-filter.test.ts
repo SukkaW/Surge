@@ -1,6 +1,7 @@
 import { describe, it } from 'mocha';
 
-import { parse, processFilterRules, type ParseType } from './parse-filter';
+import { parse, processFilterRules } from './parse-filter';
+import type { ParseType } from './parse-filter';
 import { createCacheKey } from './cache-filesystem';
 import { createSpan } from '../trace';
 

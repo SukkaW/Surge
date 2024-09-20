@@ -1,7 +1,8 @@
 import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts-experimental';
 
-import { dummySpan, type Span } from '../trace';
+import { dummySpan } from '../trace';
+import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';

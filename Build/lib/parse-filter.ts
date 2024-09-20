@@ -148,7 +148,7 @@ export { type ParseType };
 export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
-  fallbackUrls?: readonly string[] | undefined | null,
+  fallbackUrls?: readonly string[] | null,
   ttl: number | null = null
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.apply<Readonly<[
