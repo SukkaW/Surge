@@ -1,12 +1,10 @@
 import { task } from './trace';
-import { createRuleset } from './lib/create-file';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
-import { sortDomains } from './lib/stable-sort-domain';
-import { output } from './lib/misc';
+import { RulesetOutput } from './lib/create-file-new';
 
 const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];
 
@@ -39,7 +37,7 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise(async () => {
   const trie2 = createTrie(foundMicrosoftCdnDomains, true);
   BLACKLIST.forEach(trie2.whitelist);
 
-  return sortDomains(trie2.dump())
+  return trie2.dump()
     .map(d => `DOMAIN-SUFFIX,${d}`)
     .concat(WHITELIST);
 });
@@ -56,13 +54,9 @@ export const buildMicrosoftCdn = task(require.main === module, __filename)(async
 
   const res: string[] = await span.traceChildPromise('get microsoft cdn domains', getMicrosoftCdnRulesetPromise());
 
-  return createRuleset(
-    span,
-    'Sukka\'s Ruleset - Microsoft CDN',
-    description,
-    new Date(),
-    res,
-    'ruleset',
-    output('microsoft_cdn', 'non_ip')
-  );
+  return new RulesetOutput(span, 'microsoft_cdn', 'non_ip')
+    .withTitle('Sukka\'s Ruleset - Microsoft CDN')
+    .withDescription(description)
+    .addFromRuleset(res)
+    .write();
 });

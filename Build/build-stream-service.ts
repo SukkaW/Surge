@@ -2,49 +2,33 @@
 import type { Span } from './trace';
 import { task } from './trace';
 
-import { createRuleset } from './lib/create-file';
-
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import { output } from './lib/misc';
+import { RulesetOutput } from './lib/create-file-new';
 
 export const createRulesetForStreamService = (span: Span, fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
   return span.traceChildAsync(fileId, async (childSpan) => Promise.all([
     // Domains
-    createRuleset(
-      childSpan,
-      `Sukka's Ruleset - Stream Services: ${title}`,
-      [
+    new RulesetOutput(childSpan, fileId, 'non_ip')
+      .withTitle(`Sukka's Ruleset - Stream Services: ${title}`)
+      .withDescription([
         ...SHARED_DESCRIPTION,
         '',
         ...streamServices.map((i) => `- ${i.name}`)
-      ],
-      new Date(),
-      streamServices.flatMap((i) => i.rules),
-      'ruleset',
-      output(fileId, 'non_ip')
-    ),
+      ])
+      .addFromRuleset(streamServices.flatMap((i) => i.rules))
+      .write(),
     // IP
-    createRuleset(
-      childSpan,
-      `Sukka's Ruleset - Stream Services' IPs: ${title}`,
-      [
+    new RulesetOutput(childSpan, fileId, 'ip')
+      .withTitle(`Sukka's Ruleset - Stream Services IPs: ${title}`)
+      .withDescription([
         ...SHARED_DESCRIPTION,
         '',
         ...streamServices.map((i) => `- ${i.name}`)
-      ],
-      new Date(),
-      streamServices.flatMap((i) => (
-        i.ip
-          ? [
-            ...i.ip.v4.map((ip) => `IP-CIDR,${ip},no-resolve`),
-            ...i.ip.v6.map((ip) => `IP-CIDR6,${ip},no-resolve`)
-          ]
-          : []
-      )),
-      'ruleset',
-      output(fileId, 'ip')
-    )
+      ])
+      .bulkAddCIDR4NoResolve(streamServices.flatMap(i => i.ip?.v4 ?? []))
+      .bulkAddCIDR6NoResolve(streamServices.flatMap(i => i.ip?.v6 ?? []))
+      .write()
   ]));
 };
 

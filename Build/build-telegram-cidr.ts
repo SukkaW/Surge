@@ -3,11 +3,10 @@ import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { processLine } from './lib/process-line';
-import { createRuleset } from './lib/create-file';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { output } from './lib/misc';
+import { RulesetOutput } from './lib/create-file-new';
 
 export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
@@ -45,13 +44,10 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
     ' - https://core.telegram.org/resources/cidr.txt'
   ];
 
-  return createRuleset(
-    span,
-    'Sukka\'s Ruleset - Telegram IP CIDR',
-    description,
-    date,
-    results,
-    'ruleset',
-    output('telegram', 'ip')
-  );
+  return new RulesetOutput(span, 'telegram', 'ip')
+    .withTitle('Sukka\'s Ruleset - Telegram IP CIDR')
+    .withDescription(description)
+    .withDate(date)
+    .addFromRuleset(results)
+    .write();
 });

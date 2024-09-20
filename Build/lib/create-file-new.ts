@@ -4,12 +4,14 @@ import type { Span } from '../trace';
 import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
 import { compareAndWriteFile, defaultSortTypeOrder, sortTypeOrder, withBannerArray } from './create-file';
 import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
-import { sortDomains } from './stable-sort-domain';
+import { buildParseDomainMap, sortDomains } from './stable-sort-domain';
 import { createTrie } from './trie';
 import { invariant } from 'foxact/invariant';
 import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../constants/dir';
 import stringify from 'json-stringify-pretty-compact';
 import { appendArrayInPlace } from './append-array-in-place';
+import { nullthrow } from 'foxact/nullthrow';
+import createKeywordFilter from './aho-corasick';
 
 abstract class RuleOutput {
   protected domainTrie = createTrie<unknown>(null, true);
@@ -146,9 +148,23 @@ abstract class RuleOutput {
     return this;
   }
 
+  bulkAddCIDR4NoResolve(cidr: string[]) {
+    for (let i = 0, len = cidr.length; i < len; i++) {
+      this.ipcidrNoResolve.add(cidr[i]);
+    }
+    return this;
+  }
+
   bulkAddCIDR6(cidr: string[]) {
     for (let i = 0, len = cidr.length; i < len; i++) {
       this.ipcidr6.add(cidr[i]);
+    }
+    return this;
+  }
+
+  bulkAddCIDR6NoResolve(cidr: string[]) {
+    for (let i = 0, len = cidr.length; i < len; i++) {
+      this.ipcidr6NoResolve.add(cidr[i]);
     }
     return this;
   }
@@ -159,13 +175,41 @@ abstract class RuleOutput {
 export class DomainsetOutput extends RuleOutput {
   protected type = 'domainset' as const;
 
+  private $dumped: string[] | null = null;
+
+  get dumped() {
+    if (!this.$dumped) {
+      const kwfilter = createKeywordFilter(this.domainKeywords);
+
+      const dumped = this.domainTrie.dump();
+      const set = new Set<string>(dumped);
+      for (let i = 0, len = dumped.length; i < len; i++) {
+        const domain = dumped[i];
+        if (kwfilter(domain)) {
+          set.delete(domain);
+        }
+      }
+
+      this.$dumped = Array.from(set);
+    }
+    return this.$dumped;
+  }
+
+  calcDomainMap() {
+    if (!this.apexDomainMap || !this.subDomainMap) {
+      const { domainMap, subdomainMap } = buildParseDomainMap(this.dumped);
+      this.apexDomainMap = domainMap;
+      this.subDomainMap = subdomainMap;
+    }
+  }
+
   async write() {
     await this.pendingPromise;
 
     invariant(this.title, 'Missing title');
     invariant(this.description, 'Missing description');
 
-    const sorted = sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap);
+    const sorted = sortDomains(this.dumped, this.apexDomainMap, this.subDomainMap);
     sorted.push('this_ruleset_is_made_by_sukkaw.ruleset.skk.moe');
 
     const surge = sorted;
@@ -200,6 +244,28 @@ export class DomainsetOutput extends RuleOutput {
         path.join(OUTPUT_SINGBOX_DIR, this.type, this.id + '.json')
       )
     ]);
+  }
+
+  getStatMap() {
+    invariant(this.dumped, 'Non dumped yet');
+    invariant(this.apexDomainMap, 'Missing apex domain map');
+
+    return Array.from(
+      (
+        nullthrow(this.dumped, 'Non dumped yet').reduce<Map<string, number>>((acc, cur) => {
+          const suffix = this.apexDomainMap!.get(cur);
+          if (suffix) {
+            acc.set(suffix, (acc.get(suffix) ?? 0) + 1);
+          }
+          return acc;
+        }, new Map())
+      ).entries()
+    )
+      .filter(a => a[1] > 9)
+      .sort(
+        (a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0])
+      )
+      .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`);
   }
 }
 
