@@ -181,16 +181,18 @@ export class DomainsetOutput extends RuleOutput {
     if (!this.$dumped) {
       const kwfilter = createKeywordFilter(this.domainKeywords);
 
+      const results: string[] = [];
+
       const dumped = this.domainTrie.dump();
-      const set = new Set<string>(dumped);
+
       for (let i = 0, len = dumped.length; i < len; i++) {
         const domain = dumped[i];
-        if (kwfilter(domain)) {
-          set.delete(domain);
+        if (!kwfilter(domain)) {
+          results.push(domain);
         }
       }
 
-      this.$dumped = Array.from(set);
+      this.$dumped = results;
     }
     return this.$dumped;
   }
@@ -339,9 +341,14 @@ export class RulesetOutput extends RuleOutput {
       'DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'
     ];
 
+    const kwfilter = createKeywordFilter(this.domainKeywords);
+
     const sortedDomains = sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap);
     for (let i = 0, len = sortedDomains.length; i < len; i++) {
       const domain = sortedDomains[i];
+      if (kwfilter(domain)) {
+        continue;
+      }
       if (domain[0] === '.') {
         results.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
       } else {
