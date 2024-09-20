@@ -17,7 +17,7 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 import { setAddFromArray } from './lib/set-add-from-array';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
-import { DomainsetOutput } from './lib/create-file-new';
+import { DomainsetOutput } from './lib/create-file';
 
 const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 

@@ -11,7 +11,7 @@ import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { writeFile } from './lib/misc';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
-import { RulesetOutput } from './lib/create-file-new';
+import { RulesetOutput } from './lib/create-file';
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/domestic.conf'));

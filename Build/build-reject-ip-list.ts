@@ -7,7 +7,7 @@ import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { TTL, fsFetchCache, createCacheKey } from './lib/cache-filesystem';
 import { fetchAssets } from './lib/fetch-assets';
 import { processLine } from './lib/process-line';
-import { RulesetOutput } from './lib/create-file-new';
+import { RulesetOutput } from './lib/create-file';
 import { SOURCE_DIR } from './constants/dir';
 
 const cacheKey = createCacheKey(__filename);

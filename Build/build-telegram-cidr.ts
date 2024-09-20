@@ -6,7 +6,7 @@ import { processLine } from './lib/process-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { RulesetOutput } from './lib/create-file-new';
+import { RulesetOutput } from './lib/create-file';
 
 export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);

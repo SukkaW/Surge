@@ -6,7 +6,7 @@ import { exclude } from 'fast-cidr-tools';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { CN_CIDR_NOT_INCLUDED_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { IPListOutput } from './lib/create-file-new';
+import { IPListOutput } from './lib/create-file';
 
 export const getChnCidrPromise = createMemoizedPromise(async () => {
   const cidr4 = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));

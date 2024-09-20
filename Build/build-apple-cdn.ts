@@ -3,7 +3,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
-import { DomainsetOutput } from './lib/create-file-new';
+import { DomainsetOutput } from './lib/create-file';
 
 const cacheKey = createCacheKey(__filename);
 

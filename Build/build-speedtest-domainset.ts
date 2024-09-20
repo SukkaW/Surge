@@ -8,7 +8,7 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
 
-import { DomainsetOutput } from './lib/create-file-new';
+import { DomainsetOutput } from './lib/create-file';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 
 const KEYWORDS = [

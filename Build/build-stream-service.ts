@@ -4,7 +4,7 @@ import { task } from './trace';
 
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import { RulesetOutput } from './lib/create-file-new';
+import { RulesetOutput } from './lib/create-file';
 
 export const createRulesetForStreamService = (span: Span, fileId: string, title: string, streamServices: Array<import('../Source/stream').StreamService>) => {
   return span.traceChildAsync(fileId, async (childSpan) => Promise.all([

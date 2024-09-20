@@ -7,7 +7,7 @@ import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist'
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { processLine } from './lib/process-line';
-import { DomainsetOutput } from './lib/create-file-new';
+import { DomainsetOutput } from './lib/create-file';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie(
