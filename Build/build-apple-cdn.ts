@@ -1,11 +1,9 @@
-// @ts-check
-import { createRuleset } from './lib/create-file';
 import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
-import { output } from './lib/misc';
+import { DomainsetOutput } from './lib/create-file-new';
 
 const cacheKey = createCacheKey(__filename);
 
@@ -23,24 +21,16 @@ export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCach
 export const buildAppleCdn = task(require.main === module, __filename)(async (span) => {
   const res: string[] = await span.traceChildPromise('get apple cdn domains', getAppleCdnDomainsPromise());
 
-  const description = [
-    ...SHARED_DESCRIPTION,
-    '',
-    'This file contains Apple\'s domains using their China mainland CDN servers.',
-    '',
-    'Data from:',
-    ' - https://github.com/felixonmars/dnsmasq-china-list'
-  ];
-
-  const domainset = res.map(i => `.${i}`);
-
-  return createRuleset(
-    span,
-    'Sukka\'s Ruleset - Apple CDN',
-    description,
-    new Date(),
-    domainset,
-    'domainset',
-    output('apple_cdn', 'domainset')
-  );
+  return new DomainsetOutput(span, 'apple_cdn')
+    .withTitle('Sukka\'s Ruleset - Apple CDN')
+    .withDescription([
+      ...SHARED_DESCRIPTION,
+      '',
+      'This file contains Apple\'s domains using their China mainland CDN servers.',
+      '',
+      'Data from:',
+      ' - https://github.com/felixonmars/dnsmasq-china-list'
+    ])
+    .bulkAddDomainSuffix(res)
+    .write();
 });

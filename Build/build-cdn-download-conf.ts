@@ -1,16 +1,13 @@
 import path from 'node:path';
-import { createRuleset } from './lib/create-file';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { createTrie } from './lib/trie';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
-import { domainsetDeduper } from './lib/domain-deduper';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { sortDomains } from './lib/stable-sort-domain';
-import { output } from './lib/misc';
 import { SOURCE_DIR } from './constants/dir';
 import { processLine } from './lib/process-line';
+import { DomainsetOutput } from './lib/create-file-new';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie(
@@ -77,31 +74,24 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
   appendArrayInPlace(downloadDomainSet, steamDomainSet);
 
   return Promise.all([
-    createRuleset(
-      span,
-      'Sukka\'s Ruleset - CDN Domains',
-      [
+    new DomainsetOutput(span, 'cdn')
+      .withTitle('Sukka\'s Ruleset - CDN Domains')
+      .withDescription([
         ...SHARED_DESCRIPTION,
         '',
         'This file contains object storage and static assets CDN domains.'
-      ],
-      new Date(),
-      sortDomains(domainsetDeduper(cdnDomainsList)),
-      'domainset',
-      output('cdn', 'domainset')
-    ),
-    createRuleset(
-      span,
-      'Sukka\'s Ruleset - Large Files Hosting Domains',
-      [
+      ])
+      .addFromDomainset(cdnDomainsList)
+      .write(),
+
+    new DomainsetOutput(span, 'download')
+      .withTitle('Sukka\'s Ruleset - Large Files Hosting Domains')
+      .withDescription([
         ...SHARED_DESCRIPTION,
         '',
         'This file contains domains for software updating & large file hosting.'
-      ],
-      new Date(),
-      sortDomains(domainsetDeduper(downloadDomainSet)),
-      'domainset',
-      output('download', 'domainset')
-    )
+      ])
+      .addFromDomainset(downloadDomainSet)
+      .write()
   ]);
 });

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import { fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
 import stringify from 'json-stringify-pretty-compact';
-import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
+import { surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
 import { createTrie } from './trie';
 import { pack, unpackFirst, unpackSecond } from './bitwise';
 import { asyncWriteToStream } from './async-write-to-stream';
@@ -23,8 +23,7 @@ export const fileEqual = async (linesA: string[], source: AsyncIterable<string>)
 
     if (index > linesA.length - 1) {
       if (index === linesA.length && lineB === '') {
-        index--;
-        continue;
+        return true;
       }
       // The file becomes smaller
       return false;
@@ -51,7 +50,7 @@ export const fileEqual = async (linesA: string[], source: AsyncIterable<string>)
     }
   }
 
-  if (index !== linesA.length - 1) {
+  if (index < linesA.length - 1) {
     // The file becomes larger
     return false;
   }
@@ -96,7 +95,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   });
 }
 
-const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {
+export const withBannerArray = (title: string, description: string[] | readonly string[], date: Date, content: string[]) => {
   return [
     '#########################################',
     `# ${title}`,
@@ -191,7 +190,7 @@ const MARK = 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe';
 export const createRuleset = (
   parentSpan: Span,
   title: string, description: string[] | readonly string[], date: Date, content: string[],
-  type: 'ruleset' | 'domainset' | 'ipcidr' | 'ipcidr6',
+  type: 'ruleset' | 'domainset',
   [surgePath, clashPath, singBoxPath, _clashMrsPath]: readonly [
     surgePath: string,
     clashPath: string,
@@ -210,12 +209,6 @@ export const createRuleset = (
         case 'ruleset':
           _surgeContent = [`DOMAIN,${MARK}`, ...processRuleSet(content)];
           break;
-        case 'ipcidr':
-          _surgeContent = [`DOMAIN,${MARK}`, ...processRuleSet(content.map(i => `IP-CIDR,${i}`))];
-          break;
-        case 'ipcidr6':
-          _surgeContent = [`DOMAIN,${MARK}`, ...processRuleSet(content.map(i => `IP-CIDR6,${i}`))];
-          break;
         default:
           throw new TypeError(`Unknown type: ${type}`);
       }
@@ -232,10 +225,6 @@ export const createRuleset = (
         case 'ruleset':
           _clashContent = [`DOMAIN,${MARK}`, ...surgeRulesetToClashClassicalTextRuleset(processRuleSet(content))];
           break;
-        case 'ipcidr':
-        case 'ipcidr6':
-          _clashContent = content;
-          break;
         default:
           throw new TypeError(`Unknown type: ${type}`);
       }
@@ -249,10 +238,6 @@ export const createRuleset = (
           break;
         case 'ruleset':
           _singBoxContent = surgeRulesetToSingbox([`DOMAIN,${MARK}`, ...processRuleSet(content)]);
-          break;
-        case 'ipcidr':
-        case 'ipcidr6':
-          _singBoxContent = ipCidrListToSingbox(content);
           break;
         default:
           throw new TypeError(`Unknown type: ${type}`);

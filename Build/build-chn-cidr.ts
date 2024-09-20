@@ -1,5 +1,4 @@
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
-import { createRuleset } from './lib/create-file';
 import { processLineFromReadline } from './lib/process-line';
 import { task } from './trace';
 
@@ -7,7 +6,7 @@ import { exclude } from 'fast-cidr-tools';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { CN_CIDR_NOT_INCLUDED_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { output } from './lib/misc';
+import { IPListOutput } from './lib/create-file-new';
 
 export const getChnCidrPromise = createMemoizedPromise(async () => {
   const cidr4 = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
@@ -28,31 +27,22 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
     ''
   ];
 
-  // Can not use createRuleset here, as Clash support advanced ipset syntax
   return Promise.all([
-    createRuleset(
-      span,
-      'Sukka\'s Ruleset - Mainland China IPv4 CIDR',
-      [
+    new IPListOutput(span, 'china_ip', false)
+      .withTitle('Sukka\'s Ruleset - Mainland China IPv4 CIDR')
+      .withDescription([
         ...description,
         'Data from https://misaka.io (misakaio @ GitHub)'
-      ],
-      new Date(),
-      filteredCidr4,
-      'ipcidr',
-      output('china_ip', 'ip')
-    ),
-    createRuleset(
-      span,
-      'Sukka\'s Ruleset - Mainland China IPv6 CIDR',
-      [
+      ])
+      .bulkAddCIDR4(filteredCidr4)
+      .write(),
+    new IPListOutput(span, 'china_ip_ipv6', false)
+      .withTitle('Sukka\'s Ruleset - Mainland China IPv6 CIDR')
+      .withDescription([
         ...description,
         'Data from https://github.com/gaoyifan/china-operator-ip'
-      ],
-      new Date(),
-      cidr6,
-      'ipcidr6',
-      output('china_ip_ipv6', 'ip')
-    )
+      ])
+      .bulkAddCIDR6(cidr6)
+      .write()
   ]);
 });

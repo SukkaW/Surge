@@ -4,13 +4,13 @@ import * as path from 'node:path';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { createRuleset } from './lib/create-file';
-import { domainsetDeduper } from './lib/domain-deduper';
 import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { fdir as Fdir } from 'fdir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
+import { DomainsetOutput } from './lib/create-file-new';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -113,10 +113,8 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
         const res = await processFile(span, sourcePath);
         if (res === $skip) return;
 
-        const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
-
+        const id = path.basename(relativePath).slice(0, -path.extname(relativePath).length);
         const [title, descriptions, lines] = res;
-        const deduped = domainsetDeduper(lines);
 
         let description: string[];
         if (descriptions.length) {
@@ -127,19 +125,11 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
           description = SHARED_DESCRIPTION;
         }
 
-        return createRuleset(
-          span,
-          title,
-          description,
-          new Date(),
-          deduped,
-          'domainset',
-          [
-            path.resolve(OUTPUT_SURGE_DIR, relativePath),
-            path.resolve(OUTPUT_CLASH_DIR, `${clashFileBasename}.txt`),
-            path.resolve(OUTPUT_SINGBOX_DIR, `${clashFileBasename}.json`)
-          ]
-        );
+        return new DomainsetOutput(span, id)
+          .withTitle(title)
+          .withDescription(description)
+          .addFromDomainset(lines)
+          .write();
       }
     );
 }
