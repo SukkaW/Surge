@@ -31,6 +31,7 @@ const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   'URL-REGEX': 100,
   AND: 300,
   OR: 300,
+  GEOIP: 400,
   'IP-CIDR': 400,
   'IP-CIDR6': 400
 };
@@ -43,6 +44,14 @@ abstract class RuleOutput {
   protected ipcidrNoResolve = new Set<string>();
   protected ipcidr6 = new Set<string>();
   protected ipcidr6NoResolve = new Set<string>();
+  // TODO: add sourceIpcidr
+  // TODO: add sourcePort
+  // TODO: add port
+  // TODO: processName
+  // TODO: processPath
+  // TODO: userAgent
+  // TODO: urlRegex
+
   protected otherRules: Array<[raw: string, orderWeight: number]> = [];
   protected abstract type: 'domainset' | 'non_ip' | 'ip';
 
