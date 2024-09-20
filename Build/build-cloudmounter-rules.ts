@@ -1,8 +1,7 @@
 import { DOMAINS, PROCESS_NAMES } from '../Source/non_ip/cloudmounter';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import { createRuleset } from './lib/create-file';
 import { task } from './trace';
-import { output } from './lib/misc';
+import { RulesetOutput } from './lib/create-file-new';
 
 export const buildCloudMounterRules = task(require.main === module, __filename)(async (span) => {
   // AND,((SRC-IP,192.168.1.110), (DOMAIN, example.com))
@@ -21,13 +20,9 @@ export const buildCloudMounterRules = task(require.main === module, __filename)(
 
   const description = SHARED_DESCRIPTION;
 
-  return createRuleset(
-    span,
-    'Sukka\'s Ruleset - CloudMounter / RaiDrive',
-    description,
-    new Date(),
-    results,
-    'ruleset',
-    output('cloudmounter', 'non_ip')
-  );
+  return new RulesetOutput(span, 'cloudmounter', 'non_ip')
+    .withTitle('Sukka\'s Ruleset - CloudMounter / RaiDrive')
+    .withDescription(description)
+    .addFromRuleset(results)
+    .write();
 });

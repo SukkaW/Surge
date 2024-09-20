@@ -1,9 +1,9 @@
 import path from 'node:path';
 
 import type { Span } from '../trace';
-import { surgeDomainsetToClashDomainset } from './clash';
-import { compareAndWriteFile, withBannerArray } from './create-file';
-import { ipCidrListToSingbox, surgeDomainsetToSingbox } from './singbox';
+import { surgeDomainsetToClashDomainset, surgeRulesetToClashClassicalTextRuleset } from './clash';
+import { compareAndWriteFile, defaultSortTypeOrder, sortTypeOrder, withBannerArray } from './create-file';
+import { ipCidrListToSingbox, surgeDomainsetToSingbox, surgeRulesetToSingbox } from './singbox';
 import { sortDomains } from './stable-sort-domain';
 import { createTrie } from './trie';
 import { invariant } from 'foxact/invariant';
@@ -19,7 +19,7 @@ abstract class RuleOutput {
   protected ipcidrNoResolve = new Set<string>();
   protected ipcidr6 = new Set<string>();
   protected ipcidr6NoResolve = new Set<string>();
-  protected otherRules = new Set<string>();
+  protected otherRules: Array<[raw: string, orderWeight: number]> = [];
   protected abstract type: 'domainset' | 'non_ip' | 'ip';
 
   protected pendingPromise = Promise.resolve();
@@ -101,9 +101,13 @@ abstract class RuleOutput {
     return this;
   }
 
-  async addFromRuleset(source: AsyncIterable<string> | Iterable<string>) {
+  private async addFromRulesetPromise(source: AsyncIterable<string> | Iterable<string>) {
     for await (const line of source) {
-      const [type, value, arg] = line.split(',');
+      const splitted = line.split(',');
+      const type = splitted[0];
+      const value = splitted[1];
+      const arg = splitted[2];
+
       switch (type) {
         case 'DOMAIN':
           this.addDomain(value);
@@ -124,10 +128,14 @@ abstract class RuleOutput {
           (arg === 'no-resolve' ? this.ipcidr6NoResolve : this.ipcidr6).add(value);
           break;
         default:
-          this.otherRules.add(line);
+          this.otherRules.push([line, type in sortTypeOrder ? sortTypeOrder[type] : sortTypeOrder[defaultSortTypeOrder]]);
           break;
       }
     }
+  }
+
+  addFromRuleset(source: AsyncIterable<string> | Iterable<string>) {
+    this.pendingPromise = this.pendingPromise.then(() => this.addFromRulesetPromise(source));
     return this;
   }
 
@@ -162,6 +170,7 @@ export class DomainsetOutput extends RuleOutput {
 
     const surge = sorted;
     const clash = surgeDomainsetToClashDomainset(sorted);
+    // TODO: Implement singbox directly using data
     const singbox = RuleOutput.jsonToLines(surgeDomainsetToSingbox(sorted));
 
     await Promise.all([
@@ -216,7 +225,85 @@ export class IPListOutput extends RuleOutput {
     surge.push('DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe');
 
     const clash = this.clashUseRule ? surge : merged;
+    // TODO: Implement singbox directly using data
     const singbox = RuleOutput.jsonToLines(ipCidrListToSingbox(merged));
+
+    await Promise.all([
+      compareAndWriteFile(
+        this.span,
+        withBannerArray(
+          this.title,
+          this.description,
+          this.date,
+          surge
+        ),
+        path.join(OUTPUT_SURGE_DIR, this.type, this.id + '.conf')
+      ),
+      compareAndWriteFile(
+        this.span,
+        withBannerArray(
+          this.title,
+          this.description,
+          this.date,
+          clash
+        ),
+        path.join(OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
+      ),
+      compareAndWriteFile(
+        this.span,
+        singbox,
+        path.join(OUTPUT_SINGBOX_DIR, this.type, this.id + '.json')
+      )
+    ]);
+  }
+}
+
+export class RulesetOutput extends RuleOutput {
+  constructor(span: Span, id: string, protected type: 'non_ip' | 'ip') {
+    super(span, id);
+  }
+
+  async write() {
+    await this.pendingPromise;
+
+    invariant(this.title, 'Missing title');
+    invariant(this.description, 'Missing description');
+
+    const results: string[] = [
+      'DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'
+    ];
+
+    const sortedDomains = sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap);
+    for (let i = 0, len = sortedDomains.length; i < len; i++) {
+      const domain = sortedDomains[i];
+      if (domain[0] === '.') {
+        results.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
+      } else {
+        results.push(`DOMAIN,${domain}`);
+      }
+    }
+
+    for (const keyword of this.domainKeywords) {
+      results.push(`DOMAIN-KEYWORD,${keyword}`);
+    }
+    for (const wildcard of this.domainWildcard) {
+      results.push(`DOMAIN-WILDCARD,${wildcard}`);
+    }
+
+    const sortedRules = this.otherRules.sort((a, b) => a[1] - b[1]);
+    for (let i = 0, len = sortedRules.length; i < len; i++) {
+      results.push(sortedRules[i][0]);
+    }
+
+    this.ipcidr.forEach(cidr => results.push(`IP-CIDR,${cidr}`));
+    this.ipcidrNoResolve.forEach(cidr => results.push(`IP-CIDR,${cidr},no-resolve`));
+    this.ipcidr6.forEach(cidr => results.push(`IP-CIDR6,${cidr}`));
+    this.ipcidr6NoResolve.forEach(cidr => results.push(`IP-CIDR6,${cidr},no-resolve`));
+
+    const surge = results;
+    const clash = surgeRulesetToClashClassicalTextRuleset(results);
+    // TODO: Implement singbox directly using data
+    const singbox = RuleOutput.jsonToLines(surgeRulesetToSingbox(results));
 
     await Promise.all([
       compareAndWriteFile(

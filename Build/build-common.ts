@@ -3,14 +3,13 @@
 import * as path from 'node:path';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import { createRuleset } from './lib/create-file';
 import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { fdir as Fdir } from 'fdir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
-import { DomainsetOutput } from './lib/create-file-new';
+import { SOURCE_DIR } from './constants/dir';
+import { DomainsetOutput, RulesetOutput } from './lib/create-file-new';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
@@ -144,7 +143,10 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
       const res = await processFile(span, sourcePath);
       if (res === $skip) return;
 
-      const clashFileBasename = relativePath.slice(0, -path.extname(relativePath).length);
+      const [type, id] = relativePath.slice(0, -path.extname(relativePath).length).split(path.sep);
+      if (type !== 'ip' && type !== 'non_ip') {
+        throw new TypeError(`Invalid type: ${type}`);
+      }
 
       const [title, descriptions, lines] = res;
 
@@ -157,18 +159,10 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
         description = SHARED_DESCRIPTION;
       }
 
-      return createRuleset(
-        span,
-        title,
-        description,
-        new Date(),
-        lines,
-        'ruleset',
-        [
-          path.resolve(OUTPUT_SURGE_DIR, relativePath),
-          path.resolve(OUTPUT_CLASH_DIR, `${clashFileBasename}.txt`),
-          path.resolve(OUTPUT_SINGBOX_DIR, `${clashFileBasename}.json`)
-        ]
-      );
+      return new RulesetOutput(span, id, type)
+        .withTitle(title)
+        .withDescription(description)
+        .addFromRuleset(lines)
+        .write();
     });
 }

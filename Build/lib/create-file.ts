@@ -108,8 +108,8 @@ export const withBannerArray = (title: string, description: string[] | readonly 
   ];
 };
 
-const defaultSortTypeOrder = Symbol('defaultSortTypeOrder');
-const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
+export const defaultSortTypeOrder = Symbol('defaultSortTypeOrder');
+export const sortTypeOrder: Record<string | typeof defaultSortTypeOrder, number> = {
   DOMAIN: 1,
   'DOMAIN-SUFFIX': 2,
   'DOMAIN-KEYWORD': 10,
