@@ -50,4 +50,10 @@ describe('fileEqual', () => {
     ['A', 'B'],
     false
   ));
+
+  it('eol', () => test(
+    ['A', 'B'],
+    ['A', 'B', ''],
+    true
+  ));
 });

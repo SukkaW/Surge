@@ -17,15 +17,20 @@ export const fileEqual = async (linesA: string[], source: AsyncIterable<string>)
     return false;
   }
 
-  let index = 0;
+  let index = -1;
   for await (const lineB of source) {
-    const lineA = linesA[index] as string | undefined;
     index++;
 
-    if (lineA == null) {
+    if (index > linesA.length - 1) {
+      if (index === linesA.length && lineB === '') {
+        index--;
+        continue;
+      }
       // The file becomes smaller
       return false;
     }
+
+    const lineA = linesA[index];
 
     if (lineA[0] === '#' && lineB[0] === '#') {
       continue;
@@ -46,7 +51,7 @@ export const fileEqual = async (linesA: string[], source: AsyncIterable<string>)
     }
   }
 
-  if (index !== linesA.length) {
+  if (index !== linesA.length - 1) {
     // The file becomes larger
     return false;
   }
@@ -84,7 +89,9 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
       // eslint-disable-next-line no-await-in-loop -- stream high water mark
       if (p) await p;
     }
+
     await asyncWriteToStream(writeStream, '\n');
+
     writeStream.end();
   });
 }
