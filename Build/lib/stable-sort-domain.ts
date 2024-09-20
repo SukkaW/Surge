@@ -28,8 +28,8 @@ export const buildParseDomainMap = (inputs: string[]) => {
 
 export const sortDomains = (
   inputs: string[],
-  domainMap?: Map<string, string>,
-  subdomainMap?: Map<string, string>
+  domainMap?: Map<string, string> | null,
+  subdomainMap?: Map<string, string> | null
 ) => {
   if (!domainMap || !subdomainMap) {
     const { domainMap: dm, subdomainMap: sm } = buildParseDomainMap(inputs);

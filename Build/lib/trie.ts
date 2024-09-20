@@ -369,12 +369,16 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
       : false;
   };
 
-  const dump = () => {
+  function dump(onSuffix: (suffix: string) => void): void;
+  function dump(): string[];
+  function dump(onSuffix?: (suffix: string) => void): string[] | void {
     const results: string[] = [];
 
-    walk(suffix => {
-      results.push(fastStringArrayJoin(suffix, ''));
-    });
+    const handleSuffix = onSuffix
+      ? (suffix: string[]) => onSuffix(fastStringArrayJoin(suffix, ''))
+      : (suffix: string[]) => results.push(fastStringArrayJoin(suffix, ''));
+
+    walk(handleSuffix);
 
     return results;
   };
