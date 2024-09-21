@@ -198,30 +198,38 @@ export abstract class RuleOutput {
     return this;
   }
 
-  bulkAddCIDR4(cidr: string[]) {
-    for (let i = 0, len = cidr.length; i < len; i++) {
-      this.ipcidr.add(cidr[i]);
+  static ipToCidr = (ip: string, version: 4 | 6 = 4) => {
+    if (ip.includes('/')) return ip;
+    if (version === 4) {
+      return ip + '/32';
+    }
+    return ip + '/128';
+  };
+
+  bulkAddCIDR4(cidrs: string[]) {
+    for (let i = 0, len = cidrs.length; i < len; i++) {
+      this.ipcidr.add(RuleOutput.ipToCidr(cidrs[i], 4));
     }
     return this;
   }
 
-  bulkAddCIDR4NoResolve(cidr: string[]) {
-    for (let i = 0, len = cidr.length; i < len; i++) {
-      this.ipcidrNoResolve.add(cidr[i]);
+  bulkAddCIDR4NoResolve(cidrs: string[]) {
+    for (let i = 0, len = cidrs.length; i < len; i++) {
+      this.ipcidrNoResolve.add(RuleOutput.ipToCidr(cidrs[i], 4));
     }
     return this;
   }
 
-  bulkAddCIDR6(cidr: string[]) {
-    for (let i = 0, len = cidr.length; i < len; i++) {
-      this.ipcidr6.add(cidr[i]);
+  bulkAddCIDR6(cidrs: string[]) {
+    for (let i = 0, len = cidrs.length; i < len; i++) {
+      this.ipcidr6.add(RuleOutput.ipToCidr(cidrs[i], 6));
     }
     return this;
   }
 
-  bulkAddCIDR6NoResolve(cidr: string[]) {
-    for (let i = 0, len = cidr.length; i < len; i++) {
-      this.ipcidr6NoResolve.add(cidr[i]);
+  bulkAddCIDR6NoResolve(cidrs: string[]) {
+    for (let i = 0, len = cidrs.length; i < len; i++) {
+      this.ipcidr6NoResolve.add(RuleOutput.ipToCidr(cidrs[i], 6));
     }
     return this;
   }
