@@ -13,7 +13,8 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 
-  const results: string[] = [];
+  const ipcidr: string[] = [];
+  const ipcidr6: string[] = [];
 
   for await (const line of createReadlineInterfaceFromResponse(resp)) {
     const cidr = processLine(line);
@@ -21,20 +22,20 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
 
     const [subnet] = cidr.split('/');
     if (isProbablyIpv4(subnet)) {
-      results.push(`IP-CIDR,${cidr},no-resolve`);
+      ipcidr.push(cidr);
     }
     if (isProbablyIpv6(subnet)) {
-      results.push(`IP-CIDR6,${cidr},no-resolve`);
+      ipcidr6.push(cidr);
     }
   }
 
-  return { date, results };
+  return { date, ipcidr, ipcidr6 };
 });
 
 export const buildTelegramCIDR = task(require.main === module, __filename)(async (span) => {
-  const { date, results } = await span.traceChildAsync('get telegram cidr', getTelegramCIDRPromise);
+  const { date, ipcidr, ipcidr6 } = await span.traceChildAsync('get telegram cidr', getTelegramCIDRPromise);
 
-  if (results.length === 0) {
+  if (ipcidr.length + ipcidr6.length === 0) {
     throw new Error('Failed to fetch data!');
   }
 
@@ -48,6 +49,7 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
     .withTitle('Sukka\'s Ruleset - Telegram IP CIDR')
     .withDescription(description)
     .withDate(date)
-    .addFromRuleset(results)
+    .bulkAddCIDR4NoResolve(ipcidr)
+    .bulkAddCIDR6NoResolve(ipcidr6)
     .write();
 });

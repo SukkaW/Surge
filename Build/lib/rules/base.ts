@@ -218,8 +218,12 @@ export abstract class RuleOutput {
   abstract clash(): string[];
   abstract singbox(): string[];
 
+  done() {
+    return this.pendingPromise;
+  }
+
   async write(): Promise<void> {
-    await this.pendingPromise;
+    await this.done();
 
     invariant(this.title, 'Missing title');
     invariant(this.description, 'Missing description');

@@ -76,15 +76,15 @@ export class DomainsetOutput extends RuleOutput {
     invariant(this.apexDomainMap, 'Missing apex domain map');
 
     return Array.from(
-      (
-        nullthrow(this.sorted, 'Non dumped yet').reduce<Map<string, number>>((acc, cur) => {
+      nullthrow(this.sorted, 'Non dumped yet')
+        .reduce<Map<string, number>>((acc, cur) => {
           const suffix = this.apexDomainMap!.get(cur);
           if (suffix) {
             acc.set(suffix, (acc.get(suffix) ?? 0) + 1);
           }
           return acc;
         }, new Map())
-      ).entries()
+        .entries()
     )
       .filter(a => a[1] > 9)
       .sort(

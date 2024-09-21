@@ -108,7 +108,7 @@ export const parseGfwList = async () => {
   await Promise.all([
     runAgainstRuleset(path.join(SOURCE_DIR, 'non_ip/global.conf')),
     runAgainstRuleset(path.join(SOURCE_DIR, 'non_ip/telegram.conf')),
-    runAgainstRuleset(path.resolve(__dirname, '../List/non_ip/stream.conf'))
+    runAgainstRuleset(path.resolve(SOURCE_DIR, 'non_ip/stream.conf'))
   ]);
 
   console.log(notIncludedTop500Gfwed);

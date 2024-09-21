@@ -4,6 +4,7 @@ import { createTrie } from './lib/trie';
 import path from 'node:path';
 import { processLine } from './lib/process-line';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
+import { SOURCE_DIR } from './constants/dir';
 
 export const parseDomesticList = async () => {
   const set = new Set<string>();
@@ -62,7 +63,7 @@ export const parseDomesticList = async () => {
   };
 
   // await Promise.all([
-  await runAgainstRuleset(path.resolve(__dirname, '../List/non_ip/domestic.conf'));
+  await runAgainstRuleset(path.resolve(SOURCE_DIR, 'non_ip/domestic.conf'));
   // ]);
 
   console.log(notIncludedDomestic.size, notIncludedDomestic);

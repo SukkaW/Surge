@@ -12,7 +12,7 @@ export class RulesetOutput extends RuleOutput {
   }
 
   private $computed: [domain: string[], domainSuffix: string[], sortedDomainRules: string[]] | null = null;
-  private get computed() {
+  private computed() {
     if (!this.$computed) {
       const kwfilter = createKeywordFilter(this.domainKeywords);
 
@@ -40,7 +40,7 @@ export class RulesetOutput extends RuleOutput {
 
   surge(): string[] {
     const results: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
-    appendArrayInPlace(results, this.computed[2]);
+    appendArrayInPlace(results, this.computed()[2]);
 
     appendArrayFromSet(results, this.domainKeywords, i => `DOMAIN-KEYWORD,${i}`);
     appendArrayFromSet(results, this.domainWildcard, i => `DOMAIN-WILDCARD,${i}`);
@@ -70,7 +70,7 @@ export class RulesetOutput extends RuleOutput {
   clash(): string[] {
     const results: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-    appendArrayInPlace(results, this.computed[2]);
+    appendArrayInPlace(results, this.computed()[2]);
 
     appendArrayFromSet(results, this.domainKeywords, i => `DOMAIN-KEYWORD,${i}`);
     appendArrayFromSet(results, this.domainWildcard, i => `DOMAIN-REGEX,${RuleOutput.domainWildCardToRegex(i)}`);
@@ -97,8 +97,8 @@ export class RulesetOutput extends RuleOutput {
     const singbox: SingboxSourceFormat = {
       version: 2,
       rules: [{
-        domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'].concat(this.computed[0]),
-        domain_suffix: this.computed[1],
+        domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'].concat(this.computed()[0]),
+        domain_suffix: this.computed()[1],
         domain_keyword: Array.from(this.domainKeywords),
         domain_regex: Array.from(this.domainWildcard).map(RuleOutput.domainWildCardToRegex),
         ip_cidr: appendArrayFromSet([], [this.ipcidr, this.ipcidrNoResolve, this.ipcidr6, this.ipcidr6NoResolve]),

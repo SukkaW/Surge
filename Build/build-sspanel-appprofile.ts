@@ -1,6 +1,5 @@
 import { getAppleCdnDomainsPromise } from './build-apple-cdn';
 import { getDomesticAndDirectDomainsRulesetPromise } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
-import { surgeRulesetToClashClassicalTextRuleset, surgeDomainsetToClashRuleset } from './lib/clash';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import path from 'node:path';
@@ -8,11 +7,11 @@ import path from 'node:path';
 import { ALL as AllStreamServices } from '../Source/stream';
 import { getChnCidrPromise } from './build-chn-cidr';
 import { getTelegramCIDRPromise } from './build-telegram-cidr';
-import { compareAndWriteFile } from './lib/create-file';
+import { compareAndWriteFile, RulesetOutput } from './lib/create-file';
 import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
 import { isTruthy } from './lib/misc';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
+import { OUTPUT_INTERNAL_DIR, OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 
 const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: boolean]> = [
   ['Default Proxy', true, false],
@@ -24,99 +23,123 @@ const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: bo
   ['Final Match', true, true]
 ];
 
-const removeNoResolved = (line: string) => line.replace(',no-resolve', '');
-
 /**
  * This only generates a simplified version, for under-used users only.
  */
 export const buildSSPanelUIMAppProfile = task(require.main === module, __filename)(async (span) => {
   const [
-    [domesticDomains, directDomains, lanDomains],
+    [domesticRules, directRules, lanRules],
     appleCdnDomains,
-    microsoftCdnDomains,
-    appleCnDomains,
-    neteaseMusicDomains,
-    microsoftDomains,
-    appleDomains,
-    streamDomains,
-    steamDomains,
-    globalDomains,
-    telegramDomains,
-    domesticCidrs,
-    streamCidrs,
-    { results: rawTelegramCidrs },
-    lanCidrs
+    microsoftCdnRules,
+    appleCnRules,
+    neteaseMusicRules,
+    microsoftRules,
+    appleRules,
+    streamRules,
+    steamDomainset,
+    globalRules,
+    telegramRules,
+    [domesticCidrs4, domesticCidrs6],
+    [streamCidrs4, streamCidrs6],
+    { ipcidr: telegramCidrs4, ipcidr6: telegramCidrs6 },
+    rawLanCidrs
   ] = await Promise.all([
     // domestic - domains
-    getDomesticAndDirectDomainsRulesetPromise()
-      .then(
-        data => (
-          data.map(surgeRulesetToClashClassicalTextRuleset)
-        ) as [string[], string[], string[]]
-      ),
-    getAppleCdnDomainsPromise().then(domains => domains.map(domain => `DOMAIN-SUFFIX,${domain}`)),
-    getMicrosoftCdnRulesetPromise().then(surgeRulesetToClashClassicalTextRuleset),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/apple_cn.conf')),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/neteasemusic.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    getDomesticAndDirectDomainsRulesetPromise(),
+    getAppleCdnDomainsPromise(),
+    getMicrosoftCdnRulesetPromise(),
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/apple_cn.conf')),
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/neteasemusic.conf')),
     // microsoft & apple - domains
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/microsoft.conf')),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/apple_services.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf')),
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/apple_services.conf')),
     // stream - domains
-    surgeRulesetToClashClassicalTextRuleset(AllStreamServices.flatMap((i) => i.rules)),
+    AllStreamServices.flatMap((i) => i.rules),
     // steam - domains
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/steam.conf')).then(surgeDomainsetToClashRuleset),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/steam.conf')),
     // global - domains
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/global.conf')).then(surgeRulesetToClashClassicalTextRuleset),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/telegram.conf')).then(surgeRulesetToClashClassicalTextRuleset),
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf')),
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf')),
     // domestic - ip cidr
-    getChnCidrPromise().then(([cidrs4, cidrs6]) => [
-      ...cidrs4.map(cidr => `IP-CIDR,${cidr}`),
-      ...cidrs6.map(cidr => `IP-CIDR,${cidr}`)
-    ]),
-    AllStreamServices.flatMap((i) => (
-      i.ip
-        ? [
-          ...i.ip.v4.map((ip) => `IP-CIDR,${ip}`),
-          ...i.ip.v6.map((ip) => `IP-CIDR6,${ip}`)
-        ]
-        : []
-    )),
+    getChnCidrPromise(),
+    AllStreamServices.reduce<[cidr4: string[], cidr6: string[]]>((acc, i) => {
+      if (i.ip) {
+        appendArrayInPlace(acc[0], i.ip.v4);
+        appendArrayInPlace(acc[1], i.ip.v6);
+      }
+
+      return acc;
+    }, [[], []]),
     // global - ip cidr
     getTelegramCIDRPromise(),
     // lan - ip cidr
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'ip/lan.conf'))
+    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'ip/lan.conf'))
   ] as const);
 
-  const telegramCidrs = rawTelegramCidrs.map(removeNoResolved);
+  const domestic = new RulesetOutput(span, '_', 'non_ip')
+    .addFromRuleset(domesticRules)
+    .bulkAddDomainSuffix(appleCdnDomains)
+    .addFromRuleset(microsoftCdnRules)
+    .addFromRuleset(appleCnRules)
+    .addFromRuleset(neteaseMusicRules);
+
+  const microsoftApple = new RulesetOutput(span, '_', 'non_ip')
+    .addFromRuleset(microsoftRules)
+    .addFromRuleset(appleRules);
+
+  const stream = new RulesetOutput(span, '_', 'non_ip')
+    .addFromRuleset(streamRules);
+
+  const steam = new RulesetOutput(span, '_', 'non_ip')
+    .addFromDomainset(steamDomainset);
+
+  const global = new RulesetOutput(span, '_', 'non_ip')
+    .addFromRuleset(globalRules)
+    .addFromRuleset(telegramRules);
+
+  const direct = new RulesetOutput(span, '_', 'non_ip')
+    .addFromRuleset(directRules)
+    .addFromRuleset(lanRules);
+
+  const domesticCidr = new RulesetOutput(span, '_', 'ip')
+    .bulkAddCIDR4(domesticCidrs4)
+    .bulkAddCIDR6(domesticCidrs6);
+
+  const streamCidr = new RulesetOutput(span, '_', 'ip')
+    .bulkAddCIDR4(streamCidrs4)
+    .bulkAddCIDR6(streamCidrs6);
+
+  const telegramCidr = new RulesetOutput(span, '_', 'ip')
+    .bulkAddCIDR4(telegramCidrs4)
+    .bulkAddCIDR6(telegramCidrs6);
+
+  const lanCidrs = new RulesetOutput(span, '_', 'ip')
+    .addFromRuleset(rawLanCidrs);
+
+  await Promise.all([
+    domestic.done(),
+    microsoftApple.done(),
+    stream.done(),
+    steam.done(),
+    global.done(),
+    direct.done(),
+    domesticCidr.done(),
+    streamCidr.done(),
+    telegramCidr.done(),
+    lanCidrs.done()
+  ]);
 
   const output = generateAppProfile(
-    [
-      ...domesticDomains,
-      ...appleCdnDomains,
-      ...microsoftCdnDomains,
-      ...appleCnDomains,
-      ...neteaseMusicDomains
-    ],
-    [
-      ...microsoftDomains,
-      ...appleDomains
-    ],
-    streamDomains,
-    steamDomains,
-    [
-      ...globalDomains,
-      ...telegramDomains
-    ],
-    [
-      ...directDomains,
-      ...lanDomains
-    ],
-    domesticCidrs,
-    streamCidrs,
-    [
-      ...telegramCidrs
-    ],
-    lanCidrs
+    domestic.clash(),
+    microsoftApple.clash(),
+    stream.clash(),
+    steam.clash(),
+    global.clash(),
+    direct.clash(),
+    domesticCidr.clash(),
+    streamCidr.clash(),
+    telegramCidr.clash(),
+    lanCidrs.clash()
   );
 
   await compareAndWriteFile(

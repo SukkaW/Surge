@@ -32,7 +32,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 });
 
 export const buildDomesticRuleset = task(require.main === module, __filename)(async (span) => {
-  const res = await getDomesticAndDirectDomainsRulesetPromise();
+  const [domestics, directs, lans] = await getDomesticAndDirectDomainsRulesetPromise();
 
   const dataset = Object.entries(DOMESTICS);
   appendArrayInPlace(dataset, Object.entries(DIRECTS));
@@ -46,7 +46,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         '',
         'This file contains known addresses that are avaliable in the Mainland China.'
       ])
-      .addFromRuleset(res[0])
+      .addFromRuleset(domestics)
       .write(),
     new RulesetOutput(span, 'direct', 'non_ip')
       .withTitle('Sukka\'s Ruleset - Direct Rules')
@@ -55,7 +55,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         '',
         'This file contains domains and process that should not be proxied.'
       ])
-      .addFromRuleset(res[1])
+      .addFromRuleset(directs)
       .write(),
     new RulesetOutput(span, 'lan', 'non_ip')
       .withTitle('Sukka\'s Ruleset - LAN')
@@ -64,7 +64,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         '',
         'This file includes rules for LAN DOMAIN and reserved TLDs.'
       ])
-      .addFromRuleset(res[2])
+      .addFromRuleset(lans)
       .write(),
     compareAndWriteFile(
       span,

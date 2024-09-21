@@ -5,6 +5,7 @@ import { fdir as Fdir } from 'fdir';
 import { green, yellow } from 'picocolors';
 import { processLineFromReadline } from './lib/process-line';
 import { getHostname } from 'tldts';
+import { OUTPUT_SURGE_DIR } from './constants/dir';
 
 const PRESET_MITM_HOSTNAMES = [
   // '*baidu.com',
@@ -36,7 +37,7 @@ const PRESET_MITM_HOSTNAMES = [
 ];
 
 (async () => {
-  const folderListPath = pathFn.resolve(__dirname, '../List/');
+  const folderListPath = pathFn.resolve(OUTPUT_SURGE_DIR, 'List/');
 
   const rulesets = await new Fdir()
     .withFullPaths()
