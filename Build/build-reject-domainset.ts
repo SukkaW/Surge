@@ -129,6 +129,14 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
   });
 
+  // whitelist
+  span.traceChildSync('whitelist', () => {
+    for (const domain of filterRuleWhitelistDomainSets) {
+      rejectOutput.whitelistDomain(domain);
+      rejectExtraOutput.whitelistDomain(domain);
+    }
+  });
+
   await Promise.all([
     rejectOutput.done(),
     rejectExtraOutput.done()

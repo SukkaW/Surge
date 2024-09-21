@@ -38,6 +38,11 @@ export abstract class RuleOutput {
 
   static jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
+  whitelistDomain = (domain: string) => {
+    this.domainTrie.whitelist(domain);
+    return this;
+  };
+
   static domainWildCardToRegex = (domain: string) => {
     let result = '^';
     for (let i = 0, len = domain.length; i < len; i++) {
