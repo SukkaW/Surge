@@ -1,4 +1,3 @@
-import picocolors from 'picocolors';
 import { domainWildCardToRegex } from './misc';
 import { isProbablyIpv4, isProbablyIpv6 } from './is-fast-ip';
 
@@ -10,7 +9,7 @@ const toNumberTuple = <T extends string>(key: T, value: string): [T, number] | n
 };
 
 // https://sing-box.sagernet.org/configuration/rule-set/source-format/
-const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: Required<SingboxHeadlessRule>[keyof SingboxHeadlessRule][number]] | null) | typeof unsupported> = {
+export const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: Required<SingboxHeadlessRule>[keyof SingboxHeadlessRule][number]] | null) | typeof unsupported> = {
   DOMAIN: (_1, _2, value) => ['domain', value],
   'DOMAIN-SUFFIX': (_1, _2, value) => ['domain_suffix', value],
   'DOMAIN-KEYWORD': (_1, _2, value) => ['domain_keyword', value],
@@ -57,70 +56,7 @@ interface SingboxHeadlessRule {
   process_path?: string[]
 }
 
-interface SingboxSourceFormat {
+export interface SingboxSourceFormat {
   version: 2 | number & {},
   rules: SingboxHeadlessRule[]
 }
-
-export const surgeRulesetToSingbox = (rules: string[] | Set<string>): SingboxSourceFormat => {
-  const rule: SingboxHeadlessRule = Array.from(rules).reduce<SingboxHeadlessRule>((acc, cur) => {
-    let buf = '';
-    let type = '';
-    let i = 0;
-    for (const len = cur.length; i < len; i++) {
-      if (cur[i] === ',') {
-        type = buf;
-        break;
-      }
-      buf += cur[i];
-    }
-    if (type === '') {
-      return acc;
-    }
-    const value = cur.slice(i + 1);
-    if (type in PROCESSOR) {
-      const proc = PROCESSOR[type];
-      if (proc !== unsupported) {
-        const r = proc(cur, type, value);
-        if (r) {
-          const [k, v] = r;
-          acc[k] ||= [];
-          (acc[k] as any).push(v);
-        }
-      }
-    } else {
-      console.log(picocolors.yellow(`[sing-box] unknown rule type: ${type}`), cur);
-    }
-    return acc;
-  }, {});
-
-  return {
-    version: 2,
-    rules: [rule]
-  };
-};
-
-export const surgeDomainsetToSingbox = (domainset: string[]) => {
-  const rule = domainset.reduce((acc, cur) => {
-    if (cur[0] === '.') {
-      acc.domain_suffix.push(cur.slice(1));
-    } else {
-      acc.domain.push(cur);
-    }
-    return acc;
-  }, { domain: [] as string[], domain_suffix: [] as string[] } satisfies SingboxHeadlessRule);
-
-  return {
-    version: 2,
-    rules: [rule]
-  };
-};
-
-export const ipCidrListToSingbox = (ipCidrList: string[]): SingboxSourceFormat => {
-  return {
-    version: 2,
-    rules: [{
-      ip_cidr: ipCidrList
-    }]
-  };
-};

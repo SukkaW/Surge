@@ -63,13 +63,18 @@ export const domainWildCardToRegex = (domain: string) => {
 
 export const identity = <T>(x: T): T => x;
 
-export const appendArrayFromSet = <T>(dest: T[], source: Set<T>, transformer: (item: T) => T = identity) => {
-  const iterator = source.values();
-  let step: IteratorResult<T, undefined>;
+export const appendArrayFromSet = <T>(dest: T[], source: Set<T> | Array<Set<T>>, transformer: (item: T) => T = identity) => {
+  const casted = Array.isArray(source) ? source : [source];
+  for (let i = 0, len = casted.length; i < len; i++) {
+    const iterator = casted[i].values();
+    let step: IteratorResult<T, undefined>;
 
-  while ((step = iterator.next(), !step.done)) {
-    dest.push(transformer(step.value));
+    while ((step = iterator.next(), !step.done)) {
+      dest.push(transformer(step.value));
+    }
   }
+
+  return dest;
 };
 
 export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => {
@@ -78,4 +83,17 @@ export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => {
     path.join(OUTPUT_CLASH_DIR, type, id + '.txt'),
     path.join(OUTPUT_SINGBOX_DIR, type, id + '.json')
   ] as const;
+};
+
+export function withBannerArray(title: string, description: string[] | readonly string[], date: Date, content: string[]) {
+  return [
+    '#########################################',
+    `# ${title}`,
+    `# Last Updated: ${date.toISOString()}`,
+    `# Size: ${content.length}`,
+    ...description.map(line => (line ? `# ${line}` : '#')),
+    '#########################################',
+    ...content,
+    '################## EOF ##################'
+  ];
 };
