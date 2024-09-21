@@ -95,6 +95,13 @@ export abstract class RuleOutput {
     return this;
   }
 
+  bulkAddDomain(domains: string[]) {
+    for (let i = 0, len = domains.length; i < len; i++) {
+      this.addDomain(domains[i]);
+    }
+    return this;
+  }
+
   addDomainSuffix(domain: string) {
     this.domainTrie.add(domain[0] === '.' ? domain : '.' + domain);
     return this;

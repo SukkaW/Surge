@@ -129,8 +129,18 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
   });
 
-  rejectOutput.calcDomainMap();
-  rejectExtraOutput.calcDomainMap();
+  await Promise.all([
+    rejectOutput.done(),
+    rejectExtraOutput.done()
+  ]);
+
+  span.traceChildSync(
+    'build domain map for sort & collect stat',
+    () => {
+      rejectOutput.calcDomainMap();
+      rejectExtraOutput.calcDomainMap();
+    }
+  );
 
   // Create reject stats
   const rejectDomainsStats: string[] = span

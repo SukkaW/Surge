@@ -30,7 +30,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
   const [
     [domesticRules, directRules, lanRules],
     appleCdnDomains,
-    microsoftCdnRules,
+    [microsoftCdnDomains, microsoftCdnDomainSuffixes],
     appleCnRules,
     neteaseMusicRules,
     microsoftRules,
@@ -79,7 +79,8 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
   const domestic = new RulesetOutput(span, '_', 'non_ip')
     .addFromRuleset(domesticRules)
     .bulkAddDomainSuffix(appleCdnDomains)
-    .addFromRuleset(microsoftCdnRules)
+    .bulkAddDomain(microsoftCdnDomains)
+    .bulkAddDomainSuffix(microsoftCdnDomainSuffixes)
     .addFromRuleset(appleCnRules)
     .addFromRuleset(neteaseMusicRules);
 
