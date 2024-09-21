@@ -1,8 +1,7 @@
 import picocolors from 'picocolors';
-import { domainWildCardToRegex } from './misc';
+import { domainWildCardToRegex, identity } from './misc';
 import { isProbablyIpv4, isProbablyIpv6 } from './is-fast-ip';
 
-const identity = <T>(x: T): T => x;
 const unsupported = Symbol('unsupported');
 
 // https://dreamacro.github.io/clash/configuration/rules.html

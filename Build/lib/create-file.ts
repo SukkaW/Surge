@@ -13,7 +13,7 @@ import { nullthrow } from 'foxact/nullthrow';
 import createKeywordFilter from './aho-corasick';
 import picocolors from 'picocolors';
 import fs from 'node:fs';
-import { fastStringArrayJoin, writeFile } from './misc';
+import { appendArrayFromSet, fastStringArrayJoin, writeFile } from './misc';
 import { readFileByLine } from './fetch-text-by-line';
 import { asyncWriteToStream } from './async-write-to-stream';
 
@@ -40,26 +40,49 @@ abstract class RuleOutput {
   protected domainTrie = createTrie<unknown>(null, true);
   protected domainKeywords = new Set<string>();
   protected domainWildcard = new Set<string>();
+  protected userAgent = new Set<string>();
+  protected processName = new Set<string>();
+  protected processPath = new Set<string>();
+  protected urlRegex = new Set<string>();
   protected ipcidr = new Set<string>();
   protected ipcidrNoResolve = new Set<string>();
+  protected ipasn = new Set<string>();
+  protected ipasnNoResolve = new Set<string>();
   protected ipcidr6 = new Set<string>();
   protected ipcidr6NoResolve = new Set<string>();
+  protected geoip = new Set<string>();
+  protected groipNoResolve = new Set<string>();
   // TODO: add sourceIpcidr
   // TODO: add sourcePort
   // TODO: add port
-  // TODO: processName
-  // TODO: processPath
-  // TODO: userAgent
-  // TODO: urlRegex
 
   protected otherRules: Array<[raw: string, orderWeight: number]> = [];
   protected abstract type: 'domainset' | 'non_ip' | 'ip';
 
   protected pendingPromise = Promise.resolve();
 
-  static jsonToLines(this: void, json: unknown): string[] {
-    return stringify(json).split('\n');
-  }
+  static jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
+
+  static domainWildCardToRegex = (domain: string) => {
+    let result = '^';
+    for (let i = 0, len = domain.length; i < len; i++) {
+      switch (domain[i]) {
+        case '.':
+          result += String.raw`\.`;
+          break;
+        case '*':
+          result += '[a-zA-Z0-9-_.]*?';
+          break;
+        case '?':
+          result += '[a-zA-Z0-9-_.]';
+          break;
+        default:
+          result += domain[i];
+      }
+    }
+    result += '$';
+    return result;
+  };
 
   constructor(
     protected readonly span: Span,
@@ -114,11 +137,6 @@ abstract class RuleOutput {
     return this;
   }
 
-  addDomainWildcard(wildcard: string) {
-    this.domainWildcard.add(wildcard);
-    return this;
-  }
-
   private async addFromDomainsetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
     for await (const line of source) {
       if (line[0] === '.') {
@@ -152,13 +170,34 @@ abstract class RuleOutput {
           this.addDomainKeyword(value);
           break;
         case 'DOMAIN-WILDCARD':
-          this.addDomainWildcard(value);
+          this.domainWildcard.add(value);
           break;
+        case 'USER-AGENT':
+          this.userAgent.add(value);
+          break;
+        case 'PROCESS-NAME':
+          if (value.includes('/') || value.includes('\\')) {
+            this.processPath.add(value);
+          } else {
+            this.processName.add(value);
+          }
+          break;
+        case 'URL-REGEX': {
+          const [, ...rest] = splitted;
+          this.urlRegex.add(rest.join(','));
+          break;
+        }
         case 'IP-CIDR':
           (arg === 'no-resolve' ? this.ipcidrNoResolve : this.ipcidr).add(value);
           break;
         case 'IP-CIDR6':
           (arg === 'no-resolve' ? this.ipcidr6NoResolve : this.ipcidr6).add(value);
+          break;
+        case 'IP-ASN':
+          (arg === 'no-resolve' ? this.ipasnNoResolve : this.ipasn).add(value);
+          break;
+        case 'GEOIP':
+          (arg === 'no-resolve' ? this.groipNoResolve : this.geoip).add(value);
           break;
         default:
           this.otherRules.push([line, type in sortTypeOrder ? sortTypeOrder[type] : sortTypeOrder[defaultSortTypeOrder]]);
@@ -374,9 +413,7 @@ export class RulesetOutput extends RuleOutput {
 
     const kwfilter = createKeywordFilter(this.domainKeywords);
 
-    const sortedDomains = sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap);
-    for (let i = 0, len = sortedDomains.length; i < len; i++) {
-      const domain = sortedDomains[i];
+    for (const domain of sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap)) {
       if (kwfilter(domain)) {
         continue;
       }
@@ -387,22 +424,36 @@ export class RulesetOutput extends RuleOutput {
       }
     }
 
-    for (const keyword of this.domainKeywords) {
-      results.push(`DOMAIN-KEYWORD,${keyword}`);
-    }
-    for (const wildcard of this.domainWildcard) {
-      results.push(`DOMAIN-WILDCARD,${wildcard}`);
+    appendArrayFromSet(results, this.domainKeywords, i => `DOMAIN-KEYWORD,${i}`);
+    appendArrayFromSet(results, this.domainWildcard, i => `DOMAIN-WILDCARD,${i}`);
+
+    appendArrayFromSet(results, this.userAgent, i => `USER-AGENT,${i}`);
+
+    appendArrayFromSet(results, this.processName, i => `PROCESS-NAME,${i}`);
+    appendArrayFromSet(results, this.processPath, i => `PROCESS-NAME,${i}`);
+
+    for (const [rule] of this.otherRules.sort((a, b) => a[1] - b[1])) {
+      results.push(rule);
     }
 
-    const sortedRules = this.otherRules.sort((a, b) => a[1] - b[1]);
-    for (let i = 0, len = sortedRules.length; i < len; i++) {
-      results.push(sortedRules[i][0]);
-    }
+    appendArrayFromSet(results, this.urlRegex, i => `URL-REGEX,${i}`);
 
-    this.ipcidr.forEach(cidr => results.push(`IP-CIDR,${cidr}`));
-    this.ipcidrNoResolve.forEach(cidr => results.push(`IP-CIDR,${cidr},no-resolve`));
-    this.ipcidr6.forEach(cidr => results.push(`IP-CIDR6,${cidr}`));
-    this.ipcidr6NoResolve.forEach(cidr => results.push(`IP-CIDR6,${cidr},no-resolve`));
+    appendArrayFromSet(results, this.ipcidrNoResolve, i => `IP-CIDR,${i},no-resolve`);
+    appendArrayFromSet(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
+    appendArrayFromSet(results, this.ipasnNoResolve, i => `IP-ASN,${i},no-resolve`);
+    appendArrayFromSet(results, this.groipNoResolve, i => `GEOIP,${i},no-resolve`);
+
+    appendArrayFromSet(results, this.ipcidr, i => `IP-CIDR,${i}`);
+    appendArrayFromSet(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
+    appendArrayFromSet(results, this.ipasn, i => `IP-ASN,${i}`);
+    appendArrayFromSet(results, this.geoip, i => `GEOIP,${i}`);
+
+    for (const geoip of this.geoip) {
+      results.push(`GEOIP,${geoip}`);
+    }
+    for (const geoip of this.groipNoResolve) {
+      results.push(`GEOIP,${geoip},no-resolve`);
+    }
 
     const surge = results;
     const clash = surgeRulesetToClashClassicalTextRuleset(results);

@@ -11,12 +11,11 @@ import { deserializeArray, fsFetchCache, serializeArray, createCacheKey } from '
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
+import { identity } from './misc';
 
 const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
-
-const identity = <T>(x: T) => x;
 
 const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
   let line = processLine(l);

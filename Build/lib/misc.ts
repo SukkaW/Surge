@@ -61,6 +61,17 @@ export const domainWildCardToRegex = (domain: string) => {
   return result;
 };
 
+export const identity = <T>(x: T): T => x;
+
+export const appendArrayFromSet = <T>(dest: T[], source: Set<T>, transformer: (item: T) => T = identity) => {
+  const iterator = source.values();
+  let step: IteratorResult<T, undefined>;
+
+  while ((step = iterator.next(), !step.done)) {
+    dest.push(transformer(step.value));
+  }
+};
+
 export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => {
   return [
     path.join(OUTPUT_SURGE_DIR, type, id + '.conf'),

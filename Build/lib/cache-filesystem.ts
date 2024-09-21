@@ -4,12 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
 import picocolors from 'picocolors';
-import { fastStringArrayJoin } from './misc';
+import { fastStringArrayJoin, identity } from './misc';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
-
-const identity = (x: any) => x;
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -186,7 +184,7 @@ export class Cache<S = string> {
     if (cached == null) {
       console.log(picocolors.yellow('[cache] miss'), picocolors.gray(key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
 
-      const serializer = 'serializer' in opt ? opt.serializer : identity;
+      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
       const promise = fn();
 
@@ -202,7 +200,7 @@ export class Cache<S = string> {
       this.updateTtl(key, ttl);
     }
 
-    const deserializer = 'deserializer' in opt ? opt.deserializer : identity;
+    const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
     return deserializer(cached);
   }
 
