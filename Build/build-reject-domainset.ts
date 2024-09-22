@@ -19,8 +19,6 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
 
-const getRejectSukkaConfPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
-
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
@@ -104,7 +102,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           })
         )),
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
-        getRejectSukkaConfPromise.then(appendArrayToRejectOutput)
+        readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf')).then(appendArrayToRejectOutput)
       ].flat());
       // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;
@@ -129,18 +127,22 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
   });
 
+  await Promise.all([
+    rejectOutput.done(),
+    rejectExtraOutput.done()
+  ]);
+
   // whitelist
   span.traceChildSync('whitelist', () => {
     for (const domain of filterRuleWhitelistDomainSets) {
       rejectOutput.whitelistDomain(domain);
       rejectExtraOutput.whitelistDomain(domain);
     }
-  });
 
-  await Promise.all([
-    rejectOutput.done(),
-    rejectExtraOutput.done()
-  ]);
+    for (const domain of rejectOutput.sorted) {
+      rejectExtraOutput.whitelistDomain(domain);
+    }
+  });
 
   span.traceChildSync(
     'build domain map for sort & collect stat',
