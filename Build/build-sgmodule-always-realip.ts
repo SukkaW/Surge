@@ -5,6 +5,7 @@ import { DIRECTS, LANS } from '../Source/non_ip/direct';
 import * as yaml from 'yaml';
 import { writeFile } from './lib/misc';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
@@ -48,7 +49,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
   // Intranet, Router Setup, and mant more
   const dataset = [Object.entries(DIRECTS), Object.entries(LANS)];
   const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])));
-  const clash = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.map((domain) => `+.${domain}`)));
+  const clash = ;
 
   return Promise.all([
     compareAndWriteFile(
@@ -67,7 +68,10 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
       yaml.stringify(
         {
           dns: {
-            'fake-ip-filter': HOSTNAMES.concat(clash)
+            'fake-ip-filter': appendArrayInPlace(
+              dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.map((domain) => `+.${domain}`))),
+              HOSTNAMES
+            )
           }
         },
         { version: '1.1' }

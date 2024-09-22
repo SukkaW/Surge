@@ -9,20 +9,20 @@ import fs from 'node:fs';
 import { OUTPUT_INTERNAL_DIR } from './constants/dir';
 import { asyncWriteToStream } from './lib/async-write-to-stream';
 import { mkdirp } from './lib/misc';
+import { appendArrayInPlace } from './lib/append-array-in-place';
 
 export const buildInternalReverseChnCIDR = task(require.main === module, __filename)(async () => {
   const [cidr] = await getChnCidrPromise();
 
-  const reversedCidr = merge(
+  const reversedCidr = merge(appendArrayInPlace(
     exclude(
       ['0.0.0.0/0'],
       RESERVED_IPV4_CIDR.concat(cidr),
       true
-    ).concat(
-      // https://github.com/misakaio/chnroutes2/issues/25
-      NON_CN_CIDR_INCLUDED_IN_CHNROUTE
-    )
-  );
+    ),
+    // https://github.com/misakaio/chnroutes2/issues/25
+    NON_CN_CIDR_INCLUDED_IN_CHNROUTE
+  ));
 
   const outputFile = path.join(OUTPUT_INTERNAL_DIR, 'reversed-chn-cidr.txt');
   await mkdirp(OUTPUT_INTERNAL_DIR);

@@ -97,7 +97,7 @@ export class RulesetOutput extends RuleOutput {
     const singbox: SingboxSourceFormat = {
       version: 2,
       rules: [{
-        domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'].concat(this.computed()[0]),
+        domain: appendArrayInPlace(['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'], this.computed()[0]),
         domain_suffix: this.computed()[1],
         domain_keyword: Array.from(this.domainKeywords),
         domain_regex: Array.from(this.domainWildcard).map(RuleOutput.domainWildCardToRegex),
