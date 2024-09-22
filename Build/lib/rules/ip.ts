@@ -1,4 +1,5 @@
 import type { Span } from '../../trace';
+import { appendArrayInPlace } from '../append-array-in-place';
 import { appendArrayFromSet } from '../misc';
 import type { SingboxSourceFormat } from '../singbox';
 import { RuleOutput } from './base';
@@ -15,7 +16,18 @@ export class IPListOutput extends RuleOutput {
   private $merged: string[] | null = null;
   get merged() {
     if (!this.$merged) {
-      this.$merged = merge(appendArrayFromSet([], [this.ipcidr, this.ipcidr6]));
+      const results: string[] = [];
+      appendArrayInPlace(
+        results,
+        merge(
+          appendArrayInPlace(Array.from(this.ipcidrNoResolve), Array.from(this.ipcidr)),
+          true
+        )
+      );
+      appendArrayFromSet(results, this.ipcidr6NoResolve);
+      appendArrayFromSet(results, this.ipcidr6);
+
+      this.$merged = results;
     }
     return this.$merged;
   }
@@ -26,7 +38,15 @@ export class IPListOutput extends RuleOutput {
     if (!this.$surge) {
       const results: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-      appendArrayFromSet(results, this.ipcidr, i => `IP-CIDR,${i}`);
+      appendArrayInPlace(
+        results,
+        merge(Array.from(this.ipcidrNoResolve)).map(i => `IP-CIDR,${i},no-resolve`, true)
+      );
+      appendArrayFromSet(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
+      appendArrayInPlace(
+        results,
+        merge(Array.from(this.ipcidr)).map(i => `IP-CIDR,${i}`, true)
+      );
       appendArrayFromSet(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
 
       this.$surge = results;

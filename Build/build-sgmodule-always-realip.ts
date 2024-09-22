@@ -49,7 +49,6 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
   // Intranet, Router Setup, and mant more
   const dataset = [Object.entries(DIRECTS), Object.entries(LANS)];
   const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])));
-  const clash = ;
 
   return Promise.all([
     compareAndWriteFile(
@@ -69,6 +68,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
         {
           dns: {
             'fake-ip-filter': appendArrayInPlace(
+              /** clash */
               dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.map((domain) => `+.${domain}`))),
               HOSTNAMES
             )

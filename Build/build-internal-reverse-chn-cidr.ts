@@ -14,15 +14,18 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 export const buildInternalReverseChnCIDR = task(require.main === module, __filename)(async () => {
   const [cidr] = await getChnCidrPromise();
 
-  const reversedCidr = merge(appendArrayInPlace(
-    exclude(
-      ['0.0.0.0/0'],
-      RESERVED_IPV4_CIDR.concat(cidr),
-      true
+  const reversedCidr = merge(
+    appendArrayInPlace(
+      exclude(
+        ['0.0.0.0/0'],
+        RESERVED_IPV4_CIDR.concat(cidr),
+        true
+      ),
+      // https://github.com/misakaio/chnroutes2/issues/25
+      NON_CN_CIDR_INCLUDED_IN_CHNROUTE
     ),
-    // https://github.com/misakaio/chnroutes2/issues/25
-    NON_CN_CIDR_INCLUDED_IN_CHNROUTE
-  ));
+    true
+  );
 
   const outputFile = path.join(OUTPUT_INTERNAL_DIR, 'reversed-chn-cidr.txt');
   await mkdirp(OUTPUT_INTERNAL_DIR);

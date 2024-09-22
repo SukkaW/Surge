@@ -27,7 +27,7 @@
     "better-sqlite3": "^11.3.0",
     "ci-info": "^4.0.0",
     "csv-parse": "^5.5.6",
-    "fast-cidr-tools": "^0.2.5",
+    "fast-cidr-tools": "^0.3.0",
     "fdir": "^6.3.0",
     "foxact": "^0.2.38",
     "hash-wasm": "^4.11.0",

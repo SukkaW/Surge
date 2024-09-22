@@ -1,3 +1,4 @@
+import { merge } from 'fast-cidr-tools';
 import type { Span } from '../../trace';
 import createKeywordFilter from '../aho-corasick';
 import { appendArrayInPlace } from '../append-array-in-place';
@@ -54,12 +55,18 @@ export class RulesetOutput extends RuleOutput {
 
     appendArrayFromSet(results, this.urlRegex, i => `URL-REGEX,${i}`);
 
-    appendArrayFromSet(results, this.ipcidrNoResolve, i => `IP-CIDR,${i},no-resolve`);
+    appendArrayInPlace(
+      results,
+      merge(Array.from(this.ipcidrNoResolve)).map(i => `IP-CIDR,${i},no-resolve`, true)
+    );
     appendArrayFromSet(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
     appendArrayFromSet(results, this.ipasnNoResolve, i => `IP-ASN,${i},no-resolve`);
     appendArrayFromSet(results, this.groipNoResolve, i => `GEOIP,${i},no-resolve`);
 
-    appendArrayFromSet(results, this.ipcidr, i => `IP-CIDR,${i}`);
+    appendArrayInPlace(
+      results,
+      merge(Array.from(this.ipcidr)).map(i => `IP-CIDR,${i}`, true)
+    );
     appendArrayFromSet(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
     appendArrayFromSet(results, this.ipasn, i => `IP-ASN,${i}`);
     appendArrayFromSet(results, this.geoip, i => `GEOIP,${i}`);
@@ -80,12 +87,18 @@ export class RulesetOutput extends RuleOutput {
 
     // appendArrayInPlace(results, this.otherRules);
 
-    appendArrayFromSet(results, this.ipcidrNoResolve, i => `IP-CIDR,${i},no-resolve`);
+    appendArrayInPlace(
+      results,
+      merge(Array.from(this.ipcidrNoResolve)).map(i => `IP-CIDR,${i},no-resolve`, true)
+    );
     appendArrayFromSet(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
     appendArrayFromSet(results, this.ipasnNoResolve, i => `IP-ASN,${i},no-resolve`);
     appendArrayFromSet(results, this.groipNoResolve, i => `GEOIP,${i},no-resolve`);
 
-    appendArrayFromSet(results, this.ipcidr, i => `IP-CIDR,${i}`);
+    appendArrayInPlace(
+      results,
+      merge(Array.from(this.ipcidr)).map(i => `IP-CIDR,${i}`, true)
+    );
     appendArrayFromSet(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
     appendArrayFromSet(results, this.ipasn, i => `IP-ASN,${i}`);
     appendArrayFromSet(results, this.geoip, i => `GEOIP,${i}`);
@@ -94,6 +107,17 @@ export class RulesetOutput extends RuleOutput {
   }
 
   singbox(): string[] {
+    const ip_cidr: string[] = [];
+    appendArrayInPlace(
+      ip_cidr,
+      merge(
+        appendArrayInPlace(Array.from(this.ipcidrNoResolve), Array.from(this.ipcidr)),
+        true
+      )
+    );
+    appendArrayFromSet(ip_cidr, this.ipcidr6NoResolve);
+    appendArrayFromSet(ip_cidr, this.ipcidr6);
+
     const singbox: SingboxSourceFormat = {
       version: 2,
       rules: [{
@@ -101,7 +125,7 @@ export class RulesetOutput extends RuleOutput {
         domain_suffix: this.computed()[1],
         domain_keyword: Array.from(this.domainKeywords),
         domain_regex: Array.from(this.domainWildcard).map(RuleOutput.domainWildCardToRegex),
-        ip_cidr: appendArrayFromSet([], [this.ipcidr, this.ipcidrNoResolve, this.ipcidr6, this.ipcidr6NoResolve]),
+        ip_cidr,
         process_name: Array.from(this.processName),
         process_path: Array.from(this.processPath)
       }]
