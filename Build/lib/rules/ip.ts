@@ -3,6 +3,8 @@ import { appendArrayFromSet } from '../misc';
 import type { SingboxSourceFormat } from '../singbox';
 import { RuleOutput } from './base';
 
+import { merge } from 'fast-cidr-tools';
+
 export class IPListOutput extends RuleOutput {
   protected type = 'ip' as const;
 
@@ -13,7 +15,7 @@ export class IPListOutput extends RuleOutput {
   private $merged: string[] | null = null;
   get merged() {
     if (!this.$merged) {
-      this.$merged = appendArrayFromSet(appendArrayFromSet([], this.ipcidr), this.ipcidr6);
+      this.$merged = merge(appendArrayFromSet([], [this.ipcidr, this.ipcidr6]));
     }
     return this.$merged;
   }
