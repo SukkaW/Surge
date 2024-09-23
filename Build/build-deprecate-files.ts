@@ -15,7 +15,9 @@ const REMOVED_FILES = [
   'List/domainset/steam.conf',
   'List/internal/appprofile.php',
   'Clash/domainset/steam.txt',
-  'sing-box/domainset/steam.json'
+  'sing-box/domainset/steam.json',
+  'Modules/sukka_unlock_abema.sgmodule',
+  'Modules/sukka_exclude_reservered_ip.sgmodule'
 ];
 
 export const buildDeprecateFiles = task(require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
