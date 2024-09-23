@@ -67,7 +67,10 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
       'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
     ],
     true, TTL.THREE_HOURS()
-  ]
+  ],
+  // Spam404
+  // Not actively maintained, let's use a 10 days cache ttl
+  ['https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt', [], true, TTL.TEN_DAYS()]
 ];
 
 export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [
@@ -142,9 +145,6 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     ],
     TTL.TEN_DAYS()
   ],
-  // Spam404
-  // Not actively maintained, let's use a 10 days cache ttl
-  ['https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt', null, TTL.TEN_DAYS()],
   // Brave First Party & First Party CNAME
   ['https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt', null, TTL.ONE_DAY()]
 ];
