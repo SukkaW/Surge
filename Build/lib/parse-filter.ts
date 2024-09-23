@@ -292,6 +292,7 @@ const kwfilter = createKeywordFilter([
   '$removeparam',
   '$popunder',
   '$cname',
+  '$frame',
   // some bad syntax
   '^popup'
 ]);
@@ -307,7 +308,7 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
     return result;
   }
 
-  const line = $line.trim();
+  let line = $line.trim();
 
   /** @example line.length */
   const len = line.length;
@@ -415,9 +416,15 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
    * `://o0e.ru^$third-party`
    * `.1.1.1.l80.js^$third-party`
    */
-  if (line.includes('$third-party') || line.includes('$frame')) {
-    result[1] = ParseType.Null;
-    return result;
+  if (line.includes('$third-party')) {
+    if (!allowThirdParty) {
+      result[1] = ParseType.Null;
+      return result;
+    }
+
+    line = line
+      .replace('$third-party,', '$')
+      .replace('$third-party', '');
   }
 
   /** @example line.endsWith('^') */
