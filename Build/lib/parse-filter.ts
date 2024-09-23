@@ -148,7 +148,8 @@ export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
   fallbackUrls?: readonly string[] | null,
-  ttl: number | null = null
+  ttl: number | null = null,
+  allowThirdParty = false
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.apply<Readonly<[
     white: string[],
@@ -167,7 +168,7 @@ export async function processFilterRules(
        * @param {string} line
        */
       const lineCb = (line: string) => {
-        const result = parse(line, MUTABLE_PARSE_LINE_RESULT);
+        const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
         const flag = result[1];
 
         if (flag === ParseType.Null) {
@@ -295,7 +296,7 @@ const kwfilter = createKeywordFilter([
   '^popup'
 ]);
 
-export function parse($line: string, result: [string, ParseType]): [hostname: string, flag: ParseType] {
+export function parse($line: string, result: [string, ParseType], allowThirdParty: boolean): [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -391,6 +392,11 @@ export function parse($line: string, result: [string, ParseType]): [hostname: st
         return result;
       }
       if (_3p) {
+        if (allowThirdParty) {
+          result[0] = hostname;
+          result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+          return result;
+        }
         result[1] = ParseType.Null;
         return result;
       }

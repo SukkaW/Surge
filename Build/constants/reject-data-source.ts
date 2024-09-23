@@ -9,7 +9,8 @@ export const HOSTS: HostsSource[] = [
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', null, true, TTL.TWO_WEEKS()],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()]
+  ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()],
+  ['https://raw.githubusercontent.com/durablenapkin/block/refs/heads/master/tvstream.txt', null, true, TTL.THREE_HOURS()]
 ];
 
 export const HOSTS_EXTRA: HostsSource[] = [
@@ -29,17 +30,7 @@ export const HOSTS_EXTRA: HostsSource[] = [
 export const DOMAIN_LISTS: HostsSource[] = [
   // CoinBlockerList
   // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 14 days cache ttl
-  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', [], true, TTL.TWO_WEEKS()],
-
-  // Curben's UrlHaus Malicious URL Blocklist
-  [
-    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
-    [
-      'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
-      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
-    ],
-    true, TTL.THREE_HOURS()
-  ]
+  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', [], true, TTL.TWO_WEEKS()]
 ];
 
 export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
@@ -67,6 +58,15 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
       'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
     ],
     true, TTL.TWO_WEEKS()
+  ],
+  // Curben's UrlHaus Malicious URL Blocklist
+  [
+    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
+    [
+      'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
+      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
+    ],
+    true, TTL.THREE_HOURS()
   ]
 ];
 
@@ -86,7 +86,7 @@ export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [
   ]
 ];
 
-type AdGuardFilterSource = [main: string, mirrors: string[] | null, ttl: number];
+type AdGuardFilterSource = [main: string, mirrors: string[] | null, ttl: number, allowThirdParty?: boolean];
 
 export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // EasyList
@@ -151,9 +151,9 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
 
 export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Annoyances filter
-  ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS()],
+  ['https://filters.adtidy.org/android/filters/14_optimized.txt', null, TTL.THREE_HOURS(), true],
   // AdGuard Cookie Notices
-  ['https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt', null, TTL.THREE_HOURS()],
+  ['https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt', null, TTL.THREE_HOURS(), true],
   // EasyList Germany filter
   [
     'https://easylist.to/easylistgermany/easylistgermany.txt',
@@ -173,9 +173,10 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
     TTL.THREE_HOURS()
   ],
   // AdGuard Popup Overlay
-  ['https://filters.adtidy.org/extension/ublock/filters/19_optimized.txt', null, TTL.THREE_HOURS()],
+  ['https://filters.adtidy.org/extension/ublock/filters/19_optimized.txt', null, TTL.THREE_HOURS(), true],
   // AdGuard Mobile Banner
-  ['https://filters.adtidy.org/extension/ublock/filters/20_optimized.txt', null, TTL.THREE_HOURS()],
+  // almost all generic rule
+  // ['https://filters.adtidy.org/extension/ublock/filters/20_optimized.txt', null, TTL.THREE_HOURS()],
   // uBlock Origin Badware Risk List
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt',
