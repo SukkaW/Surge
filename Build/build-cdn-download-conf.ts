@@ -21,7 +21,7 @@ const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
       },
       []
     ),
-    false
+    true
   );
 
   /**

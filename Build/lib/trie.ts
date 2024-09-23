@@ -4,8 +4,7 @@
 
 import { fastStringArrayJoin } from './misc';
 import util from 'node:util';
-
-const noop = () => { /** noop */ };
+import { noop } from 'foxact/noop';
 
 type TrieNode<Meta = any> = [
   boolean, /** sentinel */
@@ -121,10 +120,8 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
       if (suffix[0] === '.') {
         // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
 
-        const parent = node[1]!;
-
         // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
-        parent[0] = false;
+        (/** parent */ node[1]!)[0] = false;
 
         // Removing the rest of the parent's child nodes
         node[2].clear();
@@ -308,9 +305,9 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     inputSuffix: string,
     /** @default true */ includeEqualWithSuffix = true
   ): string[] => {
-    if (smolTree) {
-      throw new Error('A Trie with smolTree enabled cannot perform find!');
-    }
+    // if (smolTree) {
+    //   throw new Error('A Trie with smolTree enabled cannot perform find!');
+    // }
 
     const inputTokens = hostnameToTokens(inputSuffix);
     const res = walkIntoLeafWithTokens(inputTokens);
@@ -419,7 +416,7 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     if (tokens[0] === '.') {
       // If there is a `[start]sub.example.com` here, remove it
       parent[0] = false;
-      // Removing all the child nodes by disconnecting "."
+      // Removing all the child nodes by disconnecting ".", which removes "blog.sub.example.com"
       parent[2].delete('.');
     }
 

@@ -27,7 +27,7 @@ const BLACKLIST = [
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise<[domains: string[], domainSuffixes: string[]]>(async () => {
   // First trie is to find the microsoft domains that matches probe domains
-  const trie = createTrie(null, false);
+  const trie = createTrie(null, true);
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
     const domain = extractDomainsFromFelixDnsmasq(line);
     if (domain) {

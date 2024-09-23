@@ -64,13 +64,10 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return result;
   };
 
-  protected span: Span;
-
   constructor(
-    span: Span,
+    protected readonly span: Span,
     protected readonly id: string
   ) {
-    this.span = span.traceChild('RuleOutput');
   }
 
   protected title: string | null = null;
