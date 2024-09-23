@@ -7,41 +7,39 @@ import type { SingboxSourceFormat } from '../singbox';
 import { sortDomains } from '../stable-sort-domain';
 import { RuleOutput } from './base';
 
-export class RulesetOutput extends RuleOutput {
+type Preprocessed = [domain: string[], domainSuffix: string[], sortedDomainRules: string[]];
+
+export class RulesetOutput extends RuleOutput<Preprocessed> {
   constructor(span: Span, id: string, protected type: 'non_ip' | 'ip') {
     super(span, id);
   }
 
-  private $computed: [domain: string[], domainSuffix: string[], sortedDomainRules: string[]] | null = null;
-  private computed() {
-    if (!this.$computed) {
-      const kwfilter = createKeywordFilter(this.domainKeywords);
+  protected preprocess() {
+    const kwfilter = createKeywordFilter(this.domainKeywords);
 
-      const domains: string[] = [];
-      const domainSuffixes: string[] = [];
-      const sortedDomainRules: string[] = [];
+    const domains: string[] = [];
+    const domainSuffixes: string[] = [];
+    const sortedDomainRules: string[] = [];
 
-      for (const domain of sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap)) {
-        if (kwfilter(domain)) {
-          continue;
-        }
-        if (domain[0] === '.') {
-          domainSuffixes.push(domain.slice(1));
-          sortedDomainRules.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
-        } else {
-          domains.push(domain);
-          sortedDomainRules.push(`DOMAIN,${domain}`);
-        }
+    for (const domain of sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap)) {
+      if (kwfilter(domain)) {
+        continue;
       }
-
-      this.$computed = [domains, domainSuffixes, sortedDomainRules];
+      if (domain[0] === '.') {
+        domainSuffixes.push(domain.slice(1));
+        sortedDomainRules.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
+      } else {
+        domains.push(domain);
+        sortedDomainRules.push(`DOMAIN,${domain}`);
+      }
     }
-    return this.$computed;
+
+    return [domains, domainSuffixes, sortedDomainRules] satisfies Preprocessed;
   }
 
   surge(): string[] {
     const results: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
-    appendArrayInPlace(results, this.computed()[2]);
+    appendArrayInPlace(results, this.$preprocessed[2]);
 
     appendArrayFromSet(results, this.domainKeywords, i => `DOMAIN-KEYWORD,${i}`);
     appendArrayFromSet(results, this.domainWildcard, i => `DOMAIN-WILDCARD,${i}`);
@@ -77,7 +75,7 @@ export class RulesetOutput extends RuleOutput {
   clash(): string[] {
     const results: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-    appendArrayInPlace(results, this.computed()[2]);
+    appendArrayInPlace(results, this.$preprocessed[2]);
 
     appendArrayFromSet(results, this.domainKeywords, i => `DOMAIN-KEYWORD,${i}`);
     appendArrayFromSet(results, this.domainWildcard, i => `DOMAIN-REGEX,${RuleOutput.domainWildCardToRegex(i)}`);
@@ -121,8 +119,8 @@ export class RulesetOutput extends RuleOutput {
     const singbox: SingboxSourceFormat = {
       version: 2,
       rules: [{
-        domain: appendArrayInPlace(['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'], this.computed()[0]),
-        domain_suffix: this.computed()[1],
+        domain: appendArrayInPlace(['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'], this.$preprocessed[0]),
+        domain_suffix: this.$preprocessed[1],
         domain_keyword: Array.from(this.domainKeywords),
         domain_regex: Array.from(this.domainWildcard).map(RuleOutput.domainWildCardToRegex),
         ip_cidr,

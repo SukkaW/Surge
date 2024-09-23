@@ -11,7 +11,7 @@ import { fastStringArrayJoin, writeFile } from '../misc';
 import { readFileByLine } from '../fetch-text-by-line';
 import { asyncWriteToStream } from '../async-write-to-stream';
 
-export abstract class RuleOutput {
+export abstract class RuleOutput<TPreprocessed = unknown> {
   protected domainTrie = createTrie<unknown>(null, true);
   protected domainKeywords = new Set<string>();
   protected domainWildcard = new Set<string>();
@@ -64,10 +64,14 @@ export abstract class RuleOutput {
     return result;
   };
 
+  protected span: Span;
+
   constructor(
-    protected readonly span: Span,
+    span: Span,
     protected readonly id: string
-  ) {}
+  ) {
+    this.span = span.traceChild('RuleOutput');
+  }
 
   protected title: string | null = null;
   withTitle(title: string) {
@@ -234,12 +238,19 @@ export abstract class RuleOutput {
     return this;
   }
 
-  abstract surge(): string[];
-  abstract clash(): string[];
-  abstract singbox(): string[];
+  protected abstract preprocess(): NonNullable<TPreprocessed>;
 
   done() {
     return this.pendingPromise;
+  }
+
+  private $$preprocessed: TPreprocessed | null = null;
+
+  get $preprocessed() {
+    if (this.$$preprocessed === null) {
+      this.$$preprocessed = this.span.traceChildSync('RuleOutput#preprocess: ' + this.id, () => this.preprocess());
+    }
+    return this.$$preprocessed;
   }
 
   async write(): Promise<void> {
@@ -276,6 +287,10 @@ export abstract class RuleOutput {
       )
     ]);
   }
+
+  abstract surge(): string[];
+  abstract clash(): string[];
+  abstract singbox(): string[];
 }
 
 export const fileEqual = async (linesA: string[], source: AsyncIterable<string>): Promise<boolean> => {

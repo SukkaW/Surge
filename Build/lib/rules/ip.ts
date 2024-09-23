@@ -6,30 +6,28 @@ import { RuleOutput } from './base';
 
 import { merge } from 'fast-cidr-tools';
 
-export class IPListOutput extends RuleOutput {
+type Preprocessed = string[];
+
+export class IPListOutput extends RuleOutput<Preprocessed> {
   protected type = 'ip' as const;
 
   constructor(span: Span, id: string, private readonly clashUseRule = true) {
     super(span, id);
   }
 
-  private $merged: string[] | null = null;
-  get merged() {
-    if (!this.$merged) {
-      const results: string[] = [];
-      appendArrayInPlace(
-        results,
-        merge(
-          appendArrayInPlace(Array.from(this.ipcidrNoResolve), Array.from(this.ipcidr)),
-          true
-        )
-      );
-      appendArrayFromSet(results, this.ipcidr6NoResolve);
-      appendArrayFromSet(results, this.ipcidr6);
+  protected preprocess() {
+    const results: string[] = [];
+    appendArrayInPlace(
+      results,
+      merge(
+        appendArrayInPlace(Array.from(this.ipcidrNoResolve), Array.from(this.ipcidr)),
+        true
+      )
+    );
+    appendArrayFromSet(results, this.ipcidr6NoResolve);
+    appendArrayFromSet(results, this.ipcidr6);
 
-      this.$merged = results;
-    }
-    return this.$merged;
+    return results;
   }
 
   private $surge: string[] | null = null;
@@ -59,7 +57,7 @@ export class IPListOutput extends RuleOutput {
       return this.surge();
     }
 
-    return this.merged;
+    return this.$preprocessed;
   }
 
   singbox(): string[] {
@@ -67,7 +65,7 @@ export class IPListOutput extends RuleOutput {
       version: 2,
       rules: [{
         domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'],
-        ip_cidr: this.merged
+        ip_cidr: this.$preprocessed
       }]
     };
     return RuleOutput.jsonToLines(singbox);

@@ -122,7 +122,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         rejectOutput.addDomainKeyword(value); // Add for later deduplication
         rejectExtraOutput.addDomainKeyword(value); // Add for later deduplication
       } else if (type === 'DOMAIN-SUFFIX') {
-        rejectOutput.addDomainSuffix(value); // Add for later deduplication
+        rejectOutput.whitelistDomain('.' + value); // Add for later deduplication
+        rejectExtraOutput.whitelistDomain('.' + value); // Add for later deduplication
       }
     }
   });
@@ -139,8 +140,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectExtraOutput.whitelistDomain(domain);
     }
 
-    for (const domain of rejectOutput.sorted) {
-      rejectExtraOutput.whitelistDomain(domain);
+    for (let i = 0, len = rejectOutput.$preprocessed.length; i < len; i++) {
+      rejectOutput.whitelistDomain(rejectOutput.$preprocessed[i]);
     }
   });
 

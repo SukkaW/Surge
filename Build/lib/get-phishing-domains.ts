@@ -122,6 +122,7 @@ const sensitiveKeywords = createKeywordFilter([
   'fb-com',
   'facebook.',
   'facebook-',
+  'facebook-com',
   '.facebook',
   '-facebook',
   'coinbase',
@@ -139,7 +140,9 @@ const sensitiveKeywords = createKeywordFilter([
   'booking.com-',
   'booking-eu',
   'vinted-cz',
-  'inpost-pl'
+  'inpost-pl',
+  'login.microsoft',
+  'login-microsoft'
 ]);
 const lowKeywords = createKeywordFilter([
   '-co-jp',
@@ -147,7 +150,8 @@ const lowKeywords = createKeywordFilter([
   'customer-',
   '.www-',
   'instagram',
-  'microsoft'
+  'microsoft',
+  'passwordreset'
 ]);
 
 const cacheKey = createCacheKey(__filename);
@@ -224,7 +228,7 @@ async function processPhihsingDomains(domainArr: string[]) {
           domainScoreMap[apexDomain] >= 12
           || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 4)
         ) {
-          domainArr.push(`.${apexDomain}`);
+          domainArr.push('.' + apexDomain);
         }
       }
 
