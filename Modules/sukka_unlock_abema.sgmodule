@@ -1,7 +1,0 @@
-#!name=[Sukka] Unlock AbemaTV
-
-[MITM]
-hostname = %APPEND% abematv.akamaized.net
-
-[Script]
-unlock_abema = requires-body=1,max-size=0,script-path=https://ruleset.skk.moe/Script/abema_unlock.js,script-update-interval=86400,type=http-response,pattern=^https://abematv.akamaized.net/region.*
