@@ -9,7 +9,6 @@ import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { writeFile } from './lib/misc';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
 
@@ -83,8 +82,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       ],
       path.resolve(OUTPUT_MODULES_DIR, 'sukka_local_dns_mapping.sgmodule')
     ),
-    writeFile(
-      path.join(OUTPUT_INTERNAL_DIR, 'clash_nameserver_policy.yaml'),
+    compareAndWriteFile(
+      span,
       yaml.stringify(
         {
           dns: {
@@ -116,7 +115,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
           )
         },
         { version: '1.1' }
-      )
+      ).split('\n'),
+      path.join(OUTPUT_INTERNAL_DIR, 'clash_nameserver_policy.yaml')
     )
   ]);
 });
