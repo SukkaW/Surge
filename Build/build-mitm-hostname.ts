@@ -7,30 +7,6 @@ import { getHostname } from 'tldts';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 
 const PRESET_MITM_HOSTNAMES = [
-  // '*baidu.com',
-  '*.ydstatic.com',
-  // '*snssdk.com',
-  // '*musical.com',
-  // '*musical.ly',
-  // '*snssdk.ly',
-  'api.zhihu.com',
-  'www.zhihu.com',
-  'api.chelaile.net.cn',
-  'atrace.chelaile.net.cn',
-  '*.meituan.net',
-  'ctrl.playcvn.com',
-  'ctrl.playcvn.net',
-  'ctrl.zmzapi.com',
-  'ctrl.zmzapi.net',
-  'api.zhuishushenqi.com',
-  'b.zhuishushenqi.com',
-  'ggic.cmvideo.cn',
-  'ggic2.cmvideo.cn',
-  'mrobot.pcauto.com.cn',
-  'mrobot.pconline.com.cn',
-  'home.umetrip.com',
-  'discardrp.umetrip.com',
-  'startup.umetrip.com',
   'dsp-x.jd.com',
   'bdsp-x.jd.com'
 ];

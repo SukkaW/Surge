@@ -6,6 +6,9 @@ import { appendArrayFromSet } from '../misc';
 import type { SingboxSourceFormat } from '../singbox';
 import { sortDomains } from '../stable-sort-domain';
 import { RuleOutput } from './base';
+import picocolors from 'picocolors';
+import { normalizeDomain } from '../normalize-domain';
+import { isProbablyIpv4 } from '../is-fast-ip';
 
 type Preprocessed = [domain: string[], domainSuffix: string[], sortedDomainRules: string[]];
 
@@ -130,5 +133,98 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
     };
 
     return RuleOutput.jsonToLines(singbox);
+  }
+
+  mitmSgmodule(): string[] | null {
+    if (this.urlRegex.size === 0 || this.mitmSgmodulePath === null) {
+      return null;
+    }
+
+    const urlRegexResults: Array<{ origin: string, processed: string[] }> = [];
+
+    const parsedFailures: Array<[original: string, processed: string]> = [];
+    const parsed: Array<[original: string, domain: string]> = [];
+
+    for (let urlRegex of this.urlRegex) {
+      if (
+        urlRegex.startsWith('http://')
+        || urlRegex.startsWith('^http://')
+      ) {
+        continue;
+      }
+      if (urlRegex.startsWith('^https?://')) {
+        urlRegex = urlRegex.slice(10);
+      }
+      if (urlRegex.startsWith('^https://')) {
+        urlRegex = urlRegex.slice(9);
+      }
+
+      const potentialHostname = urlRegex.split('/')[0]
+        // pre process regex
+        .replaceAll(String.raw`\.`, '.')
+        .replaceAll('.+', '*')
+        .replaceAll(/([a-z])\?/g, '($1|)')
+        // convert regex to surge hostlist syntax
+        .replaceAll('([a-z])', '?')
+        .replaceAll(String.raw`\d`, '?')
+        .replaceAll(/\*+/g, '*');
+
+      let processed: string[] = [potentialHostname];
+
+      const matches = [...potentialHostname.matchAll(/\((?:([^()|]+)\|)+([^()|]*)\)/g)];
+
+      if (matches.length > 0) {
+        const replaceVariant = (combinations: string[], fullMatch: string, options: string[]): string[] => {
+          const newCombinations: string[] = [];
+
+          combinations.forEach(combination => {
+            options.forEach(option => {
+              newCombinations.push(combination.replace(fullMatch, option));
+            });
+          });
+
+          return newCombinations;
+        };
+
+        for (let i = 0; i < matches.length; i++) {
+          const match = matches[i];
+          const [_, ...options] = match;
+
+          processed = replaceVariant(processed, _, options);
+        }
+      }
+
+      urlRegexResults.push({
+        origin: potentialHostname,
+        processed
+      });
+    }
+
+    for (const i of urlRegexResults) {
+      for (const processed of i.processed) {
+        if (normalizeDomain(
+          processed
+            .replaceAll('*', 'a')
+            .replaceAll('?', 'b')
+        )) {
+          parsed.push([i.origin, processed]);
+        } else if (!isProbablyIpv4(processed)) {
+          parsedFailures.push([i.origin, processed]);
+        }
+      }
+    }
+
+    console.error(picocolors.bold('Parsed Failed'));
+    if (parsedFailures.length > 0) {
+      console.table(parsedFailures);
+    }
+
+    return [
+      '#!name=[Sukka] Surge Reject MITM',
+      '#!desc=为 URL Regex 规则组启用 MITM',
+      '',
+      '[MITM]',
+      'hostname = %APPEND% ' + Array.from(new Set(parsed.map(i => i[1]))).join(', ')
+    ];
   }
 }

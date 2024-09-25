@@ -14,6 +14,7 @@ import { DomainsetOutput, RulesetOutput } from './lib/create-file';
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';
 const MAGIC_COMMAND_DESCRIPTION = '# $ meta_description ';
+const MAGIC_COMMAND_SGMODULE_MITM_HOSTNAMES = '# $ sgmodule_mitm_hostnames ';
 
 const domainsetSrcFolder = 'domainset' + path.sep;
 
@@ -73,6 +74,7 @@ const processFile = (span: Span, sourcePath: string) => {
 
     let title = '';
     const descriptions: string[] = [];
+    let sgmodulePathname: string | null = null;
 
     try {
       for await (const line of readFileByLine(sourcePath)) {
@@ -90,6 +92,11 @@ const processFile = (span: Span, sourcePath: string) => {
           continue;
         }
 
+        if (line.startsWith(MAGIC_COMMAND_SGMODULE_MITM_HOSTNAMES)) {
+          sgmodulePathname = line.slice(MAGIC_COMMAND_SGMODULE_MITM_HOSTNAMES.length).trim();
+          continue;
+        }
+
         const l = processLine(line);
         if (l) {
           lines.push(l);
@@ -100,7 +107,7 @@ const processFile = (span: Span, sourcePath: string) => {
       console.trace(e);
     }
 
-    return [title, descriptions, lines] as const;
+    return [title, descriptions, lines, sgmodulePathname] as const;
   });
 };
 
@@ -148,7 +155,7 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
         throw new TypeError(`Invalid type: ${type}`);
       }
 
-      const [title, descriptions, lines] = res;
+      const [title, descriptions, lines, sgmodulePathname] = res;
 
       let description: string[];
       if (descriptions.length) {
@@ -162,6 +169,7 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
       return new RulesetOutput(span, id, type)
         .withTitle(title)
         .withDescription(description)
+        .withMitmSgmodulePath(sgmodulePathname)
         .addFromRuleset(lines)
         .write();
     });

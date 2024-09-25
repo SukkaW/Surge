@@ -1,4 +1,4 @@
-import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
+import { OUTPUT_CLASH_DIR, OUTPUT_MODULES_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
 import type { Span } from '../../trace';
 import { createTrie } from '../trie';
 import stringify from 'json-stringify-pretty-compact';
@@ -256,7 +256,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     invariant(this.title, 'Missing title');
     invariant(this.description, 'Missing description');
 
-    await Promise.all([
+    const promises = [
       compareAndWriteFile(
         this.span,
         withBannerArray(
@@ -282,12 +282,37 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
         this.singbox(),
         path.join(OUTPUT_SINGBOX_DIR, this.type, this.id + '.json')
       )
-    ]);
+    ];
+
+    if (this.mitmSgmodule) {
+      const sgmodule = this.mitmSgmodule();
+      const sgMOdulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
+      if (sgmodule) {
+        promises.push(
+          compareAndWriteFile(
+            this.span,
+            sgmodule,
+            path.join(OUTPUT_MODULES_DIR, sgMOdulePath)
+          )
+        );
+      }
+    }
+
+    await Promise.all(promises);
   }
 
   abstract surge(): string[];
   abstract clash(): string[];
   abstract singbox(): string[];
+
+  protected mitmSgmodulePath: string | null = null;
+  withMitmSgmodulePath(path: string | null) {
+    if (path) {
+      this.mitmSgmodulePath = path;
+    }
+    return this;
+  }
+  abstract mitmSgmodule?(): string[] | null;
 }
 
 export const fileEqual = async (linesA: string[], source: AsyncIterable<string>): Promise<boolean> => {
