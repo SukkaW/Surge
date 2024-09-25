@@ -145,8 +145,6 @@ const BILIBILI_INTL: StreamService = {
   rules: [
     'DOMAIN-SUFFIX,biliintl.com',
     'DOMAIN,apm-misaka.biliapi.net',
-    'DOMAIN,p.bstarstatic.com',
-    'DOMAIN,p-bstarstatic.akamaized.net',
     'DOMAIN,upos-bstar-mirrorakam.akamaized.net',
     'DOMAIN,upos-bstar1-mirrorakam.akamaized.net',
     'DOMAIN-SUFFIX,bilibili.tv',
