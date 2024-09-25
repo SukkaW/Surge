@@ -14,7 +14,7 @@ function escapeRegExp(string = '') {
     : string;
 }
 
-const REDIRECT_MIRROR = [
+const REDIRECT_MIRROR_HEADER = [
   // Gravatar
   ['gravatar.neworld.org/', 'https://secure.gravatar.com/'],
   ['cdn.v2ex.com/gravatar/', 'https://secure.gravatar.com/avatar/'],
@@ -87,9 +87,15 @@ const REDIRECT_MIRROR = [
   ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
 ] as const;
 
-const REDIRECT_FAKEWEBSITES = [
+const REDIRECT_MIRROR_307 = [
   // Redirect Google
-  ['google.cn', 'https://www.google.com'],
+  ['google.cn/', 'https://google.com/'],
+  ['www.google.cn/', 'https://www.google.com/'],
+  ['g.cn/', 'https://google.com/'],
+  ['www.g.cn/', 'https://www.google.com/']
+];
+
+const REDIRECT_FAKEWEBSITES = [
   // IGN China to IGN Global
   ['ign.xn--fiqs8s', 'https://cn.ign.com/ccpref/us'],
   // Fuck Makeding
@@ -132,8 +138,9 @@ const REDIRECT_FAKEWEBSITES = [
 
 export const buildRedirectModule = task(require.main === module, __filename)(async (span) => {
   const domains = Array.from(new Set([
-    ...REDIRECT_MIRROR.map(([from]) => getHostname(from, { detectIp: false })),
-    ...REDIRECT_FAKEWEBSITES.flatMap(([from]) => [from, `www.${from}`])
+    ...REDIRECT_MIRROR_HEADER.map(([from]) => getHostname(from, { detectIp: false })),
+    ...REDIRECT_FAKEWEBSITES.flatMap(([from]) => [from, `www.${from}`]),
+    ...REDIRECT_MIRROR_307.map(([from]) => getHostname(from, { detectIp: false }))
   ])).filter(isTruthy);
 
   return compareAndWriteFile(
@@ -146,8 +153,9 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       `hostname = %APPEND% ${domains.join(', ')}`,
       '',
       '[URL Rewrite]',
-      ...REDIRECT_MIRROR.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 header`),
-      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to} 307`)
+      ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 header`),
+      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to} 307`),
+      ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 307`)
     ],
     path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect.sgmodule')
   );
