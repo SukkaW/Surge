@@ -9,8 +9,10 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { IPListOutput } from './lib/create-file';
 
 export const getChnCidrPromise = createMemoizedPromise(async () => {
-  const cidr4 = await processLineFromReadline(await fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt'));
-  const cidr6 = await processLineFromReadline(await fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt'));
+  const [cidr4, cidr6] = await Promise.all([
+    fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').then(processLineFromReadline),
+    fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt').then(processLineFromReadline)
+  ]);
 
   appendArrayInPlace(cidr4, CN_CIDR_NOT_INCLUDED_IN_CHNROUTE);
   return [exclude(cidr4, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true), cidr6] as const;

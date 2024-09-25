@@ -8,36 +8,30 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
-  'msftncsi.com',
-  'msftconnecttest.com',
   '*.msftncsi.com',
   '*.msftconnecttest.com',
   'network-test.debian.org',
   'detectportal.firefox.com',
-  'resolver1.opendns.com',
-  '*.ipv6.microsoft.com',
   // Handle SNAT conversation properly
   '*.srv.nintendo.net',
   '*.stun.playstation.net',
   'xbox.*.microsoft.com',
   '*.xboxlive.com',
-  'turn.twilio.com',
   '*.turn.twilio.com',
-  'stun.twilio.com',
   '*.stun.twilio.com',
-  'stun.syncthing.net',
+  // 'stun.syncthing.net',
   'stun.*',
   'controlplane.tailscale.com',
   // NTP
-  'time.*.com', 'time.*.gov, time.*.edu.cn, time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org', 'time*.cloud.tencent.com',
+  'time.*.com', 'time.*.gov, time.*.edu.cn, time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org', 'time*.cloud.tencent.com', 'ntp?.aliyun.com',
   // QQ Login
   'localhost.ptlogin2.qq.com',
   'localhost.sec.qq.com',
   'localhost.work.weixin.qq.com',
   // Microsoft Auto Discovery
-  'PDC._msDCS.*.*',
-  'DC._msDCS.*.*',
-  'GC._msDCS.*.*',
+  '*PDC._msDCS*',
+  '*DC._msDCS*',
+  '*GC._msDCS*',
   // Misc,
   '*.battlenet.com.cn',
   '*.blzstatic.cn',
