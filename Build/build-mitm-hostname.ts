@@ -1,6 +1,5 @@
 import { readFileByLine } from './lib/fetch-text-by-line';
-import pathFn from 'node:path';
-import table from 'table';
+import Table from 'cli-table3';
 import { fdir as Fdir } from 'fdir';
 import { green, yellow } from 'picocolors';
 import { processLineFromReadline } from './lib/process-line';
@@ -37,11 +36,9 @@ const PRESET_MITM_HOSTNAMES = [
 ];
 
 (async () => {
-  const folderListPath = pathFn.resolve(OUTPUT_SURGE_DIR, 'List/');
-
   const rulesets = await new Fdir()
     .withFullPaths()
-    .crawl(folderListPath)
+    .crawl(OUTPUT_SURGE_DIR)
     .withPromise();
 
   const urlRegexPaths: Array<{ origin: string, processed: string }> = [];
@@ -109,15 +106,18 @@ const PRESET_MITM_HOSTNAMES = [
       );
     });
 
-  const parsedDomainsData: Array<[string, string]> = [];
+  const parsedTable = new Table({
+    head: ['Hostname Pattern', 'Original Rules']
+  });
+
   dedupedUrlRegexPaths.forEach(i => {
     const result = getHostnameSafe(i.processed);
 
     if (result) {
       if (matchWithRegExpArray(result, mitmDomainsRegExpArray)) {
-        parsedDomainsData.push([green(result), i.origin]);
+        parsedTable.push([green(result), i.origin]);
       } else {
-        parsedDomainsData.push([yellow(result), i.origin]);
+        parsedTable.push([yellow(result), i.origin]);
       }
     }
   });
@@ -126,14 +126,7 @@ const PRESET_MITM_HOSTNAMES = [
   console.log(`hostname = %APPEND% ${Array.from(mitmDomains).join(', ')}`);
   console.log('--------------------');
   console.log('Parsed Sucessed:');
-  console.log(table.table(parsedDomainsData, {
-    border: table.getBorderCharacters('void'),
-    columnDefault: {
-      paddingLeft: 0,
-      paddingRight: 3
-    },
-    drawHorizontalLine: () => false
-  }));
+  console.log(parsedTable.toString());
   console.log('--------------------');
   console.log('Parsed Failed');
   console.log(Array.from(parsedFailures).join('\n'));
