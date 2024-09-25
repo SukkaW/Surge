@@ -92,7 +92,10 @@ const REDIRECT_MIRROR_307 = [
   ['google.cn/', 'https://google.com/'],
   ['www.google.cn/', 'https://www.google.com/'],
   ['g.cn/', 'https://google.com/'],
-  ['www.g.cn/', 'https://www.google.com/']
+  ['www.g.cn/', 'https://www.google.com/'],
+  // avg.tv/sm114514 -> https://www.nicovideo.jp/watch/sm114514
+  ['acg.tv/sm', 'https://www.nicovideo.jp/watch/sm'],
+  ['acg.tv/', 'https://b23.tv/']
 ];
 
 const REDIRECT_FAKEWEBSITES = [

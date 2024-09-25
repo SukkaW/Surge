@@ -392,8 +392,6 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
       if (p) await p;
     }
 
-    await asyncWriteToStream(writeStream, '\n');
-
     writeStream.end();
   });
 }

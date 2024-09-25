@@ -12,19 +12,28 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
 
+const getRule = (domain: string) => {
+  switch (domain[0]) {
+    case '+':
+    case '$':
+      return `DOMAIN-SUFFIX,${domain.slice(1)}`;
+    default:
+      return `DOMAIN-SUFFIX,${domain}`;
+  }
+};
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/domestic.conf'));
   const directs = await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'non_ip/direct.conf'));
   const lans: string[] = [];
 
   Object.entries(DOMESTICS).forEach(([, { domains }]) => {
-    appendArrayInPlace(domestics, domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+    appendArrayInPlace(domestics, domains.map(getRule));
   });
   Object.entries(DIRECTS).forEach(([, { domains }]) => {
-    appendArrayInPlace(directs, domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+    appendArrayInPlace(directs, domains.map(getRule));
   });
   Object.entries(LANS).forEach(([, { domains }]) => {
-    appendArrayInPlace(lans, domains.map((domain) => `DOMAIN-SUFFIX,${domain}`));
+    appendArrayInPlace(lans, domains.map(getRule));
   });
 
   return [domestics, directs, lans] as const;
@@ -74,10 +83,22 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         '[Host]',
         ...dataset.flatMap(([, { domains, dns, hosts }]) => [
           ...Object.entries(hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`),
-          ...domains.flatMap((domain) => [
-            `${domain} = server:${dns}`,
-            `*.${domain} = server:${dns}`
-          ])
+          ...domains.flatMap((domain) => {
+            if (domain[0] === '$') {
+              return [
+                `${domain.slice(1)} = server:${dns}`
+              ];
+            }
+            if (domain[0] === '+') {
+              return [
+                `*.${domain.slice(1)} = server:${dns}`
+              ];
+            }
+            return [
+              `${domain} = server:${dns}`,
+              `*.${domain} = server:${dns}`
+            ];
+          })
         ])
       ],
       path.resolve(OUTPUT_MODULES_DIR, 'sukka_local_dns_mapping.sgmodule')
@@ -90,7 +111,16 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
             'nameserver-policy': dataset.reduce<Record<string, string | string[]>>(
               (acc, [, { domains, dns }]) => {
                 domains.forEach((domain) => {
-                  acc[`+.${domain}`] = dns === 'system'
+                  let domainWildcard = domain;
+                  if (domain[0] === '$') {
+                    domainWildcard = domain.slice(1);
+                  } else if (domain[0] === '+') {
+                    domainWildcard = `*.${domain.slice(1)}`;
+                  } else {
+                    domainWildcard = `+.${domain}`;
+                  }
+
+                  acc[domainWildcard] = dns === 'system'
                     ? [
                       'system://',
                       'system',

@@ -3,6 +3,13 @@ export interface DNSMapping {
     [domain: string]: string[]
   },
   dns: string,
+  /**
+   * domain[0]
+   *
+   * + subdomain only
+   * $ domain only exact match
+   * [none] domain and subdomain
+   */
   domains: string[]
 }
 
@@ -35,8 +42,8 @@ export const DIRECTS = {
       // ZTE CPE
       'zte.home',
       // UniFi
-      'ui.direct',
-      'unifi',
+      '+ui.direct',
+      '$unifi',
       'amplifi.lan',
       // Other Router
       'hiwifi.com',
@@ -85,8 +92,8 @@ export const DIRECTS = {
       // TailScale Magic DNS
       'ts.net',
       // AdGuard
-      'injections.adguard.org',
-      'local.adguard.org'
+      '$injections.adguard.org',
+      '$local.adguard.org'
     ]
   }
 } satisfies Record<string, DNSMapping>;
@@ -97,7 +104,7 @@ export const LANS = {
     hosts: {},
     domains: [
       'lan',
-      'localhost',
+      '$localhost',
       'localdomain',
       'home.arpa',
       // AS112
