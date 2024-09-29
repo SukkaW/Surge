@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
-import { getHostname } from 'tldts';
+import { getHostname } from 'tldts-experimental';
 import { isTruthy } from './lib/misc';
 import { OUTPUT_MODULES_DIR } from './constants/dir';
 

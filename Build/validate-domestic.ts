@@ -1,21 +1,13 @@
-import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { readFileByLine } from './lib/fetch-text-by-line';
 import { parse } from 'csv-parse/sync';
 import { createTrie } from './lib/trie';
 import path from 'node:path';
 import { processLine } from './lib/process-line';
-import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
+import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { SOURCE_DIR } from './constants/dir';
 
 export const parseDomesticList = async () => {
-  const set = new Set<string>();
-  for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
-    const domain = extractDomainsFromFelixDnsmasq(line);
-    if (domain) {
-      set.add(domain);
-    }
-  }
-
-  const trie = createTrie(set, true);
+  const trie = createTrie(await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'), true);
 
   const top5000 = new Set<string>();
 

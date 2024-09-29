@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 import { Sema } from 'async-sema';
-import { getHostname } from 'tldts';
+import { getHostname } from 'tldts-experimental';
 import { task } from './trace';
 import { fetchWithRetry } from './lib/fetch-retry';
 import { SHARED_DESCRIPTION } from './lib/constants';
