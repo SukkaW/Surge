@@ -77,13 +77,11 @@ export const appendArrayFromSet = <T>(dest: T[], source: Set<T> | Array<Set<T>>,
   return dest;
 };
 
-export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => {
-  return [
-    path.join(OUTPUT_SURGE_DIR, type, id + '.conf'),
-    path.join(OUTPUT_CLASH_DIR, type, id + '.txt'),
-    path.join(OUTPUT_SINGBOX_DIR, type, id + '.json')
-  ] as const;
-};
+export const output = (id: string, type: 'non_ip' | 'ip' | 'domainset') => [
+  path.join(OUTPUT_SURGE_DIR, type, id + '.conf'),
+  path.join(OUTPUT_CLASH_DIR, type, id + '.txt'),
+  path.join(OUTPUT_SINGBOX_DIR, type, id + '.json')
+] as const;
 
 export function withBannerArray(title: string, description: string[] | readonly string[], date: Date, content: string[]) {
   return [

@@ -205,18 +205,16 @@ function generateAppProfile(
 
   appendArrayInPlace(
     redults,
-    POLICY_GROUPS.flatMap(([name, insertProxy, insertDirect]) => {
-      return [
-        '        [',
-        `            'name' => '${name}',`,
-        '            \'type\' => \'select\',',
-        '            \'proxies\' => [',
-        insertProxy && name !== 'Default Proxy' && '                \'Default Proxy\',',
-        insertDirect && '                \'DIRECT\',',
-        '            ],',
-        '        ],'
-      ].filter(isTruthy);
-    })
+    POLICY_GROUPS.flatMap(([name, insertProxy, insertDirect]) => [
+      '        [',
+      `            'name' => '${name}',`,
+      '            \'type\' => \'select\',',
+      '            \'proxies\' => [',
+      insertProxy && name !== 'Default Proxy' && '                \'Default Proxy\',',
+      insertDirect && '                \'DIRECT\',',
+      '            ],',
+      '        ],'
+    ].filter(isTruthy))
   );
 
   appendArrayInPlace(

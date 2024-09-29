@@ -36,14 +36,14 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
 
   protected pendingPromise = Promise.resolve();
 
-  static jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
+  static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
   whitelistDomain = (domain: string) => {
     this.domainTrie.whitelist(domain);
     return this;
   };
 
-  static domainWildCardToRegex = (domain: string) => {
+  static readonly domainWildCardToRegex = (domain: string) => {
     let result = '^';
     for (let i = 0, len = domain.length; i < len; i++) {
       switch (domain[i]) {
@@ -67,8 +67,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   constructor(
     protected readonly span: Span,
     protected readonly id: string
-  ) {
-  }
+  ) { }
 
   protected title: string | null = null;
   withTitle(title: string) {
@@ -199,7 +198,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
-  static ipToCidr = (ip: string, version: 4 | 6 = 4) => {
+  static readonly ipToCidr = (ip: string, version: 4 | 6 = 4) => {
     if (ip.includes('/')) return ip;
     if (version === 4) {
       return ip + '/32';
@@ -325,11 +324,7 @@ export const fileEqual = async (linesA: string[], source: AsyncIterable<string>)
     index++;
 
     if (index > linesA.length - 1) {
-      if (index === linesA.length && lineB === '') {
-        return true;
-      }
-      // The file becomes smaller
-      return false;
+      return (index === linesA.length && lineB === '');
     }
 
     const lineA = linesA[index];
@@ -353,12 +348,8 @@ export const fileEqual = async (linesA: string[], source: AsyncIterable<string>)
     }
   }
 
-  if (index < linesA.length - 1) {
-    // The file becomes larger
-    return false;
-  }
-
-  return true;
+  // The file becomes larger
+  return !(index < linesA.length - 1);
 };
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {

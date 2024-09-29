@@ -34,9 +34,7 @@ const deepTrieNodeToJSON = (
   return obj;
 };
 
-const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => {
-  return [false, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
-};
+const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => [false, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 
 export const hostnameToTokens = (hostname: string): string[] => {
   const tokens = hostname.split('.');
@@ -227,9 +225,7 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     return { node, parent };
   };
 
-  const contains = (suffix: string): boolean => {
-    return walkIntoLeafWithSuffix(suffix) !== null;
-  };
+  const contains = (suffix: string): boolean => walkIntoLeafWithSuffix(suffix) !== null;
 
   const walk = (
     onMatches: (suffix: string[], meta: Meta) => void,

@@ -223,9 +223,7 @@ export async function processFilterRules(
           lineCb(line);
         }
       } else {
-        const filterRules = await span.traceChild('download adguard filter').traceAsyncFn(() => {
-          return fetchAssets(filterRulesUrl, fallbackUrls).then(text => text.split('\n'));
-        });
+        const filterRules = await span.traceChild('download adguard filter').traceAsyncFn(() => fetchAssets(filterRulesUrl, fallbackUrls).then(text => text.split('\n')));
 
         span.traceChild('parse adguard filter').traceSyncFn(() => {
           for (let i = 0, len = filterRules.length; i < len; i++) {

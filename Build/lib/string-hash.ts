@@ -43,6 +43,4 @@ export const fnv1a52 = (str: string) => {
   );
 };
 
-export const stringHash = (payload: string) => {
-  return fnv1a52(payload).toString(36) + payload.length.toString(36);
-};
+export const stringHash = (payload: string) => fnv1a52(payload).toString(36) + payload.length.toString(36);

@@ -79,9 +79,7 @@ const priorityOrder: Record<'default' | string & {}, number> = {
   LICENSE: 70,
   default: Number.MAX_VALUE
 };
-const prioritySorter = (a: TreeType, b: TreeType) => {
-  return ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || a.name.localeCompare(b.name);
-};
+const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || a.name.localeCompare(b.name);
 
 const html = (string: TemplateStringsArray, ...values: any[]) => string.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
 

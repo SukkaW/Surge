@@ -20,11 +20,8 @@ import { SOURCE_DIR } from './constants/dir';
       if (isDirectory) return true;
 
       const extname = path.extname(filepath);
-      if (extname === '.js' || extname === '.ts') {
-        return false;
-      }
 
-      return true;
+      return !(extname === '.js' || extname === '.ts');
     })
     .crawl(SOURCE_DIR)
     .withPromise();
