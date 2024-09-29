@@ -555,6 +555,7 @@ const PARAMOUNT: StreamService = {
   name: 'Paramount+',
   rules: [
     'USER-AGENT,PPlus*',
+    'DOMAIN-SUFFIX,pluto.tv', // not paramount+, but does belong to the same company
     'DOMAIN-SUFFIX,cbsi.com',
     'DOMAIN-SUFFIX,cbsaavideo.com',
     'DOMAIN-SUFFIX,cbsivideo.com',

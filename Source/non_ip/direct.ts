@@ -14,6 +14,13 @@ export interface DNSMapping {
 }
 
 export const DIRECTS = {
+  HOTSPOT_CAPTIVE_PORTAL: {
+    dns: 'system',
+    hosts: {},
+    domains: [
+      'securelogin.com.cn'
+    ]
+  },
   ROUTER: {
     dns: 'system',
     hosts: {},
