@@ -7,8 +7,8 @@ export const HOSTS: HostsSource[] = [
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', null, true, TTL.THREE_DAYS()],
   // have not been updated for more than a year, so we set a 14 days cache ttl
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', null, true, TTL.TWO_WEEKS()],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.THREE_DAYS()],
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false, TTL.ONE_WEEK()],
+  ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false, TTL.ONE_WEEK()],
   ['https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', null, true, TTL.THREE_HOURS()],
   ['https://raw.githubusercontent.com/durablenapkin/block/refs/heads/master/tvstream.txt', null, true, TTL.THREE_HOURS()]
 ];
@@ -73,7 +73,7 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   ['https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt', [], true, TTL.TEN_DAYS()]
 ];
 
-export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [
+export const PHISHING_DOMAIN_LISTS_EXTRA: HostsSource[] = [
   [
     'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt',
     [
@@ -86,6 +86,11 @@ export const PHISHING_DOMAIN_LISTS_EXTRA: [HostsSource, HostsSource] = [
     'https://phishing.army/download/phishing_army_blocklist.txt',
     [],
     true, TTL.THREE_HOURS()
+  ],
+  [
+    'https://raw.githubusercontent.com/durablenapkin/scamblocklist/refs/heads/master/hosts.txt',
+    [],
+    true, TTL.TWLVE_HOURS()
   ]
 ];
 

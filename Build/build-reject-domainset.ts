@@ -141,7 +141,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
 
     for (let i = 0, len = rejectOutput.$preprocessed.length; i < len; i++) {
-      rejectOutput.whitelistDomain(rejectOutput.$preprocessed[i]);
+      rejectExtraOutput.whitelistDomain(rejectOutput.$preprocessed[i]);
     }
   });
 

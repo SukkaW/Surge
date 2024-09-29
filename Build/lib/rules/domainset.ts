@@ -89,4 +89,6 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       )
       .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`);
   }
+
+  mitmSgmodule = undefined;
 }
