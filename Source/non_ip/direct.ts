@@ -18,7 +18,8 @@ export const DIRECTS = {
     dns: 'system',
     hosts: {},
     domains: [
-      'securelogin.com.cn'
+      'securelogin.com.cn',
+      'captive.apple.com'
     ]
   },
   ROUTER: {
@@ -100,7 +101,11 @@ export const DIRECTS = {
       'ts.net',
       // AdGuard
       '$injections.adguard.org',
-      '$local.adguard.org'
+      '$local.adguard.org',
+      // SetApp
+      'setapp.click',
+      // Android ADB
+      '_adb-tls-connect._tcp'
     ]
   }
 } satisfies Record<string, DNSMapping>;
