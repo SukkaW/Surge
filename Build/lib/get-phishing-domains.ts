@@ -14,93 +14,27 @@ import { fastStringArrayJoin } from './misc';
 import { sha256 } from 'hash-wasm';
 
 const BLACK_TLD = new Set([
-  'accountant',
-  'autos',
-  'bar',
-  'beauty',
-  'bid',
-  'biz',
-  'bond',
-  'business',
-  'buzz',
-  'cc',
-  'cf',
-  'cfd',
-  'click',
-  'cloud',
-  'club',
-  'cn',
-  'codes',
-  'co.uk',
-  'co.in',
-  'com.br',
-  'com.cn',
-  'com.pl',
-  'com.vn',
-  'cool',
-  'cricket',
-  'cyou',
-  'date',
-  'digital',
-  'download',
-  'faith',
-  'fit',
-  'fun',
-  'ga',
-  'gd',
-  'gives',
-  'gq',
-  'group',
-  'host',
-  'icu',
-  'id',
-  'info',
-  'ink',
-  'life',
-  'live',
-  'link',
-  'loan',
-  'lol',
-  'ltd',
-  'me',
-  'men',
-  'ml',
-  'mobi',
-  'mom',
+  'accountant', 'autos',
+  'bar', 'beauty', 'bid', 'biz', 'bond', 'business', 'buzz',
+  'cc', 'cf', 'cfd', 'click', 'cloud', 'club', 'cn', 'codes',
+  'co.uk', 'co.in', 'com.br', 'com.cn', 'com.pl', 'com.vn',
+  'cool', 'cricket', 'cyou',
+  'date', 'design', 'digital', 'download',
+  'faith', 'fit', 'fun',
+  'ga', 'gd', 'gives', 'gq', 'group', 'host',
+  'icu', 'id', 'info', 'ink',
+  'lat', 'life', 'live', 'link', 'loan', 'lol', 'ltd',
+  'me', 'men', 'ml', 'mobi', 'mom',
   'net.pl',
-  'one',
-  'online',
-  'party',
-  'pro',
-  'pl',
-  'pw',
-  'racing',
-  'rest',
-  'review',
-  'rf.gd',
-  'sa.com',
-  'sbs',
-  'science',
-  'shop',
-  'site',
-  'space',
-  'store',
-  'stream',
-  'surf',
-  'tech',
-  'tk',
-  'tokyo',
-  'top',
-  'trade',
-  'vip',
-  'vn',
-  'webcam',
-  'website',
-  'win',
+  'one', 'online',
+  'party', 'pro', 'pl', 'pw',
+  'racing', 'rest', 'review', 'rf.gd',
+  'sa.com', 'sbs', 'science', 'shop', 'site', 'skin', 'space', 'store', 'stream', 'surf',
+  'tech', 'tk', 'tokyo', 'top', 'trade',
+  'vip', 'vn',
+  'webcam', 'website', 'win',
   'xyz',
-  'za.com',
-  'lat',
-  'design'
+  'za.com'
 ]);
 
 const WHITELIST_MAIN_DOMAINS = new Set([
@@ -112,7 +46,8 @@ const WHITELIST_MAIN_DOMAINS = new Set([
   'page.link', // Firebase URL Shortener
   // 'notion.site',
   // 'vercel.app',
-  'gitbook.io'
+  'gitbook.io',
+  'zendesk.com'
 ]);
 
 const sensitiveKeywords = createKeywordFilter([
@@ -142,16 +77,20 @@ const sensitiveKeywords = createKeywordFilter([
   'vinted-cz',
   'inpost-pl',
   'login.microsoft',
-  'login-microsoft'
+  'login-microsoft',
+  'google.com-'
 ]);
 const lowKeywords = createKeywordFilter([
   '-co-jp',
   'customer.',
   'customer-',
   '.www-',
+  '.www.',
+  '.www2',
   'instagram',
   'microsoft',
-  'passwordreset'
+  'passwordreset',
+  '.google-'
 ]);
 
 const cacheKey = createCacheKey(__filename);
@@ -215,24 +154,36 @@ async function processPhihsingDomains(domainArr: string[]) {
           } else if (tld.length > 6) {
             domainScoreMap[apexDomain] += 2;
           }
+
+          if (sensitiveKeywords(apexDomain)) {
+            domainScoreMap[apexDomain] += 4;
+          } else if (lowKeywords(apexDomain)) {
+            domainScoreMap[apexDomain] += 2;
+          }
         }
         if (
           subdomain
           && !WHITELIST_MAIN_DOMAINS.has(apexDomain)
         ) {
-          domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain);
+          domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain, line);
         }
       }
 
       for (const apexDomain in domainCountMap) {
         if (
           // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
-          domainScoreMap[apexDomain] >= 12
-          || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 4)
+          domainScoreMap[apexDomain] >= 16
+          || (domainScoreMap[apexDomain] >= 13 && domainCountMap[apexDomain] >= 7)
+          || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 10)
         ) {
           domainArr.push('.' + apexDomain);
         }
       }
+
+      // console.log({
+      //   count: domainCountMap['google.com'],
+      //   score: domainScoreMap['google.com']
+      // });
 
       return Promise.resolve(domainArr);
     },
@@ -245,11 +196,11 @@ async function processPhihsingDomains(domainArr: string[]) {
   );
 }
 
-export function calcDomainAbuseScore(subdomain: string) {
+export function calcDomainAbuseScore(subdomain: string, fullDomain: string) {
   let weight = 0;
 
-  const hitLowKeywords = lowKeywords(subdomain);
-  const sensitiveKeywordsHit = sensitiveKeywords(subdomain);
+  const hitLowKeywords = lowKeywords(fullDomain);
+  const sensitiveKeywordsHit = sensitiveKeywords(fullDomain);
 
   if (sensitiveKeywordsHit) {
     weight += 8;
@@ -265,7 +216,7 @@ export function calcDomainAbuseScore(subdomain: string) {
   if (subdomainLength > 4) {
     weight += 0.5;
     if (subdomainLength > 10) {
-      weight += 0.5;
+      weight += 0.6;
       if (subdomainLength > 20) {
         weight += 1;
         if (subdomainLength > 30) {
@@ -278,11 +229,11 @@ export function calcDomainAbuseScore(subdomain: string) {
     }
 
     if (subdomain.startsWith('www.')) {
-      weight += 4;
+      weight += 1;
     } else if (subdomain.slice(1).includes('.')) {
       weight += 1;
       if (subdomain.includes('www.')) {
-        weight += 4;
+        weight += 1;
       }
     }
   }
