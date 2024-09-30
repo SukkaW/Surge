@@ -4,7 +4,7 @@ import process from 'node:process';
 
 import { processHosts, processFilterRules, processDomainLists } from './lib/parse-filter';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA } from './constants/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
 import { compareAndWriteFile } from './lib/create-file';
 import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
@@ -44,7 +44,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       ...HOSTS_EXTRA.map(host => ` - ${host[0]}`),
       ...DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`),
       ...ADGUARD_FILTERS_EXTRA.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`),
-      ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
+      ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`),
+      ...PHISHING_HOSTS_EXTRA.map(host => ` - ${host[0]}`)
     ]);
 
   const appendArrayToRejectOutput = rejectOutput.addFromDomainset.bind(rejectOutput);
@@ -91,18 +92,25 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
               appendArrayToRejectExtraOutput(black);
             })
         ),
-
-        ([
-          'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exceptions.txt',
-          'https://raw.githubusercontent.com/AdguardTeam/AdGuardSDNSFilter/master/Filters/exclusions.txt'
-        ].map(
-          input => processFilterRules(childSpan, input).then(({ white, black }) => {
-            setAddFromArray(filterRuleWhitelistDomainSets, white);
-            setAddFromArray(filterRuleWhitelistDomainSets, black);
-          })
-        )),
+        ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRules(childSpan, ...entry).then(({ white, black }) => {
+          setAddFromArray(filterRuleWhitelistDomainSets, white);
+          setAddFromArray(filterRuleWhitelistDomainSets, black);
+        })),
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
-        readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf')).then(appendArrayToRejectOutput)
+        readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf')).then(appendArrayToRejectOutput),
+        // Dedupe domainSets
+        span.traceChildAsync('collect black keywords/suffixes', async () => {
+          /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
+          for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
+            const [type, value] = line.split(',');
+            if (type === 'DOMAIN-KEYWORD') {
+              rejectOutput.addDomainKeyword(value); // Add for later deduplication
+              rejectExtraOutput.addDomainKeyword(value); // Add for later deduplication
+            } else if (type === 'DOMAIN-SUFFIX') {
+              filterRuleWhitelistDomainSets.add('.' + value);
+            }
+          }
+        })
       ].flat());
       // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;
@@ -111,22 +119,6 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   if (shouldStop) {
     process.exit(1);
   }
-
-  // Dedupe domainSets
-  await span.traceChildAsync('collect black keywords/suffixes', async () => {
-    /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
-    for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
-      const [type, value] = line.split(',');
-
-      if (type === 'DOMAIN-KEYWORD') {
-        rejectOutput.addDomainKeyword(value); // Add for later deduplication
-        rejectExtraOutput.addDomainKeyword(value); // Add for later deduplication
-      } else if (type === 'DOMAIN-SUFFIX') {
-        rejectOutput.whitelistDomain('.' + value); // Add for later deduplication
-        rejectExtraOutput.whitelistDomain('.' + value); // Add for later deduplication
-      }
-    }
-  });
 
   await Promise.all([
     rejectOutput.done(),

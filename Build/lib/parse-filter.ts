@@ -45,7 +45,11 @@ const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean
 
 const cacheKey = createCacheKey(__filename);
 
-export function processDomainLists(span: Span, domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null, extraCacheKey: (input: string) => string = identity) {
+export function processDomainLists(
+  span: Span,
+  domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false,
+  ttl: number | null = null, extraCacheKey: (input: string) => string = identity
+) {
   return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
     extraCacheKey(cacheKey(domainListsUrl)),
     async () => {
@@ -100,9 +104,13 @@ const hostsLineCb = (l: string, set: string[], includeAllSubDomain: boolean, met
   set.push(includeAllSubDomain ? `.${domain}` : domain);
 };
 
-export function processHosts(span: Span, hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, ttl: number | null = null) {
+export function processHosts(
+  span: Span,
+  hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false,
+  ttl: number | null = null, extraCacheKey: (input: string) => string = identity
+) {
   return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
-    cacheKey(hostsUrl),
+    extraCacheKey(cacheKey(hostsUrl)),
     async () => {
       const domainSets: string[] = [];
 

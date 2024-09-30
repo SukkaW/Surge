@@ -214,8 +214,8 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
       }
     }
 
-    console.error(picocolors.bold('Parsed Failed'));
     if (parsedFailures.length > 0) {
+      console.error(picocolors.bold('Parsed Failed'));
       console.table(parsedFailures);
     }
 

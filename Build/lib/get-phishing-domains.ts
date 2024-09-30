@@ -1,10 +1,10 @@
-import { processDomainLists } from './parse-filter';
+import { processDomainLists, processHosts } from './parse-filter';
 import * as tldts from 'tldts-experimental';
 
 import { dummySpan } from '../trace';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
-import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
+import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
@@ -161,6 +161,8 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     const domainArr: string[] = [];
 
     (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry, cacheKey))))
+      .forEach(appendArrayInPlaceCurried(domainArr));
+    (await Promise.all(PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry, cacheKey))))
       .forEach(appendArrayInPlaceCurried(domainArr));
 
     return domainArr;
