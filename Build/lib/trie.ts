@@ -80,94 +80,39 @@ const walkHostnameTokens = (hostname: string, onToken: (token: string) => boolea
   return false;
 };
 
-export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smolTree = false) => {
-  let size = 0;
-  const root: TrieNode<Meta> = createNode();
+interface FindSingleChildLeafResult<Meta> {
+  node: TrieNode<Meta>,
+  toPrune: TrieNode<Meta> | null,
+  tokenToPrune: string | null,
+  parent: TrieNode<Meta>
+}
 
-  /**
-   * Method used to add the given suffix to the trie.
-   */
-  const add = smolTree
-    ? (suffix: string, meta?: Meta): void => {
-      let node: TrieNode<Meta> = root;
-      let curNodeChildren: Map<string, TrieNode<Meta>> = node[2];
+abstract class Triebase<Meta = any> {
+  protected readonly $root: TrieNode<Meta> = createNode();
+  protected $size = 0;
 
-      const onToken = (token: string) => {
-        curNodeChildren = node[2];
-        if (curNodeChildren.has(token)) {
-          node = curNodeChildren.get(token)!;
+  get root() {
+    return this.$root;
+  }
 
-          // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie, skip adding the rest of the node
-          if (node[0] && token === '.') {
-            return true;
-          }
-        } else {
-          const newNode = createNode(node);
-          curNodeChildren.set(token, newNode);
-          node = newNode;
-        }
-
-        return false;
-      };
-
-      // When walkHostnameTokens returns true, we should skip the rest
-      if (walkHostnameTokens(suffix, onToken)) {
-        return;
+  constructor(from?: string[] | Set<string> | null) {
+    // Actually build trie
+    if (Array.isArray(from)) {
+      for (let i = 0, l = from.length; i < l; i++) {
+        this.add(from[i]);
       }
-
-      // If we are in smolTree mode, we need to do something at the end of the loop
-      if (suffix[0] === '.') {
-        // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
-
-        // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
-        (/** parent */ node[1]!)[0] = false;
-
-        // Removing the rest of the parent's child nodes
-        node[2].clear();
-        // The SENTINEL of this node will be set to true at the end of the function, so we don't need to set it here
-
-        // we can use else-if here, because the children is now empty, we don't need to check the leading "."
-      } else if (node[2].get('.')?.[0] === true) {
-        // Trying to add `example.com` when there is already a `.example.com` in the trie
-        // No need to increment size and set SENTINEL to true (skip this "new" item)
-        return;
-      }
-
-      node[0] = true;
-      node[3] = meta!;
+    } else if (from) {
+      from.forEach((value) => this.add(value));
     }
-    : (suffix: string, meta?: Meta): void => {
-      let node: TrieNode<Meta> = root;
+  }
 
-      const onToken = (token: string) => {
-        if (node[2].has(token)) {
-          node = node[2].get(token)!;
-        } else {
-          const newNode = createNode(node);
-          node[2].set(token, newNode);
-          node = newNode;
-        }
+  public abstract add(suffix: string, meta?: Meta): void;
 
-        return false;
-      };
-
-      // When walkHostnameTokens returns true, we should skip the rest
-      if (walkHostnameTokens(suffix, onToken)) {
-        return;
-      }
-
-      if (!node[0]) {
-        size++;
-        node[0] = true;
-        node[3] = meta!;
-      }
-    };
-
-  const walkIntoLeafWithTokens = (
+  protected walkIntoLeafWithTokens(
     tokens: string[],
     onLoop: (node: TrieNode, parent: TrieNode, token: string) => void = noop
-  ) => {
-    let node: TrieNode = root;
+  ) {
+    let node: TrieNode = this.$root;
     let parent: TrieNode = node;
 
     let token: string;
@@ -193,11 +138,11 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     return { node, parent };
   };
 
-  const walkIntoLeafWithSuffix = (
+  protected walkIntoLeafWithSuffix(
     suffix: string,
     onLoop: (node: TrieNode, parent: TrieNode, token: string) => void = noop
-  ) => {
-    let node: TrieNode = root;
+  ) {
+    let node: TrieNode = this.$root;
     let parent: TrieNode = node;
 
     const onToken = (token: string) => {
@@ -225,18 +170,18 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     return { node, parent };
   };
 
-  const contains = (suffix: string): boolean => walkIntoLeafWithSuffix(suffix) !== null;
+  public contains(suffix: string): boolean { return this.walkIntoLeafWithSuffix(suffix) !== null; };
 
-  const walk = (
+  private walk(
     onMatches: (suffix: string[], meta: Meta) => void,
-    initialNode = root,
+    initialNode = this.$root,
     initialSuffix: string[] = []
-  ) => {
+  ) {
     const nodeStack: Array<TrieNode<Meta>> = [initialNode];
     // Resolving initial string (begin the start of the stack)
     const suffixStack: string[][] = [initialSuffix];
 
-    let node: TrieNode<Meta> = root;
+    let node: TrieNode<Meta> = initialNode;
 
     do {
       node = nodeStack.pop()!;
@@ -256,14 +201,7 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     } while (nodeStack.length);
   };
 
-  interface FindSingleChildLeafResult {
-    node: TrieNode,
-    toPrune: TrieNode | null,
-    tokenToPrune: string | null,
-    parent: TrieNode
-  }
-
-  const getSingleChildLeaf = (tokens: string[]): FindSingleChildLeafResult | null => {
+  protected getSingleChildLeaf(tokens: string[]): FindSingleChildLeafResult<Meta> | null {
     let toPrune: TrieNode | null = null;
     let tokenToPrune: string | null = null;
 
@@ -289,7 +227,7 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
       }
     };
 
-    const res = walkIntoLeafWithTokens(tokens, onLoop);
+    const res = this.walkIntoLeafWithTokens(tokens, onLoop);
 
     if (res === null) return null;
     return { node: res.node, toPrune, tokenToPrune, parent: res.parent };
@@ -298,16 +236,16 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
   /**
    * Method used to retrieve every item in the trie with the given prefix.
    */
-  const find = (
+  public find(
     inputSuffix: string,
     /** @default true */ includeEqualWithSuffix = true
-  ): string[] => {
+  ): string[] {
     // if (smolTree) {
     //   throw new Error('A Trie with smolTree enabled cannot perform find!');
     // }
 
     const inputTokens = hostnameToTokens(inputSuffix);
-    const res = walkIntoLeafWithTokens(inputTokens);
+    const res = this.walkIntoLeafWithTokens(inputTokens);
     if (res === null) return [];
 
     const matches: string[][] = [];
@@ -322,7 +260,7 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
         }
       };
 
-    walk(
+    this.walk(
       onMatches,
       res.node, // Performing DFS from prefix
       inputTokens
@@ -334,13 +272,13 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
   /**
    * Method used to delete a prefix from the trie.
    */
-  const remove = (suffix: string): boolean => {
-    const res = getSingleChildLeaf(hostnameToTokens(suffix));
+  public remove(suffix: string): boolean {
+    const res = this.getSingleChildLeaf(hostnameToTokens(suffix));
     if (res === null) return false;
 
     if (!res.node[0]) return false;
 
-    size--;
+    this.$size--;
     const { node, toPrune, tokenToPrune } = res;
 
     if (tokenToPrune && toPrune) {
@@ -352,58 +290,121 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
     return true;
   };
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- alias class methods
+  public delete = this.remove;
+
   /**
- * Method used to assert whether the given prefix exists in the Trie.
- */
-  const has = (suffix: string): boolean => {
-    const res = walkIntoLeafWithSuffix(suffix);
+   * Method used to assert whether the given prefix exists in the Trie.
+   */
+  public has(suffix: string): boolean {
+    const res = this.walkIntoLeafWithSuffix(suffix);
 
     return res
       ? res.node[0]
       : false;
   };
 
-  function dump(onSuffix: (suffix: string) => void): void;
-  function dump(): string[];
-  function dump(onSuffix?: (suffix: string) => void): string[] | void {
+  public dump(onSuffix: (suffix: string) => void): void;
+  public dump(): string[];
+  public dump(onSuffix?: (suffix: string) => void): string[] | void {
     const results: string[] = [];
 
     const handleSuffix = onSuffix
       ? (suffix: string[]) => onSuffix(fastStringArrayJoin(suffix, ''))
       : (suffix: string[]) => results.push(fastStringArrayJoin(suffix, ''));
 
-    walk(handleSuffix);
+    this.walk(handleSuffix);
 
     return results;
   };
 
-  const dumpMeta = () => {
+  public dumpMeta() {
     const results: Meta[] = [];
 
-    walk((suffix, meta) => {
+    this.walk((_suffix, meta) => {
       results.push(meta);
     });
 
     return results;
   };
 
-  const dumpWithMeta = () => {
+  public dumpWithMeta() {
     const results: Array<[string, Meta]> = [];
 
-    walk((suffix, meta) => {
+    this.walk((suffix, meta) => {
       results.push([fastStringArrayJoin(suffix, ''), meta]);
     });
 
     return results;
   };
 
-  const whitelist = (suffix: string) => {
-    if (!smolTree) {
-      throw new Error('whitelist method is only available in smolTree mode.');
+  public inspect(depth: number, unpackMeta?: (meta?: Meta) => any) {
+    return fastStringArrayJoin(
+      JSON.stringify(deepTrieNodeToJSON(this.$root, unpackMeta), null, 2).split('\n').map((line) => ' '.repeat(depth) + line),
+      '\n'
+    );
+  }
+
+  public [util.inspect.custom](depth: number) {
+    return this.inspect(depth);
+  };
+}
+
+export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
+  public smolTree = true;
+
+  add(suffix: string, meta?: Meta): void {
+    let node: TrieNode<Meta> = this.$root;
+    let curNodeChildren: Map<string, TrieNode<Meta>> = node[2];
+
+    const onToken = (token: string) => {
+      curNodeChildren = node[2];
+      if (curNodeChildren.has(token)) {
+        node = curNodeChildren.get(token)!;
+
+        // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie, skip adding the rest of the node
+        if (node[0] && token === '.') {
+          return true;
+        }
+      } else {
+        const newNode = createNode(node);
+        curNodeChildren.set(token, newNode);
+        node = newNode;
+      }
+
+      return false;
+    };
+
+    // When walkHostnameTokens returns true, we should skip the rest
+    if (walkHostnameTokens(suffix, onToken)) {
+      return;
     }
 
+    // If we are in smolTree mode, we need to do something at the end of the loop
+    if (suffix[0] === '.') {
+      // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
+
+      // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
+      (/** parent */ node[1]!)[0] = false;
+
+      // Removing the rest of the parent's child nodes
+      node[2].clear();
+      // The SENTINEL of this node will be set to true at the end of the function, so we don't need to set it here
+
+      // we can use else-if here, because the children is now empty, we don't need to check the leading "."
+    } else if (node[2].get('.')?.[0] === true) {
+      // Trying to add `example.com` when there is already a `.example.com` in the trie
+      // No need to increment size and set SENTINEL to true (skip this "new" item)
+      return;
+    }
+
+    node[0] = true;
+    node[3] = meta!;
+  }
+
+  public whitelist(suffix: string) {
     const tokens = hostnameToTokens(suffix);
-    const res = getSingleChildLeaf(tokens);
+    const res = this.getSingleChildLeaf(tokens);
 
     if (res === null) return;
 
@@ -433,45 +434,48 @@ export const createTrie = <Meta = any>(from?: string[] | Set<string> | null, smo
       node[0] = false;
     }
   };
+}
 
-  // Actually build trie
-  if (Array.isArray(from)) {
-    for (let i = 0, l = from.length; i < l; i++) {
-      add(from[i]);
-    }
-  } else if (from) {
-    from.forEach((value) => add(value));
+export class HostnameTrie<Meta = any> extends Triebase<Meta> {
+  get size() {
+    return this.$size;
   }
 
-  const inspect = (depth: number, unpackMeta?: (meta?: Meta) => any) => fastStringArrayJoin(
-    JSON.stringify(deepTrieNodeToJSON(root, unpackMeta), null, 2).split('\n').map((line) => ' '.repeat(depth) + line),
-    '\n'
-  );
+  add(suffix: string, meta?: Meta): void {
+    let node: TrieNode<Meta> = this.$root;
 
-  return {
-    add,
-    contains,
-    find,
-    remove,
-    delete: remove,
-    has,
-    dump,
-    dumpMeta,
-    dumpWithMeta,
-    get size() {
-      if (smolTree) {
-        throw new Error('A Trie with smolTree enabled cannot have correct size!');
+    const onToken = (token: string) => {
+      if (node[2].has(token)) {
+        node = node[2].get(token)!;
+      } else {
+        const newNode = createNode(node);
+        node[2].set(token, newNode);
+        node = newNode;
       }
-      return size;
-    },
-    get root() {
-      return root;
-    },
-    whitelist,
-    inspect,
-    [util.inspect.custom]: inspect,
-    smolTree
-  };
+
+      return false;
+    };
+
+    // When walkHostnameTokens returns true, we should skip the rest
+    if (walkHostnameTokens(suffix, onToken)) {
+      return;
+    }
+
+    if (!node[0]) {
+      this.$size++;
+      node[0] = true;
+      node[3] = meta!;
+    }
+  }
+}
+
+export function createTrie<Meta = any>(from: string[] | Set<string> | null, smolTree: true): HostnameSmolTrie<Meta>;
+export function createTrie<Meta = any>(from?: string[] | Set<string> | null, smolTree?: false): HostnameTrie<Meta>;
+export function createTrie<_Meta = any>(from?: string[] | Set<string> | null, smolTree = true) {
+  if (smolTree) {
+    return new HostnameSmolTrie(from);
+  }
+  return new HostnameTrie(from);
 };
 
 export type Trie = ReturnType<typeof createTrie>;

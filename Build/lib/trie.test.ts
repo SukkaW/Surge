@@ -56,6 +56,7 @@ describe('Trie', () => {
 
     trie.add('skk.moe');
     trie.add('blog.skk.moe');
+    // eslint-disable-next-line sukka/no-element-overwrite -- deliberately do testing
     trie.add('skk.moe');
 
     expect(trie.size).to.equal(2);
@@ -63,18 +64,18 @@ describe('Trie', () => {
   });
 
   it('should be possible to set the null sequence.', () => {
-    let trie = createTrie(null, false);
+    const trie = createTrie(null, false);
 
     trie.add('');
     expect(trie.has('')).to.equal(true);
 
-    trie = createTrie(null, true);
-    trie.add('');
-    expect(trie.has('')).to.equal(true);
+    const trie2 = createTrie(null, true);
+    trie2.add('');
+    expect(trie2.has('')).to.equal(true);
   });
 
   it('should be possible to delete items.', () => {
-    const trie = createTrie(null);
+    const trie = createTrie(null, false);
 
     trie.add('skk.moe');
     trie.add('example.com');
@@ -108,7 +109,7 @@ describe('Trie', () => {
   });
 
   it('should be possible to retrieve items matching the given prefix.', () => {
-    const trie = createTrie(null);
+    const trie = createTrie(null, false);
 
     trie.add('example.com');
     trie.add('blog.example.com');
@@ -141,12 +142,12 @@ describe('Trie', () => {
   });
 
   it('should be possible to create a trie from an arbitrary iterable.', () => {
-    let trie = createTrie(['skk.moe', 'blog.skk.moe']);
+    let trie = createTrie(['skk.moe', 'blog.skk.moe'], false);
 
     expect(trie.size).to.equal(2);
     expect(trie.has('skk.moe')).to.equal(true);
 
-    trie = createTrie(new Set(['skk.moe', 'example.com']));
+    trie = createTrie(new Set(['skk.moe', 'example.com']), false);
     expect(trie.size).to.equal(2);
     expect(trie.has('skk.moe')).to.equal(true);
   });
@@ -154,28 +155,28 @@ describe('Trie', () => {
 
 describe('surge domainset dedupe', () => {
   it('should not remove same entry', () => {
-    const trie = createTrie(['.skk.moe', 'noc.one']);
+    const trie = createTrie(['.skk.moe', 'noc.one'], false);
 
     expect(trie.find('.skk.moe')).to.deep.equal(['.skk.moe']);
     expect(trie.find('noc.one')).to.deep.equal(['noc.one']);
   });
 
   it('should match subdomain - 1', () => {
-    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net']);
+    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], false);
 
     expect(trie.find('.skk.moe')).to.deep.equal(['image.cdn.skk.moe', 'blog.skk.moe']);
     expect(trie.find('.sukkaw.com')).to.deep.equal(['www.sukkaw.com']);
   });
 
   it('should match subdomain - 2', () => {
-    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', '.skk.moe', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net']);
+    const trie = createTrie(['www.noc.one', 'www.sukkaw.com', '.skk.moe', 'blog.skk.moe', 'image.cdn.skk.moe', 'cdn.sukkaw.net'], false);
 
     expect(trie.find('.skk.moe')).to.deep.equal(['.skk.moe', 'image.cdn.skk.moe', 'blog.skk.moe']);
     expect(trie.find('.sukkaw.com')).to.deep.equal(['www.sukkaw.com']);
   });
 
   it('should not remove non-subdomain', () => {
-    const trie = createTrie(['skk.moe', 'sukkaskk.moe']);
+    const trie = createTrie(['skk.moe', 'sukkaskk.moe'], false);
     expect(trie.find('.skk.moe')).to.deep.equal([]);
   });
 });

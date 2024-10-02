@@ -191,7 +191,7 @@ async function processPhihsingDomains(domainArr: string[]) {
   );
 }
 
-export function calcDomainAbuseScore(subdomain: string, fullDomain: string) {
+export function calcDomainAbuseScore(subdomain: string, fullDomain: string = subdomain) {
   let weight = 0;
 
   const hitLowKeywords = lowKeywords(fullDomain);

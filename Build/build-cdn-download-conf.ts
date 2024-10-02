@@ -10,19 +10,16 @@ import { processLine } from './lib/process-line';
 import { DomainsetOutput } from './lib/create-file';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
-  const trie = createTrie(
-    (await getPublicSuffixListTextPromise()).reduce<string[]>(
-      (acc, cur) => {
-        const tmp = processLine(cur);
-        if (tmp) {
-          acc.push(tmp);
-        }
-        return acc;
-      },
-      []
-    ),
-    true
-  );
+  const trie = createTrie((await getPublicSuffixListTextPromise()).reduce<string[]>(
+    (acc, cur) => {
+      const tmp = processLine(cur);
+      if (tmp) {
+        acc.push(tmp);
+      }
+      return acc;
+    },
+    []
+  ));
 
   /**
    * Extract OSS domain from publicsuffix list

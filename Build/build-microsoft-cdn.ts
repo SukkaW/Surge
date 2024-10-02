@@ -1,6 +1,6 @@
 import { task } from './trace';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
-import { createTrie } from './lib/trie';
+import { HostnameSmolTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
@@ -27,7 +27,7 @@ const BLACKLIST = [
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise<[domains: string[], domainSuffixes: string[]]>(async () => {
   // First trie is to find the microsoft domains that matches probe domains
-  const trie = createTrie(null, true);
+  const trie = new HostnameSmolTrie();
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
     const domain = extractDomainsFromFelixDnsmasq(line);
     if (domain) {
@@ -37,8 +37,8 @@ export const getMicrosoftCdnRulesetPromise = createMemoizedPromise<[domains: str
   const foundMicrosoftCdnDomains = PROBE_DOMAINS.flatMap(domain => trie.find(domain));
 
   // Second trie is to remove blacklisted domains
-  const trie2 = createTrie(foundMicrosoftCdnDomains, true);
-  BLACKLIST.forEach(trie2.whitelist);
+  const trie2 = new HostnameSmolTrie(foundMicrosoftCdnDomains);
+  BLACKLIST.forEach(black => trie2.whitelist(black));
 
   const domains: string[] = DOMAINS;
   const domainSuffixes: string[] = DOMAIN_SUFFIXES;

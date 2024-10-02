@@ -7,7 +7,7 @@ import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { SOURCE_DIR } from './constants/dir';
 
 export const parseDomesticList = async () => {
-  const trie = createTrie(await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'), true);
+  const trie = createTrie(await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'));
 
   const top5000 = new Set<string>();
 
