@@ -328,12 +328,16 @@ abstract class Triebase<Meta = any> {
     return results;
   };
 
-  public dumpWithMeta() {
-    const results: Array<[string, Meta]> = [];
+  public dumpWithMeta(onSuffix: (suffix: string, meta: Meta | undefined) => void): void;
+  public dumpWithMeta(): string[];
+  public dumpWithMeta(onSuffix?: (suffix: string, meta: Meta | undefined) => void): string[] | void {
+    const results: string[] = [];
 
-    this.walk((suffix, meta) => {
-      results.push([fastStringArrayJoin(suffix, ''), meta]);
-    });
+    const handleSuffix = onSuffix
+      ? (suffix: string[], meta: Meta | undefined) => onSuffix(fastStringArrayJoin(suffix, ''), meta)
+      : (suffix: string[]) => results.push(fastStringArrayJoin(suffix, ''));
+
+    this.walk(handleSuffix);
 
     return results;
   };
@@ -417,12 +421,12 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
       // Removing all the child nodes by empty the children
       // This removes the only child ".", which removes "blog.sub.example.com"
       parent[2].clear();
-    }
-
+    } else {
     // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
-    const dotNode = node[2].get('.');
-    if (dotNode) {
-      dotNode[0] = false;
+      const dotNode = node[2].get('.');
+      if (dotNode) {
+        dotNode[0] = false;
+      }
     }
 
     // return early if not found
