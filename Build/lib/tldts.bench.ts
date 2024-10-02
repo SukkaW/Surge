@@ -18,7 +18,7 @@ import * as tldtsExperimental from 'tldts-experimental';
   };
 
   (['getDomain', 'getPublicSuffix', 'getSubdomain', 'parse'] as const).forEach(methodName => {
-    group(methodName, () => {
+    group(() => {
       bench('tldts', () => {
         for (let i = 0, len = data.length; i < len; i++) {
           tldts[methodName](data[i], tldtsOpt);

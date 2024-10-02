@@ -7,7 +7,7 @@ import { SOURCE_DIR } from '../constants/dir';
 
 const file = path.join(SOURCE_DIR, 'domainset/cdn.conf');
 
-group('read file by line', () => {
+group(() => {
   bench('readFileByLine', () => processLineFromReadline(readFileByLine(file)));
   bench('fsp.readFile', () => fsp.readFile(file, 'utf-8').then((content) => content.split('\n').filter(processLine)));
 });

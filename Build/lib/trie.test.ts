@@ -35,7 +35,7 @@ describe('hostname to tokens', () => {
 
 describe('Trie', () => {
   it('should be possible to add domains to a Trie.', () => {
-    const trie = createTrie();
+    const trie = createTrie(null, false);
 
     trie.add('a.skk.moe');
     trie.add('skk.moe');
@@ -52,7 +52,7 @@ describe('Trie', () => {
   });
 
   it('adding the same item several times should not increase size.', () => {
-    const trie = createTrie();
+    const trie = createTrie(null, false);
 
     trie.add('skk.moe');
     trie.add('blog.skk.moe');
@@ -63,7 +63,7 @@ describe('Trie', () => {
   });
 
   it('should be possible to set the null sequence.', () => {
-    let trie = createTrie();
+    let trie = createTrie(null, false);
 
     trie.add('');
     expect(trie.has('')).to.equal(true);
@@ -121,6 +121,23 @@ describe('Trie', () => {
     expect(trie.find('org')).to.deep.equal(['example.org']);
     expect(trie.find('example.net')).to.deep.equal([]);
     expect(trie.find('')).to.deep.equal(['example.org', 'example.com', 'cdn.example.com', 'blog.example.com']);
+  });
+
+  it('should be possible to retrieve items matching the given prefix even with a smol trie.', () => {
+    const trie = createTrie(null, true);
+
+    trie.add('.example.com');
+    trie.add('example.com');
+    trie.add('blog.example.com');
+    trie.add('cdn.example.com');
+    trie.add('example.org');
+
+    expect(trie.find('example.com')).to.deep.equal(['.example.com']);
+    expect(trie.find('com')).to.deep.equal(['.example.com']);
+    expect(trie.find('.example.com')).to.deep.equal(['.example.com']);
+    expect(trie.find('org')).to.deep.equal(['example.org']);
+    expect(trie.find('example.net')).to.deep.equal([]);
+    expect(trie.find('')).to.deep.equal(['example.org', '.example.com']);
   });
 
   it('should be possible to create a trie from an arbitrary iterable.', () => {

@@ -15,6 +15,8 @@ export class IPListOutput extends RuleOutput<Preprocessed> {
     super(span, id);
   }
 
+  mitmSgmodule = undefined;
+
   protected preprocess() {
     const results: string[] = [];
     appendArrayInPlace(

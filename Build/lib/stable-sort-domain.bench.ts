@@ -7,8 +7,8 @@ import { bench, group, run } from 'mitata';
 (async () => {
   const data = await processLineFromReadline(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt'));
 
-  group('sortDomains', () => {
-    bench('run', () => sortDomains(data));
+  group(() => {
+    bench('sortDomains', () => sortDomains(data));
   });
 
   run();
