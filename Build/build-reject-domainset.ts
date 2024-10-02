@@ -137,14 +137,6 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
   });
 
-  span.traceChildSync(
-    'build domain map for sort & collect stat',
-    () => {
-      rejectOutput.calcDomainMap();
-      rejectExtraOutput.calcDomainMap();
-    }
-  );
-
   // Create reject stats
   const rejectDomainsStats: string[] = span
     .traceChild('create reject stats')
