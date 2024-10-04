@@ -115,6 +115,7 @@ const PREDEFINE_DOMAINS = [
   '.wifiman.com',
   '.wifiman.me',
   '.wifiman.ubncloud.com',
+  '.wifiman-stability-test.ubncloud.com',
   // Fast.com
   '.fast.com',
   // MacPaw
