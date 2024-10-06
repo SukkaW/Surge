@@ -8,6 +8,7 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { processLine } from './lib/process-line';
 import { DomainsetOutput } from './lib/create-file';
+import { CRASHLYTICS_WHITELIST } from './constants/reject-data-source';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = createTrie((await getPublicSuffixListTextPromise()).reduce<string[]>(
@@ -69,6 +70,9 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
 
   appendArrayInPlace(downloadDomainSet, S3OSSDomains.map(domain => `.${domain}`));
   appendArrayInPlace(downloadDomainSet, steamDomainSet);
+
+  // we have whitelisted the crashlytics domain, but it doesn't mean we can't put it in CDN policy
+  appendArrayInPlace(cdnDomainsList, CRASHLYTICS_WHITELIST);
 
   return Promise.all([
     new DomainsetOutput(span, 'cdn')

@@ -282,7 +282,69 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   ]
 ];
 
+// In a hostile network like when an ad blocker is present, apps might be crashing, and these errors need to be
+// The reason for unblocking crashlytics is to not make developers life worse by breaking crash reporting.
+// In a hostile network like when an ad blocker is present, apps might be crashing, and these errors need to be
+// reported to devs, otherwise they won't learn about the issue and won't fix it.
+// Also, it is not a common third-party analytics tracker, Crashlytics is not used for collecting users' data.
+export const CRASHLYTICS_WHITELIST = [
+  // VSCode Telemetry, see https://sts.online.visualstudio.com/api/swagger/index.html
+  'sts.online.visualstudio.com',
+  // Sentry
+  '.ingest.sentry.io',
+  // bugsnag
+  '.sessions.bugsnag.com',
+  '.notify.bugsnag.com',
+  // influxdata
+  '.cloud.influxdata.com',
+  '.cloud1.influxdata.com',
+  '.cloud2.influxdata.com',
+  // split.io A/B flag
+  'streaming.split.io',
+  'telemetry.split.io',
+  'sdk.split.io',
+  // Google
+  // -ds.metric.gstatic.com are specifically exempted from reject, but it could use secondary proxy policy
+  '.metric.gstatic.com',
+  // Misc
+  'telemetry.1passwordservices.com',
+  'events.tableplus.com',
+  'telemetry.nextjs.org',
+  'telemetry.vercel.com',
+  'stats.setapp.com',
+  'stats.setapp.macpaw.dev',
+  '.app-analytics-services.com',
+  '.telemetry.services.yofi.ai',
+  '.cdn.pubnub.com',
+  '.data.debugbear.com',
+  '.cdn.applicationinsights.io',
+  '.applicationinsights.azure.com',
+  '.api.loganalytics.io',
+  '.bugly.qcloud.com',
+  // '.signalfx.com',
+  '.cdn.signalfx.com',
+  '.crash-reports.browser.yandex.net',
+  '.crashlytics2.l.google.com',
+  '.crashlyticsreports-pa.googleapis.com',
+  '.e.crashlytics.com',
+  '.events.backtrace.io',
+  '.events.split.io',
+  '.in.appcenter.ms',
+  '.loggly.com',
+  '.logz.io',
+  '.opentelemetry.io',
+  '.raygun.io', // dashboard lives at raygun.com
+  '.rum.cronitor.io',
+  '.settings.crashlytics.com',
+  '.sny.monosnap.com',
+  '.lr-ingest.com',
+  '.cdn.rollbar.com',
+  '.api.instabug.com',
+  '.ensighten.com'
+];
+
 export const PREDEFINED_WHITELIST = [
+  ...CRASHLYTICS_WHITELIST,
   '.localhost',
   '.local',
   '.localhost.localdomain',
