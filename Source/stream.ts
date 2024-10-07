@@ -130,6 +130,7 @@ const BAHAMUT: StreamService = {
 const BBC: StreamService = {
   name: 'BBC',
   rules: [
+    'DOMAIN-SUFFIX,tvlicensing.co.uk',
     'DOMAIN-KEYWORD,bbcfmt',
     'DOMAIN-KEYWORD,uk-live',
 
@@ -358,7 +359,6 @@ const ITV: StreamService = {
     'DOMAIN,itvpnpmobile-a.akamaihd.net',
 
     'DOMAIN-SUFFIX,itv.com',
-    'DOMAIN-SUFFIX,itvstatic.com',
 
     'USER-AGENT,ITV_Player*'
   ]

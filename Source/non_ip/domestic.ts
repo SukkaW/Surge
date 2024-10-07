@@ -92,6 +92,7 @@ export const DOMESTICS = {
     domains: [
       'dns.pub',
       'doh.pub',
+      'dot.pub',
       '+qcloud.com',
       '+gtimg.cn',
       '+gtimg.com',
@@ -197,9 +198,7 @@ export const DOMESTICS = {
       'xiaomi.cn',
       'xiaomi.net',
       'xiaomiev.com',
-      'xiaomiyoupin.com',
-      // mi app store cdn
-      'saxyit.com'
+      'xiaomiyoupin.com'
     ]
   },
   BYTEDANCE: {
