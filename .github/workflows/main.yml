@@ -39,10 +39,10 @@ jobs:
           echo "hour=$(date +'%H')" >> $GITHUB_OUTPUT
           echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
           echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
-      - name: Cache cache.db
-        uses: actions/cache@v4
+      - name: Restore cache.db
+        uses: actions/cache/restore@v4
+        id: cache-db-restore
         with:
-          save-always: true
           path: |
             .cache
           key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
@@ -77,6 +77,13 @@ jobs:
           retention-days: 1
           compression-level: 4
           include-hidden-files: false
+      - name: Cache cache.db
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .cache
+          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
   deploy_to_cloudflare_pages:
     needs:
       - build

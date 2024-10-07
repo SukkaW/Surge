@@ -147,7 +147,8 @@ const BILIBILI_INTL: StreamService = {
     'DOMAIN-SUFFIX,biliintl.com',
     'DOMAIN,apm-misaka.biliapi.net',
     'DOMAIN,upos-bstar-mirrorakam.akamaized.net',
-    'DOMAIN,upos-bstar1-mirrorakam.akamaized.net',
+    'DOMAIN,upos-bstar1-mirrorakam.akamaized.net', // geoblocking
+    // upos-sz-mirroralibstar1.bilivideo.com, from domain bilivideo.com and without geoblocking
     'DOMAIN-SUFFIX,bilibili.tv',
     'PROCESS-NAME,com.bstar.intl'
   ]
