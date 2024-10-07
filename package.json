@@ -29,7 +29,7 @@
     "cli-table3": "^0.6.5",
     "csv-parse": "^5.5.6",
     "fast-cidr-tools": "^0.3.1",
-    "fdir": "^6.3.0",
+    "fdir": "^6.4.0",
     "foxact": "^0.2.38",
     "hash-wasm": "^4.11.0",
     "json-stringify-pretty-compact": "^3.0.0",
@@ -37,15 +37,15 @@
     "picocolors": "^1.1.0",
     "punycode": "^2.3.1",
     "tar-fs": "^3.0.6",
-    "tldts": "^6.1.48",
-    "tldts-experimental": "^6.1.48",
+    "tldts": "^6.1.50",
+    "tldts-experimental": "^6.1.50",
     "yaml": "^2.5.1"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^6.6.0",
+    "@eslint-sukka/node": "^6.6.1",
     "@swc-node/register": "^1.10.9",
     "@swc/core": "^1.7.28",
-    "@types/async-retry": "^1.4.8",
+    "@types/async-retry": "^1.4.9",
     "@types/better-sqlite3": "^7.6.11",
     "@types/chai": "^4.3.20",
     "@types/mocha": "^10.0.8",
@@ -53,14 +53,14 @@
     "@types/tar-fs": "^2.0.4",
     "@types/tar-stream": "^3.1.3",
     "chai": "4",
-    "eslint": "^9.11.1",
-    "eslint-config-sukka": "^6.6.0",
-    "eslint-formatter-sukka": "^6.6.0",
+    "eslint": "^9.12.0",
+    "eslint-config-sukka": "^6.6.1",
+    "eslint-formatter-sukka": "^6.6.1",
     "mitata": "^1.0.10",
     "mocha": "^10.7.3",
     "typescript": "^5.6.2"
   },
-  "packageManager": "pnpm@9.11.0",
+  "packageManager": "pnpm@9.12.1",
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"
   }
