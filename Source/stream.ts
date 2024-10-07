@@ -114,7 +114,7 @@ const APPLE_MUSIC_TV: StreamService = {
 const BAHAMUT: StreamService = {
   name: 'Bahamut',
   rules: [
-    'DOMAIN,bahamut.akamaized.net',
+    // 'DOMAIN,bahamut.akamaized.net', // Akamai based CDN, no geoblock at all
     'DOMAIN,gamer-cds.cdn.hinet.net',
     'DOMAIN,gamer2-cds.cdn.hinet.net',
 
