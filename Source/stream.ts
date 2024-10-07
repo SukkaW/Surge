@@ -881,9 +881,8 @@ export const TW: StreamService[] = [
   // HamiVideo
   // CatchPlay
   HBO_ASIA,
-  BAHAMUT,
+  BAHAMUT
   // elevensportstw
-  BILIBILI_INTL
 ];
 
 export const JP: StreamService[] = [
