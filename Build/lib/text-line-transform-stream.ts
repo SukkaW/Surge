@@ -25,23 +25,25 @@ export class TextLineStream extends TransformStream<string, string> {
     allowCR = false
   }: TextLineStreamOptions = {}) {
     let __buf = '';
+    let chunkIndex = 0;
 
     super({
       transform(chunk, controller) {
         chunk = __buf + chunk;
+        chunkIndex = 0;
 
         for (; ;) {
-          const lfIndex = chunk.indexOf('\n');
+          const lfIndex = chunk.indexOf('\n', chunkIndex);
 
           if (allowCR) {
-            const crIndex = chunk.indexOf('\r');
+            const crIndex = chunk.indexOf('\r', chunkIndex);
 
             if (
               crIndex !== -1 && crIndex !== (chunk.length - 1)
               && (lfIndex === -1 || (lfIndex - 1) > crIndex)
             ) {
-              controller.enqueue(chunk.slice(0, crIndex));
-              chunk = chunk.slice(crIndex + 1);
+              controller.enqueue(chunk.slice(chunkIndex, crIndex));
+              chunkIndex = crIndex + 1;
               continue;
             }
           }
@@ -51,15 +53,15 @@ export class TextLineStream extends TransformStream<string, string> {
             if (chunk[lfIndex - 1] === '\r') {
               crOrLfIndex--;
             }
-            controller.enqueue(chunk.slice(0, crOrLfIndex));
-            chunk = chunk.slice(lfIndex + 1);
+            controller.enqueue(chunk.slice(chunkIndex, crOrLfIndex));
+            chunkIndex = lfIndex + 1;
             continue;
           }
 
           break;
         }
 
-        __buf = chunk;
+        __buf = chunk.slice(chunkIndex);
       },
       flush(controller) {
         if (__buf.length > 0) {

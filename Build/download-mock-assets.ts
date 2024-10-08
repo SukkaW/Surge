@@ -19,13 +19,12 @@ export const downloadMockAssets = task(require.main === module, __filename)((spa
   ([filename, url]) => span
     .traceChildAsync(url, async () => {
       const res = await fetchWithRetry(url);
-
-      const src = path.join(OUTPUT_MOCK_DIR, filename);
       if (!res.body) {
         throw new Error(`Empty body from ${url}`);
       }
 
       await mkdirp(OUTPUT_MOCK_DIR);
+      const src = path.join(OUTPUT_MOCK_DIR, filename);
 
       return pipeline(
         Readable.fromWeb(res.body),

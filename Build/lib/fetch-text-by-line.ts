@@ -10,6 +10,7 @@ import { processLine } from './process-line';
 
 const getReadableStream = (file: string | FileHandle): ReadableStream => {
   if (typeof file === 'string') {
+    // return fs.openAsBlob(file).then(blob => blob.stream())
     return Readable.toWeb(fs.createReadStream(file/* , { encoding: 'utf-8' } */));
   }
   return file.readableWebStream();
