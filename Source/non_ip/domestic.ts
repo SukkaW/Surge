@@ -161,6 +161,7 @@ export const DOMESTICS = {
     hosts: {},
     domains: [
       '$upos-sz-mirrorcoso1.bilivideo.com',
+      '$upos-sz-mirrorcosbstar1.bilivideo.com', // Bilibili Intl with Tencent Cloud CDN
       '$acg.tv',
       '$b23.tv',
       'bilibili.cn',
