@@ -10,8 +10,7 @@ import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
 import { createCacheKey, deserializeArray, fsFetchCache, serializeArray } from './cache-filesystem';
 import { fastStringArrayJoin } from './misc';
-
-import { sha256 } from 'hash-wasm';
+import { stringHash } from './string-hash';
 
 const BLACK_TLD = new Set([
   'accountant', 'autos',
@@ -114,16 +113,17 @@ export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('g
     return domainArr;
   });
 
+  const cacheHash = span.traceChildSync('get hash', () => stringHash(fastStringArrayJoin(domainArr, '|')));
+
   return span.traceChildAsync(
     'process phishing domain set',
-    () => processPhihsingDomains(domainArr)
+    () => processPhihsingDomains(domainArr, cacheHash)
   );
 });
 
-async function processPhihsingDomains(domainArr: string[]) {
-  const hash = await sha256(fastStringArrayJoin(domainArr, '|'));
+async function processPhihsingDomains(domainArr: string[], cacheHash = '') {
   return fsFetchCache.apply(
-    cacheKey('processPhihsingDomains|' + hash),
+    cacheKey('processPhihsingDomains|' + cacheHash),
     () => {
       const domainCountMap: Record<string, number> = {};
       const domainScoreMap: Record<string, number> = {};

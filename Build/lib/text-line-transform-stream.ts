@@ -48,17 +48,19 @@ export class TextLineStream extends TransformStream<string, string> {
             }
           }
 
-          if (lfIndex !== -1) {
-            let crOrLfIndex = lfIndex;
-            if (chunk[lfIndex - 1] === '\r') {
-              crOrLfIndex--;
-            }
-            controller.enqueue(chunk.slice(chunkIndex, crOrLfIndex));
-            chunkIndex = lfIndex + 1;
-            continue;
+          if (lfIndex === -1) {
+            // we can no longer find a line break in the chunk, break the current loop
+            break;
           }
 
-          break;
+          // enqueue current line, and loop again to find next line
+          let crOrLfIndex = lfIndex;
+          if (chunk[lfIndex - 1] === '\r') {
+            crOrLfIndex--;
+          }
+          controller.enqueue(chunk.slice(chunkIndex, crOrLfIndex));
+          chunkIndex = lfIndex + 1;
+          continue;
         }
 
         __buf = chunk.slice(chunkIndex);
