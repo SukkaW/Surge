@@ -68,6 +68,9 @@ importers:
       tldts-experimental:
         specifier: ^6.1.50
         version: 6.1.50
+      undici:
+        specifier: ^6.19.8
+        version: 6.19.8
       yaml:
         specifier: ^2.5.1
         version: 2.5.1
@@ -1489,6 +1492,10 @@ packages:
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
+  undici@6.19.8:
+    resolution: {integrity: sha512-U8uCCl2x9TK3WANvmBavymRzxbfFYG+tAu+fgx3zxQy3qdagQqBLwJVrdyO1TBfUXvfKveMKJZhpvUYoOjM+4g==}
+    engines: {node: '>=18.17'}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -2987,6 +2994,8 @@ snapshots:
   typescript@5.6.2: {}
 
   undici-types@5.26.5: {}
+
+  undici@6.19.8: {}
 
   uri-js@4.4.1:
     dependencies:

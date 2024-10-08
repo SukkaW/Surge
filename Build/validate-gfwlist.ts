@@ -6,12 +6,13 @@ import { parse } from 'csv-parse/sync';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
 import { SOURCE_DIR } from './constants/dir';
+import { fetchWithRetry } from './lib/fetch-retry';
 
 export const parseGfwList = async () => {
   const whiteSet = new Set<string>();
   const blackSet = new Set<string>();
 
-  const text = await (await fetch('https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt')).text();
+  const text = await (await fetchWithRetry('https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt')).text();
   for (const l of atob(text).split('\n')) {
     const line = processLine(l);
     if (!line) continue;
@@ -54,13 +55,13 @@ export const parseGfwList = async () => {
       continue;
     }
   }
-  for (const l of (await (await fetch('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
+  for (const l of (await (await fetchWithRetry('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
     blackSet.add(l);
   }
 
   const top500Gfwed = new Set<string>();
 
-  const res = await (await fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000', {
+  const res = await (await fetchWithRetry('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000', {
     headers: {
       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
       'accept-language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,es;q=0.5',

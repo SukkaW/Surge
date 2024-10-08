@@ -39,6 +39,7 @@
     "tar-fs": "^3.0.6",
     "tldts": "^6.1.50",
     "tldts-experimental": "^6.1.50",
+    "undici": "^6.19.8",
     "yaml": "^2.5.1"
   },
   "devDependencies": {

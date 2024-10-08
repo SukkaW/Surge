@@ -2,6 +2,10 @@ import retry from 'async-retry';
 import picocolors from 'picocolors';
 import { setTimeout } from 'node:timers/promises';
 
+import { setGlobalDispatcher, Agent } from 'undici';
+
+setGlobalDispatcher(new Agent({ allowH2: true }));
+
 function isClientError(err: unknown): err is NodeJS.ErrnoException {
   if (!err || typeof err !== 'object') return false;
 
