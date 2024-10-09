@@ -273,13 +273,13 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
       'https://secure.fanboy.co.nz/fanboy-cookiemonster_ubo.txt'
     ],
     TTL.TWLVE_HOURS()
-  ],
-  // Bypass Paywall Cleaner
-  [
-    'https://gitflic.ru/project/magnolia1234/bypass-paywalls-clean-filters/blob/raw?file=bpc-paywall-filter.txt',
-    [],
-    TTL.ONE_DAY()
   ]
+  // Bypass Paywall Cleaner
+  // [
+  //   'https://gitflic.ru/project/magnolia1234/bypass-paywalls-clean-filters/blob/raw?file=bpc-paywall-filter.txt',
+  //   [],
+  //   TTL.ONE_DAY()
+  // ]
 ];
 
 // In a hostile network like when an ad blocker is present, apps might be crashing, and these errors need to be
