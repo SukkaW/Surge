@@ -3,12 +3,18 @@ import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 import { setTimeout } from 'node:timers/promises';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
-class CustomAbortError extends Error {
+export class CustomAbortError extends Error {
   public readonly name = 'AbortError';
   public readonly digest = 'AbortError';
 }
 
-const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
+// eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
+export class Custom304NotModifiedError extends Error {
+  public readonly name = 'Custom304NotModifiedError';
+  public readonly digest = 'Custom304NotModifiedError';
+}
+
+export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
   if (signal.aborted) {
     reject(signal.reason as Error);
     return;

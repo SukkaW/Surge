@@ -9,6 +9,7 @@ import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
+import { Custom304NotModifiedError, CustomAbortError, fetchAssets, sleepWithAbort } from './fetch-assets';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -214,20 +215,18 @@ export class Cache<S = string> {
     opt: Omit<CacheApplyOption<T, S>, 'ttl' | 'incrementTtlWhenHit'>,
     requestInit?: RequestInit
   ) {
-    const { temporaryBypass } = opt;
-
-    const ttl = TTL.ONE_WEEK_STATIC;
-
-    if (temporaryBypass) {
+    if (opt.temporaryBypass) {
       return fn(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
+
+    const ttl = TTL.ONE_WEEK_STATIC;
 
     const baseKey = url + '$' + extraCacheKey;
     const etagKey = baseKey + '$etag';
     const cachedKey = baseKey + '$cached';
 
     const onMiss = (resp: Response) => {
-      console.log(picocolors.yellow('[cache] miss'), url, picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
+      console.log(picocolors.yellow('[cache] miss'), url);
 
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
@@ -274,6 +273,121 @@ export class Cache<S = string> {
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
     return deserializer(cached);
+  }
+
+  async applyWithHttp304AndMirrors<T>(
+    primaryUrl: string,
+    mirrorUrls: string[],
+    extraCacheKey: string,
+    fn: (resp: string) => Promise<T> | T,
+    opt: Omit<CacheApplyOption<T, S>, 'ttl' | 'incrementTtlWhenHit'>
+  ) {
+    if (opt.temporaryBypass) {
+      return fn(await fetchAssets(primaryUrl, mirrorUrls));
+    }
+
+    const ttl = TTL.ONE_WEEK_STATIC;
+
+    const baseKey = primaryUrl + '$' + extraCacheKey;
+    const getETagKey = (url: string) => baseKey + '$' + url + '$etag';
+    const cachedKey = baseKey + '$cached';
+    const controller = new AbortController();
+
+    const previouslyCached = this.get(cachedKey);
+
+    const primaryETag = this.get(getETagKey(primaryUrl));
+    const fetchMainPromise = fetchWithRetry(
+      primaryUrl,
+      {
+        signal: controller.signal,
+        ...defaultRequestInit,
+        headers: (typeof primaryETag === 'string' && primaryETag.length > 0)
+          ? mergeHeaders(
+            defaultRequestInit.headers,
+            { 'If-None-Match': primaryETag }
+          )
+          : defaultRequestInit.headers
+      }
+    ).then(r => {
+      // If we do not have a cached value, we ignore 304
+      if (previouslyCached != null && r.status === 304) {
+        controller.abort();
+        throw new Custom304NotModifiedError();
+      }
+      if (r.headers.has('etag')) {
+        this.set(getETagKey(primaryUrl), r.headers.get('etag') ?? '', ttl);
+      }
+      return r.text();
+    }).then(text => {
+      controller.abort();
+      return text;
+    });
+    const createFetchFallbackPromise = async (url: string, index: number) => {
+      // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
+      try {
+        await sleepWithAbort(500 + (index + 1) * 20, controller.signal);
+      } catch {
+        console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
+        throw new CustomAbortError();
+      }
+      if (controller.signal.aborted) {
+        console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
+        throw new CustomAbortError();
+      }
+
+      const etag = this.get(getETagKey(url));
+      const res = await fetchWithRetry(
+        url,
+        {
+          signal: controller.signal,
+          ...defaultRequestInit,
+          headers: (typeof etag === 'string' && etag.length > 0)
+            ? mergeHeaders(
+              defaultRequestInit.headers,
+              { 'If-None-Match': etag }
+            )
+            : defaultRequestInit.headers
+        }
+      );
+      // If we do not have a cached value, we ignore 304
+      if (previouslyCached != null && res.status === 304) {
+        controller.abort();
+        throw new Custom304NotModifiedError();
+      }
+      if (res.headers.has('etag')) {
+        this.set(getETagKey(primaryUrl), res.headers.get('etag') ?? '', ttl);
+      }
+      const text = await res.text();
+      controller.abort();
+      return text;
+    };
+
+    try {
+      const text = await Promise.any([
+        fetchMainPromise,
+        ...mirrorUrls.map(createFetchFallbackPromise)
+      ]);
+
+      console.log(picocolors.yellow('[cache] miss'), primaryUrl);
+      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
+
+      const value = await fn(text);
+
+      this.set(cachedKey, serializer(value), ttl);
+
+      return value;
+    } catch (e) {
+      if (e instanceof AggregateError && e.errors.some((err) => err instanceof CustomAbortError)) {
+        console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
+        this.updateTtl(cachedKey, ttl);
+
+        const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
+        return deserializer(previouslyCached);
+      }
+
+      console.log(`Download Rule for [${primaryUrl}] failed`);
+      throw e;
+    }
   }
 
   destroy() {
