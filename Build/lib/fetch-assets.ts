@@ -17,6 +17,15 @@ export class Custom304NotModifiedError extends Error {
   }
 }
 
+export class CustomNoETagFallbackError extends Error {
+  public readonly name = 'CustomNoETagFallbackError';
+  public readonly digest = 'CustomNoETagFallbackError';
+
+  constructor(public readonly data: string) {
+    super('No ETag Fallback');
+  }
+}
+
 export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
   if (signal.aborted) {
     reject(signal.reason as Error);
