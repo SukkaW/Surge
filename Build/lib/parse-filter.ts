@@ -1,13 +1,11 @@
 // @ts-check
-import { fetchRemoteTextByLine } from './fetch-text-by-line';
 import { NetworkFilter } from '@cliqz/adblocker';
 import { processLine } from './process-line';
 import tldts from 'tldts-experimental';
 
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
-import { fetchAssets } from './fetch-assets';
-import { deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './cache-filesystem';
+import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } from './cache-filesystem';
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
@@ -43,33 +41,24 @@ const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean
   set.push(includeAllSubDomain ? `.${line}` : line);
 };
 
-const cacheKey = createCacheKey(__filename);
-
 export function processDomainLists(
   span: Span,
   domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false,
   ttl: number | null = null, extraCacheKey: (input: string) => string = identity
 ) {
-  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
-    extraCacheKey(cacheKey(domainListsUrl)),
-    async () => {
+  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.applyWithHttp304AndMirrors<string[]>(
+    domainListsUrl,
+    mirrors ?? [],
+    extraCacheKey(getFileContentHash(__filename)),
+    (text) => {
       const domainSets: string[] = [];
+      const filterRules = text.split('\n');
 
-      if (mirrors == null || mirrors.length === 0) {
-        for await (const l of await fetchRemoteTextByLine(domainListsUrl)) {
-          domainListLineCb(l, domainSets, includeAllSubDomain, domainListsUrl);
+      childSpan.traceChild('parse domain list').traceSyncFn(() => {
+        for (let i = 0, len = filterRules.length; i < len; i++) {
+          domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
         }
-      } else {
-        const filterRules = await childSpan
-          .traceChild('download domain list')
-          .traceAsyncFn(() => fetchAssets(domainListsUrl, mirrors).then(text => text.split('\n')));
-
-        childSpan.traceChild('parse domain list').traceSyncFn(() => {
-          for (let i = 0, len = filterRules.length; i < len; i++) {
-            domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
-          }
-        });
-      }
+      });
 
       return domainSets;
     },
@@ -109,26 +98,20 @@ export function processHosts(
   hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false,
   ttl: number | null = null, extraCacheKey: (input: string) => string = identity
 ) {
-  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.apply(
-    extraCacheKey(cacheKey(hostsUrl)),
-    async () => {
+  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.applyWithHttp304AndMirrors<string[]>(
+    hostsUrl,
+    mirrors ?? [],
+    extraCacheKey(getFileContentHash(__filename)),
+    (text) => {
       const domainSets: string[] = [];
 
-      if (mirrors == null || mirrors.length === 0) {
-        for await (const l of await fetchRemoteTextByLine(hostsUrl)) {
-          hostsLineCb(l, domainSets, includeAllSubDomain, hostsUrl);
-        }
-      } else {
-        const filterRules = await childSpan
-          .traceChild('download hosts')
-          .traceAsyncFn(() => fetchAssets(hostsUrl, mirrors).then(text => text.split('\n')));
+      const filterRules = text.split('\n');
 
-        childSpan.traceChild('parse hosts').traceSyncFn(() => {
-          for (let i = 0, len = filterRules.length; i < len; i++) {
-            hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
-          }
-        });
-      }
+      childSpan.traceChild('parse hosts').traceSyncFn(() => {
+        for (let i = 0, len = filterRules.length; i < len; i++) {
+          hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
+        }
+      });
 
       return domainSets;
     },
@@ -155,13 +138,15 @@ export { type ParseType };
 export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
-  fallbackUrls?: readonly string[] | null,
+  fallbackUrls?: string[] | null,
   ttl: number | null = null,
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.apply<Readonly<[ white: string[], black: string[], warningMessages: string[] ]>>(
-    cacheKey(filterRulesUrl),
-    async () => {
+  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.applyWithHttp304AndMirrors<Readonly<[ white: string[], black: string[], warningMessages: string[] ]>>(
+    filterRulesUrl,
+    fallbackUrls ?? [],
+    getFileContentHash(__filename),
+    (text) => {
       const whitelistDomainSets = new Set<string>();
       const blacklistDomainSets = new Set<string>();
 
@@ -221,20 +206,13 @@ export async function processFilterRules(
         }
       };
 
-      if (!fallbackUrls || fallbackUrls.length === 0) {
-        for await (const line of await fetchRemoteTextByLine(filterRulesUrl)) {
-          // don't trim here
-          lineCb(line);
-        }
-      } else {
-        const filterRules = await span.traceChild('download adguard filter').traceAsyncFn(() => fetchAssets(filterRulesUrl, fallbackUrls).then(text => text.split('\n')));
+      const filterRules = text.split('\n');
 
-        span.traceChild('parse adguard filter').traceSyncFn(() => {
-          for (let i = 0, len = filterRules.length; i < len; i++) {
-            lineCb(filterRules[i]);
-          }
-        });
-      }
+      span.traceChild('parse adguard filter').traceSyncFn(() => {
+        for (let i = 0, len = filterRules.length; i < len; i++) {
+          lineCb(filterRules[i]);
+        }
+      });
 
       return [
         Array.from(whitelistDomainSets),
