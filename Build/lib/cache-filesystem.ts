@@ -9,6 +9,7 @@ import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
+import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssets, sleepWithAbort } from './fetch-assets';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -211,14 +212,10 @@ export class Cache<S = string> {
     url: string,
     extraCacheKey: string,
     fn: (resp: Response) => Promise<T>,
-    opt: Omit<CacheApplyOption<T, S>, 'ttl' | 'incrementTtlWhenHit'>,
+    opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>,
     requestInit?: RequestInit
   ) {
-    const { temporaryBypass } = opt;
-
-    const ttl = TTL.ONE_WEEK_STATIC;
-
-    if (temporaryBypass) {
+    if (opt.temporaryBypass) {
       return fn(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
 
@@ -226,22 +223,34 @@ export class Cache<S = string> {
     const etagKey = baseKey + '$etag';
     const cachedKey = baseKey + '$cached';
 
-    const onMiss = (resp: Response) => {
-      console.log(picocolors.yellow('[cache] miss'), url, picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
+    const etag = this.get(etagKey);
 
+    const onMiss = (resp: Response) => {
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
-      const etag = resp.headers.get('etag');
-
-      if (!etag) {
-        console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
-        return fn(resp);
-      }
       const promise = fn(resp);
 
       return promise.then((value) => {
-        this.set(etagKey, etag, ttl);
-        this.set(cachedKey, serializer(value), ttl);
+        if (resp.headers.has('ETag')) {
+          let serverETag = resp.headers.get('ETag')!;
+          // FUCK someonewhocares.org
+          if (url.includes('someonewhocares.org')) {
+            serverETag = serverETag.replace('-gzip', '');
+          }
+
+          console.log(picocolors.yellow('[cache] miss'), url, { cachedETag: etag, serverETag });
+
+          this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
+          this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
+          return value;
+        }
+
+        this.del(etagKey);
+        console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
+        if (opt.ttl) {
+          this.set(cachedKey, serializer(value), opt.ttl);
+        }
+
         return value;
       });
     };
@@ -251,7 +260,6 @@ export class Cache<S = string> {
       return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
 
-    const etag = this.get(etagKey);
     const resp = await fetchWithRetry(
       url,
       {
@@ -265,15 +273,152 @@ export class Cache<S = string> {
       }
     );
 
-    if (resp.status !== 304) {
+    // Only miss if previously a ETag was present and the server responded with a 304
+    if (resp.headers.has('ETag') && resp.status !== 304) {
       return onMiss(resp);
     }
 
-    console.log(picocolors.green('[cache] http 304'), picocolors.gray(url));
-    this.updateTtl(cachedKey, ttl);
+    console.log(picocolors.green(`[cache] ${resp.status === 304 ? 'http 304' : 'cache hit'}`), picocolors.gray(url));
+    this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
     return deserializer(cached);
+  }
+
+  async applyWithHttp304AndMirrors<T>(
+    primaryUrl: string,
+    mirrorUrls: string[],
+    extraCacheKey: string,
+    fn: (resp: string) => Promise<T> | T,
+    opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>
+  ): Promise<T> {
+    if (opt.temporaryBypass) {
+      return fn(await fetchAssets(primaryUrl, mirrorUrls));
+    }
+
+    if (mirrorUrls.length === 0) {
+      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.text()), opt);
+    }
+
+    const baseKey = primaryUrl + '$' + extraCacheKey;
+    const getETagKey = (url: string) => baseKey + '$' + url + '$etag';
+    const cachedKey = baseKey + '$cached';
+    const controller = new AbortController();
+
+    const previouslyCached = this.get(cachedKey);
+
+    const primaryETag = this.get(getETagKey(primaryUrl));
+    const fetchMainPromise = fetchWithRetry(
+      primaryUrl,
+      {
+        signal: controller.signal,
+        ...defaultRequestInit,
+        headers: (typeof primaryETag === 'string' && primaryETag.length > 0)
+          ? mergeHeaders(
+            defaultRequestInit.headers,
+            { 'If-None-Match': primaryETag }
+          )
+          : defaultRequestInit.headers
+      }
+    ).then(r => {
+      if (r.headers.has('etag')) {
+        this.set(getETagKey(primaryUrl), r.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
+
+        // If we do not have a cached value, we ignore 304
+        if (r.status === 304 && previouslyCached != null) {
+          controller.abort();
+          throw new Custom304NotModifiedError(primaryUrl);
+        }
+      } else if (!primaryETag && previouslyCached) {
+        throw new CustomNoETagFallbackError(previouslyCached as string);
+      }
+
+      return r.text();
+    }).then(text => {
+      controller.abort();
+      return text;
+    });
+
+    const createFetchFallbackPromise = async (url: string, index: number) => {
+      // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
+      try {
+        await sleepWithAbort(300 + (index + 1) * 10, controller.signal);
+      } catch {
+        console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
+        throw new CustomAbortError();
+      }
+      if (controller.signal.aborted) {
+        console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
+        throw new CustomAbortError();
+      }
+
+      const etag = this.get(getETagKey(url));
+      const res = await fetchWithRetry(
+        url,
+        {
+          signal: controller.signal,
+          ...defaultRequestInit,
+          headers: (typeof etag === 'string' && etag.length > 0)
+            ? mergeHeaders(
+              defaultRequestInit.headers,
+              { 'If-None-Match': etag }
+            )
+            : defaultRequestInit.headers
+        }
+      );
+
+      if (res.headers.has('etag')) {
+        this.set(getETagKey(url), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
+
+        // If we do not have a cached value, we ignore 304
+        if (res.status === 304 && previouslyCached != null) {
+          controller.abort();
+          throw new Custom304NotModifiedError(url);
+        }
+      } else if (!primaryETag && previouslyCached) {
+        controller.abort();
+        throw new CustomNoETagFallbackError(previouslyCached as string);
+      }
+
+      const text = await res.text();
+      controller.abort();
+      return text;
+    };
+
+    try {
+      const text = await Promise.any([
+        fetchMainPromise,
+        ...mirrorUrls.map(createFetchFallbackPromise)
+      ]);
+
+      console.log(picocolors.yellow('[cache] miss'), primaryUrl);
+      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
+
+      const value = await fn(text);
+
+      this.set(cachedKey, serializer(value), opt.ttl ?? TTL.ONE_WEEK_STATIC);
+
+      return value;
+    } catch (e) {
+      if (e instanceof AggregateError) {
+        const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
+
+        for (const error of e.errors) {
+          if (error instanceof Custom304NotModifiedError) {
+            console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
+            this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
+            return deserializer(previouslyCached);
+          }
+          if (error instanceof CustomNoETagFallbackError) {
+            console.log(picocolors.green('[cache] hit'), picocolors.gray(primaryUrl));
+            return deserializer(error.data);
+          }
+        }
+      }
+
+      console.log(`Download Rule for [${primaryUrl}] failed`);
+      throw e;
+    }
   }
 
   destroy() {

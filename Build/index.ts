@@ -1,5 +1,6 @@
 import process from 'node:process';
 import os from 'node:os';
+import wtf from 'wtfnode';
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
@@ -121,6 +122,7 @@ process.on('unhandledRejection', (reason) => {
     printTraceResult(rootSpan.traceResult);
 
     // Finish the build to avoid leaking timer/fetch ref
+    wtf.dump();
     process.exit(0);
   } catch (e) {
     console.trace(e);

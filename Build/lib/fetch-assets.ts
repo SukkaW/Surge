@@ -3,12 +3,30 @@ import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 import { setTimeout } from 'node:timers/promises';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
-class CustomAbortError extends Error {
+export class CustomAbortError extends Error {
   public readonly name = 'AbortError';
   public readonly digest = 'AbortError';
 }
 
-const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
+export class Custom304NotModifiedError extends Error {
+  public readonly name = 'Custom304NotModifiedError';
+  public readonly digest = 'Custom304NotModifiedError';
+
+  constructor(public readonly url: string) {
+    super('304 Not Modified');
+  }
+}
+
+export class CustomNoETagFallbackError extends Error {
+  public readonly name = 'CustomNoETagFallbackError';
+  public readonly digest = 'CustomNoETagFallbackError';
+
+  constructor(public readonly data: string) {
+    super('No ETag Fallback');
+  }
+}
+
+export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
   if (signal.aborted) {
     reject(signal.reason as Error);
     return;
@@ -34,7 +52,7 @@ export async function fetchAssets(url: string, fallbackUrls: string[] | readonly
   const createFetchFallbackPromise = async (url: string, index: number) => {
     // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
     try {
-      await sleepWithAbort(500 + (index + 1) * 20, controller.signal);
+      await sleepWithAbort(500 + (index + 1) * 10, controller.signal);
     } catch {
       console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
       throw new CustomAbortError();

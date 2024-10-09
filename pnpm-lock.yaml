@@ -68,6 +68,9 @@ importers:
       undici:
         specifier: ^6.19.8
         version: 6.19.8
+      wtfnode:
+        specifier: ^0.9.3
+        version: 0.9.3
       yaml:
         specifier: ^2.5.1
         version: 2.5.1
@@ -102,6 +105,9 @@ importers:
       '@types/tar-stream':
         specifier: ^3.1.3
         version: 3.1.3
+      '@types/wtfnode':
+        specifier: ^0.7.3
+        version: 0.7.3
       chai:
         specifier: '4'
         version: 4.4.1
@@ -469,6 +475,9 @@ packages:
 
   '@types/tar-stream@3.1.3':
     resolution: {integrity: sha512-Zbnx4wpkWBMBSu5CytMbrT5ZpMiF55qgM+EpHzR4yIDu7mv52cej8hTkOc6K+LzpkOAbxwn/m7j3iO+/l42YkQ==}
+
+  '@types/wtfnode@0.7.3':
+    resolution: {integrity: sha512-UMkHpx+o2xRWLJ7PmT3bBzvIA9/0oFw80oPtY/xO4jfdq+Gznn4wP7K9B/JjMxyxy+wF+5oRPIykxeBbEDjwRg==}
 
   '@typescript-eslint/eslint-plugin@8.7.0':
     resolution: {integrity: sha512-RIHOoznhA3CCfSTFiB6kBGLQtB/sox+pJ6jeFu6FxJvqL8qRxq/FfGO/UhsGgQM9oGdXkV4xUgli+dt26biB6A==}
@@ -1500,6 +1509,10 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  wtfnode@0.9.3:
+    resolution: {integrity: sha512-MXjgxJovNVYUkD85JBZTKT5S5ng/e56sNuRZlid7HcGTNrIODa5UPtqE3i0daj7fJ2SGj5Um2VmiphQVyVKK5A==}
+    hasBin: true
+
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -1876,6 +1889,8 @@ snapshots:
   '@types/tar-stream@3.1.3':
     dependencies:
       '@types/node': 20.14.11
+
+  '@types/wtfnode@0.7.3': {}
 
   '@typescript-eslint/eslint-plugin@8.7.0(@typescript-eslint/parser@8.7.0(eslint@9.12.0)(typescript@5.6.2))(eslint@9.12.0)(typescript@5.6.2)':
     dependencies:
@@ -2986,6 +3001,8 @@ snapshots:
       strip-ansi: 6.0.1
 
   wrappy@1.0.2: {}
+
+  wtfnode@0.9.3: {}
 
   y18n@5.0.8: {}
 
