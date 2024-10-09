@@ -224,20 +224,21 @@ export class Cache<S = string> {
     const cachedKey = baseKey + '$cached';
 
     const onMiss = (resp: Response) => {
-      console.log(picocolors.yellow('[cache] miss'), url);
-
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
-      const etag = resp.headers.get('etag');
       const promise = fn(resp);
 
       return promise.then((value) => {
-        if (etag) {
-          this.set(etagKey, etag, TTL.ONE_WEEK_STATIC);
+        if (resp.headers.has('ETag')) {
+          const serverETag = resp.headers.get('ETag')!;
+          console.log(picocolors.yellow('[cache] miss'), url, { serverETag });
+
+          this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
           this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
           return value;
         }
 
+        this.del(etagKey);
         console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
         if (opt.ttl) {
           this.set(cachedKey, serializer(value), opt.ttl);
@@ -248,12 +249,16 @@ export class Cache<S = string> {
     };
 
     const cached = this.get(cachedKey);
-
     if (cached == null) {
       return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
 
-    const etag = this.get(etagKey);
+    let etag = this.get(etagKey);
+    // FUCK someonewhocares.org
+    if (etag && url.includes('someonewhocares.org')) {
+      etag = (etag as string).replace('-gzip', '') as S;
+    }
+
     const resp = await fetchWithRetry(
       url,
       {
@@ -269,6 +274,7 @@ export class Cache<S = string> {
 
     // Only miss if previously a ETag was present and the server responded with a 304
     if (resp.headers.has('ETag') && resp.status !== 304) {
+      console.log({ etag, status: resp.status, serverETag: resp.headers.get('ETag'), isMatch: etag === resp.headers.get('ETag') });
       return onMiss(resp);
     }
 
@@ -402,7 +408,6 @@ export class Cache<S = string> {
           }
           if (error instanceof CustomNoETagFallbackError) {
             console.log(picocolors.red('[cache] no etag'), picocolors.gray(primaryUrl));
-            console.log({ previouslyCached });
             return deserializer(previouslyCached);
           }
         }
