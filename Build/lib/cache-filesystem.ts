@@ -9,7 +9,7 @@ import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssets, sleepWithAbort } from './fetch-assets';
+import { Custom304NotModifiedError, CustomAbortError, fetchAssets, sleepWithAbort } from './fetch-assets';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -223,6 +223,8 @@ export class Cache<S = string> {
     const etagKey = baseKey + '$etag';
     const cachedKey = baseKey + '$cached';
 
+    const etag = this.get(etagKey);
+
     const onMiss = (resp: Response) => {
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
@@ -236,7 +238,7 @@ export class Cache<S = string> {
             serverETag = serverETag.replace('-gzip', '');
           }
 
-          console.log(picocolors.yellow('[cache] miss'), url, { serverETag });
+          console.log(picocolors.yellow('[cache] miss'), url, { cachedETag: etag, serverETag });
 
           this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
           this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
@@ -257,8 +259,6 @@ export class Cache<S = string> {
     if (cached == null) {
       return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
-
-    const etag = this.get(etagKey);
 
     const resp = await fetchWithRetry(
       url,
@@ -323,10 +323,6 @@ export class Cache<S = string> {
     ).then(r => {
       if (r.headers.has('etag')) {
         this.set(getETagKey(primaryUrl), r.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
-      } else if (previouslyCached != null) {
-        controller.abort();
-        // No ETag, use persisted cache
-        throw new CustomNoETagFallbackError(primaryUrl);
       }
 
       // If we do not have a cached value, we ignore 304
@@ -342,7 +338,7 @@ export class Cache<S = string> {
     const createFetchFallbackPromise = async (url: string, index: number) => {
       // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
       try {
-        await sleepWithAbort(500 + (index + 1) * 20, controller.signal);
+        await sleepWithAbort(500 + (index + 1) * 10, controller.signal);
       } catch {
         console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
         throw new CustomAbortError();
@@ -369,10 +365,6 @@ export class Cache<S = string> {
 
       if (res.headers.has('etag')) {
         this.set(getETagKey(url), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
-      } else if (previouslyCached != null) {
-        controller.abort();
-        // No ETag, use persisted cache
-        throw new CustomNoETagFallbackError(url);
       }
 
       // If we do not have a cached value, we ignore 304
@@ -408,11 +400,6 @@ export class Cache<S = string> {
           if (error instanceof Custom304NotModifiedError) {
             console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
             this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
-            return deserializer(previouslyCached);
-          }
-          if (error instanceof CustomNoETagFallbackError) {
-            console.log(picocolors.green('[cache] cache hit'), picocolors.gray(primaryUrl));
-            console.log(picocolors.red('[cache] no etag in response'), picocolors.gray(error.url));
             return deserializer(previouslyCached);
           }
         }

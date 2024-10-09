@@ -17,15 +17,6 @@ export class Custom304NotModifiedError extends Error {
   }
 }
 
-export class CustomNoETagFallbackError extends Error {
-  public readonly name = 'CustomNoETagFallbackError';
-  public readonly digest = 'CustomNoETagFallbackError';
-
-  constructor(public readonly url: string) {
-    super('No ETag Fallback');
-  }
-}
-
 export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
   if (signal.aborted) {
     reject(signal.reason as Error);
@@ -52,7 +43,7 @@ export async function fetchAssets(url: string, fallbackUrls: string[] | readonly
   const createFetchFallbackPromise = async (url: string, index: number) => {
     // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
     try {
-      await sleepWithAbort(500 + (index + 1) * 20, controller.signal);
+      await sleepWithAbort(500 + (index + 1) * 10, controller.signal);
     } catch {
       console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
       throw new CustomAbortError();
