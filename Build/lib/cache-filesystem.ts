@@ -225,34 +225,32 @@ export class Cache<S = string> {
 
     const etag = this.get(etagKey);
 
-    const onMiss = (resp: Response) => {
+    const onMiss = async (resp: Response) => {
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
-      const promise = fn(resp);
+      const value = await fn(resp);
 
-      return promise.then((value) => {
-        if (resp.headers.has('ETag')) {
-          let serverETag = resp.headers.get('ETag')!;
-          // FUCK someonewhocares.org
-          if (url.includes('someonewhocares.org')) {
-            serverETag = serverETag.replace('-gzip', '');
-          }
-
-          console.log(picocolors.yellow('[cache] miss'), url, { cachedETag: etag, serverETag });
-
-          this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
-          this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
-          return value;
+      if (resp.headers.has('ETag')) {
+        let serverETag = resp.headers.get('ETag')!;
+        // FUCK someonewhocares.org
+        if (url.includes('someonewhocares.org')) {
+          serverETag = serverETag.replace('-gzip', '');
         }
 
-        this.del(etagKey);
-        console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
-        if (opt.ttl) {
-          this.set(cachedKey, serializer(value), opt.ttl);
-        }
+        console.log(picocolors.yellow('[cache] miss'), url, { status: resp.status, cachedETag: etag, serverETag });
 
+        this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
+        this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
         return value;
-      });
+      }
+
+      this.del(etagKey);
+      console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
+      if (opt.ttl) {
+        this.set(cachedKey, serializer(value), opt.ttl);
+      }
+
+      return value;
     };
 
     const cached = this.get(cachedKey);
