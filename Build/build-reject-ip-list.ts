@@ -1,10 +1,10 @@
 // @ts-check
 import path from 'node:path';
-import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
+import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
-import { TTL, fsFetchCache, createCacheKey } from './lib/cache-filesystem';
+import { TTL, fsFetchCache, createCacheKey, getFileContentHash } from './lib/cache-filesystem';
 import { fetchAssets } from './lib/fetch-assets';
 import { processLine } from './lib/process-line';
 import { RulesetOutput } from './lib/create-file';
@@ -14,12 +14,14 @@ const cacheKey = createCacheKey(__filename);
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 
-const getBogusNxDomainIPsPromise = fsFetchCache.apply<[ipv4: string[], ipv6: string[]]>(
-  cacheKey(BOGUS_NXDOMAIN_URL),
-  async () => {
+const getBogusNxDomainIPsPromise = fsFetchCache.applyWithHttp304(
+  BOGUS_NXDOMAIN_URL,
+  getFileContentHash(__filename),
+  async (resp) => {
     const ipv4: string[] = [];
     const ipv6: string[] = [];
-    for await (const line of await fetchRemoteTextByLine(BOGUS_NXDOMAIN_URL)) {
+
+    for await (const line of createReadlineInterfaceFromResponse(resp)) {
       if (line.startsWith('bogus-nxdomain=')) {
         const ip = line.slice(15).trim();
         if (isProbablyIpv4(ip)) {
@@ -32,7 +34,6 @@ const getBogusNxDomainIPsPromise = fsFetchCache.apply<[ipv4: string[], ipv6: str
     return [ipv4, ipv6] as const;
   },
   {
-    ttl: TTL.ONE_WEEK(),
     serializer: JSON.stringify,
     deserializer: JSON.parse
   }

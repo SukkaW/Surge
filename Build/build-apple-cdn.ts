@@ -2,15 +2,13 @@ import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
+import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } from './lib/cache-filesystem';
 import { DomainsetOutput } from './lib/create-file';
-
-const cacheKey = createCacheKey(__filename);
 
 const url = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf';
 export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCache.applyWithHttp304(
   url,
-  cacheKey(url),
+  getFileContentHash(__filename),
   parseFelixDnsmasqFromResp,
   {
     serializer: serializeArray,

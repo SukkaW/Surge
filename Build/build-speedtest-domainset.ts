@@ -139,18 +139,16 @@ const PREDEFINE_DOMAINS = [
 const s = new Sema(2);
 const cacheKey = createCacheKey(__filename);
 
-const latestTopUserAgentsPromise = fsFetchCache.apply(
+const latestTopUserAgentsPromise = fsFetchCache.applyWithHttp304<string[]>(
+  'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
   cacheKey('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json'),
-  () => fetchWithRetry(
-    'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
-    { signal: AbortSignal.timeout(1000 * 60) }
-  )
-    .then(res => res.json() as Promise<string[]>)
-    .then((userAgents) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '))),
+  async (res) => {
+    const userAgents = await (res.json() as Promise<string[]>);
+    return userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '));
+  },
   {
     serializer: serializeArray,
-    deserializer: deserializeArray,
-    ttl: TTL.THREE_DAYS()
+    deserializer: deserializeArray
   }
 );
 
