@@ -107,7 +107,9 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
           }
 
           console.log(picocolors.gray('[fetch fail]'), url, err);
-          throw err;
+          const newErr = new Error('Fetch failed');
+          newErr.cause = err;
+          throw newErr;
         }
       }, retryOpts);
     } catch (err) {

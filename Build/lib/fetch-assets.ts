@@ -12,7 +12,7 @@ export class Custom304NotModifiedError extends Error {
   public readonly name = 'Custom304NotModifiedError';
   public readonly digest = 'Custom304NotModifiedError';
 
-  constructor(public readonly url: string) {
+  constructor(public readonly url: string, public readonly data: string) {
     super('304 Not Modified');
   }
 }

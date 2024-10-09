@@ -214,7 +214,7 @@ export class Cache<S = string> {
     fn: (resp: Response) => Promise<T>,
     opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>,
     requestInit?: RequestInit
-  ) {
+  ): Promise<T> {
     if (opt.temporaryBypass) {
       return fn(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
@@ -323,12 +323,12 @@ export class Cache<S = string> {
         this.set(getETagKey(primaryUrl), r.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
 
         // If we do not have a cached value, we ignore 304
-        if (r.status === 304 && previouslyCached != null) {
+        if (r.status === 304 && typeof previouslyCached === 'string') {
           controller.abort();
-          throw new Custom304NotModifiedError(primaryUrl);
+          throw new Custom304NotModifiedError(primaryUrl, previouslyCached);
         }
-      } else if (!primaryETag && previouslyCached) {
-        throw new CustomNoETagFallbackError(previouslyCached as string);
+      } else if (!primaryETag && typeof previouslyCached === 'string') {
+        throw new CustomNoETagFallbackError(previouslyCached);
       }
 
       return r.text();
@@ -369,13 +369,13 @@ export class Cache<S = string> {
         this.set(getETagKey(url), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
 
         // If we do not have a cached value, we ignore 304
-        if (res.status === 304 && previouslyCached != null) {
+        if (res.status === 304 && typeof previouslyCached === 'string') {
           controller.abort();
-          throw new Custom304NotModifiedError(url);
+          throw new Custom304NotModifiedError(url, previouslyCached);
         }
-      } else if (!primaryETag && previouslyCached) {
+      } else if (!primaryETag && typeof previouslyCached === 'string') {
         controller.abort();
-        throw new CustomNoETagFallbackError(previouslyCached as string);
+        throw new CustomNoETagFallbackError(previouslyCached);
       }
 
       const text = await res.text();
