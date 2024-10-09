@@ -1,5 +1,6 @@
-import { fetchRemoteTextByLine } from './fetch-text-by-line';
+import { createReadlineInterfaceFromResponse } from './fetch-text-by-line';
 import { parse as tldtsParse } from 'tldts';
+import { fetchWithRetry, defaultRequestInit } from './fetch-retry';
 
 const isDomainLoose = (domain: string): boolean => {
   const { isIcann, isPrivate, isIp } = tldtsParse(domain);
@@ -13,14 +14,20 @@ export const extractDomainsFromFelixDnsmasq = (line: string): string | null => {
   return null;
 };
 
-export const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
-  const res: string[] = [];
-  for await (const line of await fetchRemoteTextByLine(url)) {
+export const parseFelixDnsmasqFromResp = async (resp: Response): Promise<string[]> => {
+  const results: string[] = [];
+
+  for await (const line of createReadlineInterfaceFromResponse(resp)) {
     const domain = extractDomainsFromFelixDnsmasq(line);
     if (domain && isDomainLoose(domain)) {
-      res.push(domain);
+      results.push(domain);
     }
   }
 
-  return res;
+  return results;
+};
+
+export const parseFelixDnsmasq = async (url: string | URL): Promise<string[]> => {
+  const resp = await fetchWithRetry(url, defaultRequestInit);
+  return parseFelixDnsmasqFromResp(resp);
 };
