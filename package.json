@@ -39,6 +39,7 @@
     "tldts": "^6.1.50",
     "tldts-experimental": "^6.1.50",
     "undici": "^6.19.8",
+    "wtfnode": "^0.9.3",
     "yaml": "^2.5.1"
   },
   "devDependencies": {
@@ -52,6 +53,7 @@
     "@types/punycode": "^2.1.4",
     "@types/tar-fs": "^2.0.4",
     "@types/tar-stream": "^3.1.3",
+    "@types/wtfnode": "^0.7.3",
     "chai": "4",
     "eslint": "^9.12.0",
     "eslint-config-sukka": "^6.6.1",

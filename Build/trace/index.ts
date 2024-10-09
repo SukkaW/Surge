@@ -1,5 +1,6 @@
 import { basename, extname } from 'node:path';
 import picocolors from 'picocolors';
+import wtf from 'wtfnode';
 
 const SPAN_STATUS_START = 0;
 const SPAN_STATUS_END = 1;
@@ -101,7 +102,9 @@ export const task = (importMetaMain: boolean, importMetaPath: string) => <T>(fn:
 
   const dummySpan = createSpan(taskName);
   if (importMetaMain) {
-    fn(dummySpan);
+    fn(dummySpan).finally(() => {
+      console.log(wtf.dump());
+    });
   }
 
   return async (span?: Span) => {
