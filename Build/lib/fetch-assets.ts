@@ -8,16 +8,22 @@ export class CustomAbortError extends Error {
   public readonly digest = 'AbortError';
 }
 
-// eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 export class Custom304NotModifiedError extends Error {
   public readonly name = 'Custom304NotModifiedError';
   public readonly digest = 'Custom304NotModifiedError';
+
+  constructor(public readonly url: string) {
+    super('304 Not Modified');
+  }
 }
 
-// eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 export class CustomNoETagFallbackError extends Error {
   public readonly name = 'CustomNoETagFallbackError';
   public readonly digest = 'CustomNoETagFallbackError';
+
+  constructor(public readonly url: string) {
+    super('No ETag Fallback');
+  }
 }
 
 export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {

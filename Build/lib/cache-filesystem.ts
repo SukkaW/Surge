@@ -230,7 +230,12 @@ export class Cache<S = string> {
 
       return promise.then((value) => {
         if (resp.headers.has('ETag')) {
-          const serverETag = resp.headers.get('ETag')!;
+          let serverETag = resp.headers.get('ETag')!;
+          // FUCK someonewhocares.org
+          if (url.includes('someonewhocares.org')) {
+            serverETag = serverETag.replace('-gzip', '');
+          }
+
           console.log(picocolors.yellow('[cache] miss'), url, { serverETag });
 
           this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
@@ -253,11 +258,7 @@ export class Cache<S = string> {
       return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
 
-    let etag = this.get(etagKey);
-    // FUCK someonewhocares.org
-    if (etag && url.includes('someonewhocares.org')) {
-      etag = (etag as string).replace('-gzip', '') as S;
-    }
+    const etag = this.get(etagKey);
 
     const resp = await fetchWithRetry(
       url,
@@ -274,11 +275,10 @@ export class Cache<S = string> {
 
     // Only miss if previously a ETag was present and the server responded with a 304
     if (resp.headers.has('ETag') && resp.status !== 304) {
-      console.log({ etag, status: resp.status, serverETag: resp.headers.get('ETag'), isMatch: etag === resp.headers.get('ETag') });
       return onMiss(resp);
     }
 
-    console.log(picocolors.green('[cache] http 304'), picocolors.gray(url));
+    console.log(picocolors.green(`[cache] ${resp.status === 304 ? 'http 304' : 'cache hit'}`), picocolors.gray(url));
     this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
@@ -321,17 +321,18 @@ export class Cache<S = string> {
           : defaultRequestInit.headers
       }
     ).then(r => {
-      // If we do not have a cached value, we ignore 304
-      if (previouslyCached != null && r.headers.has('ETag') && r.status === 304) {
-        controller.abort();
-        throw new Custom304NotModifiedError();
-      }
       if (r.headers.has('etag')) {
         this.set(getETagKey(primaryUrl), r.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
-      } else if (previouslyCached) {
+      } else if (previouslyCached != null) {
         controller.abort();
         // No ETag, use persisted cache
-        throw new CustomNoETagFallbackError();
+        throw new CustomNoETagFallbackError(primaryUrl);
+      }
+
+      // If we do not have a cached value, we ignore 304
+      if (r.status === 304 && previouslyCached != null) {
+        controller.abort();
+        throw new Custom304NotModifiedError(primaryUrl);
       }
       return r.text();
     }).then(text => {
@@ -365,18 +366,21 @@ export class Cache<S = string> {
             : defaultRequestInit.headers
         }
       );
-      // If we do not have a cached value, we ignore 304
-      if (previouslyCached != null && res.headers.has('ETag') && res.status === 304) {
-        controller.abort();
-        throw new Custom304NotModifiedError();
-      } else if (previouslyCached) {
+
+      if (res.headers.has('etag')) {
+        this.set(getETagKey(url), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
+      } else if (previouslyCached != null) {
         controller.abort();
         // No ETag, use persisted cache
-        throw new CustomNoETagFallbackError();
+        throw new CustomNoETagFallbackError(url);
       }
-      if (res.headers.has('etag')) {
-        this.set(getETagKey(primaryUrl), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
+
+      // If we do not have a cached value, we ignore 304
+      if (res.status === 304 && previouslyCached != null) {
+        controller.abort();
+        throw new Custom304NotModifiedError(url);
       }
+
       const text = await res.text();
       controller.abort();
       return text;
@@ -407,7 +411,8 @@ export class Cache<S = string> {
             return deserializer(previouslyCached);
           }
           if (error instanceof CustomNoETagFallbackError) {
-            console.log(picocolors.red('[cache] no etag'), picocolors.gray(primaryUrl));
+            console.log(picocolors.green('[cache] cache hit'), picocolors.gray(primaryUrl));
+            console.log(picocolors.red('[cache] no etag in response'), picocolors.gray(error.url));
             return deserializer(previouslyCached);
           }
         }
