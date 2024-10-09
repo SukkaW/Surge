@@ -9,7 +9,7 @@ import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
 import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
-import { Custom304NotModifiedError, CustomAbortError, fetchAssets, sleepWithAbort } from './fetch-assets';
+import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssets, sleepWithAbort } from './fetch-assets';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -212,14 +212,12 @@ export class Cache<S = string> {
     url: string,
     extraCacheKey: string,
     fn: (resp: Response) => Promise<T>,
-    opt: Omit<CacheApplyOption<T, S>, 'ttl' | 'incrementTtlWhenHit'>,
+    opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>,
     requestInit?: RequestInit
   ) {
     if (opt.temporaryBypass) {
       return fn(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
-
-    const ttl = TTL.ONE_WEEK_STATIC;
 
     const baseKey = url + '$' + extraCacheKey;
     const etagKey = baseKey + '$etag';
@@ -231,21 +229,26 @@ export class Cache<S = string> {
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
       const etag = resp.headers.get('etag');
-
-      if (!etag) {
-        console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
-        return fn(resp);
-      }
       const promise = fn(resp);
 
       return promise.then((value) => {
-        this.set(etagKey, etag, ttl);
-        this.set(cachedKey, serializer(value), ttl);
+        if (etag) {
+          this.set(etagKey, etag, TTL.ONE_WEEK_STATIC);
+          this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
+          return value;
+        }
+
+        console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
+        if (opt.ttl) {
+          this.set(cachedKey, serializer(value), opt.ttl);
+        }
+
         return value;
       });
     };
 
     const cached = this.get(cachedKey);
+
     if (cached == null) {
       return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
     }
@@ -264,12 +267,13 @@ export class Cache<S = string> {
       }
     );
 
-    if (resp.status !== 304) {
+    // Only miss if previously a ETag was present and the server responded with a 304
+    if (resp.headers.has('ETag') && resp.status !== 304) {
       return onMiss(resp);
     }
 
     console.log(picocolors.green('[cache] http 304'), picocolors.gray(url));
-    this.updateTtl(cachedKey, ttl);
+    this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
     return deserializer(cached);
@@ -280,13 +284,15 @@ export class Cache<S = string> {
     mirrorUrls: string[],
     extraCacheKey: string,
     fn: (resp: string) => Promise<T> | T,
-    opt: Omit<CacheApplyOption<T, S>, 'ttl' | 'incrementTtlWhenHit'>
-  ) {
+    opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>
+  ): Promise<T> {
     if (opt.temporaryBypass) {
       return fn(await fetchAssets(primaryUrl, mirrorUrls));
     }
 
-    const ttl = TTL.ONE_WEEK_STATIC;
+    if (mirrorUrls.length === 0) {
+      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.text()), opt);
+    }
 
     const baseKey = primaryUrl + '$' + extraCacheKey;
     const getETagKey = (url: string) => baseKey + '$' + url + '$etag';
@@ -310,12 +316,16 @@ export class Cache<S = string> {
       }
     ).then(r => {
       // If we do not have a cached value, we ignore 304
-      if (previouslyCached != null && r.status === 304) {
+      if (previouslyCached != null && r.headers.has('ETag') && r.status === 304) {
         controller.abort();
         throw new Custom304NotModifiedError();
       }
       if (r.headers.has('etag')) {
-        this.set(getETagKey(primaryUrl), r.headers.get('etag') ?? '', ttl);
+        this.set(getETagKey(primaryUrl), r.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
+      } else if (previouslyCached) {
+        controller.abort();
+        // No ETag, use persisted cache
+        throw new CustomNoETagFallbackError();
       }
       return r.text();
     }).then(text => {
@@ -350,12 +360,16 @@ export class Cache<S = string> {
         }
       );
       // If we do not have a cached value, we ignore 304
-      if (previouslyCached != null && res.status === 304) {
+      if (previouslyCached != null && res.headers.has('ETag') && res.status === 304) {
         controller.abort();
         throw new Custom304NotModifiedError();
+      } else if (previouslyCached) {
+        controller.abort();
+        // No ETag, use persisted cache
+        throw new CustomNoETagFallbackError();
       }
       if (res.headers.has('etag')) {
-        this.set(getETagKey(primaryUrl), res.headers.get('etag') ?? '', ttl);
+        this.set(getETagKey(primaryUrl), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
       }
       const text = await res.text();
       controller.abort();
@@ -373,16 +387,25 @@ export class Cache<S = string> {
 
       const value = await fn(text);
 
-      this.set(cachedKey, serializer(value), ttl);
+      this.set(cachedKey, serializer(value), opt.ttl ?? TTL.ONE_WEEK_STATIC);
 
       return value;
     } catch (e) {
-      if (e instanceof AggregateError && e.errors.some((err) => err instanceof CustomAbortError)) {
-        console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
-        this.updateTtl(cachedKey, ttl);
-
+      if (e instanceof AggregateError) {
         const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
-        return deserializer(previouslyCached);
+
+        for (const error of e.errors) {
+          if (error instanceof Custom304NotModifiedError) {
+            console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
+            this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
+            return deserializer(previouslyCached);
+          }
+          if (error instanceof CustomNoETagFallbackError) {
+            console.log(picocolors.red('[cache] no etag'), picocolors.gray(primaryUrl));
+            console.log({ previouslyCached });
+            return deserializer(previouslyCached);
+          }
+        }
       }
 
       console.log(`Download Rule for [${primaryUrl}] failed`);

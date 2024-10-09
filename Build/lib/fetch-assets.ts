@@ -14,6 +14,12 @@ export class Custom304NotModifiedError extends Error {
   public readonly digest = 'Custom304NotModifiedError';
 }
 
+// eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
+export class CustomNoETagFallbackError extends Error {
+  public readonly name = 'CustomNoETagFallbackError';
+  public readonly digest = 'CustomNoETagFallbackError';
+}
+
 export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
   if (signal.aborted) {
     reject(signal.reason as Error);
