@@ -4,10 +4,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
 import picocolors from 'picocolors';
-import { fastStringArrayJoin, identity } from './misc';
+import { fastStringArrayJoin, identity, mergeHeaders } from './misc';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
+import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -44,6 +45,7 @@ const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 // Add some randomness to the cache ttl to avoid thundering herd
 export const TTL = {
+  useHttp304: Symbol('useHttp304'),
   humanReadable(ttl: number) {
     if (ttl >= ONE_DAY) {
       return `${Math.round(ttl / 24 / 60 / 60 / 1000)}d`;
@@ -56,6 +58,7 @@ export const TTL = {
   THREE_HOURS: () => randomInt(1, 3) * ONE_HOUR,
   TWLVE_HOURS: () => randomInt(8, 12) * ONE_HOUR,
   ONE_DAY: () => randomInt(23, 25) * ONE_HOUR,
+  ONE_WEEK_STATIC: ONE_DAY * 7,
   THREE_DAYS: () => randomInt(1, 3) * ONE_DAY,
   ONE_WEEK: () => randomInt(4, 7) * ONE_DAY,
   TEN_DAYS: () => randomInt(7, 10) * ONE_DAY,
@@ -204,6 +207,75 @@ export class Cache<S = string> {
     return deserializer(cached);
   }
 
+  async applyWithHttp304<T>(
+    url: string,
+    extraCacheKey: string,
+    fn: (resp: Response) => Promise<T>,
+    opt: Omit<CacheApplyOption<T, S>, 'ttl' | 'incrementTtlWhenHit'>,
+    requestInit?: RequestInit
+  ) {
+    const { temporaryBypass } = opt;
+
+    const ttl = TTL.ONE_WEEK_STATIC;
+
+    if (temporaryBypass) {
+      return fn(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
+    }
+
+    const baseKey = url + '$' + extraCacheKey;
+    const etagKey = baseKey + '$etag';
+    const cachedKey = baseKey + '$cached';
+
+    const onMiss = (resp: Response) => {
+      console.log(picocolors.yellow('[cache] miss'), url, picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
+
+      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
+
+      const etag = resp.headers.get('etag');
+
+      if (!etag) {
+        console.log(picocolors.red('[cache] no etag'), picocolors.gray(url));
+        return fn(resp);
+      }
+      const promise = fn(resp);
+
+      return promise.then((value) => {
+        this.set(etagKey, etag, ttl);
+        this.set(cachedKey, serializer(value), ttl);
+        return value;
+      });
+    };
+
+    const cached = this.get(cachedKey);
+    if (cached == null) {
+      return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
+    }
+
+    const etag = this.get(etagKey);
+    const resp = await fetchWithRetry(
+      url,
+      {
+        ...(requestInit ?? defaultRequestInit),
+        headers: (typeof etag === 'string' && etag.length > 0)
+          ? mergeHeaders(
+            (requestInit ?? defaultRequestInit).headers,
+            { 'If-None-Match': etag }
+          )
+          : (requestInit ?? defaultRequestInit).headers
+      }
+    );
+
+    if (resp.status !== 304) {
+      return onMiss(resp);
+    }
+
+    console.log(picocolors.green('[cache] http 304'), picocolors.gray(url));
+    this.updateTtl(cachedKey, ttl);
+
+    const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
+    return deserializer(cached);
+  }
+
   destroy() {
     this.db.close();
   }
@@ -222,7 +294,8 @@ export const deserializeSet = (str: string) => new Set(str.split(separator));
 export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separator);
 export const deserializeArray = (str: string) => str.split(separator);
 
+export const getFileContentHash = (filename: string) => stringHash(fs.readFileSync(filename, 'utf-8'));
 export const createCacheKey = (filename: string) => {
-  const fileHash = stringHash(fs.readFileSync(filename, 'utf-8'));
+  const fileHash = getFileContentHash(filename);
   return (key: string) => key + '$' + fileHash + '$';
 };

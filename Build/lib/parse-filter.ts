@@ -159,11 +159,7 @@ export async function processFilterRules(
   ttl: number | null = null,
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.apply<Readonly<[
-    white: string[],
-    black: string[],
-    warningMessages: string[]
-  ]>>(
+  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.apply<Readonly<[ white: string[], black: string[], warningMessages: string[] ]>>(
     cacheKey(filterRulesUrl),
     async () => {
       const whitelistDomainSets = new Set<string>();

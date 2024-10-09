@@ -95,3 +95,30 @@ export function withBannerArray(title: string, description: string[] | readonly 
     '################## EOF ##################'
   ];
 };
+
+export const mergeHeaders = (headersA: RequestInit['headers'] | undefined, headersB: RequestInit['headers']) => {
+  if (headersA == null) {
+    return headersB;
+  }
+
+  if (Array.isArray(headersB)) {
+    throw new TypeError('Array headers is not supported');
+  }
+
+  const result = new Headers(headersA);
+
+  if (headersB instanceof Headers) {
+    headersB.forEach((value, key) => {
+      result.set(key, value);
+    });
+    return result;
+  }
+
+  for (const key in headersB) {
+    if (Object.hasOwn(headersB, key)) {
+      result.set(key, (headersB as Record<string, string>)[key]);
+    }
+  }
+
+  return result;
+};
