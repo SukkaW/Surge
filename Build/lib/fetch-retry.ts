@@ -89,7 +89,7 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             }
             throw new ResponseError(res);
           } else {
-            if (!res.ok && retryOpts.retryOnNon2xx) {
+            if ((!res.ok && res.status !== 304) && retryOpts.retryOnNon2xx) {
               throw new ResponseError(res);
             }
             return res;
@@ -106,7 +106,7 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             return bail(err) as never;
           }
 
-          console.log(picocolors.gray('[fetch fail]'), url);
+          console.log(picocolors.gray('[fetch fail]'), url, err);
           throw err;
         }
       }, retryOpts);
