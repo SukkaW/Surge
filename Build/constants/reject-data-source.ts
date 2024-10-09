@@ -50,19 +50,24 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
   // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl, and move it to extra
   [
-    'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
+    'https://pup-filter.pages.dev/pup-filter-domains.txt',
     [
-      'https://pup-filter.pages.dev/pup-filter-domains.txt',
+      'https://malware-filter.pages.dev/pup-filter-domains.txt',
+      'https://malware-filter.gitlab.io/malware-filter/pup-filter-domains.txt',
       'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
+      // 'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
+
     ],
     true, TTL.TWO_WEEKS()
   ],
   // Curben's UrlHaus Malicious URL Blocklist
   [
-    'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
+    'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
     [
-      'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
+      'https://malware-filter.pages.dev/urlhaus-filter-domains.txt',
+      'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-domains.txt',
       'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
+      // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
     ],
     true, TTL.THREE_HOURS()
   ],
@@ -73,10 +78,12 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
 
 export const PHISHING_DOMAIN_LISTS_EXTRA: HostsSource[] = [
   [
-    'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt',
+    'https://phishing-filter.pages.dev/phishing-filter-domains.txt',
     [
-      'https://phishing-filter.pages.dev/phishing-filter-domains.txt',
+      'https://malware-filter.pages.dev/phishing-filter-domains.txt',
+      'https://malware-filter.gitlab.io/phishing-filter/phishing-filter-domains.txt',
       'https://malware-filter.gitlab.io/malware-filter/phishing-filter-domains.txt'
+      // 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt'
     ],
     true, TTL.THREE_HOURS()
   ],
