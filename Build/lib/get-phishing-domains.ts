@@ -93,7 +93,7 @@ const lowKeywords = createKeywordFilter([
   '.www.',
   '.www2',
   'instagram',
-  'microsoft',
+  'microsof',
   'passwordreset',
   '.google-',
   'recover'
