@@ -26,19 +26,21 @@ export class CustomNoETagFallbackError extends Error {
   }
 }
 
-export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
-  if (signal.aborted) {
-    reject(signal.reason as Error);
-    return;
-  }
+export function sleepWithAbort(ms: number, signal: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal.aborted) {
+      reject(signal.reason as Error);
+      return;
+    }
 
-  signal.addEventListener('abort', stop, { once: true });
+    signal.addEventListener('abort', stop, { once: true });
 
-  // eslint-disable-next-line sukka/prefer-timer-id -- node:timers/promises
-  setTimeout(ms, undefined, { ref: false }).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
+    // eslint-disable-next-line sukka/prefer-timer-id -- node:timers/promises
+    setTimeout(ms, undefined, { ref: false }).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
 
-  function stop(this: AbortSignal) { reject(this.reason as Error); }
-});
+    function stop(this: AbortSignal) { reject(this.reason as Error); }
+  });
+}
 
 export async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
   const controller = new AbortController();

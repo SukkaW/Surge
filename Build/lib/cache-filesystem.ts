@@ -410,7 +410,7 @@ export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separa
 export const deserializeArray = (str: string) => str.split(separator);
 
 export const getFileContentHash = (filename: string) => stringHash(fs.readFileSync(filename, 'utf-8'));
-export const createCacheKey = (filename: string) => {
+export function createCacheKey(filename: string) {
   const fileHash = getFileContentHash(filename);
   return (key: string) => key + '$' + fileHash + '$';
-};
+}

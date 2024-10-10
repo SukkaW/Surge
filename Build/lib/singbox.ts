@@ -2,10 +2,10 @@ import { isProbablyIpv4, isProbablyIpv6 } from './is-fast-ip';
 
 const unsupported = Symbol('unsupported');
 
-const toNumberTuple = <T extends string>(key: T, value: string): [T, number] | null => {
+function toNumberTuple<T extends string>(key: T, value: string): [T, number] | null {
   const tmp = Number(value);
   return Number.isNaN(tmp) ? null : [key, tmp];
-};
+}
 
 // https://sing-box.sagernet.org/configuration/rule-set/source-format/
 export const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: Required<SingboxHeadlessRule>[keyof SingboxHeadlessRule][number]] | null) | typeof unsupported> = {

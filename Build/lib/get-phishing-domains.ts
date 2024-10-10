@@ -101,25 +101,27 @@ const lowKeywords = createKeywordFilter([
 
 const cacheKey = createCacheKey(__filename);
 
-export const getPhishingDomains = (parentSpan: Span) => parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
-  const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
-    const domainArr: string[] = [];
+export function getPhishingDomains(parentSpan: Span) {
+  return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
+    const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
+      const domainArr: string[] = [];
 
-    (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry, cacheKey))))
-      .forEach(appendArrayInPlaceCurried(domainArr));
-    (await Promise.all(PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry, cacheKey))))
-      .forEach(appendArrayInPlaceCurried(domainArr));
+      (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry, cacheKey))))
+        .forEach(appendArrayInPlaceCurried(domainArr));
+      (await Promise.all(PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry, cacheKey))))
+        .forEach(appendArrayInPlaceCurried(domainArr));
 
-    return domainArr;
+      return domainArr;
+    });
+
+    const cacheHash = span.traceChildSync('get hash', () => stringHash(fastStringArrayJoin(domainArr, '|')));
+
+    return span.traceChildAsync(
+      'process phishing domain set',
+      () => processPhihsingDomains(domainArr, cacheHash)
+    );
   });
-
-  const cacheHash = span.traceChildSync('get hash', () => stringHash(fastStringArrayJoin(domainArr, '|')));
-
-  return span.traceChildAsync(
-    'process phishing domain set',
-    () => processPhihsingDomains(domainArr, cacheHash)
-  );
-});
+}
 
 async function processPhihsingDomains(domainArr: string[], cacheHash = '') {
   return fsFetchCache.apply(

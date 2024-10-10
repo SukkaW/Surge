@@ -95,26 +95,6 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             return res;
           }
         } catch (err: unknown) {
-          const mayBailError = (err: unknown) => {
-            if (typeof err === 'object' && err !== null && 'name' in err) {
-              if ((
-                err.name === 'AbortError'
-                || ('digest' in err && err.digest === 'AbortError')
-              ) && !retryOpts.retryOnAborted) {
-                console.log(picocolors.gray('[fetch abort]'), url);
-                return true;
-              }
-              if (err.name === 'Custom304NotModifiedError') {
-                return true;
-              }
-              if (err.name === 'CustomNoETagFallbackError') {
-                return true;
-              }
-            }
-
-            return !!(isClientError(err));
-          };
-
           if (mayBailError(err)) {
             return bail(err) as never;
           };
@@ -140,6 +120,26 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
           throw newErr;
         }
       }, retryOpts);
+
+      function mayBailError(err: unknown) {
+        if (typeof err === 'object' && err !== null && 'name' in err) {
+          if ((
+            err.name === 'AbortError'
+            || ('digest' in err && err.digest === 'AbortError')
+          ) && !retryOpts.retryOnAborted) {
+            console.log(picocolors.gray('[fetch abort]'), url);
+            return true;
+          }
+          if (err.name === 'Custom304NotModifiedError') {
+            return true;
+          }
+          if (err.name === 'CustomNoETagFallbackError') {
+            return true;
+          }
+        }
+
+        return !!(isClientError(err));
+      };
     } catch (err) {
       if (err instanceof ResponseError) {
         return err.res;

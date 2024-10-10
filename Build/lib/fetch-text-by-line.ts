@@ -9,19 +9,19 @@ import { processLine } from './process-line';
 import { $fetch } from './make-fetch-happen';
 import type { NodeFetchResponse } from './make-fetch-happen';
 
-const getReadableStream = (file: string | FileHandle): ReadableStream => {
+function getReadableStream(file: string | FileHandle): ReadableStream {
   if (typeof file === 'string') {
     // return fs.openAsBlob(file).then(blob => blob.stream())
     return Readable.toWeb(fs.createReadStream(file/* , { encoding: 'utf-8' } */));
   }
   return file.readableWebStream();
-};
+}
 // TODO: use FileHandle.readLine()
 export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<string>) = (file: string | FileHandle) => getReadableStream(file)
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextLineStream());
 
-const ensureResponseBody = <T extends Response | NodeFetchResponse>(resp: T): NonNullable<T['body']> => {
+function ensureResponseBody<T extends Response | NodeFetchResponse>(resp: T): NonNullable<T['body']> {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }
@@ -29,7 +29,7 @@ const ensureResponseBody = <T extends Response | NodeFetchResponse>(resp: T): No
     throw new Error('Body has already been consumed.');
   }
   return resp.body;
-};
+}
 
 export const createReadlineInterfaceFromResponse: ((resp: Response | NodeFetchResponse) => AsyncIterable<string>) = (resp) => {
   const stream = ensureResponseBody(resp);

@@ -14,7 +14,7 @@ import { compareAndWriteFile } from './lib/create-file';
 const mockDir = path.join(ROOT_DIR, 'Mock');
 const modulesDir = path.join(ROOT_DIR, 'Modules');
 
-const copyDirContents = async (srcDir: string, destDir: string) => {
+async function copyDirContents(srcDir: string, destDir: string) {
   const promises: Array<Promise<void>> = [];
 
   for await (const entry of await fsp.opendir(srcDir)) {
@@ -28,7 +28,7 @@ const copyDirContents = async (srcDir: string, destDir: string) => {
   }
 
   return Promise.all(promises);
-};
+}
 
 export const buildPublic = task(require.main === module, __filename)(async (span) => {
   await span.traceChildAsync('copy rest of the files', async () => {
@@ -83,7 +83,7 @@ const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || 
 
 const html = (string: TemplateStringsArray, ...values: any[]) => string.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
 
-const walk = (tree: TreeTypeArray) => {
+function walk(tree: TreeTypeArray) {
   let result = '';
   tree.sort(prioritySorter);
   for (let i = 0, len = tree.length; i < len; i++) {
@@ -102,7 +102,7 @@ const walk = (tree: TreeTypeArray) => {
     }
   }
   return result;
-};
+}
 
 function generateHtml(tree: TreeTypeArray) {
   return html`

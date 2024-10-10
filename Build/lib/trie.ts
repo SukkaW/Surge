@@ -13,10 +13,8 @@ type TrieNode<Meta = any> = [
   Meta /** meta */
 ];
 
-const deepTrieNodeToJSON = (
-  node: TrieNode,
-  unpackMeta: ((meta?: any) => string) | undefined
-) => {
+function deepTrieNodeToJSON(node: TrieNode,
+  unpackMeta: ((meta?: any) => string) | undefined) {
   const obj: Record<string, any> = {};
   if (node[0]) {
     obj['[start]'] = node[0];
@@ -32,11 +30,11 @@ const deepTrieNodeToJSON = (
     obj[key] = deepTrieNodeToJSON(value, unpackMeta);
   });
   return obj;
-};
+}
 
 const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => [false, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 
-export const hostnameToTokens = (hostname: string): string[] => {
+export function hostnameToTokens(hostname: string): string[] {
   const tokens = hostname.split('.');
   const results: string[] = [];
   let token = '';
@@ -51,9 +49,9 @@ export const hostnameToTokens = (hostname: string): string[] => {
     }
   }
   return results;
-};
+}
 
-const walkHostnameTokens = (hostname: string, onToken: (token: string) => boolean | null): boolean | null => {
+function walkHostnameTokens(hostname: string, onToken: (token: string) => boolean | null): boolean | null {
   const tokens = hostname.split('.');
   let token = '';
 
@@ -78,7 +76,7 @@ const walkHostnameTokens = (hostname: string, onToken: (token: string) => boolea
   }
 
   return false;
-};
+}
 
 interface FindSingleChildLeafResult<Meta> {
   node: TrieNode<Meta>,

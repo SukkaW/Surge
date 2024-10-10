@@ -7,7 +7,7 @@ import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { SOURCE_DIR } from './constants/dir';
 import { $fetch } from './lib/make-fetch-happen';
 
-export const parseDomesticList = async () => {
+export async function parseDomesticList() {
   const trie = createTrie(await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'));
 
   const top5000 = new Set<string>();
@@ -60,4 +60,4 @@ export const parseDomesticList = async () => {
   // ]);
 
   console.log(notIncludedDomestic.size, notIncludedDomestic);
-};
+}

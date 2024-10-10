@@ -7,7 +7,7 @@
  * Simplified, optimized and add modified for 52 bit, which provides a larger hash space
  * and still making use of Javascript's 53-bit integer space.
  */
-export const fnv1a52 = (str: string) => {
+export function fnv1a52(str: string) {
   const len = str.length;
   let i = 0,
     t0 = 0,
@@ -41,6 +41,6 @@ export const fnv1a52 = (str: string) => {
     + v1 * 65536
     + (v0 ^ (v3 >> 4))
   );
-};
+}
 
 export const stringHash = (payload: string) => fnv1a52(payload).toString(36) + payload.length.toString(36);

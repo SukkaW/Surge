@@ -8,9 +8,9 @@ const createSource = async function *(input: string[]) {
   }
 };
 
-const test = async (a: string[], b: string[], expected: boolean) => {
+async function test(a: string[], b: string[], expected: boolean) {
   expect((await fileEqual(a, createSource(b)))).to.eq(expected);
-};
+}
 
 describe('fileEqual', () => {
   it('same', () => test(

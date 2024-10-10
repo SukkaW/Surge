@@ -34,7 +34,7 @@ export interface Span {
   readonly traceResult: TraceResult
 }
 
-export const createSpan = (name: string, parentTraceResult?: TraceResult): Span => {
+export function createSpan(name: string, parentTraceResult?: TraceResult): Span {
   const start = performance.now();
 
   let curTraceResult: TraceResult;
@@ -93,27 +93,29 @@ export const createSpan = (name: string, parentTraceResult?: TraceResult): Span 
 
   // eslint-disable-next-line sukka/no-redundant-variable -- self reference
   return span;
-};
+}
 
 export const dummySpan = createSpan('');
 
-export const task = (importMetaMain: boolean, importMetaPath: string) => <T>(fn: (span: Span) => Promise<T>, customName?: string) => {
-  const taskName = customName ?? basename(importMetaPath, extname(importMetaPath));
+export function task(importMetaMain: boolean, importMetaPath: string) {
+  return <T>(fn: (span: Span) => Promise<T>, customName?: string) => {
+    const taskName = customName ?? basename(importMetaPath, extname(importMetaPath));
 
-  const dummySpan = createSpan(taskName);
-  if (importMetaMain) {
-    fn(dummySpan).finally(() => {
-      console.log(wtf.dump());
-    });
-  }
-
-  return async (span?: Span) => {
-    if (span) {
-      return span.traceChildAsync(taskName, fn);
+    const dummySpan = createSpan(taskName);
+    if (importMetaMain) {
+      fn(dummySpan).finally(() => {
+        console.log(wtf.dump());
+      });
     }
-    return fn(dummySpan);
+
+    return async (span?: Span) => {
+      if (span) {
+        return span.traceChildAsync(taskName, fn);
+      }
+      return fn(dummySpan);
+    };
   };
-};
+}
 
 // const isSpan = (obj: any): obj is Span => {
 //   return typeof obj === 'object' && obj && spanTag in obj;
@@ -128,10 +130,10 @@ export const task = (importMetaMain: boolean, importMetaPath: string) => <T>(fn:
 //   };
 // };
 
-export const printTraceResult = (traceResult: TraceResult = rootTraceResult) => {
+export function printTraceResult(traceResult: TraceResult = rootTraceResult) {
   printStats(traceResult.children);
   printTree(traceResult, node => `${node.name} ${picocolors.bold(`${(node.end - node.start).toFixed(3)}ms`)}`);
-};
+}
 
 function printTree(initialTree: TraceResult, printNode: (node: TraceResult, branch: string) => string) {
   function printBranch(tree: TraceResult, branch: string, isGraphHead: boolean, isChildOfLastBranch: boolean) {

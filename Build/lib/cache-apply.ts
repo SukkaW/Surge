@@ -1,6 +1,6 @@
 import process from 'node:process';
 
-export const createCache = (namespace?: string, printStats = false) => {
+export function createCache(namespace?: string, printStats = false) {
   const cache = new Map();
 
   let hit = 0;
@@ -30,4 +30,4 @@ export const createCache = (namespace?: string, printStats = false) => {
       return value;
     }
   };
-};
+}

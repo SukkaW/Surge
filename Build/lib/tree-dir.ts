@@ -19,7 +19,7 @@ export type TreeTypeArray = TreeType[];
 
 type VoidOrVoidArray = void | VoidOrVoidArray[];
 
-export const treeDir = async (rootPath: string): Promise<TreeTypeArray> => {
+export async function treeDir(rootPath: string): Promise<TreeTypeArray> {
   const tree: TreeTypeArray = [];
 
   const walk = async (dir: string, node: TreeTypeArray, dirRelativeToRoot = ''): Promise<VoidOrVoidArray> => {
@@ -60,4 +60,4 @@ export const treeDir = async (rootPath: string): Promise<TreeTypeArray> => {
   await walk(rootPath, tree);
 
   return tree;
-};
+}

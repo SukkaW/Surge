@@ -4,12 +4,12 @@
 import * as tldts from 'tldts-experimental';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 
-export const compare = (a: string, b: string) => {
+export function compare(a: string, b: string) {
   if (a === b) return 0;
   return (a.length - b.length) || a.localeCompare(b);
-};
+}
 
-export const buildParseDomainMap = (inputs: string[]) => {
+export function buildParseDomainMap(inputs: string[]) {
   const domainMap = new Map<string, string>();
   const subdomainMap = new Map<string, string>();
 
@@ -24,13 +24,11 @@ export const buildParseDomainMap = (inputs: string[]) => {
   }
 
   return { domainMap, subdomainMap };
-};
+}
 
-export const sortDomains = (
-  inputs: string[],
+export function sortDomains(inputs: string[],
   domainMap?: Map<string, string> | null,
-  subdomainMap?: Map<string, string> | null
-) => {
+  subdomainMap?: Map<string, string> | null) {
   if (!domainMap || !subdomainMap) {
     const { domainMap: dm, subdomainMap: sm } = buildParseDomainMap(inputs);
     domainMap = dm;
@@ -58,4 +56,4 @@ export const sortDomains = (
   };
 
   return inputs.sort(sorter);
-};
+}

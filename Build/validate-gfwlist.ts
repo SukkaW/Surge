@@ -8,7 +8,7 @@ import path from 'node:path';
 import { SOURCE_DIR } from './constants/dir';
 import { $fetch } from './lib/make-fetch-happen';
 
-export const parseGfwList = async () => {
+export async function parseGfwList() {
   const whiteSet = new Set<string>();
   const blackSet = new Set<string>();
 
@@ -120,4 +120,4 @@ export const parseGfwList = async () => {
     trie,
     top500Gfwed
   ] as const;
-};
+}

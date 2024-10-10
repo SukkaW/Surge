@@ -141,7 +141,7 @@ const latestTopUserAgentsPromise = $fetch('https://cdn.jsdelivr.net/npm/top-user
   .then(res => res.json())
   .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
-const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
+async function querySpeedtestApi(keyword: string): Promise<Array<string | null>> {
   const topUserAgents = await latestTopUserAgentsPromise;
 
   const url = `https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`;
@@ -181,7 +181,7 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
     console.error(e);
     return [];
   }
-};
+}
 
 export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
   const output = new DomainsetOutput(span, 'speedtest')

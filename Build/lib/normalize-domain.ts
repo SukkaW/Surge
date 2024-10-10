@@ -5,7 +5,7 @@ import { normalizeTldtsOpt } from '../constants/loose-tldts-opt';
 
 type TldTsParsed = ReturnType<typeof tldts.parse>;
 
-export const normalizeDomain = (domain: string, parsed: TldTsParsed | null = null) => {
+export function normalizeDomain(domain: string, parsed: TldTsParsed | null = null) {
   if (domain.length === 0) return null;
 
   parsed ??= tldts.parse(domain, normalizeTldtsOpt);
@@ -29,4 +29,4 @@ export const normalizeDomain = (domain: string, parsed: TldTsParsed | null = nul
   }
 
   return h.length > 0 ? h : null;
-};
+}

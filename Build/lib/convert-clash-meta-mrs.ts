@@ -22,7 +22,7 @@ const mihomoBinaryUrl: Partial<Record<NodeJS.Platform, Partial<Record<NodeJS.Arc
   }
 };
 
-const ensureMihomoBinary = async () => {
+async function ensureMihomoBinary() {
   await mkdirp(mihomoBinaryDir);
   if (!fs.existsSync(mihomoBinaryPath)) {
     const writeStream = fs.createWriteStream(mihomoBinaryPath);
@@ -47,9 +47,9 @@ const ensureMihomoBinary = async () => {
     );
   }
   await fsp.chmod(mihomoBinaryPath, 0o755);
-};
+}
 
-export const convertClashMetaMrs = async (type: 'domain', format: 'text', input: string, output: string) => {
+export async function convertClashMetaMrs(type: 'domain', format: 'text', input: string, output: string) {
   await ensureMihomoBinary();
 
   const { stderr } = await ezspawn(mihomoBinaryPath, ['convert-ruleset', type, format, input, output]);
@@ -57,4 +57,4 @@ export const convertClashMetaMrs = async (type: 'domain', format: 'text', input:
   if (stderr) {
     throw new Error(stderr);
   }
-};
+}

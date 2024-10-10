@@ -12,7 +12,7 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
 
-const getRule = (domain: string) => {
+function getRule(domain: string) {
   switch (domain[0]) {
     case '+':
     case '$':
@@ -20,7 +20,7 @@ const getRule = (domain: string) => {
     default:
       return `DOMAIN-SUFFIX,${domain}`;
   }
-};
+}
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/domestic.conf'));
   const directs = await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'non_ip/direct.conf'));

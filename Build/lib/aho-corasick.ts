@@ -6,14 +6,14 @@ type Node = Map<string, Node> & {
   [FAIL]: Node | undefined
 };
 
-const createNode = (): Node => {
+function createNode(): Node {
   const node = new Map<string, Node | undefined>() as Node;
   node[WORDEND] = false;
   node[FAIL] = undefined;
   return node;
-};
+}
 
-const createKeywordFilter = (keys: string[] | Set<string>) => {
+function createKeywordFilter(keys: string[] | Set<string>) {
   const root = createNode();
 
   // Create a trie with extra fields and information
@@ -82,6 +82,6 @@ const createKeywordFilter = (keys: string[] | Set<string>) => {
 
     return false;
   };
-};
+}
 
 export default createKeywordFilter;

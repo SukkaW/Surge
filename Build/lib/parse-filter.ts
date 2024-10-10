@@ -15,7 +15,7 @@ const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
 
-const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
+function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
   let line = processLine(l);
   if (!line) return;
   line = line.toLowerCase();
@@ -39,7 +39,7 @@ const domainListLineCb = (l: string, set: string[], includeAllSubDomain: boolean
   }
 
   set.push(includeAllSubDomain ? `.${line}` : line);
-};
+}
 
 export function processDomainLists(
   span: Span,
@@ -71,7 +71,7 @@ export function processDomainLists(
   ));
 }
 
-const hostsLineCb = (l: string, set: string[], includeAllSubDomain: boolean, meta: string) => {
+function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
   const line = processLine(l);
   if (!line) {
     return;
@@ -91,7 +91,7 @@ const hostsLineCb = (l: string, set: string[], includeAllSubDomain: boolean, met
   }
 
   set.push(includeAllSubDomain ? `.${domain}` : domain);
-};
+}
 
 export function processHosts(
   span: Span,

@@ -1,4 +1,4 @@
-export const processLine = (line: string): string | null => {
+export function processLine(line: string): string | null {
   if (!line) {
     return null;
   }
@@ -22,9 +22,9 @@ export const processLine = (line: string): string | null => {
   }
 
   return trimmed;
-};
+}
 
-export const processLineFromReadline = async (rl: AsyncIterable<string>): Promise<string[]> => {
+export async function processLineFromReadline(rl: AsyncIterable<string>): Promise<string[]> {
   const res: string[] = [];
   for await (const line of rl) {
     const l: string | null = processLine(line);
@@ -33,4 +33,4 @@ export const processLineFromReadline = async (rl: AsyncIterable<string>): Promis
     }
   }
   return res;
-};
+}
