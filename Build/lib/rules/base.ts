@@ -27,9 +27,10 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   protected ipcidr6NoResolve = new Set<string>();
   protected geoip = new Set<string>();
   protected groipNoResolve = new Set<string>();
-  // TODO: add sourceIpcidr
-  // TODO: add sourcePort
-  // TODO: add port
+
+  protected sourceIpOrCidr = new Set<string>();
+  protected sourcePort = new Set<string>();
+  protected destPort = new Set<string>();
 
   protected otherRules: string[] = [];
   protected abstract type: 'domainset' | 'non_ip' | 'ip';
@@ -187,6 +188,15 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
           break;
         case 'GEOIP':
           (arg === 'no-resolve' ? this.groipNoResolve : this.geoip).add(value);
+          break;
+        case 'SRC-IP':
+          this.sourceIpOrCidr.add(value);
+          break;
+        case 'SRC-PORT':
+          this.sourcePort.add(value);
+          break;
+        case 'DEST-PORT':
+          this.destPort.add(value);
           break;
         default:
           this.otherRules.push(line);
