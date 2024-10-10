@@ -43,19 +43,15 @@ export const sleepWithAbort = (ms: number, signal: AbortSignal) => new Promise<v
 export async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
   const controller = new AbortController();
 
-  const fetchMainPromise = fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit })
-    .then(r => r.text())
-    .then(text => {
-      controller.abort();
-      return text;
-    });
   const createFetchFallbackPromise = async (url: string, index: number) => {
+    if (index > 0) {
     // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
-    try {
-      await sleepWithAbort(500 + (index + 1) * 10, controller.signal);
-    } catch {
-      console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
-      throw new CustomAbortError();
+      try {
+        await sleepWithAbort(500 + (index + 1) * 10, controller.signal);
+      } catch {
+        console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
+        throw new CustomAbortError();
+      }
     }
     if (controller.signal.aborted) {
       console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
@@ -68,10 +64,7 @@ export async function fetchAssets(url: string, fallbackUrls: string[] | readonly
   };
 
   return Promise.any([
-    fetchMainPromise,
+    createFetchFallbackPromise(url, -1),
     ...fallbackUrls.map(createFetchFallbackPromise)
-  ]).catch(e => {
-    console.log(`Download Rule for [${url}] failed`);
-    throw e;
-  });
+  ]);
 }
