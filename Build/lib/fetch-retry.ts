@@ -91,15 +91,32 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             return res;
           }
         } catch (err: unknown) {
-          if (err instanceof Error && (
-            err.name === 'AbortError'
-            || ('digest' in err && err.digest === 'AbortError')
-          ) && !retryOpts.retryOnAborted) {
-            console.log(picocolors.gray('[fetch abort]'), url);
-            return bail(err) as never;
-          }
-          if (isClientError(err)) {
-            return bail(err) as never;
+          const mayBailError = (err: unknown) => {
+            if (typeof err === 'object' && err !== null && 'name' in err) {
+              if ((
+                err.name === 'AbortError'
+                || ('digest' in err && err.digest === 'AbortError')
+              ) && !retryOpts.retryOnAborted) {
+                console.log(picocolors.gray('[fetch abort]'), url);
+                return bail(err) as never;
+              }
+              if (err.name === 'Custom304NotModifiedError') {
+                return bail(err) as never;
+              }
+              if (err.name === 'CustomNoETagFallbackError') {
+                return bail(err) as never;
+              }
+            }
+            if (isClientError(err)) {
+              return bail(err) as never;
+            }
+          };
+
+          mayBailError(err);
+          if (err instanceof AggregateError) {
+            for (const e of err.errors) {
+              mayBailError(e);
+            }
           }
 
           console.log(picocolors.gray('[fetch fail]'), url, err);
