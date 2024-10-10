@@ -8,7 +8,7 @@ import { sortDomains } from '../stable-sort-domain';
 import { RuleOutput } from './base';
 import picocolors from 'picocolors';
 import { normalizeDomain } from '../normalize-domain';
-import { isProbablyIpv4 } from '../is-fast-ip';
+import { isProbablyIpv4, isProbablyIpv6 } from '../is-fast-ip';
 
 type Preprocessed = [domain: string[], domainSuffix: string[], sortedDomainRules: string[]];
 
@@ -52,6 +52,10 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
     appendArrayFromSet(results, this.processName, i => `PROCESS-NAME,${i}`);
     appendArrayFromSet(results, this.processPath, i => `PROCESS-NAME,${i}`);
 
+    appendArrayFromSet(results, this.sourceIpOrCidr, i => `SRC-IP,${i}`);
+    appendArrayFromSet(results, this.sourcePort, i => `SRC-PORT,${i}`);
+    appendArrayFromSet(results, this.destPort, i => `DEST-PORT,${i}`);
+
     appendArrayInPlace(results, this.otherRules);
 
     appendArrayFromSet(results, this.urlRegex, i => `URL-REGEX,${i}`);
@@ -85,6 +89,21 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
 
     appendArrayFromSet(results, this.processName, i => `PROCESS-NAME,${i}`);
     appendArrayFromSet(results, this.processPath, i => `PROCESS-PATH,${i}`);
+
+    appendArrayFromSet(results, this.sourceIpOrCidr, value => {
+      if (value.includes('/')) {
+        return `SRC-IP-CIDR,${value}`;
+      }
+      if (isProbablyIpv4(value)) {
+        return `SRC-IP-CIDR,${value}/32`;
+      }
+      if (isProbablyIpv6(value)) {
+        return `SRC-IP-CIDR6,${value}/128`;
+      }
+      return '';
+    });
+    appendArrayFromSet(results, this.sourcePort, i => `SRC-PORT,${i}`);
+    appendArrayFromSet(results, this.destPort, i => `DST-PORT,${i}`);
 
     // appendArrayInPlace(results, this.otherRules);
 
