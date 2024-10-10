@@ -1,14 +1,13 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import zlib from 'node:zlib';
 import process from 'node:process';
 
 import { async as ezspawn } from '@jsdevtools/ez-spawn';
 import { mkdirp } from './misc';
-import { fetchWithRetry } from './fetch-retry';
+import { $fetch } from './make-fetch-happen';
 
 const mihomoBinaryDir = path.join(__dirname, '../../node_modules/.cache/mihomo');
 const mihomoBinaryPath = path.join(mihomoBinaryDir, 'mihomo');
@@ -33,7 +32,7 @@ const ensureMihomoBinary = async () => {
       throw new Error(`Unsupported platform: ${process.platform} ${process.arch}`);
     }
 
-    const res = await fetchWithRetry(downloadUrl);
+    const res = await $fetch(downloadUrl);
 
     if (!res.ok || !res.body) {
       throw new Error(`Failed to download mihomo binary: ${res.statusText}`);
@@ -42,7 +41,7 @@ const ensureMihomoBinary = async () => {
     const gunzip = zlib.createGunzip();
 
     await pipeline(
-      Readable.fromWeb(res.body),
+      res.body,
       gunzip,
       writeStream
     );

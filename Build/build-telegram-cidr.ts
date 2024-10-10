@@ -1,5 +1,4 @@
 // @ts-check
-import { defaultRequestInit, fetchWithRetry } from './lib/fetch-retry';
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { processLine } from './lib/process-line';
@@ -7,9 +6,10 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { RulesetOutput } from './lib/create-file';
+import { $fetch } from './lib/make-fetch-happen';
 
 export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
-  const resp = await fetchWithRetry('https://core.telegram.org/resources/cidr.txt', defaultRequestInit);
+  const resp = await $fetch('https://core.telegram.org/resources/cidr.txt');
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 

@@ -1,11 +1,10 @@
 import { task } from './trace';
 import path from 'node:path';
 import fs from 'node:fs';
-import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { fetchWithRetry } from './lib/fetch-retry';
 import { OUTPUT_MOCK_DIR } from './constants/dir';
 import { mkdirp } from './lib/misc';
+import { $fetch } from './lib/make-fetch-happen';
 
 const ASSETS_LIST = {
   'www-google-analytics-com_ga.js': 'https://raw.githubusercontent.com/AdguardTeam/Scriptlets/master/dist/redirect-files/google-analytics-ga.js',
@@ -18,7 +17,7 @@ const ASSETS_LIST = {
 export const downloadMockAssets = task(require.main === module, __filename)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
   ([filename, url]) => span
     .traceChildAsync(url, async () => {
-      const res = await fetchWithRetry(url);
+      const res = await $fetch(url);
       if (!res.body) {
         throw new Error(`Empty body from ${url}`);
       }
@@ -27,7 +26,7 @@ export const downloadMockAssets = task(require.main === module, __filename)((spa
       const src = path.join(OUTPUT_MOCK_DIR, filename);
 
       return pipeline(
-        Readable.fromWeb(res.body),
+        res.body,
         fs.createWriteStream(src, 'utf-8')
       );
     })
