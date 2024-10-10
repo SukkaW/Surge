@@ -40,7 +40,8 @@ interface FetchRetryOpt {
   maxRetryAfter?: number,
   // onRetry?: (err: Error) => void,
   retryOnAborted?: boolean,
-  retryOnNon2xx?: boolean
+  retryOnNon2xx?: boolean,
+  retryOn404?: boolean
 }
 
 interface FetchWithRetry {
@@ -55,7 +56,8 @@ const DEFAULT_OPT: Required<FetchRetryOpt> = {
   factor: 6,
   maxRetryAfter: 20,
   retryOnAborted: false,
-  retryOnNon2xx: true
+  retryOnNon2xx: true,
+  retryOn404: false
 };
 
 function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
@@ -119,7 +121,13 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
             }
           }
 
-          console.log(picocolors.gray('[fetch fail]'), url, err);
+          console.log(picocolors.gray('[fetch fail]'), url, (err as any).name, err);
+
+          // Do not retry on 404
+          if (err instanceof ResponseError && err.res.status === 404) {
+            return bail(err) as never;
+          }
+
           const newErr = new Error('Fetch failed');
           newErr.cause = err;
           throw newErr;
