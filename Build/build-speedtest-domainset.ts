@@ -3,10 +3,9 @@ import path from 'node:path';
 import { Sema } from 'async-sema';
 import { getHostname } from 'tldts-experimental';
 import { task } from './trace';
-import { fetchWithRetry } from './lib/fetch-retry';
+import { $fetch } from './lib/make-fetch-happen';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
-import { TTL, deserializeArray, fsFetchCache, serializeArray, createCacheKey } from './lib/cache-filesystem';
 
 import { DomainsetOutput } from './lib/create-file';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
@@ -137,20 +136,10 @@ const PREDEFINE_DOMAINS = [
 ];
 
 const s = new Sema(2);
-const cacheKey = createCacheKey(__filename);
 
-const latestTopUserAgentsPromise = fsFetchCache.applyWithHttp304<string[]>(
-  'https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json',
-  cacheKey('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json'),
-  async (res) => {
-    const userAgents = await (res.json() as Promise<string[]>);
-    return userAgents.filter(ua => ua.startsWith('Mozilla/5.0 '));
-  },
-  {
-    serializer: serializeArray,
-    deserializer: deserializeArray
-  }
-);
+const latestTopUserAgentsPromise = $fetch('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json')
+  .then(res => res.json())
+  .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
 const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>> => {
   const topUserAgents = await latestTopUserAgentsPromise;
@@ -160,45 +149,34 @@ const querySpeedtestApi = async (keyword: string): Promise<Array<string | null>>
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
-    return await fsFetchCache.apply(
-      cacheKey(url),
-      () => s.acquire().then(() => fetchWithRetry(url, {
-        headers: {
-          dnt: '1',
-          Referer: 'https://www.speedtest.net/',
-          accept: 'application/json, text/plain, */*',
-          'User-Agent': randomUserAgent,
-          'Accept-Language': 'en-US,en;q=0.9',
-          ...(randomUserAgent.includes('Chrome')
-            ? {
-              'Sec-Ch-Ua-Mobile': '?0',
-              'Sec-Fetch-Dest': 'empty',
-              'Sec-Fetch-Mode': 'cors',
-              'Sec-Fetch-Site': 'same-origin',
-              'Sec-Gpc': '1'
-            }
-            : {})
-        },
-        signal: AbortSignal.timeout(1000 * 60),
-        retry: {
-          retries: 2
-        }
-      })).then(r => r.json() as any).then((data: Array<{ url: string, host: string }>) => data.reduce<string[]>(
-        (prev, cur) => {
-          const line = cur.host || cur.url;
-          const hn = getHostname(line, { detectIp: false, validateHostname: true });
-          if (hn) {
-            prev.push(hn);
+    return await s.acquire().then(() => $fetch(url, {
+      headers: {
+        dnt: '1',
+        Referer: 'https://www.speedtest.net/',
+        accept: 'application/json, text/plain, */*',
+        'User-Agent': randomUserAgent,
+        'Accept-Language': 'en-US,en;q=0.9',
+        ...(randomUserAgent.includes('Chrome')
+          ? {
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Gpc': '1'
           }
-          return prev;
-        }, []
-      )).finally(() => s.release()),
-      {
-        ttl: TTL.ONE_WEEK(),
-        serializer: serializeArray,
-        deserializer: deserializeArray
-      }
-    );
+          : {})
+      },
+      timeout: 1000 * 60
+    })).then(r => r.json() as any).then((data: Array<{ url: string, host: string }>) => data.reduce<string[]>(
+      (prev, cur) => {
+        const line = cur.host || cur.url;
+        const hn = getHostname(line, { detectIp: false, validateHostname: true });
+        if (hn) {
+          prev.push(hn);
+        }
+        return prev;
+      }, []
+    )).finally(() => s.release());
   } catch (e) {
     console.error(e);
     return [];
