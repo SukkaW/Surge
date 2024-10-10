@@ -1,6 +1,7 @@
 import retry from 'async-retry';
 import picocolors from 'picocolors';
 import { setTimeout } from 'node:timers/promises';
+import { fetch as _fetch } from 'undici';
 
 function isClientError(err: unknown): err is NodeJS.ErrnoException {
   if (!err || typeof err !== 'object') return false;
@@ -161,4 +162,4 @@ export const defaultRequestInit: RequestInit = {
   }
 };
 
-export const fetchWithRetry = createFetchRetry(fetch);
+export const fetchWithRetry = createFetchRetry(_fetch as any);
