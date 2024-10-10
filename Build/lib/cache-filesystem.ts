@@ -305,49 +305,19 @@ export class Cache<S = string> {
 
     const previouslyCached = this.get(cachedKey);
 
-    const primaryETag = this.get(getETagKey(primaryUrl));
-    const fetchMainPromise = fetchWithRetry(
-      primaryUrl,
-      {
-        signal: controller.signal,
-        ...defaultRequestInit,
-        headers: (typeof primaryETag === 'string' && primaryETag.length > 0)
-          ? mergeHeaders(
-            defaultRequestInit.headers,
-            { 'If-None-Match': primaryETag }
-          )
-          : defaultRequestInit.headers
-      }
-    ).then(r => {
-      if (r.headers.has('etag')) {
-        this.set(getETagKey(primaryUrl), r.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
-
-        // If we do not have a cached value, we ignore 304
-        if (r.status === 304 && typeof previouslyCached === 'string') {
-          controller.abort();
-          throw new Custom304NotModifiedError(primaryUrl, previouslyCached);
-        }
-      } else if (!primaryETag && typeof previouslyCached === 'string') {
-        throw new CustomNoETagFallbackError(previouslyCached);
-      }
-
-      return r.text();
-    }).then(text => {
-      controller.abort();
-      return text;
-    });
-
     const createFetchFallbackPromise = async (url: string, index: number) => {
       // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
-      try {
-        await sleepWithAbort(300 + (index + 1) * 10, controller.signal);
-      } catch {
-        console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
-        throw new CustomAbortError();
-      }
-      if (controller.signal.aborted) {
-        console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
-        throw new CustomAbortError();
+      if (index > 0) {
+        try {
+          await sleepWithAbort(300 + (index + 1) * 10, controller.signal);
+        } catch {
+          console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
+          throw new CustomAbortError();
+        }
+        if (controller.signal.aborted) {
+          console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
+          throw new CustomAbortError();
+        }
       }
 
       const etag = this.get(getETagKey(url));
@@ -373,11 +343,13 @@ export class Cache<S = string> {
           controller.abort();
           throw new Custom304NotModifiedError(url, previouslyCached);
         }
-      } else if (!primaryETag && typeof previouslyCached === 'string') {
+      } else if (!this.get(getETagKey(primaryUrl)) && typeof previouslyCached === 'string') {
         controller.abort();
         throw new CustomNoETagFallbackError(previouslyCached);
       }
 
+      // either no etag and not cached
+      // or has etag but not 304
       const text = await res.text();
       controller.abort();
       return text;
@@ -385,7 +357,7 @@ export class Cache<S = string> {
 
     try {
       const text = await Promise.any([
-        fetchMainPromise,
+        createFetchFallbackPromise(primaryUrl, -1),
         ...mirrorUrls.map(createFetchFallbackPromise)
       ]);
 
@@ -405,7 +377,7 @@ export class Cache<S = string> {
           if (error instanceof Custom304NotModifiedError) {
             console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
             this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
-            return deserializer(previouslyCached);
+            return deserializer(error.data);
           }
           if (error instanceof CustomNoETagFallbackError) {
             console.log(picocolors.green('[cache] hit'), picocolors.gray(primaryUrl));
