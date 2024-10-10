@@ -7,6 +7,7 @@ function isClientError(err: unknown): err is NodeJS.ErrnoException {
 
   if ('code' in err) return err.code === 'ERR_UNESCAPED_CHARACTERS';
   if ('message' in err) return err.message === 'Request path contains unescaped characters';
+  if ('name' in err) return err.name === 'DOMException' || err.name === 'AbortError';
 
   return false;
 }
@@ -100,28 +101,33 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
                 || ('digest' in err && err.digest === 'AbortError')
               ) && !retryOpts.retryOnAborted) {
                 console.log(picocolors.gray('[fetch abort]'), url);
-                return bail(err) as never;
+                return true;
               }
               if (err.name === 'Custom304NotModifiedError') {
-                return bail(err) as never;
+                return true;
               }
               if (err.name === 'CustomNoETagFallbackError') {
-                return bail(err) as never;
+                return true;
               }
             }
-            if (isClientError(err)) {
-              return bail(err) as never;
-            }
+
+            return !!(isClientError(err));
           };
 
-          mayBailError(err);
+          if (mayBailError(err)) {
+            return bail(err) as never;
+          };
+
           if (err instanceof AggregateError) {
             for (const e of err.errors) {
-              mayBailError(e);
+              if (mayBailError(e)) {
+                // bail original error
+                return bail(err) as never;
+              };
             }
           }
 
-          console.log(picocolors.gray('[fetch fail]'), url, (err as any).name, err);
+          console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
 
           // Do not retry on 404
           if (err instanceof ResponseError && err.res.status === 404) {
