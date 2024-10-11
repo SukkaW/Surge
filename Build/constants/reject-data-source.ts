@@ -46,17 +46,15 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
   // Curben's PUP Domains Blocklist
-  // 'https://curbengh.github.io/pup-filter/pup-filter-agh.txt'
-  // 'https://pup-filter.pages.dev/pup-filter-agh.txt'
   // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl, and move it to extra
   [
     'https://pup-filter.pages.dev/pup-filter-domains.txt',
     [
-      'https://malware-filter.pages.dev/pup-filter-domains.txt',
-      'https://malware-filter.gitlab.io/malware-filter/pup-filter-domains.txt',
+      // 'https://malware-filter.pages.dev/pup-filter-domains.txt',
+      // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-domains.txt',
       'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
       // 'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
-
+      // 'https://malware-filter.pages.dev/pup-filter-domains.txt'
     ],
     true, TTL.TWO_WEEKS()
   ],
