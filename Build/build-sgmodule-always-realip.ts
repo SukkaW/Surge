@@ -41,7 +41,16 @@ const HOSTNAMES = [
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {
   // Intranet, Router Setup, and mant more
   const dataset = [Object.entries(DIRECTS), Object.entries(LANS)];
-  const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => [`*.${domain}`, domain])));
+  const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => {
+    switch (domain[0]) {
+      case '+':
+        return [`*.${domain.slice(1)}`];
+      case '$':
+        return [domain.slice(1)];
+      default:
+        return [domain, `*.${domain}`];
+    }
+  })));
 
   return Promise.all([
     compareAndWriteFile(
