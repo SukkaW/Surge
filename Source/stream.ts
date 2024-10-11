@@ -269,7 +269,7 @@ const FOX_PLUS: StreamService = {
 };
 
 const HBO: StreamService = {
-  name: 'HBO Go / HBO Now / HBO Max',
+  name: 'HBO Go / HBO Now / HBO Max / Max',
   rules: [
     'DOMAIN-SUFFIX,hbo.com',
     'DOMAIN-SUFFIX,hbogo.com',
@@ -279,7 +279,12 @@ const HBO: StreamService = {
     'USER-AGENT,HBOMAX*',
 
     'DOMAIN-SUFFIX,hbomax.com',
-    'DOMAIN-SUFFIX,hbomaxcdn.com'
+    'DOMAIN-SUFFIX,hbomaxcdn.com',
+
+    'USER-AGENT,Max',
+    'PROCESS-NAME,com.wbd.stream',
+    'DOMAIN-SUFFIX,max.com',
+    'DOMAIN-SUFFIX,discomax.com'
   ]
 };
 
@@ -431,16 +436,6 @@ const LITV: StreamService = {
   rules: [
     'DOMAIN,litvfreemobile-hichannel.cdn.hinet.net',
     'DOMAIN-SUFFIX,litv.tv'
-  ]
-};
-
-const MAX: StreamService = {
-  name: 'Max',
-  rules: [
-    'USER-AGENT,Max*',
-    'PROCESS-NAME,com.wbd.stream',
-    'DOMAIN-SUFFIX,max.com',
-    'DOMAIN-SUFFIX,discomax.com'
   ]
 };
 
@@ -785,7 +780,7 @@ export const ALL: StreamService[] = [
   KKBOX,
   KKTV,
   LINE_TV, LITV,
-  MAX, MY5, MYTV_SUPER,
+  MY5, MYTV_SUPER,
   NETFLIX, NAVER_TV, NICONICO, NOW_E,
   OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
