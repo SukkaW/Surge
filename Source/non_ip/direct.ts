@@ -58,6 +58,7 @@ export const DIRECTS = {
       '+ui.direct',
       '$unifi',
       // Other Router
+      '$router.com',
       '+huaweimobilewifi.com',
       '+router',
       // 'my.router',
@@ -88,8 +89,10 @@ export const DIRECTS = {
       // AdGuard
       '$injections.adguard.org',
       '$local.adguard.org',
-      // Android ADB
-      '_adb-tls-connect._tcp'
+      // Auto Discovery
+      '+_tcp',
+      '+bogon',
+      '+_msdcs'
     ]
   }
 } satisfies Record<string, DNSMapping>;

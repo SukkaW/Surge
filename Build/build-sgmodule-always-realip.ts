@@ -8,10 +8,10 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
-  '*.msftncsi.com',
-  '*.msftconnecttest.com',
-  'network-test.debian.org',
-  'detectportal.firefox.com',
+  'dns.msftncsi.com',
+  // '*.msftconnecttest.com',
+  // 'network-test.debian.org',
+  // 'detectportal.firefox.com',
   // Handle SNAT conversation properly
   '*.srv.nintendo.net',
   '*.stun.playstation.net',
@@ -21,27 +21,25 @@ const HOSTNAMES = [
   '*.stun.twilio.com',
   // 'stun.syncthing.net',
   'stun.*',
-  'controlplane.tailscale.com',
+  // 'controlplane.tailscale.com',
   // NTP
-  'time.*.com', 'time.*.gov, time.*.edu.cn, time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org', 'time*.cloud.tencent.com', 'ntp?.aliyun.com',
+  'time.*.com', 'time.*.gov', 'time.*.edu.cn', 'time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org'
+  // 'time*.cloud.tencent.com', 'ntp?.aliyun.com',
   // QQ Login
-  'localhost.ptlogin2.qq.com',
-  'localhost.sec.qq.com',
-  'localhost.work.weixin.qq.com',
-  // Microsoft Auto Discovery
-  '*PDC._msDCS*',
-  '*DC._msDCS*',
-  '*GC._msDCS*',
-  // Misc,
-  '*.battlenet.com.cn',
-  '*.blzstatic.cn',
-  '*.battlenet.com'
+  // 'localhost.*.qq.com'
+  // 'localhost.ptlogin2.qq.com
+  // 'localhost.sec.qq.com',
+  // 'localhost.work.weixin.qq.com',
 ];
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {
   // Intranet, Router Setup, and mant more
-  const dataset = [Object.entries(DIRECTS), Object.entries(LANS)];
-  const surge = dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.flatMap((domain) => {
+  const dataset = [
+    DIRECTS.HOTSPOT_CAPTIVE_PORTAL,
+    DIRECTS.SYSTEM,
+    ...Object.values(LANS)
+  ];
+  const surge = dataset.flatMap(({ domains }) => domains.flatMap((domain) => {
     switch (domain[0]) {
       case '+':
         return [`*.${domain.slice(1)}`];
@@ -50,7 +48,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
       default:
         return [domain, `*.${domain}`];
     }
-  })));
+  }));
 
   return Promise.all([
     compareAndWriteFile(
@@ -71,7 +69,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
           dns: {
             'fake-ip-filter': appendArrayInPlace(
               /** clash */
-              dataset.flatMap(data => data.flatMap(([, { domains }]) => domains.map((domain) => `+.${domain}`))),
+              dataset.flatMap(({ domains }) => domains.map((domain) => `+.${domain}`)),
               HOSTNAMES
             )
           }
