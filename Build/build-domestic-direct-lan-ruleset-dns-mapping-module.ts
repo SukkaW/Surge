@@ -12,28 +12,36 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
 
-function getRule(domain: string) {
-  switch (domain[0]) {
-    case '+':
-    case '$':
-      return `DOMAIN-SUFFIX,${domain.slice(1)}`;
-    default:
-      return `DOMAIN-SUFFIX,${domain}`;
+function getRule(domain: string): string[] {
+  const results: string[] = [];
+
+  if (domain[0] === '$' || domain[0] === '+') {
+    results.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
+  } else if (domain.includes('?')) {
+    results.push(
+      `DOMAIN-WILDCARD,${domain}`,
+      `DOMAIN-WILDCARD,*.${domain}`
+    );
+  } else {
+    results.push(`DOMAIN-SUFFIX,${domain}`);
   }
+
+  return results;
 }
+
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
   const domestics = await readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/domestic.conf'));
   const directs = await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'non_ip/direct.conf'));
   const lans: string[] = [];
 
   Object.entries(DOMESTICS).forEach(([, { domains }]) => {
-    appendArrayInPlace(domestics, domains.map(getRule));
+    appendArrayInPlace(domestics, domains.flatMap(getRule));
   });
   Object.entries(DIRECTS).forEach(([, { domains }]) => {
-    appendArrayInPlace(directs, domains.map(getRule));
+    appendArrayInPlace(directs, domains.flatMap(getRule));
   });
   Object.entries(LANS).forEach(([, { domains }]) => {
-    appendArrayInPlace(lans, domains.map(getRule));
+    appendArrayInPlace(lans, domains.flatMap(getRule));
   });
 
   return [domestics, directs, lans] as const;

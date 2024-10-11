@@ -19,91 +19,75 @@ export const DIRECTS = {
     hosts: {},
     domains: [
       'securelogin.com.cn',
-      'captive.apple.com'
+      '$captive.apple.com',
+      '$hotspot.cslwifi.com'
     ]
   },
   ROUTER: {
     dns: 'system',
     hosts: {},
     domains: [
+      '+home',
+      // 'zte.home', // ZTE CPE
+      // 'airbox.home',
+      // 'bthub.home',
+      // 'bthomehub.home',
+      // 'hitronhub.home',
+      // 'web.setup.home'
+
       // Aruba Router
-      'instant.arubanetworks.com',
-      'setmeup.arubanetworks.com',
+      '$instant.arubanetworks.com',
+      '$setmeup.arubanetworks.com',
       // ASUS router
-      'router.asus.com',
-      'repeater.asus.com',
+      '$router.asus.com',
+      '$repeater.asus.com',
       'asusrouter.com',
       // NetGear
       'routerlogin.net',
+      'routerlogin.com',
       // Tenda WiFi
       'tendawifi.com',
       // TP-Link Router
       'tplinkwifi.net',
       'tplogin.cn',
       'tplinkap.net',
-      'tplinkeap.net',
       'tplinkmodem.net',
       'tplinkplclogin.net',
       'tplinkrepeater.net',
-      // Xiaomi Router
-      'miwifi.com',
-      // ZTE CPE
-      'zte.home',
       // UniFi
       '+ui.direct',
       '$unifi',
-      'amplifi.lan',
       // Other Router
-      'hiwifi.com',
-      'huaweimobilewifi.com',
-      'my.router',
-      'phicomm.me',
-      'router.ctc',
-      'peiluyou.com',
-      'airbox.home',
-      'arcor.easybox',
-      'aterm.me',
-      'bthub.home',
-      'bthomehub.home',
-      'congstar.box',
-      'connect.box',
-      'console.gl-inet.com',
-      'easy.box',
-      'etxr',
-      'fritz.box',
-      'fritz.nas',
-      'fritz.repeater',
-      'giga.cube',
-      'hi.link',
-      'hitronhub.home',
-      'homerouter.cpe',
-      'myfritz.box',
-      'mobile.hotspot',
-      'ntt.setup',
-      'pi.hole',
-      'plex.direct',
-      'app.plex.tv',
-      'routerlogin.com',
-      'samsung.router',
-      'speedport.ip',
-      'steamloopback.host',
-      'web.setup',
-      'web.setup.home'
+      '+huaweimobilewifi.com',
+      '+router',
+      // 'my.router',
+      // 'samsung.router',
+      // '$easy.box', // Vodafone EasyBox
+      '$aterm.me',
+      '$console.gl-inet.com',
+      // '$fritz.box',
+      // '$fritz.repeater',
+      // '$myfritz.box',
+      // '$speedport.ip', // Telekom
+      // '$giga.cube', // Vodafone GigaCube
+      '$homerouter.cpe', // Huawei LTE CPE
+      '$mobile.hotspot', // T-Mobile Hotspot
+      '$ntt.setup',
+      '$pi.hole',
+      '+plex.direct'
+      // 'web.setup'
     ]
   },
   SYSTEM: {
     dns: 'system',
     hosts: {},
     domains: [
-      '_hotspot_.m2m',
-      'hotspot.cslwifi.com',
+      '+m2m',
       // TailScale Magic DNS
-      'ts.net',
+      '+ts.net',
       // AdGuard
       '$injections.adguard.org',
       '$local.adguard.org',
-      // SetApp
-      'setapp.click',
       // Android ADB
       '_adb-tls-connect._tcp'
     ]
@@ -115,7 +99,8 @@ export const LANS = {
     dns: 'system',
     hosts: {},
     domains: [
-      'lan',
+      '+lan',
+      // 'amplifi.lan',
       '$localhost',
       'localdomain',
       'home.arpa',
@@ -125,16 +110,17 @@ export const LANS = {
       '17.172.in-addr.arpa',
       '18.172.in-addr.arpa',
       '19.172.in-addr.arpa',
-      '20.172.in-addr.arpa',
-      '21.172.in-addr.arpa',
-      '22.172.in-addr.arpa',
-      '23.172.in-addr.arpa',
-      '24.172.in-addr.arpa',
-      '25.172.in-addr.arpa',
-      '26.172.in-addr.arpa',
-      '27.172.in-addr.arpa',
-      '28.172.in-addr.arpa',
-      '29.172.in-addr.arpa',
+      '2?.172.in-addr.arpa',
+      // '20.172.in-addr.arpa',
+      // '21.172.in-addr.arpa',
+      // '22.172.in-addr.arpa',
+      // '23.172.in-addr.arpa',
+      // '24.172.in-addr.arpa',
+      // '25.172.in-addr.arpa',
+      // '26.172.in-addr.arpa',
+      // '27.172.in-addr.arpa',
+      // '28.172.in-addr.arpa',
+      // '29.172.in-addr.arpa',
       '30.172.in-addr.arpa',
       '31.172.in-addr.arpa',
       '168.192.in-addr.arpa',
