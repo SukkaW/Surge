@@ -104,6 +104,9 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
     const dummySpan = createSpan(taskName);
     if (importMetaMain) {
       fn(dummySpan).finally(() => {
+        dummySpan.stop();
+        printTraceResult(dummySpan.traceResult);
+
         console.log(wtf.dump());
       });
     }
