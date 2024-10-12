@@ -18,20 +18,23 @@ import { setAddFromArray } from './lib/set-add-from-array';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
+import { withBannerArray } from './lib/misc';
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
+  const rejectBaseDescription = [
+    ...SHARED_DESCRIPTION,
+    '',
+    'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+    '',
+    'Build from:',
+    ...HOSTS.map(host => ` - ${host[0]}`),
+    ...DOMAIN_LISTS.map(domainList => ` - ${domainList[0]}`),
+    ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
+  ];
+
   const rejectOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
-      '',
-      'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
-      '',
-      'Build from:',
-      ...HOSTS.map(host => ` - ${host[0]}`),
-      ...DOMAIN_LISTS.map(domainList => ` - ${domainList[0]}`),
-      ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
-    ]);
+    .withDescription(rejectBaseDescription);
 
   const rejectExtraOutput = new DomainsetOutput(span, 'reject_extra')
     .withTitle('Sukka\'s Ruleset - Reject Extra')
@@ -156,6 +159,16 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       span,
       rejectDomainsStats,
       path.join(OUTPUT_INTERNAL_DIR, 'reject-stats.txt')
+    ),
+    compareAndWriteFile(
+      span,
+      withBannerArray(
+        'Sukka\'s Ruleset - Blocklist for AdGuardHome',
+        rejectBaseDescription,
+        new Date(),
+        rejectOutput.adguardhome(filterRuleWhitelistDomainSets)
+      ),
+      path.join(OUTPUT_INTERNAL_DIR, 'reject-adguardhome.txt')
     )
   ]);
 });

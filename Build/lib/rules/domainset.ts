@@ -3,6 +3,7 @@ import createKeywordFilter from '../aho-corasick';
 import { buildParseDomainMap, sortDomains } from '../stable-sort-domain';
 import { RuleOutput } from './base';
 import type { SingboxSourceFormat } from '../singbox';
+import { appendArrayFromSet } from '../misc';
 
 type Preprocessed = string[];
 
@@ -86,4 +87,22 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
   }
 
   mitmSgmodule = undefined;
+
+  adguardhome(whitelist: Set<string | `.${string}`>): string[] {
+    const results: string[] = [];
+
+    // whitelist
+    appendArrayFromSet(results, whitelist, i => (i[0] === '.' ? '@@||' + i.slice(1) + '^' : '@@|' + i + '^'));
+
+    for (let i = 0, len = this.$preprocessed.length; i < len; i++) {
+      const domain = this.$preprocessed[i];
+      if (domain[0] === '.') {
+        results.push(`||${domain.slice(1)}^`);
+      } else {
+        results.push(`|${domain}^`);
+      }
+    }
+
+    return results;
+  }
 }
