@@ -80,9 +80,7 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       )
       .entries())
       .filter(a => a[1] > 9)
-      .sort(
-        (a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0])
-      )
+      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
       .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`);
   }
 

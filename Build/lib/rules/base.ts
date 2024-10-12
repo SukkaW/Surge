@@ -12,7 +12,7 @@ import { readFileByLine } from '../fetch-text-by-line';
 import { asyncWriteToStream } from '../async-write-to-stream';
 
 export abstract class RuleOutput<TPreprocessed = unknown> {
-  protected domainTrie = createTrie<unknown>(null, true);
+  protected domainTrie = createTrie<string>(null, true);
   protected domainKeywords = new Set<string>();
   protected domainWildcard = new Set<string>();
   protected userAgent = new Set<string>();
@@ -97,7 +97,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   addDomain(domain: string) {
-    this.domainTrie.add(domain);
+    this.domainTrie.add(domain, domain);
     return this;
   }
 
@@ -109,8 +109,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   addDomainSuffix(domain: string) {
-    this.domainTrie.add(domain[0] === '.' ? domain : '.' + domain);
-    return this;
+    return this.addDomain(domain[0] === '.' ? domain : '.' + domain);
   }
 
   bulkAddDomainSuffix(domains: string[]) {

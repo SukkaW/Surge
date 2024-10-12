@@ -316,12 +316,16 @@ abstract class Triebase<Meta = any> {
     return results;
   };
 
-  public dumpMeta() {
+  public dumpMeta(onMeta: (meta: Meta) => void): void;
+  public dumpMeta(): Meta[];
+  public dumpMeta(onMeta?: (meta: Meta) => void): Meta[] | void {
     const results: Meta[] = [];
 
-    this.walk((_suffix, meta) => {
-      results.push(meta);
-    });
+    const handleMeta = onMeta
+      ? (_suffix: string[], meta: Meta) => onMeta(meta)
+      : (_suffix: string[], meta: Meta) => results.push(meta);
+
+    this.walk(handleMeta);
 
     return results;
   };
