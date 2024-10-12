@@ -6,11 +6,15 @@ import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../const
 export const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 
 export function fastStringArrayJoin(arr: string[], sep: string) {
-  let result = '';
-  for (let i = 0, len = arr.length; i < len; i++) {
-    if (i !== 0) {
-      result += sep;
-    }
+  const len = arr.length;
+  if (len === 0) {
+    return '';
+  }
+
+  let result = arr[0];
+
+  for (let i = 1; i < len; i++) {
+    result += sep;
     result += arr[i];
   }
   return result;
