@@ -17,9 +17,6 @@ importers:
       '@jsdevtools/ez-spawn':
         specifier: ^3.0.4
         version: 3.0.4
-      async-retry:
-        specifier: ^1.3.3
-        version: 1.3.3
       async-sema:
         specifier: ^3.1.1
         version: 3.1.1
@@ -48,8 +45,8 @@ importers:
         specifier: ^6.4.0
         version: 6.4.0(picomatch@4.0.2)
       foxact:
-        specifier: ^0.2.38
-        version: 0.2.38
+        specifier: ^0.2.39
+        version: 0.2.39
       hash-wasm:
         specifier: ^4.11.0
         version: 4.11.0
@@ -72,11 +69,11 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6
       tldts:
-        specifier: ^6.1.50
-        version: 6.1.50
+        specifier: ^6.1.51
+        version: 6.1.51
       tldts-experimental:
-        specifier: ^6.1.50
-        version: 6.1.50
+        specifier: ^6.1.51
+        version: 6.1.51
       undici:
         specifier: ^6.20.0
         version: 6.20.0
@@ -96,9 +93,6 @@ importers:
       '@swc/core':
         specifier: ^1.7.35
         version: 1.7.35
-      '@types/async-retry':
-        specifier: ^1.4.9
-        version: 1.4.9
       '@types/better-sqlite3':
         specifier: ^7.6.11
         version: 7.6.11
@@ -472,9 +466,6 @@ packages:
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
-  '@types/async-retry@1.4.9':
-    resolution: {integrity: sha512-s1ciZQJzRh3708X/m3vPExr5KJlzlZJvXsKpbtE2luqNcbROr64qU+3KpJsYHqWMeaxI839OvXf9PrUSw1Xtyg==}
-
   '@types/better-sqlite3@7.6.11':
     resolution: {integrity: sha512-i8KcD3PgGtGBLl3+mMYA8PdKkButvPyARxA7IQAd6qeslht13qxb1zzO8dRCtE7U3IoJS782zDBAeoKiM695kg==}
 
@@ -672,9 +663,6 @@ packages:
 
   assertion-error@1.1.0:
     resolution: {integrity: sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==}
-
-  async-retry@1.3.3:
-    resolution: {integrity: sha512-wfr/jstw9xNi/0teMHrRW7dsz3Lt5ARhYNZ2ewpadnhaIp5mbALhOAP+EAdsC7t4Z6wqsDVv9+W6gm1Dk9mEyw==}
 
   async-sema@3.1.1:
     resolution: {integrity: sha512-tLRNUXati5MFePdAk8dw7Qt7DpxPB60ofAgn8WRhW6a2rcimZnYBP9oxHiv0OHy+Wz7kPMG+t4LGdt31+4EmGg==}
@@ -1107,8 +1095,8 @@ packages:
     resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
 
-  foxact@0.2.38:
-    resolution: {integrity: sha512-ClxI9lwzhWpE/JIGfPjSpUNqG6MccNq60jrxuPidNl4CAUrATba4ViQTBFn1Zc5+9q9nAFXWaZKendXIbGvrvQ==}
+  foxact@0.2.39:
+    resolution: {integrity: sha512-iIe0eakDQuGL5ArCVzijffkSAm6jNGC3apTkUWBarvnIZuX6tmx/nhXYFNirKG4Vxo+fM3sL6GP36BE/3w4xng==}
     peerDependencies:
       react: '*'
     peerDependenciesMeta:
@@ -1572,10 +1560,6 @@ packages:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
     engines: {node: '>= 4'}
 
-  retry@0.13.1:
-    resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
-    engines: {node: '>= 4'}
-
   reusify@1.0.4:
     resolution: {integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
@@ -1736,14 +1720,14 @@ packages:
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
 
-  tldts-core@6.1.50:
-    resolution: {integrity: sha512-na2EcZqmdA2iV9zHV7OHQDxxdciEpxrjbkp+aHmZgnZKHzoElLajP59np5/4+sare9fQBfixgvXKx8ev1d7ytw==}
+  tldts-core@6.1.51:
+    resolution: {integrity: sha512-bu9oCYYWC1iRjx+3UnAjqCsfrWNZV1ghNQf49b3w5xE8J/tNShHTzp5syWJfwGH+pxUgTTLUnzHnfuydW7wmbg==}
 
-  tldts-experimental@6.1.50:
-    resolution: {integrity: sha512-11HJNqCCbZb6g3CuEOGmFxqia8Nx7sT97IOo4nC3VArbjh6pvgE2+onemkxSbeDSZIcpNFobRGOOIo1J8DSHgQ==}
+  tldts-experimental@6.1.51:
+    resolution: {integrity: sha512-aDFHR+bRBXiIeDEPG7nV9vxgVu08Y98MUOQe2eyUpbzyapaeKQiulSedN484mKtLIsZdSbSPiboFlWUSM3TWGw==}
 
-  tldts@6.1.50:
-    resolution: {integrity: sha512-q9GOap6q3KCsLMdOjXhWU5jVZ8/1dIib898JBRLsN+tBhENpBDcAVQbE0epADOjw11FhQQy9AcbqKGBQPUfTQA==}
+  tldts@6.1.51:
+    resolution: {integrity: sha512-33lfQoL0JsDogIbZ8fgRyvv77GnRtwkNE/MOKocwUgPO1WrSfsq7+vQRKxRQZai5zd+zg97Iv9fpFQSzHyWdLA==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -1883,7 +1867,7 @@ snapshots:
       '@remusao/smaz': 1.10.0
       '@types/chrome': 0.0.270
       '@types/firefox-webext-browser': 120.0.4
-      tldts-experimental: 6.1.50
+      tldts-experimental: 6.1.51
 
   '@colors/colors@1.5.0':
     optional: true
@@ -2195,10 +2179,6 @@ snapshots:
       tslib: 2.7.0
     optional: true
 
-  '@types/async-retry@1.4.9':
-    dependencies:
-      '@types/retry': 0.12.5
-
   '@types/better-sqlite3@7.6.11':
     dependencies:
       '@types/node': 22.7.5
@@ -2429,10 +2409,6 @@ snapshots:
   argparse@2.0.1: {}
 
   assertion-error@1.1.0: {}
-
-  async-retry@1.3.3:
-    dependencies:
-      retry: 0.13.1
 
   async-sema@3.1.1: {}
 
@@ -2948,7 +2924,7 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
-  foxact@0.2.38:
+  foxact@0.2.39:
     dependencies:
       client-only: 0.0.1
       server-only: 0.0.1
@@ -3417,8 +3393,6 @@ snapshots:
 
   retry@0.12.0: {}
 
-  retry@0.13.1: {}
-
   reusify@1.0.4: {}
 
   rimraf@5.0.10:
@@ -3594,15 +3568,15 @@ snapshots:
 
   text-table@0.2.0: {}
 
-  tldts-core@6.1.50: {}
+  tldts-core@6.1.51: {}
 
-  tldts-experimental@6.1.50:
+  tldts-experimental@6.1.51:
     dependencies:
-      tldts-core: 6.1.50
+      tldts-core: 6.1.51
 
-  tldts@6.1.50:
+  tldts@6.1.51:
     dependencies:
-      tldts-core: 6.1.50
+      tldts-core: 6.1.51
 
   to-regex-range@5.0.1:
     dependencies:

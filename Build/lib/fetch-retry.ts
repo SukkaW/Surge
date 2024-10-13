@@ -1,14 +1,12 @@
-import retry from 'async-retry';
 import picocolors from 'picocolors';
-import { setTimeout } from 'node:timers/promises';
 import {
-  fetch as _fetch,
+  fetch,
   interceptors,
   EnvHttpProxyAgent,
   setGlobalDispatcher
 } from 'undici';
 
-import type { Request, Response, RequestInit } from 'undici';
+import type { Response, RequestInit, RequestInfo } from 'undici';
 
 import CacheableLookup from 'cacheable-lookup';
 import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
@@ -16,7 +14,7 @@ import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
 const cacheableLookup = new CacheableLookup();
 
 const agent = new EnvHttpProxyAgent({
-  allowH2: true,
+  // allowH2: true,
   connect: {
     lookup(hostname, opt, cb) {
       return cacheableLookup.lookup(hostname, opt as CacheableLookupOptions, cb);
@@ -28,21 +26,89 @@ setGlobalDispatcher(agent.compose(
   interceptors.retry({
     maxRetries: 5,
     minTimeout: 10000,
-    errorCodes: ['UND_ERR_HEADERS_TIMEOUT', 'ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'ENETDOWN', 'ENETUNREACH', 'EHOSTDOWN', 'EHOSTUNREACH', 'EPIPE', 'ETIMEDOUT']
+    // TODO: this part of code is only for allow more errors to be retried by default
+    // This should be removed once https://github.com/nodejs/undici/issues/3728 is implemented
+    // @ts-expect-error -- retry return type should be void
+    retry(err, { state, opts }, cb) {
+      const statusCode = 'statusCode' in err && typeof err.statusCode === 'number' ? err.statusCode : null;
+      const errorCode = 'code' in err ? (err as NodeJS.ErrnoException).code : undefined;
+      const headers = ('headers' in err && typeof err.headers === 'object') ? err.headers : undefined;
+
+      const { counter } = state;
+
+      // Any code that is not a Undici's originated and allowed to retry
+      if (
+        errorCode === 'ERR_UNESCAPED_CHARACTERS'
+        || err.message === 'Request path contains unescaped characters'
+        || err.name === 'AbortError'
+      ) {
+        return cb(err);
+      }
+
+      if (errorCode !== 'UND_ERR_REQ_RETRY') {
+        return cb(err);
+      }
+
+      const { method, retryOptions = {} } = opts;
+
+      const {
+        maxRetries = 5,
+        minTimeout = 500,
+        maxTimeout = 30 * 1000,
+        timeoutFactor = 2,
+        methods = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE', 'TRACE']
+      } = retryOptions;
+
+      // If we reached the max number of retries
+      if (counter > maxRetries) {
+        return cb(err);
+      }
+
+      // If a set of method are provided and the current method is not in the list
+      if (Array.isArray(methods) && !methods.includes(method)) {
+        return cb(err);
+      }
+
+      // bail out if the status code matches one of the following
+      if (
+        statusCode != null
+        && (
+          statusCode === 401 // Unauthorized, should check credentials instead of retrying
+          || statusCode === 403 // Forbidden, should check permissions instead of retrying
+          || statusCode === 404 // Not Found, should check URL instead of retrying
+          || statusCode === 405 // Method Not Allowed, should check method instead of retrying
+        )
+      ) {
+        return cb(err);
+      }
+
+      const retryAfterHeader = (headers as Record<string, string> | null | undefined)?.['retry-after'];
+      let retryAfter = -1;
+      if (retryAfterHeader) {
+        retryAfter = Number(retryAfterHeader);
+        retryAfter = Number.isNaN(retryAfter)
+          ? calculateRetryAfterHeader(retryAfterHeader)
+          : retryAfter * 1e3; // Retry-After is in seconds
+      }
+
+      const retryTimeout
+        = retryAfter > 0
+          ? Math.min(retryAfter, maxTimeout)
+          : Math.min(minTimeout * (timeoutFactor ** (counter - 1)), maxTimeout);
+
+      // eslint-disable-next-line sukka/prefer-timer-id -- won't leak
+      setTimeout(() => cb(null), retryTimeout);
+    }
+    // errorCodes: ['UND_ERR_HEADERS_TIMEOUT', 'ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'ENETDOWN', 'ENETUNREACH', 'EHOSTDOWN', 'EHOSTUNREACH', 'EPIPE', 'ETIMEDOUT']
   }),
   interceptors.redirect({
     maxRedirections: 5
   })
 ));
 
-function isClientError(err: unknown): err is NodeJS.ErrnoException {
-  if (!err || typeof err !== 'object') return false;
-
-  if ('code' in err) return err.code === 'ERR_UNESCAPED_CHARACTERS';
-  if ('message' in err) return err.message === 'Request path contains unescaped characters';
-  if ('name' in err) return err.name === 'AbortError';
-
-  return false;
+function calculateRetryAfterHeader(retryAfter: string) {
+  const current = Date.now();
+  return new Date(retryAfter).getTime() - current;
 }
 
 export class ResponseError extends Error {
@@ -67,129 +133,38 @@ export class ResponseError extends Error {
   }
 }
 
-interface FetchRetryOpt {
-  minTimeout?: number,
-  retries?: number,
-  factor?: number,
-  maxRetryAfter?: number,
-  // onRetry?: (err: Error) => void,
-  retryOnNon2xx?: boolean,
-  retryOn404?: boolean
-}
-
-interface FetchWithRetry {
-  (url: string | URL | Request, opts?: RequestInit & { retry?: FetchRetryOpt }): Promise<Response>
-}
-
-const DEFAULT_OPT: Required<FetchRetryOpt> = {
-  // timeouts will be [10, 60, 360, 2160, 12960]
-  // (before randomization is added)
-  minTimeout: 10,
-  retries: 5,
-  factor: 6,
-  maxRetryAfter: 20,
-  retryOnNon2xx: true,
-  retryOn404: false
-};
-
-function createFetchRetry(fetch: typeof _fetch): FetchWithRetry {
-  const fetchRetry: FetchWithRetry = async (url, opts = {}) => {
-    const retryOpts = Object.assign(
-      DEFAULT_OPT,
-      opts.retry
-    );
-
-    try {
-      return await retry(async (bail) => {
-        try {
-          // this will be retried
-          const res = (await fetch(url, opts));
-
-          if ((res.status >= 500 && res.status < 600) || res.status === 429) {
-            // NOTE: doesn't support http-date format
-            const retryAfterHeader = res.headers.get('retry-after');
-            if (retryAfterHeader) {
-              const retryAfter = Number.parseInt(retryAfterHeader, 10);
-              if (retryAfter) {
-                if (retryAfter > retryOpts.maxRetryAfter) {
-                  return res;
-                }
-                await setTimeout(retryAfter * 1e3, undefined, { ref: false });
-              }
-            }
-            throw new ResponseError(res);
-          } else {
-            if ((!res.ok && res.status !== 304) && retryOpts.retryOnNon2xx) {
-              throw new ResponseError(res);
-            }
-            return res;
-          }
-        } catch (err: unknown) {
-          if (mayBailError(err)) {
-            return bail(err) as never;
-          };
-
-          if (err instanceof AggregateError) {
-            for (const e of err.errors) {
-              if (mayBailError(e)) {
-                // bail original error
-                return bail(err) as never;
-              };
-            }
-          }
-
-          console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
-
-          // Do not retry on 404
-          if (err instanceof ResponseError && err.res.status === 404) {
-            return bail(err) as never;
-          }
-
-          const newErr = new Error('Fetch failed');
-          newErr.cause = err;
-          throw newErr;
-        }
-      }, retryOpts);
-
-      function mayBailError(err: unknown) {
-        if (typeof err === 'object' && err !== null && 'name' in err) {
-          if ((
-            err.name === 'AbortError'
-            || ('digest' in err && err.digest === 'AbortError')
-          )) {
-            console.log(picocolors.gray('[fetch abort]'), url);
-            return true;
-          }
-          if (err.name === 'Custom304NotModifiedError') {
-            return true;
-          }
-          if (err.name === 'CustomNoETagFallbackError') {
-            return true;
-          }
-        }
-
-        return !!(isClientError(err));
-      };
-    } catch (err) {
-      if (err instanceof ResponseError) {
-        return err.res;
-      }
-      throw err;
-    }
-  };
-
-  for (const k of Object.keys(_fetch)) {
-    const key = k as keyof typeof _fetch;
-    fetchRetry[key] = _fetch[key];
-  }
-
-  return fetchRetry;
-}
-
 export const defaultRequestInit: RequestInit = {
   headers: {
     'User-Agent': 'curl/8.9.1 (https://github.com/SukkaW/Surge)'
   }
 };
 
-export const fetchWithRetry = createFetchRetry(_fetch as any);
+export async function fetchWithLog(url: RequestInfo, opts: RequestInit = defaultRequestInit) {
+  try {
+    // this will be retried
+    const res = (await fetch(url, opts));
+
+    if (res.status >= 400) {
+      throw new ResponseError(res);
+    }
+
+    if (!res.ok && res.status !== 304) {
+      throw new ResponseError(res);
+    }
+
+    return res;
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'name' in err) {
+      if ((
+        err.name === 'AbortError'
+        || ('digest' in err && err.digest === 'AbortError')
+      )) {
+        console.log(picocolors.gray('[fetch abort]'), url);
+      }
+    } else {
+      console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
+    }
+
+    throw err;
+  }
+};

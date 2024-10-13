@@ -1,5 +1,5 @@
 import picocolors from 'picocolors';
-import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
+import { defaultRequestInit, fetchWithLog } from './fetch-retry';
 import { setTimeout } from 'node:timers/promises';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
@@ -59,7 +59,7 @@ export async function fetchAssets(url: string, fallbackUrls: string[] | readonly
       console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
       throw new CustomAbortError();
     }
-    const res = await fetchWithRetry(url, { signal: controller.signal, ...defaultRequestInit });
+    const res = await fetchWithLog(url, { signal: controller.signal, ...defaultRequestInit });
     const text = await res.text();
     controller.abort();
     return text;

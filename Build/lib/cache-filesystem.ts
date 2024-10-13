@@ -8,8 +8,10 @@ import { fastStringArrayJoin, identity, mergeHeaders } from './misc';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
-import { defaultRequestInit, fetchWithRetry } from './fetch-retry';
+import { defaultRequestInit, fetchWithLog } from './fetch-retry';
 import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssets, sleepWithAbort } from './fetch-assets';
+
+import type { Response, RequestInit } from 'undici';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -216,7 +218,7 @@ export class Cache<S = string> {
     requestInit?: RequestInit
   ): Promise<T> {
     if (opt.temporaryBypass) {
-      return fn(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
+      return fn(await fetchWithLog(url, requestInit));
     }
 
     const baseKey = url + '$' + extraCacheKey;
@@ -255,10 +257,10 @@ export class Cache<S = string> {
 
     const cached = this.get(cachedKey);
     if (cached == null) {
-      return onMiss(await fetchWithRetry(url, requestInit ?? defaultRequestInit));
+      return onMiss(await fetchWithLog(url, requestInit));
     }
 
-    const resp = await fetchWithRetry(
+    const resp = await fetchWithLog(
       url,
       {
         ...(requestInit ?? defaultRequestInit),
@@ -321,7 +323,7 @@ export class Cache<S = string> {
       }
 
       const etag = this.get(getETagKey(url));
-      const res = await fetchWithRetry(
+      const res = await fetchWithLog(
         url,
         {
           signal: controller.signal,

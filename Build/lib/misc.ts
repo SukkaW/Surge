@@ -2,6 +2,7 @@ import path, { dirname } from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../constants/dir';
+import type { HeadersInit } from 'undici';
 
 export const isTruthy = <T>(i: T | 0 | '' | false | null | undefined): i is T => !!i;
 
@@ -102,7 +103,7 @@ export function withBannerArray(title: string, description: string[] | readonly 
   ];
 };
 
-export function mergeHeaders(headersA: RequestInit['headers'] | undefined, headersB: RequestInit['headers']) {
+export function mergeHeaders<T extends RequestInit['headers'] | HeadersInit>(headersA: T | undefined, headersB: T): T {
   if (headersA == null) {
     return headersB;
   }
@@ -111,20 +112,20 @@ export function mergeHeaders(headersA: RequestInit['headers'] | undefined, heade
     throw new TypeError('Array headers is not supported');
   }
 
-  const result = new Headers(headersA);
+  const result = new Headers(headersA as any);
 
   if (headersB instanceof Headers) {
     headersB.forEach((value, key) => {
       result.set(key, value);
     });
-    return result;
+    return result as T;
   }
 
   for (const key in headersB) {
     if (Object.hasOwn(headersB, key)) {
-      result.set(key, (headersB)[key]);
+      result.set(key, (headersB as Record<string, any>)[key]);
     }
   }
 
-  return result;
+  return result as T;
 }
