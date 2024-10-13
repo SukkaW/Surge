@@ -26,6 +26,9 @@ importers:
       better-sqlite3:
         specifier: ^11.3.0
         version: 11.3.0
+      cacache:
+        specifier: ^19.0.1
+        version: 19.0.1
       cacheable-lookup:
         specifier: ^6.1.0
         version: 6.1.0
@@ -99,6 +102,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.11
         version: 7.6.11
+      '@types/cacache':
+        specifier: ^17.0.2
+        version: 17.0.2
       '@types/chai':
         specifier: ^4.3.20
         version: 4.3.20
@@ -471,6 +477,9 @@ packages:
 
   '@types/better-sqlite3@7.6.11':
     resolution: {integrity: sha512-i8KcD3PgGtGBLl3+mMYA8PdKkButvPyARxA7IQAd6qeslht13qxb1zzO8dRCtE7U3IoJS782zDBAeoKiM695kg==}
+
+  '@types/cacache@17.0.2':
+    resolution: {integrity: sha512-IrqHzVX2VRMDQQKa7CtKRnuoCLdRJiLW6hWU+w7i7+AaQ0Ii5bKwJxd5uRK4zBCyrHd3tG6G8zOm2LplxbSfQg==}
 
   '@types/chai@4.3.20':
     resolution: {integrity: sha512-/pC9HAB5I/xMlc5FP77qjCnI16ChlJfW0tGa0IUcFn38VJrTV6DeZ60NU5KZBtaOZqjdpwTWohz5HU1RrhiYxQ==}
@@ -2191,6 +2200,10 @@ snapshots:
       '@types/retry': 0.12.5
 
   '@types/better-sqlite3@7.6.11':
+    dependencies:
+      '@types/node': 22.7.5
+
+  '@types/cacache@17.0.2':
     dependencies:
       '@types/node': 22.7.5
 
