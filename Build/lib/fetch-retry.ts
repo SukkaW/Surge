@@ -1,14 +1,46 @@
 import retry from 'async-retry';
 import picocolors from 'picocolors';
 import { setTimeout } from 'node:timers/promises';
-import { fetch as _fetch } from 'undici';
+import {
+  fetch as _fetch,
+  interceptors,
+  EnvHttpProxyAgent,
+  setGlobalDispatcher
+} from 'undici';
+
+import type { Request, Response, RequestInit } from 'undici';
+
+import CacheableLookup from 'cacheable-lookup';
+import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
+
+const cacheableLookup = new CacheableLookup();
+
+const agent = new EnvHttpProxyAgent({
+  allowH2: true,
+  connect: {
+    lookup(hostname, opt, cb) {
+      return cacheableLookup.lookup(hostname, opt as CacheableLookupOptions, cb);
+    }
+  }
+});
+
+setGlobalDispatcher(agent.compose(
+  interceptors.retry({
+    maxRetries: 5,
+    minTimeout: 10000,
+    errorCodes: ['UND_ERR_HEADERS_TIMEOUT', 'ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'ENETDOWN', 'ENETUNREACH', 'EHOSTDOWN', 'EHOSTUNREACH', 'EPIPE']
+  }),
+  interceptors.redirect({
+    maxRedirections: 5
+  })
+));
 
 function isClientError(err: unknown): err is NodeJS.ErrnoException {
   if (!err || typeof err !== 'object') return false;
 
   if ('code' in err) return err.code === 'ERR_UNESCAPED_CHARACTERS';
   if ('message' in err) return err.message === 'Request path contains unescaped characters';
-  if ('name' in err) return err.name === 'DOMException' || err.name === 'AbortError';
+  if ('name' in err) return err.name === 'AbortError';
 
   return false;
 }
@@ -41,7 +73,6 @@ interface FetchRetryOpt {
   factor?: number,
   maxRetryAfter?: number,
   // onRetry?: (err: Error) => void,
-  retryOnAborted?: boolean,
   retryOnNon2xx?: boolean,
   retryOn404?: boolean
 }
@@ -57,12 +88,11 @@ const DEFAULT_OPT: Required<FetchRetryOpt> = {
   retries: 5,
   factor: 6,
   maxRetryAfter: 20,
-  retryOnAborted: false,
   retryOnNon2xx: true,
   retryOn404: false
 };
 
-function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
+function createFetchRetry(fetch: typeof _fetch): FetchWithRetry {
   const fetchRetry: FetchWithRetry = async (url, opts = {}) => {
     const retryOpts = Object.assign(
       DEFAULT_OPT,
@@ -70,10 +100,10 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
     );
 
     try {
-      return await retry<Response>(async (bail) => {
+      return await retry(async (bail) => {
         try {
           // this will be retried
-          const res = (await $fetch(url, opts));
+          const res = (await fetch(url, opts));
 
           if ((res.status >= 500 && res.status < 600) || res.status === 429) {
             // NOTE: doesn't support http-date format
@@ -126,7 +156,7 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
           if ((
             err.name === 'AbortError'
             || ('digest' in err && err.digest === 'AbortError')
-          ) && !retryOpts.retryOnAborted) {
+          )) {
             console.log(picocolors.gray('[fetch abort]'), url);
             return true;
           }
@@ -148,9 +178,9 @@ function createFetchRetry($fetch: typeof fetch): FetchWithRetry {
     }
   };
 
-  for (const k of Object.keys($fetch)) {
-    const key = k as keyof typeof $fetch;
-    fetchRetry[key] = $fetch[key];
+  for (const k of Object.keys(_fetch)) {
+    const key = k as keyof typeof _fetch;
+    fetchRetry[key] = _fetch[key];
   }
 
   return fetchRetry;

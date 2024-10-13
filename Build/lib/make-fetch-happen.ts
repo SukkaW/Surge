@@ -1,8 +1,11 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import makeFetchHappen from 'make-fetch-happen';
+import picocolors from 'picocolors';
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports -- type only
-export type { Response as NodeFetchResponse } from 'node-fetch';
+import type { Response as NodeFetchResponse } from 'node-fetch';
+
+export type { NodeFetchResponse };
 
 const cachePath = path.resolve(__dirname, '../../.cache/__make_fetch_happen__');
 fs.mkdirSync(cachePath, { recursive: true });
@@ -21,3 +24,10 @@ export const $fetch = makeFetchHappen.defaults({
     randomize: true
   }
 });
+
+export function printResponseStatus(resp: NodeFetchResponse) {
+  const status = resp.headers.get('X-Local-Cache-Status');
+  if (status) {
+    console.log('[$fetch cache]', { status }, picocolors.gray(resp.url));
+  }
+}

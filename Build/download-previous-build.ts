@@ -6,7 +6,8 @@ import { task } from './trace';
 import { extract as tarExtract } from 'tar-fs';
 import type { Headers as TarEntryHeaders } from 'tar-fs';
 import zlib from 'node:zlib';
-import { $fetch } from './lib/make-fetch-happen';
+import { fetchWithRetry } from './lib/fetch-retry';
+import { Readable } from 'node:stream';
 
 const GITHUB_CODELOAD_URL = 'https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master';
 const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive/master/ruleset.skk.moe-master.tar.gz';
@@ -20,7 +21,7 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
   }
 
   const tarGzUrl = await span.traceChildAsync('get tar.gz url', async () => {
-    const resp = await $fetch(GITHUB_CODELOAD_URL, { method: 'HEAD' });
+    const resp = await fetchWithRetry(GITHUB_CODELOAD_URL, { method: 'HEAD' });
     if (resp.status !== 200) {
       console.warn('Download previous build from GitHub failed! Status:', resp.status);
       console.warn('Switch to GitLab');
@@ -30,7 +31,7 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
   });
 
   return span.traceChildAsync('download & extract previoud build', async () => {
-    const resp = await $fetch(tarGzUrl, {
+    const resp = await fetchWithRetry(tarGzUrl, {
       headers: {
         'User-Agent': 'curl/8.9.1',
         // https://github.com/unjs/giget/issues/97
@@ -66,7 +67,7 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     );
 
     return pipeline(
-      resp.body,
+      Readable.fromWeb(resp.body),
       gunzip,
       extract
     );
