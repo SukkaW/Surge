@@ -243,7 +243,8 @@ export const DOMESTICS = {
       'feelgood.cn',
       '+bytetcc.com', // Use hichina.com as NS
       '+bytednsdoc.com', // Uses alidns.com as NS
-      '+byteimg.com' // Uses alidns.com as NS
+      '+byteimg.com', // Uses alidns.com as NS
+      '+byteacctimg.com' // Uses alidns.com as NS
     ]
   },
   BAIDU: {
