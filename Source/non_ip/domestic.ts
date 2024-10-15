@@ -191,6 +191,7 @@ export const DOMESTICS = {
       'mi.com',
       'duokan.com',
       '+mi-img.com',
+      '+mi-idc.com',
       'mi-fds.com',
       '+mifile.cn',
       'miui.com',
