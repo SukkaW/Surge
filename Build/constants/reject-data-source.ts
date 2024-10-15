@@ -34,7 +34,12 @@ export const DOMAIN_LISTS: HostsSource[] = [
 export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // BarbBlock
   // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
-  ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt', [], true, TTL.TWO_WEEKS()],
+  [
+    'https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt',
+    ['https://raw.githubusercontent.com/paulgb/BarbBlock/refs/heads/main/blacklists/domain-list.txt'],
+    true,
+    TTL.TWO_WEEKS()
+  ],
   // DigitalSide Threat-Intel - OSINT Hub
   // Update once per day
   ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true, TTL.ONE_DAY()],
@@ -44,28 +49,28 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true, TTL.THREE_DAYS()],
   ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true, TTL.THREE_DAYS()],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
+  // ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true, TTL.THREE_DAYS()],
   // Curben's PUP Domains Blocklist
   // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl, and move it to extra
-  [
-    'https://pup-filter.pages.dev/pup-filter-domains.txt',
-    [
-      // 'https://malware-filter.pages.dev/pup-filter-domains.txt',
-      // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-domains.txt',
-      'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
-      // 'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
-      // 'https://malware-filter.pages.dev/pup-filter-domains.txt'
-    ],
-    true, TTL.TWO_WEEKS()
-  ],
+  // [
+  //   'https://pup-filter.pages.dev/pup-filter-domains.txt',
+  //   [
+  //     // 'https://malware-filter.pages.dev/pup-filter-domains.txt',
+  //     // 'https://malware-filter.gitlab.io/malware-filter/pup-filter-domains.txt',
+  //     'https://malware-filter.gitlab.io/pup-filter/pup-filter-domains.txt'
+  //     // 'https://curbengh.github.io/pup-filter/pup-filter-domains.txt',
+  //     // 'https://malware-filter.pages.dev/pup-filter-domains.txt'
+  //   ],
+  //   true, TTL.TWO_WEEKS()
+  // ],
   // Curben's UrlHaus Malicious URL Blocklist
   [
     'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
     [
       'https://malware-filter.pages.dev/urlhaus-filter-domains.txt',
       'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-domains.txt',
-      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt'
-      // 'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt',
+      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt',
+      'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt'
     ],
     true, TTL.THREE_HOURS()
   ],
@@ -80,8 +85,8 @@ export const PHISHING_DOMAIN_LISTS_EXTRA: HostsSource[] = [
     [
       'https://malware-filter.pages.dev/phishing-filter-domains.txt',
       'https://malware-filter.gitlab.io/phishing-filter/phishing-filter-domains.txt',
-      'https://malware-filter.gitlab.io/malware-filter/phishing-filter-domains.txt'
-      // 'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt'
+      'https://malware-filter.gitlab.io/malware-filter/phishing-filter-domains.txt',
+      'https://curbengh.github.io/phishing-filter/phishing-filter-domains.txt'
     ],
     true, TTL.THREE_HOURS()
   ],
@@ -232,24 +237,18 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // uBlock Origin Resource Abuse: merged in uBlock Origin Privacy List
   // [
   //   'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
-  //   [
-  //     'https://ublockorigin.pages.dev/filters/resource-abuse.txt'
-  //   ]
+  //   ['https://ublockorigin.pages.dev/filters/resource-abuse.txt']
   // ],
   // uBlock Origin Annoyances
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/annoyances.min.txt',
-    [
-      'https://ublockorigin.pages.dev/filters/annoyances.min.txt'
-    ],
+    ['https://ublockorigin.pages.dev/filters/annoyances.min.txt'],
     TTL.THREE_HOURS()
   ],
   // EasyList Annoyances
   [
     'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-annoyances.txt',
-    [
-      'https://ublockorigin.pages.dev/thirdparties/easylist-annoyances.txt'
-    ],
+    ['https://ublockorigin.pages.dev/thirdparties/easylist-annoyances.txt'],
     TTL.THREE_HOURS()
   ],
   // Dandelion Sprout's Annoyances
@@ -257,17 +256,13 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // EasyList - Newsletters
   [
     'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-newsletters.txt',
-    [
-      'https://ublockorigin.pages.dev/thirdparties/easylist-newsletters.txt'
-    ],
+    ['https://ublockorigin.pages.dev/thirdparties/easylist-newsletters.txt'],
     TTL.THREE_HOURS()
   ],
   // EasyList - Notifications
   [
     'https://ublockorigin.github.io/uAssets/thirdparties/easylist-notifications.txt',
-    [
-      'https://ublockorigin.pages.dev/thirdparties/easylist-notifications.txt'
-    ],
+    ['https://ublockorigin.pages.dev/thirdparties/easylist-notifications.txt'],
     TTL.THREE_HOURS()
   ],
   // Fanboy Cookie Monster (EasyList Cookie List)
@@ -279,12 +274,6 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
     ],
     TTL.TWLVE_HOURS()
   ]
-  // Bypass Paywall Cleaner
-  // [
-  //   'https://gitflic.ru/project/magnolia1234/bypass-paywalls-clean-filters/blob/raw?file=bpc-paywall-filter.txt',
-  //   [],
-  //   TTL.ONE_DAY()
-  // ]
 ];
 
 // In a hostile network like when an ad blocker is present, apps might be crashing, and these errors need to be
@@ -326,7 +315,6 @@ export const CRASHLYTICS_WHITELIST = [
   '.applicationinsights.azure.com',
   '.api.loganalytics.io',
   '.bugly.qcloud.com',
-  // '.signalfx.com',
   '.cdn.signalfx.com',
   '.crash-reports.browser.yandex.net',
   '.crashlytics2.l.google.com',

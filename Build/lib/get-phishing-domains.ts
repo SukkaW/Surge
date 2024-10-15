@@ -13,8 +13,8 @@ import { fastStringArrayJoin } from './misc';
 import { stringHash } from './string-hash';
 
 const BLACK_TLD = new Set([
-  'accountant', 'autos',
-  'bar', 'beauty', 'bid', 'biz', 'bond', 'business', 'buzz',
+  'accountant', 'art', 'autos',
+  'bar', 'beauty', 'bid', 'bio', 'biz', 'bond', 'business', 'buzz',
   'cc', 'cf', 'cfd', 'click', 'cloud', 'club', 'cn', 'codes',
   'co.uk', 'co.in', 'com.br', 'com.cn', 'com.pl', 'com.vn',
   'cool', 'cricket', 'cyou',
@@ -72,7 +72,8 @@ const sensitiveKeywords = createKeywordFilter([
   'login-microsoft',
   'microsoftonline',
   'google.com-',
-  'minecraft'
+  'minecraft',
+  'staemco'
 ]);
 const lowKeywords = createKeywordFilter([
   'transactions-',
@@ -181,15 +182,11 @@ async function processPhihsingDomains(domainArr: string[], cacheHash = '') {
           domainScoreMap[apexDomain] >= 16
           || (domainScoreMap[apexDomain] >= 13 && domainCountMap[apexDomain] >= 7)
           || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 10)
+          || (domainScoreMap[apexDomain] >= 3 && domainCountMap[apexDomain] >= 16)
         ) {
           domainArr.push('.' + apexDomain);
         }
       }
-
-      // console.log({
-      //   count: domainCountMap['google.com'],
-      //   score: domainScoreMap['google.com']
-      // });
 
       return Promise.resolve(domainArr);
     },

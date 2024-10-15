@@ -1,6 +1,5 @@
 import process from 'node:process';
 import os from 'node:os';
-import wtf from 'wtfnode';
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
@@ -26,7 +25,7 @@ import { downloadMockAssets } from './download-mock-assets';
 
 import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
-import { createSpan, printTraceResult } from './trace';
+import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 
 process.on('uncaughtException', (error) => {
@@ -122,7 +121,7 @@ process.on('unhandledRejection', (reason) => {
     printTraceResult(rootSpan.traceResult);
 
     // Finish the build to avoid leaking timer/fetch ref
-    wtf.dump();
+    await whyIsNodeRunning();
     process.exit(0);
   } catch (e) {
     console.error('Something went wrong!');

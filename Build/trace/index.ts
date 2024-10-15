@@ -1,6 +1,5 @@
 import { basename, extname } from 'node:path';
 import picocolors from 'picocolors';
-import wtf from 'wtfnode';
 
 const SPAN_STATUS_START = 0;
 const SPAN_STATUS_END = 1;
@@ -103,11 +102,10 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
 
     const dummySpan = createSpan(taskName);
     if (importMetaMain) {
-      fn(dummySpan).finally(() => {
+      dummySpan.traceChildAsync('dummy', fn).finally(() => {
         dummySpan.stop();
         printTraceResult(dummySpan.traceResult);
-
-        console.log(wtf.dump());
+        whyIsNodeRunning();
       });
     }
 
@@ -118,6 +116,11 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
       return fn(dummySpan);
     };
   };
+}
+
+export async function whyIsNodeRunning() {
+  const mod = await import('why-is-node-running');
+  return mod.default();
 }
 
 // const isSpan = (obj: any): obj is Span => {
