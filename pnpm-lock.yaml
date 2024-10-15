@@ -75,8 +75,8 @@ importers:
         specifier: ^6.1.51
         version: 6.1.51
       undici:
-        specifier: 7.0.0-alpha.2
-        version: 7.0.0-alpha.2
+        specifier: 6.20.1
+        version: 6.20.1
       wtfnode:
         specifier: ^0.9.3
         version: 0.9.3
@@ -1771,8 +1771,8 @@ packages:
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
-  undici@7.0.0-alpha.2:
-    resolution: {integrity: sha512-4Xn6pwsp6U8F9U7qdDhDwcHPvjcfwt3gbswRg30xgmkQ4Bpfbi6J1OrjTe8WIUVecbcGWOZMPAt6crf0PLliUw==}
+  undici@6.20.1:
+    resolution: {integrity: sha512-AjQF1QsmqfJys+LXfGTNum+qw4S88CojRInG/6t31W/1fk6G59s92bnAvGz5Cmur+kQv2SURXEvvudLmbrE8QA==}
     engines: {node: '>=18.17'}
 
   unique-filename@4.0.0:
@@ -3613,7 +3613,7 @@ snapshots:
 
   undici-types@6.19.8: {}
 
-  undici@7.0.0-alpha.2: {}
+  undici@6.20.1: {}
 
   unique-filename@4.0.0:
     dependencies:

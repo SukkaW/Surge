@@ -125,8 +125,8 @@ process.on('unhandledRejection', (reason) => {
     wtf.dump();
     process.exit(0);
   } catch (e) {
-    console.trace(e);
     console.error('Something went wrong!');
+    console.trace(e);
     process.exit(1);
   }
 })();

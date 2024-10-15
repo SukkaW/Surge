@@ -1,6 +1,5 @@
 import { createReadlineInterfaceFromResponse } from './fetch-text-by-line';
 import { parse as tldtsParse } from 'tldts';
-import { $fetch } from './make-fetch-happen';
 import type { NodeFetchResponse } from './make-fetch-happen';
 import type { UndiciResponseData } from './fetch-retry';
 
@@ -27,9 +26,4 @@ export async function parseFelixDnsmasqFromResp(resp: NodeFetchResponse | Undici
   }
 
   return results;
-}
-
-export async function parseFelixDnsmasq(url: string): Promise<string[]> {
-  const resp = await $fetch(url);
-  return parseFelixDnsmasqFromResp(resp);
 }

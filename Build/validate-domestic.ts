@@ -3,9 +3,14 @@ import { parse } from 'csv-parse/sync';
 import { createTrie } from './lib/trie';
 import path from 'node:path';
 import { processLine } from './lib/process-line';
-import { parseFelixDnsmasq } from './lib/parse-dnsmasq';
 import { SOURCE_DIR } from './constants/dir';
 import { $fetch } from './lib/make-fetch-happen';
+import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
+
+async function parseFelixDnsmasq(url: string): Promise<string[]> {
+  const resp = await $fetch(url);
+  return parseFelixDnsmasqFromResp(resp);
+}
 
 export async function parseDomesticList() {
   const trie = createTrie(await parseFelixDnsmasq('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf'));

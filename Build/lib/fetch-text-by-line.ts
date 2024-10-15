@@ -22,8 +22,9 @@ export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<strin
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextLineStream());
 
-function ensureResponseBody<T extends Response | NodeFetchResponse | UndiciResponseData>(resp: T): NonNullable<T['body']> {
-  if (!resp.body) {
+function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData>(resp: T): NonNullable<T['body']> {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- NodeFetchResponse['body'] is nullable
+  if (resp.body == null) {
     throw new Error('Failed to fetch remote text');
   }
   if ('bodyUsed' in resp && resp.bodyUsed) {
@@ -32,7 +33,7 @@ function ensureResponseBody<T extends Response | NodeFetchResponse | UndiciRespo
   return resp.body;
 }
 
-export const createReadlineInterfaceFromResponse: ((resp: Response | NodeFetchResponse | UndiciResponseData) => AsyncIterable<string>) = (resp) => {
+export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | UndiciResponseData) => AsyncIterable<string>) = (resp) => {
   const stream = ensureResponseBody(resp);
 
   const webStream: ReadableStream<Uint8Array> = 'getReader' in stream

@@ -350,13 +350,15 @@ export class Cache<S = string> {
         this.set(getETagKey(url), serverETag, TTL.ONE_WEEK_STATIC);
       }
       // If we do not have a cached value, we ignore 304
-      if (res.statusCode === 304 && typeof previouslyCached === 'string') {
-        controller.abort();
-        throw new Custom304NotModifiedError(url, previouslyCached);
+      if (res.statusCode === 304 && typeof previouslyCached === 'string' && previouslyCached.length > 1) {
+        const err = new Custom304NotModifiedError(url, previouslyCached);
+        controller.abort(err);
+        throw err;
       }
       if (!serverETag && !this.get(getETagKey(primaryUrl)) && typeof previouslyCached === 'string') {
-        controller.abort();
-        throw new CustomNoETagFallbackError(previouslyCached);
+        const err = new CustomNoETagFallbackError(previouslyCached);
+        controller.abort(err);
+        throw err;
       }
 
       // either no etag and not cached
@@ -386,18 +388,26 @@ export class Cache<S = string> {
 
       return value;
     } catch (e) {
-      if (e instanceof AggregateError) {
+      if (e && typeof e === 'object' && 'errors' in e && Array.isArray(e.errors)) {
         const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
 
-        for (const error of e.errors) {
-          if (error instanceof Custom304NotModifiedError) {
-            console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
-            this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
-            return deserializer(error.data);
+        console.log(e.errors);
+
+        for (let i = 0, len = e.errors.length; i < len; i++) {
+          const error = e.errors[i];
+          if ('name' in error && (error.name === 'CustomAbortError' || error.name === 'AbortError')) {
+            continue;
           }
-          if (error instanceof CustomNoETagFallbackError) {
-            console.log(picocolors.green('[cache] hit'), picocolors.gray(primaryUrl));
-            return deserializer(error.data);
+          if ('digest' in error) {
+            if (error.digest === 'Custom304NotModifiedError') {
+              console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
+              this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
+              return deserializer(error.data);
+            }
+            if (error.digest === 'CustomNoETagFallbackError') {
+              console.log(picocolors.green('[cache] hit'), picocolors.gray(primaryUrl));
+              return deserializer(error.data);
+            }
           }
         }
       }

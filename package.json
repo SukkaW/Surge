@@ -41,7 +41,7 @@
     "tar-fs": "^3.0.6",
     "tldts": "^6.1.51",
     "tldts-experimental": "^6.1.51",
-    "undici": "7.0.0-alpha.2",
+    "undici": "6.20.1",
     "wtfnode": "^0.9.3",
     "yaml": "^2.5.1"
   },
