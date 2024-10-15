@@ -103,9 +103,9 @@ export function withBannerArray(title: string, description: string[] | readonly 
   ];
 };
 
-export function mergeHeaders<T extends RequestInit['headers'] | HeadersInit>(headersA: T | undefined, headersB: T): T {
+export function mergeHeaders<T extends RequestInit['headers'] | HeadersInit>(headersA: T | undefined, headersB: T | undefined): T {
   if (headersA == null) {
-    return headersB;
+    return headersB!;
   }
 
   if (Array.isArray(headersB)) {

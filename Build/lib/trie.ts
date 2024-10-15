@@ -177,33 +177,76 @@ abstract class Triebase<Meta = any> {
     return true;
   };
 
+  private static bfsResults: [node: TrieNode | null, suffix: string[]] = [null, []];
+
+  private static bfs<Meta>(this: void, nodeStack: FIFO<TrieNode<Meta>>, suffixStack: FIFO<string[]>) {
+    const node = nodeStack.dequeue()!;
+    const suffix = suffixStack.dequeue()!;
+
+    node[3].forEach((childNode, k) => {
+      // Pushing the child node to the stack for next iteration of DFS
+      nodeStack.enqueue(childNode);
+
+      suffixStack.enqueue([k, ...suffix]);
+    });
+
+    Triebase.bfsResults[0] = node;
+    Triebase.bfsResults[1] = suffix;
+
+    return Triebase.bfsResults;
+  }
+
+  private static bfsWithSort<Meta>(this: void, nodeStack: FIFO<TrieNode<Meta>>, suffixStack: FIFO<string[]>) {
+    const node = nodeStack.dequeue()!;
+    const suffix = suffixStack.dequeue()!;
+
+    if (node[3].size) {
+      const keys = Array.from(node[3].keys()).sort(Triebase.compare);
+
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const key = keys[i];
+        const childNode = node[3].get(key)!;
+
+        // Pushing the child node to the stack for next iteration of DFS
+        nodeStack.enqueue(childNode);
+        suffixStack.enqueue([key, ...suffix]);
+      }
+    }
+
+    Triebase.bfsResults[0] = node;
+    Triebase.bfsResults[1] = suffix;
+
+    return Triebase.bfsResults;
+  }
+
   private walk(
     onMatches: (suffix: string[], subdomain: boolean, meta: Meta) => void,
     initialNode = this.$root,
-    initialSuffix: string[] = []
+    initialSuffix: string[] = [],
+    withSort = false
   ) {
-    const nodeStack: Array<TrieNode<Meta>> = [initialNode];
+    const bfsImpl = withSort ? Triebase.bfsWithSort : Triebase.bfs;
+
+    const nodeStack = new FIFO<TrieNode<Meta>>();
+    nodeStack.enqueue(initialNode);
+
     // Resolving initial string (begin the start of the stack)
-    const suffixStack: string[][] = [initialSuffix];
+    const suffixStack = new FIFO<string[]>();
+    suffixStack.enqueue(initialSuffix);
 
     let node: TrieNode<Meta> = initialNode;
+    let r;
 
     do {
-      node = nodeStack.pop()!;
-      const suffix = suffixStack.pop()!;
-
-      node[3].forEach((childNode, k) => {
-        // Pushing the child node to the stack for next iteration of DFS
-        nodeStack.push(childNode);
-
-        suffixStack.push([k, ...suffix]);
-      });
+      r = bfsImpl(nodeStack, suffixStack);
+      node = r[0]!;
+      const suffix = r[1];
 
       // If the node is a sentinel, we push the suffix to the results
       if (node[0]) {
         onMatches(suffix, node[1], node[4]);
       }
-    } while (nodeStack.length);
+    } while (nodeStack.size);
   };
 
   static compare(this: void, a: string, b: string) {
@@ -360,9 +403,9 @@ abstract class Triebase<Meta = any> {
     return true;
   };
 
-  public dump(onSuffix: (suffix: string) => void): void;
-  public dump(): string[];
-  public dump(onSuffix?: (suffix: string) => void): string[] | void {
+  public dump(onSuffix: (suffix: string) => void, withSort?: boolean): void;
+  public dump(onSuffix?: null, withSort?: boolean): string[];
+  public dump(onSuffix?: ((suffix: string) => void) | null, withSort = false): string[] | void {
     const results: string[] = [];
 
     const handleSuffix = onSuffix
@@ -375,28 +418,36 @@ abstract class Triebase<Meta = any> {
         results.push(subdomain ? '.' + d : d);
       };
 
-    this.walkWithSort(handleSuffix);
+    if (withSort) {
+      this.walkWithSort(handleSuffix);
+    } else {
+      this.walk(handleSuffix);
+    }
 
     return results;
   };
 
-  public dumpMeta(onMeta: (meta: Meta) => void): void;
-  public dumpMeta(): Meta[];
-  public dumpMeta(onMeta?: (meta: Meta) => void): Meta[] | void {
+  public dumpMeta(onMeta: (meta: Meta) => void, withSort?: boolean): void;
+  public dumpMeta(onMeta?: null, withSort?: boolean): Meta[];
+  public dumpMeta(onMeta?: ((meta: Meta) => void) | null, withSort = false): Meta[] | void {
     const results: Meta[] = [];
 
     const handleMeta = onMeta
       ? (_suffix: string[], _subdomain: boolean, meta: Meta) => onMeta(meta)
       : (_suffix: string[], _subdomain: boolean, meta: Meta) => results.push(meta);
 
-    this.walk(handleMeta);
+    if (withSort) {
+      this.walkWithSort(handleMeta);
+    } else {
+      this.walk(handleMeta);
+    }
 
     return results;
   };
 
-  public dumpWithMeta(onSuffix: (suffix: string, meta: Meta | undefined) => void): void;
-  public dumpWithMeta(): Array<[string, Meta | undefined]>;
-  public dumpWithMeta(onSuffix?: (suffix: string, meta: Meta | undefined) => void): Array<[string, Meta | undefined]> | void {
+  public dumpWithMeta(onSuffix: (suffix: string, meta: Meta | undefined) => void, withSort?: boolean): void;
+  public dumpWithMeta(onMeta?: null, withSort?: boolean): Array<[string, Meta | undefined]>;
+  public dumpWithMeta(onSuffix?: ((suffix: string, meta: Meta | undefined) => void) | null, withSort = false): Array<[string, Meta | undefined]> | void {
     const results: Array<[string, Meta | undefined]> = [];
 
     const handleSuffix = onSuffix
@@ -409,7 +460,11 @@ abstract class Triebase<Meta = any> {
         results.push([subdomain ? '.' + d : d, meta]);
       };
 
-    this.walk(handleSuffix);
+    if (withSort) {
+      this.walkWithSort(handleSuffix);
+    } else {
+      this.walk(handleSuffix);
+    }
 
     return results;
   };

@@ -20,13 +20,8 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
         return;
       }
       results.push(domain);
-    });
+    }, true);
 
-    if (!this.apexDomainMap || !this.subDomainMap) {
-      const { domainMap, subdomainMap } = buildParseDomainMap(results);
-      this.apexDomainMap = domainMap;
-      this.subDomainMap = subdomainMap;
-    }
     const sorted = results;
     sorted.push('this_ruleset_is_made_by_sukkaw.ruleset.skk.moe');
 
@@ -63,9 +58,21 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
     } satisfies SingboxSourceFormat);
   }
 
+  protected apexDomainMap: Map<string, string> | null = null;
+  protected subDomainMap: Map<string, string> | null = null;
+  withDomainMap(apexDomainMap: Map<string, string>, subDomainMap: Map<string, string>) {
+    this.apexDomainMap = apexDomainMap;
+    this.subDomainMap = subDomainMap;
+    return this;
+  }
+
   getStatMap() {
     invariant(this.$preprocessed, 'Non dumped yet');
-    invariant(this.apexDomainMap, 'Missing apex domain map');
+
+    if (!this.apexDomainMap || !this.subDomainMap) {
+      const { domainMap } = buildParseDomainMap(this.$preprocessed);
+      this.apexDomainMap = domainMap;
+    }
 
     return Array.from(this.$preprocessed
       .reduce<Map<string, number>>(

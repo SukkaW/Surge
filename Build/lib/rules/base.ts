@@ -88,14 +88,6 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
-  protected apexDomainMap: Map<string, string> | null = null;
-  protected subDomainMap: Map<string, string> | null = null;
-  withDomainMap(apexDomainMap: Map<string, string>, subDomainMap: Map<string, string>) {
-    this.apexDomainMap = apexDomainMap;
-    this.subDomainMap = subDomainMap;
-    return this;
-  }
-
   addDomain(domain: string) {
     this.domainTrie.add(domain);
     return this;

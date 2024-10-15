@@ -4,7 +4,6 @@ import createKeywordFilter from '../aho-corasick';
 import { appendArrayInPlace } from '../append-array-in-place';
 import { appendArrayFromSet } from '../misc';
 import type { SingboxSourceFormat } from '../singbox';
-import { sortDomains } from '../stable-sort-domain';
 import { RuleOutput } from './base';
 import picocolors from 'picocolors';
 import { normalizeDomain } from '../normalize-domain';
@@ -24,9 +23,9 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
     const domainSuffixes: string[] = [];
     const sortedDomainRules: string[] = [];
 
-    for (const domain of sortDomains(this.domainTrie.dump(), this.apexDomainMap, this.subDomainMap)) {
+    this.domainTrie.dump((domain) => {
       if (kwfilter(domain)) {
-        continue;
+        return;
       }
       if (domain[0] === '.') {
         domainSuffixes.push(domain.slice(1));
@@ -35,7 +34,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
         domains.push(domain);
         sortedDomainRules.push(`DOMAIN,${domain}`);
       }
-    }
+    }, true);
 
     return [domains, domainSuffixes, sortedDomainRules] satisfies Preprocessed;
   }
