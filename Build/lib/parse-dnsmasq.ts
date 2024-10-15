@@ -2,6 +2,7 @@ import { createReadlineInterfaceFromResponse } from './fetch-text-by-line';
 import { parse as tldtsParse } from 'tldts';
 import type { NodeFetchResponse } from './make-fetch-happen';
 import type { UndiciResponseData } from './fetch-retry';
+import type { Response } from 'undici';
 
 function isDomainLoose(domain: string): boolean {
   const { isIcann, isPrivate, isIp } = tldtsParse(domain);
@@ -15,7 +16,7 @@ export function extractDomainsFromFelixDnsmasq(line: string): string | null {
   return null;
 }
 
-export async function parseFelixDnsmasqFromResp(resp: NodeFetchResponse | UndiciResponseData): Promise<string[]> {
+export async function parseFelixDnsmasqFromResp(resp: NodeFetchResponse | UndiciResponseData | Response): Promise<string[]> {
   const results: string[] = [];
 
   for await (const line of createReadlineInterfaceFromResponse(resp)) {

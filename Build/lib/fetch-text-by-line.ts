@@ -9,6 +9,7 @@ import { processLine } from './process-line';
 import { $fetch } from './make-fetch-happen';
 import type { NodeFetchResponse } from './make-fetch-happen';
 import type { UndiciResponseData } from './fetch-retry';
+import type { Response } from 'undici';
 
 function getReadableStream(file: string | FileHandle): ReadableStream {
   if (typeof file === 'string') {
@@ -22,8 +23,7 @@ export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<strin
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextLineStream());
 
-function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData>(resp: T): NonNullable<T['body']> {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- NodeFetchResponse['body'] is nullable
+function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData | Response>(resp: T): NonNullable<T['body']> {
   if (resp.body == null) {
     throw new Error('Failed to fetch remote text');
   }
@@ -33,7 +33,7 @@ function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData>(re
   return resp.body;
 }
 
-export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | UndiciResponseData) => AsyncIterable<string>) = (resp) => {
+export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | UndiciResponseData | Response) => AsyncIterable<string>) = (resp) => {
   const stream = ensureResponseBody(resp);
 
   const webStream: ReadableStream<Uint8Array> = 'getReader' in stream

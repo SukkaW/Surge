@@ -6,18 +6,20 @@ import undici, {
 } from 'undici';
 
 import type {
-  Dispatcher
+  Dispatcher,
+  RequestInit,
+  Response
 } from 'undici';
 
-export type UndiciResponseData<T = any> = Dispatcher.ResponseData<T>;
+export type UndiciResponseData = Dispatcher.ResponseData<any>;
 
 import CacheableLookup from 'cacheable-lookup';
 import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
+import { inspect } from 'node:util';
 
 const cacheableLookup = new CacheableLookup();
 
 const agent = new EnvHttpProxyAgent({
-  // allowH2: true,
   connect: {
     lookup(hostname, opt, cb) {
       return cacheableLookup.lookup(hostname, opt as CacheableLookupOptions, cb);
@@ -114,22 +116,23 @@ function calculateRetryAfterHeader(retryAfter: string) {
   return new Date(retryAfter).getTime() - current;
 }
 
-export class UndiciResponseError extends Error {
+export class ResponseError<T extends UndiciResponseData | Response> extends Error {
   readonly code: number;
   readonly statusCode: number;
 
-  constructor(public readonly res: UndiciResponseData, public readonly url: string) {
-    super('HTTP ' + res.statusCode);
+  constructor(public readonly res: T, public readonly url: string, ...args: any[]) {
+    const statusCode = 'statusCode' in res ? res.statusCode : res.status;
+    super('HTTP ' + statusCode + ' ' + args.map(_ => inspect(_)).join(' '));
 
     if ('captureStackTrace' in Error) {
-      Error.captureStackTrace(this, UndiciResponseError);
+      Error.captureStackTrace(this, ResponseError);
     }
 
     // eslint-disable-next-line sukka/unicorn/custom-error-definition -- deliberatly use previous name
     this.name = this.constructor.name;
     this.res = res;
-    this.code = res.statusCode;
-    this.statusCode = res.statusCode;
+    this.code = statusCode;
+    this.statusCode = statusCode;
   }
 }
 
@@ -139,15 +142,43 @@ export const defaultRequestInit = {
   }
 };
 
+export async function fetchWithLog(url: string, init?: RequestInit) {
+  try {
+    const res = await undici.fetch(url, init);
+    if (res.status >= 400) {
+      throw new ResponseError(res, url);
+    }
+
+    if (!(res.status >= 200 && res.status <= 299) && res.status !== 304) {
+      throw new ResponseError(res, url);
+    }
+
+    return res;
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'name' in err) {
+      if ((
+        err.name === 'AbortError'
+        || ('digest' in err && err.digest === 'AbortError')
+      )) {
+        console.log(picocolors.gray('[fetch abort]'), url);
+      }
+    } else {
+      console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
+    }
+
+    throw err;
+  }
+}
+
 export async function requestWithLog(url: string, opt?: Parameters<typeof undici.request>[1]) {
   try {
     const res = await undici.request(url, opt);
     if (res.statusCode >= 400) {
-      throw new UndiciResponseError(res, url);
+      throw new ResponseError(res, url);
     }
 
     if (!(res.statusCode >= 200 && res.statusCode <= 299) && res.statusCode !== 304) {
-      throw new UndiciResponseError(res, url);
+      throw new ResponseError(res, url);
     }
 
     return res;
