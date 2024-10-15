@@ -8,6 +8,7 @@ import { TextDecoderStream } from 'node:stream/web';
 import { processLine } from './process-line';
 import { $fetch } from './make-fetch-happen';
 import type { NodeFetchResponse } from './make-fetch-happen';
+import type { UndiciResponseData } from './fetch-retry';
 
 function getReadableStream(file: string | FileHandle): ReadableStream {
   if (typeof file === 'string') {
@@ -21,22 +22,26 @@ export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<strin
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextLineStream());
 
-function ensureResponseBody<T extends Response | NodeFetchResponse>(resp: T): NonNullable<T['body']> {
+function ensureResponseBody<T extends Response | NodeFetchResponse | UndiciResponseData>(resp: T): NonNullable<T['body']> {
   if (!resp.body) {
     throw new Error('Failed to fetch remote text');
   }
-  if (resp.bodyUsed) {
+  if ('bodyUsed' in resp && resp.bodyUsed) {
     throw new Error('Body has already been consumed.');
   }
   return resp.body;
 }
 
-export const createReadlineInterfaceFromResponse: ((resp: Response | NodeFetchResponse) => AsyncIterable<string>) = (resp) => {
+export const createReadlineInterfaceFromResponse: ((resp: Response | NodeFetchResponse | UndiciResponseData) => AsyncIterable<string>) = (resp) => {
   const stream = ensureResponseBody(resp);
 
   const webStream: ReadableStream<Uint8Array> = 'getReader' in stream
     ? stream
-    : Readable.toWeb(new Readable().wrap(stream)) as any;
+    : (
+      'body' in stream
+        ? stream.body
+        : Readable.toWeb(new Readable().wrap(stream)) as any
+    );
 
   return webStream
     .pipeThrough(new TextDecoderStream())

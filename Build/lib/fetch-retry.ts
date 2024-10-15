@@ -1,12 +1,15 @@
 import picocolors from 'picocolors';
-import {
-  fetch,
+import undici, {
   interceptors,
   EnvHttpProxyAgent,
   setGlobalDispatcher
 } from 'undici';
 
-import type { Response, RequestInit, RequestInfo } from 'undici';
+import type {
+  Dispatcher
+} from 'undici';
+
+export type UndiciResponseData<T = any> = Dispatcher.ResponseData<T>;
 
 import CacheableLookup from 'cacheable-lookup';
 import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
@@ -111,25 +114,22 @@ function calculateRetryAfterHeader(retryAfter: string) {
   return new Date(retryAfter).getTime() - current;
 }
 
-export class ResponseError extends Error {
-  readonly res: Response;
+export class UndiciResponseError extends Error {
   readonly code: number;
   readonly statusCode: number;
-  readonly url: string;
 
-  constructor(res: Response) {
-    super(res.statusText);
+  constructor(public readonly res: UndiciResponseData, public readonly url: string) {
+    super('HTTP ' + res.statusCode);
 
     if ('captureStackTrace' in Error) {
-      Error.captureStackTrace(this, ResponseError);
+      Error.captureStackTrace(this, UndiciResponseError);
     }
 
     // eslint-disable-next-line sukka/unicorn/custom-error-definition -- deliberatly use previous name
     this.name = this.constructor.name;
     this.res = res;
-    this.code = res.status;
-    this.statusCode = res.status;
-    this.url = res.url;
+    this.code = res.statusCode;
+    this.statusCode = res.statusCode;
   }
 }
 
@@ -139,17 +139,15 @@ export const defaultRequestInit = {
   }
 };
 
-export async function fetchWithLog(url: RequestInfo, opts: RequestInit = defaultRequestInit) {
+export async function requestWithLog(url: string, opt?: Parameters<typeof undici.request>[1]) {
   try {
-    // this will be retried
-    const res = (await fetch(url, opts));
-
-    if (res.status >= 400) {
-      throw new ResponseError(res);
+    const res = await undici.request(url, opt);
+    if (res.statusCode >= 400) {
+      throw new UndiciResponseError(res, url);
     }
 
-    if (!res.ok && res.status !== 304) {
-      throw new ResponseError(res);
+    if (!(res.statusCode >= 200 && res.statusCode <= 299) && res.statusCode !== 304) {
+      throw new UndiciResponseError(res, url);
     }
 
     return res;
@@ -167,4 +165,4 @@ export async function fetchWithLog(url: RequestInfo, opts: RequestInit = default
 
     throw err;
   }
-};
+}

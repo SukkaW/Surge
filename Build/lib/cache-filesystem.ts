@@ -8,10 +8,12 @@ import { fastStringArrayJoin, identity, mergeHeaders } from './misc';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
-import { defaultRequestInit, fetchWithLog, ResponseError } from './fetch-retry';
+import { defaultRequestInit, requestWithLog, UndiciResponseError } from './fetch-retry';
+import type { UndiciResponseData } from './fetch-retry';
 import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssetsWith304, sleepWithAbort } from './fetch-assets';
 
-import type { Response, RequestInit, HeadersInit } from 'undici';
+import type { HeadersInit } from 'undici';
+import type { IncomingHttpHeaders } from 'undici/types/header';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -67,6 +69,16 @@ export const TTL = {
   TEN_DAYS: () => randomInt(7, 10) * ONE_DAY,
   TWO_WEEKS: () => randomInt(10, 14) * ONE_DAY
 };
+
+function ensureETag(headers: IncomingHttpHeaders) {
+  if ('etag' in headers && typeof headers.etag === 'string' && headers.etag.length > 0) {
+    return headers.etag;
+  }
+  if ('ETag' in headers && typeof headers.ETag === 'string' && headers.ETag.length > 0) {
+    return headers.ETag;
+  }
+  return '';
+}
 
 export class Cache<S = string> {
   db: Database;
@@ -213,12 +225,12 @@ export class Cache<S = string> {
   async applyWithHttp304<T>(
     url: string,
     extraCacheKey: string,
-    fn: (resp: Response) => Promise<T>,
-    opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>,
-    requestInit?: RequestInit
+    fn: (resp: UndiciResponseData) => Promise<T>,
+    opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>
+    // requestInit?: RequestInit
   ): Promise<T> {
     if (opt.temporaryBypass) {
-      return fn(await fetchWithLog(url, requestInit));
+      return fn(await requestWithLog(url));
     }
 
     const baseKey = url + '$' + extraCacheKey;
@@ -227,19 +239,19 @@ export class Cache<S = string> {
 
     const etag = this.get(etagKey);
 
-    const onMiss = async (resp: Response) => {
+    const onMiss = async (resp: UndiciResponseData) => {
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
       const value = await fn(resp);
 
-      if (resp.headers.has('ETag')) {
-        let serverETag = resp.headers.get('ETag')!;
+      let serverETag = ensureETag(resp.headers);
+      if (serverETag) {
         // FUCK someonewhocares.org
         if (url.includes('someonewhocares.org')) {
           serverETag = serverETag.replace('-gzip', '');
         }
 
-        console.log(picocolors.yellow('[cache] miss'), url, { status: resp.status, cachedETag: etag, serverETag });
+        console.log(picocolors.yellow('[cache] miss'), url, { status: resp.statusCode, cachedETag: etag, serverETag });
 
         this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
         this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
@@ -257,28 +269,24 @@ export class Cache<S = string> {
 
     const cached = this.get(cachedKey);
     if (cached == null) {
-      return onMiss(await fetchWithLog(url, requestInit));
+      return onMiss(await requestWithLog(url));
     }
 
-    const resp = await fetchWithLog(
+    const resp = await requestWithLog(
       url,
       {
-        ...(requestInit ?? defaultRequestInit),
         headers: (typeof etag === 'string' && etag.length > 0)
-          ? mergeHeaders(
-            (requestInit ?? defaultRequestInit).headers,
-            { 'If-None-Match': etag }
-          )
-          : (requestInit ?? defaultRequestInit).headers
+          ? { 'If-None-Match': etag }
+          : {}
       }
     );
 
     // Only miss if previously a ETag was present and the server responded with a 304
-    if (resp.headers.has('ETag') && resp.status !== 304) {
+    if (!ensureETag(resp.headers) && resp.statusCode !== 304) {
       return onMiss(resp);
     }
 
-    console.log(picocolors.green(`[cache] ${resp.status === 304 ? 'http 304' : 'cache hit'}`), picocolors.gray(url));
+    console.log(picocolors.green(`[cache] ${resp.statusCode === 304 ? 'http 304' : 'cache hit'}`), picocolors.gray(url));
     this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
@@ -297,7 +305,7 @@ export class Cache<S = string> {
     }
 
     if (mirrorUrls.length === 0) {
-      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.text()), opt);
+      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.body.text()), opt);
     }
 
     const baseKey = primaryUrl + '$' + extraCacheKey;
@@ -323,7 +331,7 @@ export class Cache<S = string> {
       }
 
       const etag = this.get(getETagKey(url));
-      const res = await fetchWithLog(
+      const res = await requestWithLog(
         url,
         {
           signal: controller.signal,
@@ -337,26 +345,26 @@ export class Cache<S = string> {
         }
       );
 
-      const responseHasETag = res.headers.has('etag');
-      if (responseHasETag) {
-        this.set(getETagKey(url), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
+      const serverETag = ensureETag(res.headers);
+      if (serverETag) {
+        this.set(getETagKey(url), serverETag, TTL.ONE_WEEK_STATIC);
       }
       // If we do not have a cached value, we ignore 304
-      if (res.status === 304 && typeof previouslyCached === 'string') {
+      if (res.statusCode === 304 && typeof previouslyCached === 'string') {
         controller.abort();
         throw new Custom304NotModifiedError(url, previouslyCached);
       }
-      if (!responseHasETag && !this.get(getETagKey(primaryUrl)) && typeof previouslyCached === 'string') {
+      if (!serverETag && !this.get(getETagKey(primaryUrl)) && typeof previouslyCached === 'string') {
         controller.abort();
         throw new CustomNoETagFallbackError(previouslyCached);
       }
 
       // either no etag and not cached
       // or has etag but not 304
-      const text = await res.text();
+      const text = await res.body.text();
 
       if (text.length < 2) {
-        throw new ResponseError(res);
+        throw new UndiciResponseError(res, url);
       }
 
       controller.abort();
