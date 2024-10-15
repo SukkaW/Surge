@@ -7,7 +7,8 @@ import util from 'node:util';
 import { noop } from 'foxact/noop';
 
 type TrieNode<Meta = any> = [
-  boolean, /** sentinel */
+  boolean, /** end */
+  boolean, /** includeAllSubdoain (.example.org, ||example.com) */
   TrieNode | null, /** parent */
   Map<string, TrieNode>, /** children */
   Meta /** meta */
@@ -19,59 +20,56 @@ function deepTrieNodeToJSON(node: TrieNode,
   if (node[0]) {
     obj['[start]'] = node[0];
   }
-  if (node[3] != null) {
+  obj['[subdomain]'] = node[1];
+  if (node[4] != null) {
     if (unpackMeta) {
       obj['[meta]'] = unpackMeta(node[3]);
     } else {
       obj['[meta]'] = node[3];
     }
   }
-  node[2].forEach((value, key) => {
+  node[3].forEach((value, key) => {
     obj[key] = deepTrieNodeToJSON(value, unpackMeta);
   });
   return obj;
 }
 
-const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => [false, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
+const createNode = <Meta = any>(allSubdomain = false, parent: TrieNode | null = null): TrieNode => [false, allSubdomain, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 
 export function hostnameToTokens(hostname: string): string[] {
   const tokens = hostname.split('.');
   const results: string[] = [];
   let token = '';
-  for (let i = 0, l = tokens.length; i < l; i++) {
-    if (i > 0) {
-      results.push('.');
-    }
 
+  for (let i = 0, l = tokens.length; i < l; i++) {
     token = tokens[i];
     if (token.length > 0) {
       results.push(token);
     }
   }
+
   return results;
 }
 
 function walkHostnameTokens(hostname: string, onToken: (token: string) => boolean | null): boolean | null {
   const tokens = hostname.split('.');
-  let token = '';
 
   const l = tokens.length - 1;
-  for (let i = l; i >= 0; i--) {
-    if (
-      i < l // when i === l, we are at the first of hostname, no splitor there
-      // when onToken returns true, we should skip the rest of the loop
-      && onToken('.')
-    ) {
-      return true;
-    }
 
+  // we are at the first of hostname, no splitor there
+  let token = '';
+
+  for (let i = l; i >= 0; i--) {
     token = tokens[i];
-    if (
-      token.length > 0
-      // when onToken returns true, we should skip the rest of the loop
-      && onToken(token)
-    ) {
-      return true;
+    if (token.length > 0) {
+      const t = onToken(token);
+      if (t === null) {
+        return null;
+      }
+      // if the callback returns true, we should skip the rest
+      if (t) {
+        return true;
+      }
     }
   }
 
@@ -104,7 +102,7 @@ abstract class Triebase<Meta = any> {
     }
   }
 
-  public abstract add(suffix: string, meta?: Meta): void;
+  public abstract add(suffix: string, includeAllSubdoain?: boolean, meta?: Meta): void;
 
   protected walkIntoLeafWithTokens(
     tokens: string[],
@@ -124,8 +122,8 @@ abstract class Triebase<Meta = any> {
 
       parent = node;
 
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+      if (node[3].has(token)) {
+        node = node[3].get(token)!;
       } else {
         return null;
       }
@@ -144,14 +142,14 @@ abstract class Triebase<Meta = any> {
     let parent: TrieNode = node;
 
     const onToken = (token: string) => {
-      if (token === '') {
-        return true;
-      }
+      // if (token === '') {
+      //   return true;
+      // }
 
       parent = node;
 
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+      if (node[3].has(token)) {
+        node = node[3].get(token)!;
       } else {
         return null;
       }
@@ -168,10 +166,18 @@ abstract class Triebase<Meta = any> {
     return { node, parent };
   };
 
-  public contains(suffix: string): boolean { return this.walkIntoLeafWithSuffix(suffix) !== null; };
+  public contains(suffix: string, includeAllSubdoain = suffix[0] === '.'): boolean {
+    if (suffix[0] === '.') {
+      suffix = suffix.slice(1);
+    }
+    const res = this.walkIntoLeafWithSuffix(suffix);
+    if (!res) return false;
+    if (includeAllSubdoain) return res.node[1];
+    return true;
+  };
 
   private walk(
-    onMatches: (suffix: string[], meta: Meta) => void,
+    onMatches: (suffix: string[], subdomain: boolean, meta: Meta) => void,
     initialNode = this.$root,
     initialSuffix: string[] = []
   ) {
@@ -185,7 +191,7 @@ abstract class Triebase<Meta = any> {
       node = nodeStack.pop()!;
       const suffix = suffixStack.pop()!;
 
-      node[2].forEach((childNode, k) => {
+      node[3].forEach((childNode, k) => {
         // Pushing the child node to the stack for next iteration of DFS
         nodeStack.push(childNode);
 
@@ -194,7 +200,7 @@ abstract class Triebase<Meta = any> {
 
       // If the node is a sentinel, we push the suffix to the results
       if (node[0]) {
-        onMatches(suffix, node[3]);
+        onMatches(suffix, node[1], node[4]);
       }
     } while (nodeStack.length);
   };
@@ -208,7 +214,7 @@ abstract class Triebase<Meta = any> {
 
       // Even if the node size is 1, but the single child is ".", we should retain the branch
       // Since the "." could be special if it is the leaf-est node
-      const onlyChild = node[2].size < 2 && !node[2].has('.');
+      const onlyChild = node[3].size === 0 && !node[2];
 
       if (toPrune != null) { // the top-est branch that could potentially being pruned
         if (!onlyChild) {
@@ -236,26 +242,29 @@ abstract class Triebase<Meta = any> {
    */
   public find(
     inputSuffix: string,
-    /** @default true */ includeEqualWithSuffix = true
+    subdomainOnly = inputSuffix[0] === '.'
+    // /** @default true */ includeEqualWithSuffix = true
   ): string[] {
-    // if (smolTree) {
-    //   throw new Error('A Trie with smolTree enabled cannot perform find!');
-    // }
+    if (inputSuffix[0] === '.') {
+      inputSuffix = inputSuffix.slice(1);
+    }
 
     const inputTokens = hostnameToTokens(inputSuffix);
     const res = this.walkIntoLeafWithTokens(inputTokens);
     if (res === null) return [];
 
-    const matches: string[][] = [];
+    const results: string[] = [];
 
-    const onMatches = includeEqualWithSuffix
-      // fast path (default option)
-      ? (suffix: string[]) => matches.push(suffix)
-      // slow path
-      : (suffix: string[]) => {
-        if (!deepEqualArray(suffix, inputTokens)) {
-          matches.push(suffix);
-        }
+    const onMatches = subdomainOnly
+      ? (suffix: string[], subdomain: boolean) => { // fast path (default option)
+        const d = fastStringArrayJoin(suffix, '.');
+        if (!subdomain && d === inputSuffix) return;
+
+        results.push(subdomain ? '.' + d : d);
+      }
+      : (suffix: string[], subdomain: boolean) => { // fast path (default option)
+        const d = fastStringArrayJoin(suffix, '.');
+        results.push(subdomain ? '.' + d : d);
       };
 
     this.walk(
@@ -264,7 +273,7 @@ abstract class Triebase<Meta = any> {
       inputTokens
     );
 
-    return matches.map((m) => fastStringArrayJoin(m, ''));
+    return results;
   };
 
   /**
@@ -280,7 +289,7 @@ abstract class Triebase<Meta = any> {
     const { node, toPrune, tokenToPrune } = res;
 
     if (tokenToPrune && toPrune) {
-      toPrune[2].delete(tokenToPrune);
+      toPrune[3].delete(tokenToPrune);
     } else {
       node[0] = false;
     }
@@ -288,18 +297,23 @@ abstract class Triebase<Meta = any> {
     return true;
   };
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- alias class methods
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- safe
   public delete = this.remove;
 
   /**
    * Method used to assert whether the given prefix exists in the Trie.
    */
-  public has(suffix: string): boolean {
+  public has(suffix: string, includeAllSubdoain = suffix[0] === '.'): boolean {
+    if (suffix[0] === '.') {
+      suffix = suffix.slice(1);
+    }
+
     const res = this.walkIntoLeafWithSuffix(suffix);
 
-    return res
-      ? res.node[0]
-      : false;
+    if (res === null) return false;
+    if (!res.node[0]) return false;
+    if (includeAllSubdoain) return res.node[1];
+    return true;
   };
 
   public dump(onSuffix: (suffix: string) => void): void;
@@ -308,8 +322,14 @@ abstract class Triebase<Meta = any> {
     const results: string[] = [];
 
     const handleSuffix = onSuffix
-      ? (suffix: string[]) => onSuffix(fastStringArrayJoin(suffix, ''))
-      : (suffix: string[]) => results.push(fastStringArrayJoin(suffix, ''));
+      ? (suffix: string[], subdomain: boolean) => {
+        const d = fastStringArrayJoin(suffix, '.');
+        onSuffix(subdomain ? '.' + d : d);
+      }
+      : (suffix: string[], subdomain: boolean) => {
+        const d = fastStringArrayJoin(suffix, '.');
+        results.push(subdomain ? '.' + d : d);
+      };
 
     this.walk(handleSuffix);
 
@@ -322,8 +342,8 @@ abstract class Triebase<Meta = any> {
     const results: Meta[] = [];
 
     const handleMeta = onMeta
-      ? (_suffix: string[], meta: Meta) => onMeta(meta)
-      : (_suffix: string[], meta: Meta) => results.push(meta);
+      ? (_suffix: string[], _subdomain: boolean, meta: Meta) => onMeta(meta)
+      : (_suffix: string[], _subdomain: boolean, meta: Meta) => results.push(meta);
 
     this.walk(handleMeta);
 
@@ -331,13 +351,19 @@ abstract class Triebase<Meta = any> {
   };
 
   public dumpWithMeta(onSuffix: (suffix: string, meta: Meta | undefined) => void): void;
-  public dumpWithMeta(): string[];
-  public dumpWithMeta(onSuffix?: (suffix: string, meta: Meta | undefined) => void): string[] | void {
-    const results: string[] = [];
+  public dumpWithMeta(): Array<[string, Meta | undefined]>;
+  public dumpWithMeta(onSuffix?: (suffix: string, meta: Meta | undefined) => void): Array<[string, Meta | undefined]> | void {
+    const results: Array<[string, Meta | undefined]> = [];
 
     const handleSuffix = onSuffix
-      ? (suffix: string[], meta: Meta | undefined) => onSuffix(fastStringArrayJoin(suffix, ''), meta)
-      : (suffix: string[]) => results.push(fastStringArrayJoin(suffix, ''));
+      ? (suffix: string[], subdomain: boolean, meta: Meta | undefined) => {
+        const d = fastStringArrayJoin(suffix, '.');
+        return onSuffix(subdomain ? '.' + d : d, meta);
+      }
+      : (suffix: string[], subdomain: boolean, meta: Meta | undefined) => {
+        const d = fastStringArrayJoin(suffix, '.');
+        results.push([subdomain ? '.' + d : d, meta]);
+      };
 
     this.walk(handleSuffix);
 
@@ -359,21 +385,25 @@ abstract class Triebase<Meta = any> {
 export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
   public smolTree = true;
 
-  add(suffix: string, meta?: Meta): void {
+  add(suffix: string, includeAllSubdoain = suffix[0] === '.', meta?: Meta): void {
     let node: TrieNode<Meta> = this.$root;
-    let curNodeChildren: Map<string, TrieNode<Meta>> = node[2];
+    let curNodeChildren: Map<string, TrieNode<Meta>> = node[3];
+
+    if (suffix[0] === '.') {
+      suffix = suffix.slice(1);
+    }
 
     const onToken = (token: string) => {
-      curNodeChildren = node[2];
+      curNodeChildren = node[3];
       if (curNodeChildren.has(token)) {
         node = curNodeChildren.get(token)!;
 
         // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie, skip adding the rest of the node
-        if (node[0] && token === '.') {
+        if (node[1]) {
           return true;
         }
       } else {
-        const newNode = createNode(node);
+        const newNode = createNode(false, node);
         curNodeChildren.set(token, newNode);
         node = newNode;
       }
@@ -387,55 +417,57 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     }
 
     // If we are in smolTree mode, we need to do something at the end of the loop
-    if (suffix[0] === '.') {
-      // Trying to add `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
+    if (includeAllSubdoain) {
+      // Trying to add `[.]sub.example.com` where there is already a `blog.sub.example.com` in the trie
 
       // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
-      (/** parent */ node[1]!)[0] = false;
+      // (/** parent */ node[2]!)[0] = false;
 
       // Removing the rest of the parent's child nodes
-      node[2].clear();
+      node[3].clear();
       // The SENTINEL of this node will be set to true at the end of the function, so we don't need to set it here
 
       // we can use else-if here, because the children is now empty, we don't need to check the leading "."
-    } else if (node[2].get('.')?.[0] === true) {
+    } else if (node[1]) {
       // Trying to add `example.com` when there is already a `.example.com` in the trie
       // No need to increment size and set SENTINEL to true (skip this "new" item)
       return;
     }
 
     node[0] = true;
-    node[3] = meta!;
+    node[1] = includeAllSubdoain;
+    node[4] = meta!;
   }
 
-  public whitelist(suffix: string) {
+  public whitelist(suffix: string, includeAllSubdoain = suffix[0] === '.') {
+    if (suffix[0] === '.') {
+      suffix = suffix.slice(1);
+    }
+
     const tokens = hostnameToTokens(suffix);
     const res = this.getSingleChildLeaf(tokens);
 
     if (res === null) return;
 
-    const { node, toPrune, tokenToPrune, parent } = res;
+    const { node, toPrune, tokenToPrune } = res;
 
-    // Trying to whitelist `[start].sub.example.com` where there is already a `[start]blog.sub.example.com` in the trie
-    if (tokens[0] === '.') {
+    // Trying to whitelist `[start].sub.example.com` where there might already be a `[start]blog.sub.example.com` in the trie
+    if (includeAllSubdoain) {
       // If there is a `[start]sub.example.com` here, remove it
-      parent[0] = false;
+      node[0] = false;
+      node[1] = false;
       // Removing all the child nodes by empty the children
-      // This removes the only child ".", which removes "blog.sub.example.com"
-      parent[2].clear();
+      node[3].clear();
     } else {
-    // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
-      const dotNode = node[2].get('.');
-      if (dotNode) {
-        dotNode[0] = false;
-      }
+      // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
+      node[1] = false;
     }
 
     // return early if not found
     if (!node[0]) return;
 
     if (tokenToPrune && toPrune) {
-      toPrune[2].delete(tokenToPrune);
+      toPrune[3].delete(tokenToPrune);
     } else {
       node[0] = false;
     }
@@ -447,31 +479,39 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
     return this.$size;
   }
 
-  add(suffix: string, meta?: Meta): void {
+  add(suffix: string, includeAllSubdoain = suffix[0] === '.', meta?: Meta): void {
     let node: TrieNode<Meta> = this.$root;
 
     const onToken = (token: string) => {
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+      if (node[3].has(token)) {
+        node = node[3].get(token)!;
       } else {
-        const newNode = createNode(node);
-        node[2].set(token, newNode);
+        const newNode = createNode(false, node);
+        node[3].set(token, newNode);
         node = newNode;
       }
 
       return false;
     };
 
+    if (suffix[0] === '.') {
+      suffix = suffix.slice(1);
+    }
+
     // When walkHostnameTokens returns true, we should skip the rest
     if (walkHostnameTokens(suffix, onToken)) {
       return;
     }
 
-    if (!node[0]) {
-      this.$size++;
-      node[0] = true;
-      node[3] = meta!;
+    // if same entry has been added before, skip
+    if (node[0]) {
+      return;
     }
+
+    this.$size++;
+    node[0] = true;
+    node[1] = includeAllSubdoain;
+    node[4] = meta!;
   }
 }
 
@@ -486,11 +526,11 @@ export function createTrie<_Meta = any>(from?: string[] | Set<string> | null, sm
 
 export type Trie = ReturnType<typeof createTrie>;
 
-function deepEqualArray(a: string[], b: string[]) {
-  let len = a.length;
-  if (len !== b.length) return false;
-  while (len--) {
-    if (a[len] !== b[len]) return false;
-  }
-  return true;
-};
+// function deepEqualArray(a: string[], b: string[]) {
+//   let len = a.length;
+//   if (len !== b.length) return false;
+//   while (len--) {
+//     if (a[len] !== b[len]) return false;
+//   }
+//   return true;
+// };
