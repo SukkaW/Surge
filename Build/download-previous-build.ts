@@ -1,10 +1,12 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { task } from './trace';
 import { extract as tarExtract } from 'tar-fs';
 import type { Headers as TarEntryHeaders } from 'tar-fs';
 import zlib from 'node:zlib';
 import undici from 'undici';
+import picocolors from 'picocolors';
 
 const GITHUB_CODELOAD_URL = 'https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master';
 const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive/master/ruleset.skk.moe-master.tar.gz';
@@ -12,10 +14,10 @@ const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive
 export const downloadPreviousBuild = task(require.main === module, __filename)(async (span) => {
   const publicDir = path.resolve(__dirname, '..', 'public');
 
-  // if (fs.existsSync(publicDir)) {
-  //   console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
-  //   return;
-  // }
+  if (fs.existsSync(publicDir)) {
+    console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
+    return;
+  }
 
   const tarGzUrl = await span.traceChildAsync('get tar.gz url', async () => {
     const resp = await undici.request(GITHUB_CODELOAD_URL, { method: 'HEAD' });

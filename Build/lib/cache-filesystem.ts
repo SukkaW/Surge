@@ -11,7 +11,7 @@ import { stringHash } from './string-hash';
 import { defaultRequestInit, fetchWithLog } from './fetch-retry';
 import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssets, sleepWithAbort } from './fetch-assets';
 
-import type { Response, RequestInit } from 'undici';
+import type { Response, RequestInit, HeadersInit } from 'undici';
 
 const enum CacheStatus {
   Hit = 'hit',
@@ -329,9 +329,9 @@ export class Cache<S = string> {
           signal: controller.signal,
           ...defaultRequestInit,
           headers: (typeof etag === 'string' && etag.length > 0)
-            ? mergeHeaders(
-              defaultRequestInit.headers,
-              { 'If-None-Match': etag }
+            ? mergeHeaders<HeadersInit>(
+              { 'If-None-Match': etag },
+              defaultRequestInit.headers
             )
             : defaultRequestInit.headers
         }

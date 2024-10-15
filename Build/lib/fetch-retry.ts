@@ -133,7 +133,7 @@ export class ResponseError extends Error {
   }
 }
 
-export const defaultRequestInit: RequestInit = {
+export const defaultRequestInit = {
   headers: {
     'User-Agent': 'curl/8.9.1 (https://github.com/SukkaW/Surge)'
   }
