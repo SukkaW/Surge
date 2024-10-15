@@ -1,5 +1,5 @@
 import picocolors from 'picocolors';
-import { defaultRequestInit, fetchWithLog } from './fetch-retry';
+import { defaultRequestInit, fetchWithLog, ResponseError } from './fetch-retry';
 import { setTimeout } from 'node:timers/promises';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
@@ -42,7 +42,7 @@ export function sleepWithAbort(ms: number, signal: AbortSignal) {
   });
 }
 
-export async function fetchAssets(url: string, fallbackUrls: string[] | readonly string[]) {
+export async function fetchAssetsWith304(url: string, fallbackUrls: string[] | readonly string[]) {
   const controller = new AbortController();
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
@@ -61,6 +61,11 @@ export async function fetchAssets(url: string, fallbackUrls: string[] | readonly
     }
     const res = await fetchWithLog(url, { signal: controller.signal, ...defaultRequestInit });
     const text = await res.text();
+
+    if (text.length < 2) {
+      throw new ResponseError(res);
+    }
+
     controller.abort();
     return text;
   };

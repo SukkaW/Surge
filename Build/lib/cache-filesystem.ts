@@ -8,8 +8,8 @@ import { fastStringArrayJoin, identity, mergeHeaders } from './misc';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
-import { defaultRequestInit, fetchWithLog } from './fetch-retry';
-import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssets, sleepWithAbort } from './fetch-assets';
+import { defaultRequestInit, fetchWithLog, ResponseError } from './fetch-retry';
+import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssetsWith304, sleepWithAbort } from './fetch-assets';
 
 import type { Response, RequestInit, HeadersInit } from 'undici';
 
@@ -293,7 +293,7 @@ export class Cache<S = string> {
     opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>
   ): Promise<T> {
     if (opt.temporaryBypass) {
-      return fn(await fetchAssets(primaryUrl, mirrorUrls));
+      return fn(await fetchAssetsWith304(primaryUrl, mirrorUrls));
     }
 
     if (mirrorUrls.length === 0) {
@@ -337,15 +337,16 @@ export class Cache<S = string> {
         }
       );
 
-      if (res.headers.has('etag')) {
+      const responseHasETag = res.headers.has('etag');
+      if (responseHasETag) {
         this.set(getETagKey(url), res.headers.get('etag')!, TTL.ONE_WEEK_STATIC);
-
-        // If we do not have a cached value, we ignore 304
-        if (res.status === 304 && typeof previouslyCached === 'string') {
-          controller.abort();
-          throw new Custom304NotModifiedError(url, previouslyCached);
-        }
-      } else if (!this.get(getETagKey(primaryUrl)) && typeof previouslyCached === 'string') {
+      }
+      // If we do not have a cached value, we ignore 304
+      if (res.status === 304 && typeof previouslyCached === 'string') {
+        controller.abort();
+        throw new Custom304NotModifiedError(url, previouslyCached);
+      }
+      if (!responseHasETag && !this.get(getETagKey(primaryUrl)) && typeof previouslyCached === 'string') {
         controller.abort();
         throw new CustomNoETagFallbackError(previouslyCached);
       }
@@ -353,6 +354,11 @@ export class Cache<S = string> {
       // either no etag and not cached
       // or has etag but not 304
       const text = await res.text();
+
+      if (text.length < 2) {
+        throw new ResponseError(res);
+      }
+
       controller.abort();
       return text;
     };
