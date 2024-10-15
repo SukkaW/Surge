@@ -1,13 +1,10 @@
 import path from 'node:path';
-import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
-import picocolors from 'picocolors';
 import { task } from './trace';
 import { extract as tarExtract } from 'tar-fs';
 import type { Headers as TarEntryHeaders } from 'tar-fs';
 import zlib from 'node:zlib';
-import { fetchWithLog } from './lib/fetch-retry';
-import { Readable } from 'node:stream';
+import undici from 'undici';
 
 const GITHUB_CODELOAD_URL = 'https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master';
 const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive/master/ruleset.skk.moe-master.tar.gz';
@@ -15,15 +12,15 @@ const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive
 export const downloadPreviousBuild = task(require.main === module, __filename)(async (span) => {
   const publicDir = path.resolve(__dirname, '..', 'public');
 
-  if (fs.existsSync(publicDir)) {
-    console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
-    return;
-  }
+  // if (fs.existsSync(publicDir)) {
+  //   console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
+  //   return;
+  // }
 
   const tarGzUrl = await span.traceChildAsync('get tar.gz url', async () => {
-    const resp = await fetchWithLog(GITHUB_CODELOAD_URL, { method: 'HEAD' });
-    if (resp.status !== 200) {
-      console.warn('Download previous build from GitHub failed! Status:', resp.status);
+    const resp = await undici.request(GITHUB_CODELOAD_URL, { method: 'HEAD' });
+    if (resp.statusCode !== 200) {
+      console.warn('Download previous build from GitHub failed! Status:', resp.statusCode);
       console.warn('Switch to GitLab');
       return GITLAB_CODELOAD_URL;
     }
@@ -31,26 +28,32 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
   });
 
   return span.traceChildAsync('download & extract previoud build', async () => {
-    const resp = await fetchWithLog(tarGzUrl, {
-      headers: {
-        'User-Agent': 'curl/8.9.1',
-        // https://github.com/unjs/giget/issues/97
-        // https://gitlab.com/gitlab-org/gitlab/-/commit/50c11f278d18fe1f3fb12eb595067216bb58ade2
-        'sec-fetch-mode': 'same-origin'
+    const respBody = undici.pipeline(
+      tarGzUrl,
+      {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'curl/8.9.1',
+          // https://github.com/unjs/giget/issues/97
+          // https://gitlab.com/gitlab-org/gitlab/-/commit/50c11f278d18fe1f3fb12eb595067216bb58ade2
+          'sec-fetch-mode': 'same-origin'
+        },
+        // Allow redirects by default
+        maxRedirections: 5
       },
-      mode: 'same-origin'
-    });
+      ({ statusCode, body }) => {
+        if (statusCode !== 200) {
+          console.warn('Download previous build failed! Status:', statusCode);
+          if (statusCode === 404) {
+            throw new Error('Download previous build failed! 404');
+          }
+        }
 
-    if (resp.status !== 200) {
-      console.warn('Download previous build failed! Status:', resp.status);
-      if (resp.status === 404) {
-        return;
+        return body;
       }
-    }
-
-    if (!resp.body) {
-      throw new Error('Download previous build failed! No body found');
-    }
+      // by default, undici.pipeline returns a duplex stream (for POST/PUT)
+      // Since we are using GET, we need to end the write immediately
+    ).end();
 
     const pathPrefix = 'ruleset.skk.moe-master/';
 
@@ -67,7 +70,7 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     );
 
     return pipeline(
-      Readable.fromWeb(resp.body),
+      respBody,
       gunzip,
       extract
     );
