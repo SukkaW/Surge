@@ -90,9 +90,9 @@ export const DOMESTICS = {
     },
     dns: 'https://doh.pub/dns-query',
     domains: [
-      'dns.pub',
-      'doh.pub',
-      'dot.pub',
+      // 'dns.pub',
+      // 'doh.pub',
+      // 'dot.pub',
       '+qcloud.com',
       '+gtimg.cn',
       '+gtimg.com',
@@ -319,7 +319,8 @@ export const DOMESTICS = {
       'yunpan.com',
       'yunpan.com.cn',
       '+qh-cdn.com',
-      'baomitu.com'
+      'baomitu.com',
+      'qiku.com'
     ]
   }
 } satisfies Record<string, DNSMapping>;

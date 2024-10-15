@@ -19,11 +19,11 @@ const HOSTNAMES = [
   '*.xboxlive.com',
   '*.turn.twilio.com',
   '*.stun.twilio.com',
-  // 'stun.syncthing.net',
-  'stun.*',
+  'stun.syncthing.net',
+  'stun.*'
   // 'controlplane.tailscale.com',
   // NTP
-  'time.*.com', 'time.*.gov', 'time.*.edu.cn', 'time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org'
+  // 'time.*.com', 'time.*.gov', 'time.*.edu.cn', 'time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org'
   // 'time*.cloud.tencent.com', 'ntp?.aliyun.com',
   // QQ Login
   // 'localhost.*.qq.com'
