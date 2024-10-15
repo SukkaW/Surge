@@ -1,6 +1,6 @@
 import { invariant } from 'foxact/invariant';
 import createKeywordFilter from '../aho-corasick';
-import { buildParseDomainMap, sortDomains } from '../stable-sort-domain';
+import { buildParseDomainMap } from '../stable-sort-domain';
 import { RuleOutput } from './base';
 import type { SingboxSourceFormat } from '../singbox';
 import { appendArrayFromSet } from '../misc';
@@ -27,7 +27,7 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       this.apexDomainMap = domainMap;
       this.subDomainMap = subdomainMap;
     }
-    const sorted = sortDomains(results, this.apexDomainMap, this.subDomainMap);
+    const sorted = results;
     sorted.push('this_ruleset_is_made_by_sukkaw.ruleset.skk.moe');
 
     return sorted;

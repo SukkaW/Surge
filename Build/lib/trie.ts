@@ -5,6 +5,7 @@
 import { fastStringArrayJoin } from './misc';
 import util from 'node:util';
 import { noop } from 'foxact/noop';
+import FIFO from './fifo';
 
 type TrieNode<Meta = any> = [
   boolean, /** end */
@@ -205,6 +206,49 @@ abstract class Triebase<Meta = any> {
     } while (nodeStack.length);
   };
 
+  static compare(this: void, a: string, b: string) {
+    if (a === b) return 0;
+    return (a.length - b.length) || a.localeCompare(b);
+  }
+
+  private walkWithSort(
+    onMatches: (suffix: string[], subdomain: boolean, meta: Meta) => void,
+    initialNode = this.$root,
+    initialSuffix: string[] = []
+  ) {
+    const nodeStack = new FIFO<TrieNode<Meta>>();
+    nodeStack.enqueue(initialNode);
+
+    // Resolving initial string (begin the start of the stack)
+    const suffixStack = new FIFO<string[]>();
+    suffixStack.enqueue(initialSuffix);
+
+    let node: TrieNode<Meta> = initialNode;
+
+    do {
+      node = nodeStack.dequeue()!;
+      const suffix = suffixStack.dequeue()!;
+
+      if (node[3].size) {
+        const keys = Array.from(node[3].keys()).sort(Triebase.compare);
+
+        for (let i = 0, l = keys.length; i < l; i++) {
+          const key = keys[i];
+          const childNode = node[3].get(key)!;
+
+          // Pushing the child node to the stack for next iteration of DFS
+          nodeStack.enqueue(childNode);
+          suffixStack.enqueue([key, ...suffix]);
+        }
+      }
+
+      // If the node is a sentinel, we push the suffix to the results
+      if (node[0]) {
+        onMatches(suffix, node[1], node[4]);
+      }
+    } while (nodeStack.size);
+  };
+
   protected getSingleChildLeaf(tokens: string[]): FindSingleChildLeafResult<Meta> | null {
     let toPrune: TrieNode | null = null;
     let tokenToPrune: string | null = null;
@@ -331,7 +375,7 @@ abstract class Triebase<Meta = any> {
         results.push(subdomain ? '.' + d : d);
       };
 
-    this.walk(handleSuffix);
+    this.walkWithSort(handleSuffix);
 
     return results;
   };
