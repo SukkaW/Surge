@@ -1,5 +1,5 @@
 import picocolors from 'picocolors';
-import { defaultRequestInit, fetchWithLog, ResponseError } from './fetch-retry';
+import { defaultRequestInit, requestWithLog, ResponseError } from './fetch-retry';
 import { setTimeout } from 'node:timers/promises';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
@@ -59,8 +59,8 @@ export async function fetchAssetsWithout304(url: string, fallbackUrls: string[] 
       console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
       throw new CustomAbortError();
     }
-    const res = await fetchWithLog(url, { signal: controller.signal, ...defaultRequestInit });
-    const text = await res.text();
+    const res = await requestWithLog(url, { signal: controller.signal, ...defaultRequestInit });
+    const text = await res.body.text();
 
     if (text.length < 2) {
       throw new ResponseError(res, url, 'empty response w/o 304');

@@ -70,5 +70,10 @@
   "packageManager": "pnpm@9.12.1",
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "undici": "patches/undici.patch"
+    }
   }
 }

@@ -8,11 +8,11 @@ import { fastStringArrayJoin, identity, mergeHeaders } from './misc';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
-import { defaultRequestInit, fetchWithLog, ResponseError } from './fetch-retry';
+import { defaultRequestInit, requestWithLog, ResponseError } from './fetch-retry';
+import type { UndiciResponseData } from './fetch-retry';
 // import type { UndiciResponseData } from './fetch-retry';
 import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError, fetchAssetsWithout304, sleepWithAbort } from './fetch-assets';
 
-import type { Response } from 'undici';
 import type { IncomingHttpHeaders } from 'undici/types/header';
 import { Headers } from 'undici';
 
@@ -230,12 +230,12 @@ export class Cache<S = string> {
   async applyWithHttp304<T>(
     url: string,
     extraCacheKey: string,
-    fn: (resp: Response) => Promise<T>,
+    fn: (resp: UndiciResponseData) => Promise<T>,
     opt: Omit<CacheApplyOption<T, S>, 'incrementTtlWhenHit'>
     // requestInit?: RequestInit
   ): Promise<T> {
     if (opt.temporaryBypass) {
-      return fn(await fetchWithLog(url));
+      return fn(await requestWithLog(url));
     }
 
     const baseKey = url + '$' + extraCacheKey;
@@ -244,7 +244,7 @@ export class Cache<S = string> {
 
     const etag = this.get(etagKey);
 
-    const onMiss = async (resp: Response) => {
+    const onMiss = async (resp: UndiciResponseData) => {
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
       const value = await fn(resp);
@@ -256,7 +256,7 @@ export class Cache<S = string> {
           serverETag = serverETag.replace('-gzip', '');
         }
 
-        console.log(picocolors.yellow('[cache] miss'), url, { status: resp.status, cachedETag: etag, serverETag });
+        console.log(picocolors.yellow('[cache] miss'), url, { status: resp.statusCode, cachedETag: etag, serverETag });
 
         this.set(etagKey, serverETag, TTL.ONE_WEEK_STATIC);
         this.set(cachedKey, serializer(value), TTL.ONE_WEEK_STATIC);
@@ -274,10 +274,10 @@ export class Cache<S = string> {
 
     const cached = this.get(cachedKey);
     if (cached == null) {
-      return onMiss(await fetchWithLog(url));
+      return onMiss(await requestWithLog(url));
     }
 
-    const resp = await fetchWithLog(
+    const resp = await requestWithLog(
       url,
       {
         ...defaultRequestInit,
@@ -288,11 +288,11 @@ export class Cache<S = string> {
     );
 
     // Only miss if previously a ETag was present and the server responded with a 304
-    if (!ensureETag(resp.headers) && resp.status !== 304) {
+    if (!ensureETag(resp.headers) && resp.statusCode !== 304) {
       return onMiss(resp);
     }
 
-    console.log(picocolors.green(`[cache] ${resp.status === 304 ? 'http 304' : 'cache hit'}`), picocolors.gray(url));
+    console.log(picocolors.green(`[cache] ${resp.statusCode === 304 ? 'http 304' : 'cache hit'}`), picocolors.gray(url));
     this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
@@ -311,7 +311,7 @@ export class Cache<S = string> {
     }
 
     if (mirrorUrls.length === 0) {
-      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.text()), opt);
+      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.body.text()), opt);
     }
 
     const baseKey = primaryUrl + '$' + extraCacheKey;
@@ -338,7 +338,7 @@ export class Cache<S = string> {
       }
 
       const etag = this.get(getETagKey(url));
-      const res = await fetchWithLog(
+      const res = await requestWithLog(
         url,
         {
           signal: controller.signal,
@@ -354,7 +354,7 @@ export class Cache<S = string> {
         this.set(getETagKey(url), serverETag, TTL.ONE_WEEK_STATIC);
       }
       // If we do not have a cached value, we ignore 304
-      if (res.status === 304 && typeof previouslyCached === 'string' && previouslyCached.length > 1) {
+      if (res.statusCode === 304 && typeof previouslyCached === 'string' && previouslyCached.length > 1) {
         const err = new Custom304NotModifiedError(url, previouslyCached);
         controller.abort(err);
         throw err;
@@ -367,7 +367,7 @@ export class Cache<S = string> {
 
       // either no etag and not cached
       // or has etag but not 304
-      const text = await res.text();
+      const text = await res.body.text();
 
       if (text.length < 2) {
         throw new ResponseError(res, url, 'empty response');
@@ -415,6 +415,8 @@ export class Cache<S = string> {
           console.log(picocolors.red('[fetch error]'), picocolors.gray(error.url), error);
         }
       }
+
+      console.log({ e });
 
       console.log(`Download Rule for [${primaryUrl}] failed`);
       throw e;
