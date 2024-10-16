@@ -15,6 +15,7 @@ const REMOVED_FILES = [
   'List/domainset/steam.conf',
   'List/internal/appprofile.php',
   'Clash/domainset/steam.txt',
+  'Clash/non_ip/clash_fake_ip_filter.txt',
   'sing-box/domainset/steam.json',
   'Modules/sukka_unlock_abema.sgmodule',
   'Modules/sukka_exclude_reservered_ip.sgmodule'

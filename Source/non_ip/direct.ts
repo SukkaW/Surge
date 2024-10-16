@@ -89,8 +89,7 @@ export const DIRECTS: Record<string, DNSMapping> = {
     realip: true,
     domains: [
       '+m2m',
-      // TailScale Magic DNS
-      '+ts.net',
+      // '+ts.net', // TailScale Magic DNS
       // AdGuard
       '$injections.adguard.org',
       '$local.adguard.org',
