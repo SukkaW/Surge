@@ -65,10 +65,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return result;
   };
 
-  constructor(
-    protected readonly span: Span,
-    protected readonly id: string
-  ) { }
+  constructor(protected readonly span: Span, protected readonly id: string) { }
 
   protected title: string | null = null;
   withTitle(title: string) {
@@ -245,12 +242,29 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   private $$preprocessed: TPreprocessed | null = null;
-
   get $preprocessed() {
     if (this.$$preprocessed === null) {
       this.$$preprocessed = this.span.traceChildSync('RuleOutput#preprocess: ' + this.id, () => this.preprocess());
     }
     return this.$$preprocessed;
+  }
+
+  async writeClash(outputDir?: null | string) {
+    await this.done();
+
+    invariant(this.title, 'Missing title');
+    invariant(this.description, 'Missing description');
+
+    return compareAndWriteFile(
+      this.span,
+      withBannerArray(
+        this.title,
+        this.description,
+        this.date,
+        this.clash()
+      ),
+      path.join(outputDir ?? OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
+    );
   }
 
   async write(): Promise<void> {

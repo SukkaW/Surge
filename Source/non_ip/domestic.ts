@@ -1,11 +1,12 @@
 import type { DNSMapping } from './direct';
 
-export const DOMESTICS = {
+export const DOMESTICS: Record<string, DNSMapping> = {
   ALIBABA: {
     hosts: {
       'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1']
     },
     dns: 'quic://dns.alidns.com:853',
+    realip: false,
     domains: [
       'uc.cn',
       // 'ucweb.com', // UC International
@@ -89,6 +90,7 @@ export const DOMESTICS = {
       'dns.pub': ['120.53.53.53', '1.12.12.12', '1.12.34.56']
     },
     dns: 'https://doh.pub/dns-query',
+    realip: false,
     domains: [
       // 'dns.pub',
       // 'doh.pub',
@@ -142,6 +144,7 @@ export const DOMESTICS = {
   BILIBILI_ALI: {
     dns: 'quic://dns.alidns.com:853',
     hosts: {},
+    realip: false,
     domains: [
       '$upos-sz-mirrorali.bilivideo.com',
       '$upos-sz-estgoss.bilivideo.com'
@@ -150,6 +153,7 @@ export const DOMESTICS = {
   BILIBILI_BD: {
     dns: '180.76.76.76',
     hosts: {},
+    realip: false,
     domains: [
       '$upos-sz-mirrorbd.bilivideo.com',
       '$upos-sz-mirrorbos.bilivideo.com'
@@ -158,6 +162,7 @@ export const DOMESTICS = {
   BILIBILI: {
     dns: 'https://doh.pub/dns-query',
     hosts: {},
+    realip: false,
     domains: [
       '$upos-sz-mirrorcoso1.bilivideo.com',
       '$upos-sz-mirrorcosbstar1.bilivideo.com', // Bilibili Intl with Tencent Cloud CDN
@@ -187,6 +192,7 @@ export const DOMESTICS = {
   XIAOMI: {
     dns: 'https://doh.pub/dns-query',
     hosts: {},
+    realip: false,
     domains: [
       'mi.com',
       'duokan.com',
@@ -205,6 +211,7 @@ export const DOMESTICS = {
   BYTEDANCE: {
     dns: '180.184.2.2',
     hosts: {},
+    realip: false,
     domains: [
       '+bytecdn.cn',
       '+toutiaoimg.com',
@@ -251,6 +258,7 @@ export const DOMESTICS = {
   BAIDU: {
     dns: '180.76.76.76',
     hosts: {},
+    realip: false,
     domains: [
       '91.com',
       'hao123.com',
@@ -288,6 +296,7 @@ export const DOMESTICS = {
       'dns.360.net': ['101.198.198.198', '101.198.199.200']
     },
     dns: 'https://dns.360.net/dns-query',
+    realip: false,
     domains: [
       '+qhimg.com',
       '+qhimgs.com',
@@ -323,4 +332,4 @@ export const DOMESTICS = {
       'qiku.com'
     ]
   }
-} satisfies Record<string, DNSMapping>;
+};

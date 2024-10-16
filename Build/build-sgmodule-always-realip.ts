@@ -1,10 +1,14 @@
 import path from 'node:path';
 import { task } from './trace';
-import { compareAndWriteFile } from './lib/create-file';
-import { DIRECTS, LANS } from '../Source/non_ip/direct';
+import { compareAndWriteFile, DomainsetOutput } from './lib/create-file';
+import { DIRECTS } from '../Source/non_ip/direct';
+import type { DNSMapping } from '../Source/non_ip/direct';
+import { DOMESTICS } from '../Source/non_ip/domestic';
 import * as yaml from 'yaml';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
+import { SHARED_DESCRIPTION } from './lib/constants';
+import { createGetDnsMappingRule } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
@@ -33,22 +37,31 @@ const HOSTNAMES = [
 ];
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {
+  const surge: string[] = [];
+  const clashFakeIpFilter = new DomainsetOutput(span, 'clash_fake_ip_filter')
+    .withTitle('Sukka\'s Ruleset - Always Real IP Plus')
+    .withDescription([
+      ...SHARED_DESCRIPTION,
+      '',
+      'Clash.Meta fake-ip-filter as ruleset'
+    ]);
+
   // Intranet, Router Setup, and mant more
-  const dataset = [
-    DIRECTS.HOTSPOT_CAPTIVE_PORTAL,
-    DIRECTS.SYSTEM,
-    ...Object.values(LANS)
-  ];
-  const surge = dataset.flatMap(({ domains }) => domains.flatMap((domain) => {
-    switch (domain[0]) {
-      case '+':
-        return [`*.${domain.slice(1)}`];
-      case '$':
-        return [domain.slice(1)];
-      default:
-        return [domain, `*.${domain}`];
-    }
-  }));
+  const dataset = [DIRECTS, DOMESTICS].reduce<DNSMapping[]>((acc, item) => {
+    Object.values(item).forEach((i: DNSMapping) => {
+      if (i.realip) {
+        acc.push(i);
+      }
+    });
+
+    return acc;
+  }, []);
+
+  const getDnsMappingRuleWithoutWildcard = createGetDnsMappingRule(false);
+
+  for (const { domains } of dataset) {
+    clashFakeIpFilter.addFromRuleset(domains.flatMap(getDnsMappingRuleWithoutWildcard));
+  }
 
   return Promise.all([
     compareAndWriteFile(
@@ -62,6 +75,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
       ],
       path.resolve(OUTPUT_MODULES_DIR, 'sukka_common_always_realip.sgmodule')
     ),
+    clashFakeIpFilter.writeClash(),
     compareAndWriteFile(
       span,
       yaml.stringify(

@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'node:path';
 import { DOMESTICS } from '../Source/non_ip/domestic';
-import { DIRECTS, LANS } from '../Source/non_ip/direct';
+import { DIRECTS } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
 import { task } from './trace';
@@ -12,21 +12,42 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
 
-function getRule(domain: string): string[] {
-  const results: string[] = [];
+export function createGetDnsMappingRule(allowWildcard: boolean) {
+  const hasWildcard = (domain: string) => {
+    if (domain.includes('*') || domain.includes('?')) {
+      if (!allowWildcard) {
+        throw new TypeError(`Wildcard domain is not supported: ${domain}`);
+      }
+      return true;
+    }
 
-  if (domain[0] === '$' || domain[0] === '+') {
-    results.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
-  } else if (domain.includes('?')) {
-    results.push(
-      `DOMAIN-WILDCARD,${domain}`,
-      `DOMAIN-WILDCARD,*.${domain}`
-    );
-  } else {
-    results.push(`DOMAIN-SUFFIX,${domain}`);
-  }
+    return false;
+  };
 
-  return results;
+  return (domain: string): string[] => {
+    const results: string[] = [];
+    if (domain[0] === '$') {
+      const d = domain.slice(1);
+      if (hasWildcard(domain)) {
+        results.push(`DOMAIN-WILDCARD,${d}`);
+      } else {
+        results.push(`DOMAIN,${d}`);
+      }
+    } else if (domain[0] === '+') {
+      const d = domain.slice(1);
+      if (hasWildcard(domain)) {
+        results.push(`DOMAIN-WILDCARD,*.${d}`);
+      } else {
+        results.push(`DOMAIN-SUFFIX,${d}`);
+      }
+    } else if (hasWildcard(domain)) {
+      results.push(`DOMAIN-WILDCARD,${domain}`, `DOMAIN-WILDCARD,*.${domain}`);
+    } else {
+      results.push(`DOMAIN-SUFFIX,${domain}`);
+    }
+
+    return results;
+  };
 }
 
 export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
@@ -34,14 +55,13 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
   const directs = await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'non_ip/direct.conf'));
   const lans: string[] = [];
 
-  Object.entries(DOMESTICS).forEach(([, { domains }]) => {
-    appendArrayInPlace(domestics, domains.flatMap(getRule));
+  const getDnsMappingRuleWithWildcard = createGetDnsMappingRule(true);
+
+  Object.values(DOMESTICS).forEach(({ domains }) => {
+    appendArrayInPlace(domestics, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
-  Object.entries(DIRECTS).forEach(([, { domains }]) => {
-    appendArrayInPlace(directs, domains.flatMap(getRule));
-  });
-  Object.entries(LANS).forEach(([, { domains }]) => {
-    appendArrayInPlace(lans, domains.flatMap(getRule));
+  Object.values(DIRECTS).forEach(({ domains }) => {
+    appendArrayInPlace(directs, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
 
   return [domestics, directs, lans] as const;
@@ -50,9 +70,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 export const buildDomesticRuleset = task(require.main === module, __filename)(async (span) => {
   const [domestics, directs, lans] = await getDomesticAndDirectDomainsRulesetPromise();
 
-  const dataset = Object.entries(DOMESTICS);
-  appendArrayInPlace(dataset, Object.entries(DIRECTS));
-  appendArrayInPlace(dataset, Object.entries(LANS));
+  const dataset = appendArrayInPlace(Object.values(DOMESTICS), Object.values(DIRECTS));
 
   return Promise.all([
     new RulesetOutput(span, 'domestic', 'non_ip')
@@ -89,7 +107,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         `#!desc=Last Updated: ${new Date().toISOString()}`,
         '',
         '[Host]',
-        ...dataset.flatMap(([, { domains, dns, hosts }]) => [
+        ...dataset.flatMap(({ domains, dns, hosts }) => [
           ...Object.entries(hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`),
           ...domains.flatMap((domain) => {
             if (domain[0] === '$') {
@@ -114,44 +132,35 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
     compareAndWriteFile(
       span,
       yaml.stringify(
-        {
-          dns: {
-            'nameserver-policy': dataset.reduce<Record<string, string | string[]>>(
-              (acc, [, { domains, dns }]) => {
-                domains.forEach((domain) => {
-                  let domainWildcard = domain;
-                  if (domain[0] === '$') {
-                    domainWildcard = domain.slice(1);
-                  } else if (domain[0] === '+') {
-                    domainWildcard = `*.${domain.slice(1)}`;
-                  } else {
-                    domainWildcard = `+.${domain}`;
-                  }
+        dataset.reduce<{
+          dns: { 'nameserver-policy': Record<string, string | string[]> },
+          hosts: Record<string, string>
+        }>((acc, cur) => {
+          const { domains, dns, ...rest } = cur;
+          domains.forEach((domain) => {
+            let domainWildcard = domain;
+            if (domain[0] === '$') {
+              domainWildcard = domain.slice(1);
+            } else if (domain[0] === '+') {
+              domainWildcard = `*.${domain.slice(1)}`;
+            } else {
+              domainWildcard = `+.${domain}`;
+            }
 
-                  acc[domainWildcard] = dns === 'system'
-                    ? [
-                      'system://',
-                      'system',
-                      'dhcp://system'
-                    ]
-                    : dns;
-                });
+            acc.dns['nameserver-policy'][domainWildcard] = dns === 'system'
+              ? ['system://', 'system', 'dhcp://system']
+              : dns;
+          });
 
-                return acc;
-              },
-              {}
-            )
-          },
-          hosts: dataset.reduce<Record<string, string>>(
-            (acc, [, { domains, dns, ...rest }]) => {
-              if ('hosts' in rest) {
-                Object.assign(acc, rest.hosts);
-              }
-              return acc;
-            },
-            {}
-          )
-        },
+          if ('hosts' in rest) {
+            Object.assign(acc.hosts, rest.hosts);
+          }
+
+          return acc;
+        }, {
+          dns: { 'nameserver-policy': {} },
+          hosts: {}
+        }),
         { version: '1.1' }
       ).split('\n'),
       path.join(OUTPUT_INTERNAL_DIR, 'clash_nameserver_policy.yaml')

@@ -11,7 +11,7 @@ import type {
   Response
 } from 'undici';
 
-export type UndiciResponseData = Dispatcher.ResponseData<any>;
+export type UndiciResponseData = Dispatcher.ResponseData;
 
 import CacheableLookup from 'cacheable-lookup';
 import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
@@ -50,9 +50,9 @@ setGlobalDispatcher(agent.compose(
         return cb(err);
       }
 
-      if (errorCode !== 'UND_ERR_REQ_RETRY') {
-        return cb(err);
-      }
+      // if (errorCode === 'UND_ERR_REQ_RETRY') {
+      //   return cb(err);
+      // }
 
       const { method, retryOptions = {} } = opts;
 

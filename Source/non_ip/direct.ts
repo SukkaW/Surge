@@ -2,6 +2,8 @@ export interface DNSMapping {
   hosts: {
     [domain: string]: string[]
   },
+  /** which also disallows wildcard */
+  realip: boolean,
   dns: string,
   /**
    * domain[0]
@@ -13,10 +15,11 @@ export interface DNSMapping {
   domains: string[]
 }
 
-export const DIRECTS = {
+export const DIRECTS: Record<string, DNSMapping> = {
   HOTSPOT_CAPTIVE_PORTAL: {
     dns: 'system',
     hosts: {},
+    realip: false,
     domains: [
       'securelogin.com.cn',
       '$captive.apple.com',
@@ -26,6 +29,7 @@ export const DIRECTS = {
   ROUTER: {
     dns: 'system',
     hosts: {},
+    realip: false,
     domains: [
       '+home',
       // 'zte.home', // ZTE CPE
@@ -82,6 +86,7 @@ export const DIRECTS = {
   SYSTEM: {
     dns: 'system',
     hosts: {},
+    realip: true,
     domains: [
       '+m2m',
       // TailScale Magic DNS
@@ -94,17 +99,17 @@ export const DIRECTS = {
       '+bogon',
       '+_msdcs'
     ]
-  }
-} satisfies Record<string, DNSMapping>;
-
-export const LANS = {
+  },
   LAN: {
     dns: 'system',
-    hosts: {},
+    hosts: {
+      localhost: ['127.0.0.1']
+    },
+    realip: true,
     domains: [
       '+lan',
       // 'amplifi.lan',
-      '$localhost',
+      // '$localhost',
       'localdomain',
       'home.arpa',
       // AS112
@@ -113,21 +118,21 @@ export const LANS = {
       '17.172.in-addr.arpa',
       '18.172.in-addr.arpa',
       '19.172.in-addr.arpa',
-      '2?.172.in-addr.arpa',
-      // '20.172.in-addr.arpa',
-      // '21.172.in-addr.arpa',
-      // '22.172.in-addr.arpa',
-      // '23.172.in-addr.arpa',
-      // '24.172.in-addr.arpa',
-      // '25.172.in-addr.arpa',
-      // '26.172.in-addr.arpa',
-      // '27.172.in-addr.arpa',
-      // '28.172.in-addr.arpa',
-      // '29.172.in-addr.arpa',
+      // '2?.172.in-addr.arpa',
+      '20.172.in-addr.arpa',
+      '21.172.in-addr.arpa',
+      '22.172.in-addr.arpa',
+      '23.172.in-addr.arpa',
+      '24.172.in-addr.arpa',
+      '25.172.in-addr.arpa',
+      '26.172.in-addr.arpa',
+      '27.172.in-addr.arpa',
+      '28.172.in-addr.arpa',
+      '29.172.in-addr.arpa',
       '30.172.in-addr.arpa',
       '31.172.in-addr.arpa',
       '168.192.in-addr.arpa',
       '254.169.in-addr.arpa'
     ]
   }
-} satisfies Record<string, DNSMapping>;
+};
