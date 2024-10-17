@@ -1,5 +1,4 @@
-// @ts-check
-import { NetworkFilter } from '@cliqz/adblocker';
+import { NetworkFilter } from '@ghostery/adblocker';
 import { processLine } from './process-line';
 import tldts from 'tldts-experimental';
 
