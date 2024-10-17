@@ -1,7 +1,7 @@
 import picocolors from 'picocolors';
 import undici, {
   interceptors,
-  EnvHttpProxyAgent,
+  Agent,
   setGlobalDispatcher
 } from 'undici';
 
@@ -19,7 +19,7 @@ import { inspect } from 'node:util';
 
 const cacheableLookup = new CacheableLookup();
 
-const agent = new EnvHttpProxyAgent({
+const agent = new Agent({
   connect: {
     lookup(hostname, opt, cb) {
       return cacheableLookup.lookup(hostname, opt as CacheableLookupOptions, cb);
@@ -101,6 +101,7 @@ setGlobalDispatcher(agent.compose(
           ? Math.min(retryAfter, maxTimeout)
           : Math.min(minTimeout * (timeoutFactor ** (counter - 1)), maxTimeout);
 
+      console.log('[fetch retry]', 'schedule retry', { statusCode, retryTimeout, errorCode, url: opts.origin });
       // eslint-disable-next-line sukka/prefer-timer-id -- won't leak
       setTimeout(() => cb(null), retryTimeout);
     }
