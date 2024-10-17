@@ -3,7 +3,17 @@ import { Cache } from './cache-filesystem';
 import type { CacheApplyOption } from './cache-filesystem';
 import { isCI } from 'ci-info';
 
-const fsMemoCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache') });
+import { Typeson, set, map, typedArrays } from 'typeson-registry';
+import picocolors from 'picocolors';
+import { identity } from './misc';
+
+const typeson = new Typeson().register([
+  typedArrays,
+  set,
+  map
+]);
+
+const fsMemoCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache'), tableName: 'fs_memo_cache' });
 
 const TTL = isCI
   // We run CI daily, so 1.5 days TTL is enough to persist the cache across runs
@@ -11,41 +21,64 @@ const TTL = isCI
   // We run locally less frequently, so we need to persist the cache for longer, 7 days
   : 7 * 86400 * 1000;
 
-  type JSONValue =
-    | string
-    | number
-    | boolean
-    | null
-    | JSONObject
-    | JSONArray;
+type TypesonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | Set<any>
+  | Map<any, any>
+  | TypesonObject
+  | TypesonArray;
 
-interface JSONObject {
-  [key: string]: JSONValue
+interface TypesonObject {
+  [key: string]: TypesonValue
 }
 
-interface JSONArray extends Array<JSONValue> {}
+interface TypesonArray extends Array<TypesonValue> { }
 
-export function cache<Args extends JSONValue[], T>(
-  cb: (...args: Args) => Promise<T>,
-  opt: Omit<CacheApplyOption<T, string>, 'ttl'>
+export type FsMemoCacheOptions<T> = CacheApplyOption<T, string> & {
+  ttl?: undefined | never
+};
+
+export function cache<Args extends TypesonValue[], T>(
+  fn: (...args: Args) => Promise<T>,
+  opt: FsMemoCacheOptions<T>
 ): (...args: Args) => Promise<T> {
   // TODO if cb.toString() is long we should hash it
-  const fixedKey = cb.toString();
+  const fixedKey = fn.toString();
 
   return async function cachedCb(...args: Args) {
     // Construct the complete cache key for this function invocation
-    // TODO stringify is limited. For now we uses typescript to guard the args.
-    const cacheKey = `${fixedKey}|${JSON.stringify(args)}`;
-    const cacheName = cb.name || cacheKey;
+    // typeson.stringify is still limited. For now we uses typescript to guard the args.
+    const cacheKey = `${fixedKey}|${typeson.stringifySync(args)}`;
+    const cacheName = fn.name || cacheKey;
 
-    return fsMemoCache.apply(
-      cacheKey,
-      cb,
-      {
-        cacheName,
-        ...opt,
-        ttl: TTL
-      } as CacheApplyOption<T, string>
-    );
+    const { temporaryBypass, incrementTtlWhenHit } = opt;
+
+    if (temporaryBypass) {
+      return fn(...args);
+    }
+
+    const cached = fsMemoCache.get(cacheKey);
+    if (cached == null) {
+      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(cacheName || cacheKey));
+
+      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
+
+      const value = await fn(...args);
+
+      fsMemoCache.set(cacheKey, serializer(value), TTL);
+      return value;
+    }
+
+    console.log(picocolors.green('[cache] hit'), picocolors.gray(cacheName || cacheKey));
+
+    if (incrementTtlWhenHit) {
+      fsMemoCache.updateTtl(cacheKey, TTL);
+    }
+
+    const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
+    return deserializer(cached);
   };
 }

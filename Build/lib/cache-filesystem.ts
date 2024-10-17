@@ -28,7 +28,6 @@ export interface CacheOptions<S = string> {
 
 interface CacheApplyRawOption {
   ttl?: number | null,
-  cacheName?: string,
   temporaryBypass?: boolean,
   incrementTtlWhenHit?: boolean
 }
@@ -185,45 +184,6 @@ export class Cache<S = string> {
 
   del(key: string): void {
     this.db.prepare(`DELETE FROM ${this.tableName} WHERE key = ?`).run(key);
-  }
-
-  async apply<T>(
-    key: string,
-    fn: () => Promise<T>,
-    opt: CacheApplyOption<T, S>
-  ): Promise<T> {
-    const { ttl, temporaryBypass, incrementTtlWhenHit, cacheName } = opt;
-
-    if (temporaryBypass) {
-      return fn();
-    }
-    if (ttl == null) {
-      this.del(key);
-      return fn();
-    }
-
-    const cached = this.get(key);
-    if (cached == null) {
-      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(cacheName || key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
-
-      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
-
-      const promise = fn();
-
-      return promise.then((value) => {
-        this.set(key, serializer(value), ttl);
-        return value;
-      });
-    }
-
-    console.log(picocolors.green('[cache] hit'), picocolors.gray(cacheName || key));
-
-    if (incrementTtlWhenHit) {
-      this.updateTtl(key, ttl);
-    }
-
-    const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
-    return deserializer(cached);
   }
 
   async applyWithHttp304<T>(
