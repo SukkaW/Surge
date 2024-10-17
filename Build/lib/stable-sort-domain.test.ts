@@ -1,5 +1,5 @@
 import { describe, it } from 'mocha';
-import { expect } from 'chai';
+import { expect } from 'expect';
 import { sortDomains } from './stable-sort-domain';
 
 describe('sortDomains', () => {
@@ -8,7 +8,7 @@ describe('sortDomains', () => {
       '.s3-website.ap-northeast-3.amazonaws.com',
       '.s3.dualstack.ap-south-1.amazonaws.com',
       '.s3-website.af-south-1.amazonaws.com'
-    ])).to.deep.equal([
+    ])).toStrictEqual([
       '.s3-website.af-south-1.amazonaws.com',
       '.s3.dualstack.ap-south-1.amazonaws.com',
       '.s3-website.ap-northeast-3.amazonaws.com'
@@ -18,7 +18,7 @@ describe('sortDomains', () => {
       '.s3.dualstack.ap-south-1.amazonaws.com',
       '.s3-website.ap-northeast-3.amazonaws.com',
       '.s3-website.af-south-1.amazonaws.com'
-    ])).to.deep.equal([
+    ])).toStrictEqual([
       '.s3-website.af-south-1.amazonaws.com',
       '.s3.dualstack.ap-south-1.amazonaws.com',
       '.s3-website.ap-northeast-3.amazonaws.com'
@@ -27,7 +27,7 @@ describe('sortDomains', () => {
     expect(sortDomains([
       '.s3-website-us-west-2.amazonaws.com',
       '.s3-1.amazonaws.com'
-    ])).to.deep.equal([
+    ])).toStrictEqual([
       '.s3-1.amazonaws.com',
       '.s3-website-us-west-2.amazonaws.com'
     ]);
@@ -35,7 +35,7 @@ describe('sortDomains', () => {
     expect(sortDomains([
       '.s3-1.amazonaws.com',
       '.s3-website-us-west-2.amazonaws.com'
-    ])).to.deep.equal([
+    ])).toStrictEqual([
       '.s3-1.amazonaws.com',
       '.s3-website-us-west-2.amazonaws.com'
     ]);
@@ -46,7 +46,7 @@ describe('sortDomains', () => {
         '.s3-accesspoint.dualstack.us-west-2.amazonaws.com',
         '.s3.dualstack.us-west-2.amazonaws.com'
       ])
-    ).to.deep.equal([
+    ).toStrictEqual([
       '.s3.dualstack.us-west-2.amazonaws.com',
       '.s3-deprecated.us-west-2.amazonaws.com',
       '.s3-accesspoint.dualstack.us-west-2.amazonaws.com'
@@ -58,7 +58,7 @@ describe('sortDomains', () => {
         '.s3-accesspoint.dualstack.us-west-2.amazonaws.com',
         '.s3.dualstack.us-west-2.amazonaws.com'
       ])
-    ).to.deep.equal([
+    ).toStrictEqual([
       '.s3.dualstack.us-west-2.amazonaws.com',
       '.s3-deprecated.us-west-2.amazonaws.com',
       '.s3-accesspoint.dualstack.us-west-2.amazonaws.com'
@@ -69,7 +69,7 @@ describe('sortDomains', () => {
         '.ec2-25-58-215-234.us-east-2.compute.amazonaws.com',
         '.ec2-13-58-215-234.us-east-2.compute.amazonaws.com'
       ])
-    ).to.deep.equal([
+    ).toStrictEqual([
       '.ec2-13-58-215-234.us-east-2.compute.amazonaws.com',
       '.ec2-25-58-215-234.us-east-2.compute.amazonaws.com'
     ]);
@@ -80,7 +80,7 @@ describe('sortDomains', () => {
       '.notice.samsungcloudsolution.com',
       'samsungqbe.com',
       'samsungcloudsolution.com'
-    ])).to.deep.equal([
+    ])).toStrictEqual([
       'samsungqbe.com',
       'samsungcloudsolution.com',
       '.notice.samsungcloudsolution.com'
@@ -117,7 +117,7 @@ describe('sortDomains', () => {
         '.rwww.samsungotn.net',
         '.samsungpoland.com.pl'
       ])
-    ).to.deep.equal([
+    ).toStrictEqual([
       '.gld.samsungosp.com',
       '.rwww.samsungotn.net',
       'samsungqbe.com',
