@@ -1,5 +1,5 @@
 import createDb from 'better-sqlite3';
-import type { Database } from 'better-sqlite3';
+import type { Database, Statement } from 'better-sqlite3';
 import os from 'node:os';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -80,7 +80,7 @@ function ensureETag(headers: IncomingHttpHeaders | Headers) {
 }
 
 export class Cache<S = string> {
-  db: Database;
+  private db: Database;
   /** Time before deletion */
   tbd = 60 * 1000;
   /** SQLite file path */
@@ -88,6 +88,13 @@ export class Cache<S = string> {
   /** Table name */
   tableName: string;
   type: S extends string ? 'string' : 'buffer';
+
+  private statement: {
+    updateTtl: Statement<[number, string]>,
+    del: Statement<[string]>,
+    insert: Statement<[unknown]>,
+    get: Statement<[string], { ttl: number, value: S }>
+  };
 
   constructor({
     cachePath = path.join(os.tmpdir() || '/tmp', 'hdc'),
@@ -118,6 +125,14 @@ export class Cache<S = string> {
     db.prepare(`CREATE TABLE IF NOT EXISTS ${this.tableName} (key TEXT PRIMARY KEY, value ${this.type === 'string' ? 'TEXT' : 'BLOB'}, ttl REAL NOT NULL);`).run();
     db.prepare(`CREATE INDEX IF NOT EXISTS cache_ttl ON ${this.tableName} (ttl);`).run();
 
+    /** cache stmt */
+    this.statement = {
+      updateTtl: db.prepare(`UPDATE ${this.tableName} SET ttl = ? WHERE key = ?;`),
+      del: db.prepare(`DELETE FROM ${this.tableName} WHERE key = ?`),
+      insert: db.prepare(`INSERT INTO ${this.tableName} (key, value, ttl) VALUES ($key, $value, $valid) ON CONFLICT(key) DO UPDATE SET value = $value, ttl = $valid`),
+      get: db.prepare(`SELECT ttl, value FROM ${this.tableName} WHERE key = ? LIMIT 1`)
+    } as const;
+
     const date = new Date();
 
     // perform purge on startup
@@ -142,13 +157,9 @@ export class Cache<S = string> {
   }
 
   set(key: string, value: string, ttl = 60 * 1000): void {
-    const insert = this.db.prepare(
-      `INSERT INTO ${this.tableName} (key, value, ttl) VALUES ($key, $value, $valid) ON CONFLICT(key) DO UPDATE SET value = $value, ttl = $valid`
-    );
-
     const valid = Date.now() + ttl;
 
-    insert.run({
+    this.statement.insert.run({
       $key: key,
       key,
       $value: value,
@@ -159,9 +170,7 @@ export class Cache<S = string> {
   }
 
   get(key: string): S | null {
-    const rv = this.db.prepare<string, { value: S, ttl: number }>(
-      `SELECT ttl, value FROM ${this.tableName} WHERE key = ? LIMIT 1`
-    ).get(key);
+    const rv = this.statement.get.get(key);
 
     if (!rv) return null;
 
@@ -179,11 +188,11 @@ export class Cache<S = string> {
   }
 
   updateTtl(key: string, ttl: number): void {
-    this.db.prepare(`UPDATE ${this.tableName} SET ttl = ? WHERE key = ?;`).run(Date.now() + ttl, key);
+    this.statement.updateTtl.run(Date.now() + ttl, key);
   }
 
   del(key: string): void {
-    this.db.prepare(`DELETE FROM ${this.tableName} WHERE key = ?`).run(key);
+    this.statement.del.run(key);
   }
 
   async applyWithHttp304<T>(
