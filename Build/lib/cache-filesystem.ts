@@ -16,12 +16,6 @@ import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError,
 import type { IncomingHttpHeaders } from 'undici/types/header';
 import { Headers } from 'undici';
 
-const enum CacheStatus {
-  Hit = 'hit',
-  Stale = 'stale',
-  Miss = 'miss'
-}
-
 export interface CacheOptions<S = string> {
   /** Path to sqlite file dir */
   cachePath?: string,
@@ -34,6 +28,7 @@ export interface CacheOptions<S = string> {
 
 interface CacheApplyRawOption {
   ttl?: number | null,
+  cacheName?: string,
   temporaryBypass?: boolean,
   incrementTtlWhenHit?: boolean
 }
@@ -43,7 +38,7 @@ interface CacheApplyNonRawOption<T, S> extends CacheApplyRawOption {
   deserializer: (cached: S) => T
 }
 
-type CacheApplyOption<T, S> = T extends S ? CacheApplyRawOption : CacheApplyNonRawOption<T, S>;
+export type CacheApplyOption<T, S> = T extends S ? CacheApplyRawOption : CacheApplyNonRawOption<T, S>;
 
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -164,23 +159,27 @@ export class Cache<S = string> {
     });
   }
 
-  get(key: string, defaultValue?: S): S | undefined {
-    const rv = this.db.prepare<string, { value: S }>(
-      `SELECT value FROM ${this.tableName} WHERE key = ? LIMIT 1`
+  get(key: string): S | null {
+    const rv = this.db.prepare<string, { value: S, ttl: number }>(
+      `SELECT ttl, value FROM ${this.tableName} WHERE key = ? LIMIT 1`
     ).get(key);
 
-    if (!rv) return defaultValue;
+    if (!rv) return null;
+
+    if (rv.ttl < Date.now()) {
+      this.del(key);
+      return null;
+    }
+
+    if (rv.value == null) {
+      this.del(key);
+      return null;
+    }
+
     return rv.value;
   }
 
-  has(key: string): CacheStatus {
-    const now = Date.now();
-    const rv = this.db.prepare<string, { ttl: number }>(`SELECT ttl FROM ${this.tableName} WHERE key = ?`).get(key);
-
-    return rv ? (rv.ttl > now ? CacheStatus.Hit : CacheStatus.Stale) : CacheStatus.Miss;
-  }
-
-  private updateTtl(key: string, ttl: number): void {
+  updateTtl(key: string, ttl: number): void {
     this.db.prepare(`UPDATE ${this.tableName} SET ttl = ? WHERE key = ?;`).run(Date.now() + ttl, key);
   }
 
@@ -193,7 +192,7 @@ export class Cache<S = string> {
     fn: () => Promise<T>,
     opt: CacheApplyOption<T, S>
   ): Promise<T> {
-    const { ttl, temporaryBypass, incrementTtlWhenHit } = opt;
+    const { ttl, temporaryBypass, incrementTtlWhenHit, cacheName } = opt;
 
     if (temporaryBypass) {
       return fn();
@@ -205,7 +204,7 @@ export class Cache<S = string> {
 
     const cached = this.get(key);
     if (cached == null) {
-      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
+      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(cacheName || key), picocolors.gray(`ttl: ${TTL.humanReadable(ttl)}`));
 
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
 
@@ -217,7 +216,7 @@ export class Cache<S = string> {
       });
     }
 
-    console.log(picocolors.green('[cache] hit'), picocolors.gray(key));
+    console.log(picocolors.green('[cache] hit'), picocolors.gray(cacheName || key));
 
     if (incrementTtlWhenHit) {
       this.updateTtl(key, ttl);
