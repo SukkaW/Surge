@@ -313,6 +313,7 @@ export const CRASHLYTICS_WHITELIST = [
   '.data.debugbear.com',
   '.cdn.applicationinsights.io',
   '.applicationinsights.azure.com',
+  '.applicationinsights.azure.cn',
   '.api.loganalytics.io',
   '.bugly.qcloud.com',
   '.cdn.signalfx.com',
