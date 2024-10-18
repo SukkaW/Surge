@@ -1,6 +1,10 @@
 const notError = Symbol('notError');
 
-export function createMemoizedPromise<T>(fn: () => Promise<T>, preload = true): () => Promise<T> {
+export function createMemoizedPromise<T>(
+  fn: () => Promise<T>,
+  /** whether to create promise immediately or only create after first access */
+  preload = true
+): () => Promise<T> {
   let error: Error | typeof notError = notError;
 
   let promise: Promise<T> | null = preload

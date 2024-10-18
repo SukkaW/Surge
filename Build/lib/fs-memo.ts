@@ -3,14 +3,18 @@ import { Cache } from './cache-filesystem';
 import type { CacheApplyOption } from './cache-filesystem';
 import { isCI } from 'ci-info';
 
-import { Typeson, set, map, typedArrays } from 'typeson-registry';
+import { xxhash64 } from 'hash-wasm';
+
+import { Typeson, set, map, typedArrays, undef, infinity } from 'typeson-registry';
 import picocolors from 'picocolors';
 import { identity } from './misc';
 
 const typeson = new Typeson().register([
   typedArrays,
   set,
-  map
+  map,
+  undef,
+  infinity
 ]);
 
 const fsMemoCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache'), tableName: 'fs_memo_cache' });
@@ -26,6 +30,7 @@ type TypesonValue =
   | number
   | boolean
   | null
+  | undefined
   | Set<any>
   | Map<any, any>
   | TypesonObject
@@ -45,14 +50,17 @@ export function cache<Args extends TypesonValue[], T>(
   fn: (...args: Args) => Promise<T>,
   opt: FsMemoCacheOptions<T>
 ): (...args: Args) => Promise<T> {
-  // TODO if cb.toString() is long we should hash it
   const fixedKey = fn.toString();
 
   return async function cachedCb(...args: Args) {
     // Construct the complete cache key for this function invocation
     // typeson.stringify is still limited. For now we uses typescript to guard the args.
-    const cacheKey = `${fixedKey}|${typeson.stringifySync(args)}`;
-    const cacheName = fn.name || cacheKey;
+    const cacheKey = (await Promise.all([
+      xxhash64(fixedKey),
+      xxhash64(typeson.stringifySync(args))
+    ])).join('|');
+
+    const cacheName = fn.name || fixedKey;
 
     const { temporaryBypass, incrementTtlWhenHit } = opt;
 
