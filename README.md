@@ -28,10 +28,10 @@
 ```ini
 # Non IP
 # 基础的 12 万拦截域名
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT
 # 额外 20 万拦截域名，作为基础的补充，启用时需要搭配基础一起使用
 # 在 Surge 5 for Mac（或更新版本），即使同时启用基础和额外的拦截域名也不会导致匹配性能下降或内存占用过高
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_extra.conf,REJECT,extended-matching
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_extra.conf,REJECT
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,extended-matching
