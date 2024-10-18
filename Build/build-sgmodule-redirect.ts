@@ -57,6 +57,9 @@ const REDIRECT_MIRROR_HEADER = [
   // jsDelivr
   ['fastly.jsdelivr.net/', 'https://cdn.jsdelivr.net/'],
   ['gcore.jsdelivr.net/', 'https://cdn.jsdelivr.net/'],
+  // JSDMirror
+  ['cdn.jsdmirror.com/', 'https://cdn.jsdelivr.net/'],
+  ['cdn.jsdmirror.cn/', 'https://cdn.jsdelivr.net/'],
   // ops.ci
   ['jsdelivr.ops.ci/', 'https://cdn.jsdelivr.net/'],
   ['fonts.ops.ci/', 'https://fonts.googleapis.com/'],

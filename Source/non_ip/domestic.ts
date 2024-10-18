@@ -164,7 +164,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     hosts: {},
     realip: false,
     domains: [
-      '$upos-sz-mirrorcoso1.bilivideo.com',
+      // '$upos-sz-mirrorcoso1.bilivideo.com', // already included in bilivideo.com
       '$upos-sz-mirrorcosbstar1.bilivideo.com', // Bilibili Intl with Tencent Cloud CDN
       '$acg.tv',
       '$b23.tv',
