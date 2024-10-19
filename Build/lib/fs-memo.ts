@@ -62,9 +62,7 @@ export function cache<Args extends TypesonValue[], T>(
 
     const cacheName = fn.name || fixedKey;
 
-    const { temporaryBypass, incrementTtlWhenHit } = opt;
-
-    if (temporaryBypass) {
+    if (opt.temporaryBypass) {
       return fn(...args);
     }
 
@@ -82,11 +80,54 @@ export function cache<Args extends TypesonValue[], T>(
 
     console.log(picocolors.green('[cache] hit'), picocolors.gray(cacheName || cacheKey));
 
-    if (incrementTtlWhenHit) {
-      fsMemoCache.updateTtl(cacheKey, TTL);
-    }
+    fsMemoCache.updateTtl(cacheKey, TTL);
 
     const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
     return deserializer(cached);
+  };
+}
+
+export function cachedOnlyFail<Args extends TypesonValue[], T>(
+  fn: (...args: Args) => Promise<T>,
+  opt: FsMemoCacheOptions<T>
+): (...args: Args) => Promise<T> {
+  const fixedKey = fn.toString();
+
+  return async function cachedCb(...args: Args) {
+    // Construct the complete cache key for this function invocation
+    // typeson.stringify is still limited. For now we uses typescript to guard the args.
+    const cacheKey = (await Promise.all([
+      xxhash64(fixedKey),
+      xxhash64(typeson.stringifySync(args))
+    ])).join('|');
+
+    const cacheName = fn.name || fixedKey;
+
+    if (opt.temporaryBypass) {
+      return fn(...args);
+    }
+
+    const cached = fsMemoCache.get(cacheKey);
+
+    try {
+      const value = await fn(...args);
+
+      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
+      fsMemoCache.set(cacheKey, serializer(value), TTL);
+
+      return value;
+    } catch (e) {
+      if (cached == null) {
+        console.log(picocolors.red('[fail] and no cache, throwing'), picocolors.gray(cacheName || cacheKey));
+        throw e;
+      }
+
+      fsMemoCache.updateTtl(cacheKey, TTL);
+
+      console.log(picocolors.yellow('[fail] try cache'), picocolors.gray(cacheName || cacheKey));
+      const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
+
+      return deserializer(cached);
+    }
   };
 }

@@ -55,5 +55,8 @@ export const CN_CIDR_NOT_INCLUDED_IN_CHNROUTE = [
   '139.219.0.0/16', // AS58593, Azure China, Shanghai
   '143.64.0.0/16', // AS58593, Azure China, Beijing
   '159.27.0.0/16', // AS58593, Azure China, Beijing
-  '163.228.0.0/16' // AS58593, Azure China, Beijing
+  '163.228.0.0/16', // AS58593, Azure China, Beijing
+
+  // NetEase
+  '223.252.196.0/24'
 ];

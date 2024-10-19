@@ -2,21 +2,38 @@ import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import { task } from './trace';
 
-import { exclude } from 'fast-cidr-tools';
+import { contains, exclude } from 'fast-cidr-tools';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { CN_CIDR_NOT_INCLUDED_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { IPListOutput } from './lib/create-file';
+import { cachedOnlyFail } from './lib/fs-memo';
 
-export const getChnCidrPromise = createMemoizedPromise(async () => {
-  const [cidr4, cidr6] = await Promise.all([
-    fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').then(processLineFromReadline),
-    fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt').then(processLineFromReadline)
-  ]);
+const PROBE_CHN_CIDR = [
+  // NetEase Hangzhou
+  '223.252.196.38'
+];
 
-  appendArrayInPlace(cidr4, CN_CIDR_NOT_INCLUDED_IN_CHNROUTE);
-  return [exclude(cidr4, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true), cidr6] as const;
-});
+export const getChnCidrPromise = createMemoizedPromise(cachedOnlyFail(
+  async function getChnCidr() {
+    const [cidr4, cidr6] = await Promise.all([
+      fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').then(processLineFromReadline),
+      fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt').then(processLineFromReadline)
+    ]);
+
+    appendArrayInPlace(cidr4, CN_CIDR_NOT_INCLUDED_IN_CHNROUTE);
+
+    if (!contains(cidr4, PROBE_CHN_CIDR)) {
+      throw new TypeError('chnroutes missing probe IP');
+    }
+
+    return [exclude(cidr4, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true), cidr6] as const;
+  },
+  {
+    serializer: JSON.stringify,
+    deserializer: JSON.parse
+  }
+));
 
 export const buildChnCidr = task(require.main === module, __filename)(async (span) => {
   const [filteredCidr4, cidr6] = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
