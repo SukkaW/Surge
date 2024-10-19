@@ -343,7 +343,7 @@ export const PREDEFINED_WHITELIST = [
   ...CRASHLYTICS_WHITELIST,
   '.localhost',
   '.local',
-  '.localhost.localdomain',
+  '.localdomain',
   '.broadcasthost',
   '.ip6-loopback',
   '.ip6-localnet',

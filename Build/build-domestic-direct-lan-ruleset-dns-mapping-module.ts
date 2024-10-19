@@ -1,7 +1,8 @@
 // @ts-check
 import path from 'node:path';
-import { DOMESTICS } from '../Source/non_ip/domestic';
+import { DOMESTICS, DOH_BOOTSTRAP } from '../Source/non_ip/domestic';
 import { DIRECTS } from '../Source/non_ip/direct';
+import type { DNSMapping } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
 import { task } from './trace';
@@ -57,9 +58,12 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 
   const getDnsMappingRuleWithWildcard = createGetDnsMappingRule(true);
 
-  Object.values(DOMESTICS).forEach(({ domains }) => {
-    appendArrayInPlace(domestics, domains.flatMap(getDnsMappingRuleWithWildcard));
+  [DOH_BOOTSTRAP, DOMESTICS].forEach((item) => {
+    Object.values(item).forEach(({ domains }) => {
+      appendArrayInPlace(domestics, domains.flatMap(getDnsMappingRuleWithWildcard));
+    });
   });
+
   Object.values(DIRECTS).forEach(({ domains }) => {
     appendArrayInPlace(directs, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
@@ -70,7 +74,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 export const buildDomesticRuleset = task(require.main === module, __filename)(async (span) => {
   const [domestics, directs, lans] = await getDomesticAndDirectDomainsRulesetPromise();
 
-  const dataset = appendArrayInPlace(Object.values(DOMESTICS), Object.values(DIRECTS));
+  const dataset: DNSMapping[] = ([DOH_BOOTSTRAP, DOMESTICS, DIRECTS] as const).flatMap(Object.values);
 
   return Promise.all([
     new RulesetOutput(span, 'domestic', 'non_ip')
@@ -107,25 +111,43 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         `#!desc=Last Updated: ${new Date().toISOString()}`,
         '',
         '[Host]',
-        ...dataset.flatMap(({ domains, dns, hosts }) => [
-          ...Object.entries(hosts).flatMap(([dns, ips]: [dns: string, ips: string[]]) => `${dns} = ${ips.join(', ')}`),
-          ...domains.flatMap((domain) => {
-            if (domain[0] === '$') {
-              return [
-                `${domain.slice(1)} = server:${dns}`
-              ];
-            }
-            if (domain[0] === '+') {
-              return [
-                `*.${domain.slice(1)} = server:${dns}`
-              ];
-            }
-            return [
-              `${domain} = server:${dns}`,
-              `*.${domain} = server:${dns}`
-            ];
-          })
-        ])
+        ...Object.entries(
+          // I use an object to deduplicate the domains
+          // Otherwise I could just construct an array directly
+          dataset.reduce<Record<string, string>>((acc, cur) => {
+            const { domains, dns, hosts } = cur;
+
+            Object.entries(hosts).forEach(([dns, ips]) => {
+              if (!(dns in acc)) {
+                acc[dns] = ips.join(', ');
+              }
+            });
+
+            domains.forEach((domain) => {
+              if (domain[0] === '$') {
+                const d = domain.slice(1);
+                if (!(d in acc)) {
+                  acc[d] = `server:${dns}`;
+                }
+              } else if (domain[0] === '+') {
+                const d = `*.${domain.slice(1)}`;
+                if (!(d in acc)) {
+                  acc[d] = `server:${dns}`;
+                }
+              } else {
+                if (!(domain in acc)) {
+                  acc[domain] = `server:${dns}`;
+                }
+                const d = `*.${domain}`;
+                if (!(d in acc)) {
+                  acc[d] = `server:${dns}`;
+                }
+              }
+            });
+
+            return acc;
+          }, {})
+        ).map(([dns, ips]) => `${dns} = ${ips}`)
       ],
       path.resolve(OUTPUT_MODULES_DIR, 'sukka_local_dns_mapping.sgmodule')
     ),
@@ -164,6 +186,41 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         { version: '1.1' }
       ).split('\n'),
       path.join(OUTPUT_INTERNAL_DIR, 'clash_nameserver_policy.yaml')
+    ),
+    compareAndWriteFile(
+      span,
+      [
+        '# Local DNS Mapping for AdGuard Home',
+        '',
+        '[//]udp://10.10.1.1:53',
+        ...dataset.flatMap(({ domains, dns: _dns }) => domains.flatMap((domain) => {
+          const dns = _dns === 'system'
+            ? 'udp://10.10.1.1:53'
+            : _dns;
+          if (
+            // AdGuard Home has built-in AS112 / private PTR handling
+            domain.endsWith('.arpa')
+            // Ignore simple hostname
+            || !domain.includes('.')
+          ) {
+            return [];
+          }
+          if (domain[0] === '$') {
+            return [
+              `[/${domain.slice(1)}/]${dns}`
+            ];
+          }
+          if (domain[0] === '+') {
+            return [
+              `[/${domain.slice(1)}/]${dns}`
+            ];
+          }
+          return [
+            `[/${domain}/]${dns}`
+          ];
+        }))
+      ],
+      path.resolve(OUTPUT_INTERNAL_DIR, 'dns_mapping_adguardhome.conf')
     )
   ]);
 });

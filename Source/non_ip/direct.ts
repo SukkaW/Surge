@@ -50,7 +50,7 @@ export const DIRECTS: Record<string, DNSMapping> = {
       'routerlogin.net',
       'routerlogin.com',
       // Tenda WiFi
-      'tendawifi.com',
+      // 'tendawifi.com',
       // TP-Link Router
       'tplinkwifi.net',
       'tplogin.cn',
@@ -62,7 +62,7 @@ export const DIRECTS: Record<string, DNSMapping> = {
       '+ui.direct',
       '$unifi',
       // Other Router
-      '$router.com',
+      // '$router.com',
       '+huaweimobilewifi.com',
       '+router',
       // 'my.router',
@@ -109,7 +109,7 @@ export const DIRECTS: Record<string, DNSMapping> = {
       '+lan',
       // 'amplifi.lan',
       // '$localhost',
-      'localdomain',
+      '+localdomain',
       'home.arpa',
       // AS112
       '10.in-addr.arpa',

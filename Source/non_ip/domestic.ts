@@ -2,9 +2,7 @@ import type { DNSMapping } from './direct';
 
 export const DOMESTICS: Record<string, DNSMapping> = {
   ALIBABA: {
-    hosts: {
-      'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1']
-    },
+    hosts: {},
     dns: 'quic://dns.alidns.com:853',
     realip: false,
     domains: [
@@ -84,11 +82,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     ]
   },
   TENCENT: {
-    hosts: {
-      'dot.pub': ['120.53.53.53', '1.12.12.12', '1.12.34.56'],
-      'doh.pub': ['120.53.53.53', '1.12.12.12', '1.12.34.56'],
-      'dns.pub': ['120.53.53.53', '1.12.12.12', '1.12.34.56']
-    },
+    hosts: {},
     dns: 'https://doh.pub/dns-query',
     realip: false,
     domains: [
@@ -287,15 +281,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     ]
   },
   QIHOO360: {
-    hosts: {
-      'doh.360.cn': ['101.198.198.198', '101.198.199.200'],
-      'dot.360.cn': ['101.198.198.198', '101.198.199.200'],
-      'dns.360.cn': ['101.198.198.198', '101.198.199.200'],
-      'doh.360.net': ['101.198.198.198', '101.198.199.200'],
-      'dot.360.net': ['101.198.198.198', '101.198.199.200'],
-      'dns.360.net': ['101.198.198.198', '101.198.199.200']
-    },
-    dns: 'https://dns.360.net/dns-query',
+    hosts: {},
+    dns: 'https://doh.360.cn/dns-query',
     realip: false,
     domains: [
       '+qhimg.com',
@@ -330,6 +317,60 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+qh-cdn.com',
       'baomitu.com',
       'qiku.com'
+    ]
+  }
+};
+
+/** This should only be used to build AfGu */
+export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
+  ALIBABA: {
+    hosts: {
+      'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1']
+    },
+    realip: false,
+    dns: 'quic://223.5.5.5:853',
+    domains: [
+      '$dns.alidns.com'
+    ]
+  },
+  DNSPOD: {
+    hosts: {
+      'dot.pub': ['120.53.53.53', '1.12.12.12'],
+      'doh.pub': ['120.53.53.53', '1.12.12.12'],
+      'dns.pub': ['120.53.53.53', '1.12.12.12']
+    },
+    realip: false,
+    dns: 'https://1.12.12.12/dns-query',
+    domains: [
+      '$dot.pub',
+      '$doh.pub',
+      '$dns.pub'
+    ]
+  },
+  QIHOO360: {
+    hosts: {
+      // dot.360.cn
+      // doh.360.cn
+
+      // sdns.360.net
+      // dns.360.cn CNAME sdns.360.net
+
+      // dns.360.net
+      // doh.360.net CNAME dns.360.net
+      // dot.360.net CNAME dns.360.net
+    },
+    realip: false,
+    dns: 'https://101.198.198.198/dns-query', // https://101.198.199.200/dns-query
+    domains: [
+      '$dns.360.cn',
+      '$dot.360.cn',
+      '$doh.360.cn',
+
+      '$sdns.360.net',
+
+      '$dns.360.net',
+      '$dot.360.net',
+      '$doh.360.net'
     ]
   }
 };
