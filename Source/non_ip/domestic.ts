@@ -95,6 +95,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+gtimg.com.cn',
       '+gdtimg.com',
       '+idqqimg.com',
+      '+udqqimg.com',
       'igamecj.com',
       'myapp.com',
       '+myqcloud.com',
