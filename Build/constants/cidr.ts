@@ -45,6 +45,9 @@ export const CN_CIDR_MISSING_IN_CHNROUTE = [
   '101.198.198.0/24',
   '101.198.199.0/24',
 
+  // ChinaTelecom
+  '103.7.141.0/24', // Hubei
+
   // Aliyun Shenzhen
   '120.78.0.0/16',
 

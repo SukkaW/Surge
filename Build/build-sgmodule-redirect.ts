@@ -33,9 +33,6 @@ const REDIRECT_MIRROR_HEADER = [
   ['sdn.geekzu.org/', 'https://secure.gravatar.com/'],
   // libravatar
   ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/'],
-  // ghproxy
-  ['ghproxy.com/', 'https://'],
-  ['ghps.cc/', 'https://'],
   // gh-proxy
   ['github.moeyy.xyz/', 'https://'],
   // 7ED Services
@@ -66,6 +63,19 @@ const REDIRECT_MIRROR_HEADER = [
   // KGitHub
   ['raw.kgithub.com/', 'https://raw.githubusercontent.com/'],
   ['raw.kkgithub.com/', 'https://raw.githubusercontent.com/'],
+  // cdn.iocdn.cc
+  ['cdn.iocdn.cc/avatar/', 'https://secure.gravatar.com/avatar/'],
+  ['cdn.iocdn.cc/css', 'https://fonts.googleapis.com/css'],
+  ['cdn.iocdn.cc/icon', 'https://fonts.googleapis.com/icon'],
+  ['cdn.iocdn.cc/earlyaccess', 'https://fonts.googleapis.com/earlyaccess'],
+  ['cdn.iocdn.cc/s', 'fonts.gstatic.com/s'],
+  ['cdn.iocdn.cc/static', 'themes.googleusercontent.com/static'],
+  ['cdn.iocdn.cc/ajax', 'ajax.googleapis.com/ajax'],
+  ['cdn.iocdn.cc/', 'https://cdn.jsdelivr.net/'],
+  // wp-china-yes
+  ['googlefonts.admincdn.com/', 'https://fonts.googleapis.com/'],
+  ['googleajax.admincdn.com/', 'https://ajax.googleapis.com/'],
+  ['cdnjs.admincdn.com/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
   // Polyfill
   ['polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
   ['polyfill.top/', 'https://cdnjs.cloudflare.com/polyfill/'],
@@ -79,9 +89,7 @@ const REDIRECT_MIRROR_HEADER = [
   ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
   ['cdn.staticfile.org/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
   // Misc
-  ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/'],
-  ['googlefonts.wp-china-yes.net/', 'https://fonts.googleapis.com/'],
-  ['googleajax.wp-china-yes.net/', 'https://ajax.googleapis.com/']
+  ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/']
 ] as const;
 
 const REDIRECT_MIRROR_307 = [
