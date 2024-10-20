@@ -62,7 +62,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     getS3OSSDomainsPromise,
     readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/cdn.conf')),
     readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/download.conf')),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/steam.conf'))
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/game-download.conf'))
   ]);
 
   // Move S3 domains to download domain set, since S3 files may be large

@@ -56,7 +56,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     // stream - domains
     AllStreamServices.flatMap((i) => i.rules),
     // steam - domains
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/steam.conf')),
+    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/game-download.conf')),
     // global - domains
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf')),
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf')),

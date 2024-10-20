@@ -12,7 +12,6 @@ const DEPRECATED_FILES = [
 
 const REMOVED_FILES = [
   'Internal/cdn.txt',
-  'List/domainset/steam.conf',
   'List/internal/appprofile.php',
   'Clash/domainset/steam.txt',
   'Clash/non_ip/clash_fake_ip_filter.txt',
