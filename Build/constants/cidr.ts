@@ -25,7 +25,8 @@ export const NON_CN_CIDR_INCLUDED_IN_CHNROUTE = [
 ];
 
 // https://github.com/misakaio/chnroutes2/issues/46
-export const CN_CIDR_NOT_INCLUDED_IN_CHNROUTE = [
+// https://github.com/misakaio/chnroutes2/issues/48
+export const CN_CIDR_MISSING_IN_CHNROUTE = [
   // Baidu Public DNS
   '180.76.76.0/24',
   // Ali Public DNS
@@ -44,19 +45,25 @@ export const CN_CIDR_NOT_INCLUDED_IN_CHNROUTE = [
   '101.198.198.0/24',
   '101.198.199.0/24',
 
-  '211.99.96.0/19', // wy.com.cn
+  // Aliyun Shenzhen
+  '120.78.0.0/16',
 
-  '40.72.0.0/15', // AS58593, Azure China, Shanghai
-  '42.159.0.0/16', // AS58593, Azure China, Shanghai
-  '52.130.0.0/17', // AS58593, Azure China, Shanghai
-  '52.131.0.0/16', // AS58593, Azure China, Beijing
-  '103.9.8.0/22', // AS58593, Azure China, Backbone
-  '139.217.0.0/16', // AS58593, Azure China, Shanghai
-  '139.219.0.0/16', // AS58593, Azure China, Shanghai
-  '143.64.0.0/16', // AS58593, Azure China, Beijing
-  '159.27.0.0/16', // AS58593, Azure China, Beijing
-  '163.228.0.0/16', // AS58593, Azure China, Beijing
+  // wy.com.cn
+  '211.99.96.0/19',
+
+  // AS58593, Azure China
+  '40.72.0.0/15', // Shanghai
+  '42.159.0.0/16', // Shanghai
+  '52.130.0.0/17', // Shanghai
+  '52.131.0.0/16', // Beijing
+  '103.9.8.0/22', // Backbone
+  '139.217.0.0/16', // Shanghai
+  '139.219.0.0/16', // Shanghai
+  '143.64.0.0/16', // Beijing
+  '159.27.0.0/16', // Beijing
+  '163.228.0.0/16', // Beijing
 
   // NetEase
+  '223.252.194.0/24',
   '223.252.196.0/24'
 ];

@@ -2,32 +2,42 @@ import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { processLineFromReadline } from './lib/process-line';
 import { task } from './trace';
 
-import { contains, exclude } from 'fast-cidr-tools';
+import { contains as containsCidr, exclude as excludeCidr } from 'fast-cidr-tools';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { CN_CIDR_NOT_INCLUDED_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
+import { CN_CIDR_MISSING_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { IPListOutput } from './lib/create-file';
 import { cachedOnlyFail } from './lib/fs-memo';
 
-const PROBE_CHN_CIDR = [
+const PROBE_CHN_CIDR_V4 = [
   // NetEase Hangzhou
-  '223.252.196.38'
+  '223.252.196.38',
+  // Aliyun ShenZhen
+  '120.78.92.171'
 ];
 
 export const getChnCidrPromise = createMemoizedPromise(cachedOnlyFail(
   async function getChnCidr() {
-    const [cidr4, cidr6] = await Promise.all([
+    const [_cidr4, cidr6] = await Promise.all([
       fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').then(processLineFromReadline),
       fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt').then(processLineFromReadline)
     ]);
 
-    appendArrayInPlace(cidr4, CN_CIDR_NOT_INCLUDED_IN_CHNROUTE);
+    const cidr4 = excludeCidr(
+      appendArrayInPlace(_cidr4, CN_CIDR_MISSING_IN_CHNROUTE),
+      NON_CN_CIDR_INCLUDED_IN_CHNROUTE,
+      true
+    );
 
-    if (!contains(cidr4, PROBE_CHN_CIDR)) {
-      throw new TypeError('chnroutes missing probe IP');
+    for (const probeIp of PROBE_CHN_CIDR_V4) {
+      if (!containsCidr(cidr4, PROBE_CHN_CIDR_V4)) {
+        const err = new TypeError('chnroutes missing probe IP');
+        err.cause = probeIp;
+        throw err;
+      }
     }
 
-    return [exclude(cidr4, NON_CN_CIDR_INCLUDED_IN_CHNROUTE, true), cidr6] as const;
+    return [cidr4, cidr6] as const;
   },
   {
     serializer: JSON.stringify,
