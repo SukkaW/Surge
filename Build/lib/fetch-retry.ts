@@ -7,7 +7,6 @@ import undici, {
 
 import type {
   Dispatcher,
-  RequestInit,
   Response
 } from 'undici';
 
@@ -143,33 +142,33 @@ export const defaultRequestInit = {
   }
 };
 
-export async function fetchWithLog(url: string, init?: RequestInit) {
-  try {
-    const res = await undici.fetch(url, init);
-    if (res.status >= 400) {
-      throw new ResponseError(res, url);
-    }
+// export async function fetchWithLog(url: string, init?: RequestInit) {
+//   try {
+//     const res = await undici.fetch(url, init);
+//     if (res.status >= 400) {
+//       throw new ResponseError(res, url);
+//     }
 
-    if (!(res.status >= 200 && res.status <= 299) && res.status !== 304) {
-      throw new ResponseError(res, url);
-    }
+//     if (!(res.status >= 200 && res.status <= 299) && res.status !== 304) {
+//       throw new ResponseError(res, url);
+//     }
 
-    return res;
-  } catch (err: unknown) {
-    if (typeof err === 'object' && err !== null && 'name' in err) {
-      if ((
-        err.name === 'AbortError'
-        || ('digest' in err && err.digest === 'AbortError')
-      )) {
-        console.log(picocolors.gray('[fetch abort]'), url);
-      }
-    } else {
-      console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
-    }
+//     return res;
+//   } catch (err: unknown) {
+//     if (typeof err === 'object' && err !== null && 'name' in err) {
+//       if ((
+//         err.name === 'AbortError'
+//         || ('digest' in err && err.digest === 'AbortError')
+//       )) {
+//         console.log(picocolors.gray('[fetch abort]'), url);
+//       }
+//     } else {
+//       console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
+//     }
 
-    throw err;
-  }
-}
+//     throw err;
+//   }
+// }
 
 export async function requestWithLog(url: string, opt?: Parameters<typeof undici.request>[1]) {
   try {

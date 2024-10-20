@@ -278,10 +278,6 @@ export class Cache<S = string> {
       return fn(await fetchAssetsWithout304(primaryUrl, mirrorUrls));
     }
 
-    if (mirrorUrls.length === 0) {
-      return this.applyWithHttp304(primaryUrl, extraCacheKey, async (resp) => fn(await resp.body.text()), opt);
-    }
-
     const baseKey = primaryUrl + '$' + extraCacheKey;
     const getETagKey = (url: string) => baseKey + '$' + url + '$etag';
     const cachedKey = baseKey + '$cached';
@@ -346,10 +342,12 @@ export class Cache<S = string> {
     };
 
     try {
-      const text = await Promise.any([
-        createFetchFallbackPromise(primaryUrl, -1),
-        ...mirrorUrls.map(createFetchFallbackPromise)
-      ]);
+      const text = mirrorUrls.length === 0
+        ? await createFetchFallbackPromise(primaryUrl, -1)
+        : await Promise.any([
+          createFetchFallbackPromise(primaryUrl, -1),
+          ...mirrorUrls.map(createFetchFallbackPromise)
+        ]);
 
       console.log(picocolors.yellow('[cache] miss'), primaryUrl);
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;

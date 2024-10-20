@@ -8,33 +8,25 @@ import { fsFetchCache, getFileContentHash } from './lib/cache-filesystem';
 import { processLine } from './lib/process-line';
 import { RulesetOutput } from './lib/create-file';
 import { SOURCE_DIR } from './constants/dir';
+import { $fetch } from './lib/make-fetch-happen';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
+const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
+  const ipv4: string[] = [];
+  const ipv6: string[] = [];
 
-const getBogusNxDomainIPsPromise = fsFetchCache.applyWithHttp304(
-  BOGUS_NXDOMAIN_URL,
-  getFileContentHash(__filename),
-  async (resp) => {
-    const ipv4: string[] = [];
-    const ipv6: string[] = [];
-
-    for await (const line of createReadlineInterfaceFromResponse(resp)) {
-      if (line.startsWith('bogus-nxdomain=')) {
-        const ip = line.slice(15).trim();
-        if (isProbablyIpv4(ip)) {
-          ipv4.push(ip);
-        } else if (isProbablyIpv6(ip)) {
-          ipv6.push(ip);
-        }
+  for await (const line of createReadlineInterfaceFromResponse(resp)) {
+    if (line.startsWith('bogus-nxdomain=')) {
+      const ip = line.slice(15).trim();
+      if (isProbablyIpv4(ip)) {
+        ipv4.push(ip);
+      } else if (isProbablyIpv6(ip)) {
+        ipv6.push(ip);
       }
     }
-    return [ipv4, ipv6] as const;
-  },
-  {
-    serializer: JSON.stringify,
-    deserializer: JSON.parse
   }
-);
+  return [ipv4, ipv6] as const;
+});
 
 const BOTNET_FILTER_URL = 'https://malware-filter.pages.dev/botnet-filter-dnscrypt-blocked-ips.txt';
 const BOTNET_FILTER_MIRROR_URL = [

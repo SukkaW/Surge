@@ -1,9 +1,8 @@
 import path from 'node:path';
-import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
-import { createTrie } from './lib/trie';
+import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
+import { HostnameTrie } from './lib/trie';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
-import { getPublicSuffixListTextPromise } from './lib/download-publicsuffixlist';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { processLine } from './lib/process-line';
@@ -11,16 +10,14 @@ import { DomainsetOutput } from './lib/create-file';
 import { CRASHLYTICS_WHITELIST } from './constants/reject-data-source';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
-  const trie = createTrie((await getPublicSuffixListTextPromise()).reduce<string[]>(
-    (acc, cur) => {
-      const tmp = processLine(cur);
-      if (tmp) {
-        acc.push(tmp);
-      }
-      return acc;
-    },
-    []
-  ));
+  const trie = new HostnameTrie();
+
+  for await (const line of await fetchRemoteTextByLine('https://publicsuffix.org/list/public_suffix_list.dat')) {
+    const tmp = processLine(line);
+    if (tmp) {
+      trie.add(tmp);
+    }
+  }
 
   /**
    * Extract OSS domain from publicsuffix list
@@ -68,10 +65,11 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/steam.conf'))
   ]);
 
+  // Move S3 domains to download domain set, since S3 files may be large
   appendArrayInPlace(downloadDomainSet, S3OSSDomains.map(domain => `.${domain}`));
   appendArrayInPlace(downloadDomainSet, steamDomainSet);
 
-  // we have whitelisted the crashlytics domain, but it doesn't mean we can't put it in CDN policy
+  // we have whitelisted the crashlytics domain, and we also want to put it in CDN policy
   appendArrayInPlace(cdnDomainsList, CRASHLYTICS_WHITELIST);
 
   return Promise.all([

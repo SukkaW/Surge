@@ -2,19 +2,10 @@ import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './lib/constants';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } from './lib/cache-filesystem';
 import { DomainsetOutput } from './lib/create-file';
+import { $fetch } from './lib/make-fetch-happen';
 
-const url = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf';
-export const getAppleCdnDomainsPromise = createMemoizedPromise(() => fsFetchCache.applyWithHttp304(
-  url,
-  getFileContentHash(__filename),
-  parseFelixDnsmasqFromResp,
-  {
-    serializer: serializeArray,
-    deserializer: deserializeArray
-  }
-));
+export const getAppleCdnDomainsPromise = createMemoizedPromise(() => $fetch('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf').then(parseFelixDnsmasqFromResp));
 
 export const buildAppleCdn = task(require.main === module, __filename)(async (span) => {
   const res: string[] = await span.traceChildPromise('get apple cdn domains', getAppleCdnDomainsPromise());
