@@ -262,12 +262,14 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
       console.table(parsedFailures);
     }
 
+    const hostnames = Array.from(new Set(parsed.map(i => i[1])));
+
     return [
       '#!name=[Sukka] Surge Reject MITM',
-      '#!desc=为 URL Regex 规则组启用 MITM',
+      `#!desc=为 URL Regex 规则组启用 MITM (size: ${hostnames.length})`,
       '',
       '[MITM]',
-      'hostname = %APPEND% ' + Array.from(new Set(parsed.map(i => i[1]))).join(', ')
+      'hostname = %APPEND% ' + hostnames.join(', ')
     ];
   }
 }

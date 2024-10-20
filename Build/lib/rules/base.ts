@@ -115,7 +115,6 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   private async addFromDomainsetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
-    // eslint-disable-next-line @typescript-eslint/await-thenable -- https://github.com/typescript-eslint/typescript-eslint/issues/10080
     for await (const line of source) {
       if (line[0] === '.') {
         this.addDomainSuffix(line);
@@ -131,7 +130,6 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   private async addFromRulesetPromise(source: AsyncIterable<string> | Iterable<string>) {
-    // eslint-disable-next-line @typescript-eslint/await-thenable -- https://github.com/typescript-eslint/typescript-eslint/issues/10080
     for await (const line of source) {
       const splitted = line.split(',');
       const type = splitted[0];
@@ -303,13 +301,14 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
 
     if (this.mitmSgmodule) {
       const sgmodule = this.mitmSgmodule();
-      const sgMOdulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
+      const sgModulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
+
       if (sgmodule) {
         promises.push(
           compareAndWriteFile(
             this.span,
             sgmodule,
-            path.join(OUTPUT_MODULES_DIR, sgMOdulePath)
+            path.join(OUTPUT_MODULES_DIR, sgModulePath)
           )
         );
       }
