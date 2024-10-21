@@ -118,30 +118,21 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
             const { domains, dns, hosts } = cur;
 
             Object.entries(hosts).forEach(([dns, ips]) => {
-              if (!(dns in acc)) {
-                acc[dns] = ips.join(', ');
-              }
+              acc[dns] ||= ips.join(', ');
             });
 
             domains.forEach((domain) => {
-              if (domain[0] === '$') {
-                const d = domain.slice(1);
-                if (!(d in acc)) {
-                  acc[d] = `server:${dns}`;
-                }
-              } else if (domain[0] === '+') {
-                const d = `*.${domain.slice(1)}`;
-                if (!(d in acc)) {
-                  acc[d] = `server:${dns}`;
-                }
-              } else {
-                if (!(domain in acc)) {
-                  acc[domain] = `server:${dns}`;
-                }
-                const d = `*.${domain}`;
-                if (!(d in acc)) {
-                  acc[d] = `server:${dns}`;
-                }
+              switch (domain[0]) {
+                case '$':
+                  acc[domain.slice(1)] ||= `server:${dns}`;
+                  break;
+                case '+':
+                  acc[`*.${domain.slice(1)}`] ||= `server:${dns}`;
+                  break;
+                default:
+                  acc[domain] ||= `server:${dns}`;
+                  acc[`*.${domain}`] ||= `server:${dns}`;
+                  break;
               }
             });
 
