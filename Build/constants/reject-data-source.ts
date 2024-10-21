@@ -22,7 +22,12 @@ export const HOSTS_EXTRA: HostsSource[] = [
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
   ['https://someonewhocares.org/hosts/zero/hosts', null, true, TTL.THREE_HOURS()],
   // ad-wars is not actively maintained, so we set a 7 days cache ttl
-  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.TWO_WEEKS()]
+  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.TWO_WEEKS()],
+  [
+    'https://raw.githubusercontent.com/durablenapkin/scamblocklist/master/hosts.txt',
+    [],
+    true, TTL.TWLVE_HOURS()
+  ]
 ];
 
 export const DOMAIN_LISTS: HostsSource[] = [
@@ -94,14 +99,6 @@ export const PHISHING_DOMAIN_LISTS_EXTRA: HostsSource[] = [
     'https://phishing.army/download/phishing_army_blocklist.txt',
     [],
     true, TTL.THREE_HOURS()
-  ]
-];
-
-export const PHISHING_HOSTS_EXTRA: HostsSource[] = [
-  [
-    'https://raw.githubusercontent.com/durablenapkin/scamblocklist/master/hosts.txt',
-    [],
-    true, TTL.TWLVE_HOURS()
   ]
 ];
 

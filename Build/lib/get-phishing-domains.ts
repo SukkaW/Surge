@@ -1,10 +1,10 @@
-import { processDomainLists, processHosts } from './parse-filter';
+import { processDomainLists } from './parse-filter';
 import * as tldts from 'tldts-experimental';
 
 import { dummySpan } from '../trace';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
-import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
+import { PHISHING_DOMAIN_LISTS_EXTRA } from '../constants/reject-data-source';
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
@@ -153,7 +153,8 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
   for (const apexDomain in domainCountMap) {
     if (
       // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
-      domainScoreMap[apexDomain] >= 16
+      (domainScoreMap[apexDomain] >= 24)
+      || (domainScoreMap[apexDomain] >= 16 && domainCountMap[apexDomain] >= 4)
       || (domainScoreMap[apexDomain] >= 13 && domainCountMap[apexDomain] >= 7)
       || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 10)
       || (domainScoreMap[apexDomain] >= 3 && domainCountMap[apexDomain] >= 16)
@@ -161,6 +162,11 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
       domainArr.push('.' + apexDomain);
     }
   }
+
+  // console.log(
+  //   domainScoreMap['wordpress.com'],
+  //   domainCountMap['wordpress.com']
+  // );
 
   return Promise.resolve(domainArr);
 }, {
@@ -174,8 +180,6 @@ export function getPhishingDomains(parentSpan: Span) {
       const domainArr: string[] = [];
 
       (await Promise.all(PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry, cacheKey))))
-        .forEach(appendArrayInPlaceCurried(domainArr));
-      (await Promise.all(PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry, cacheKey))))
         .forEach(appendArrayInPlaceCurried(domainArr));
 
       return domainArr;
@@ -205,9 +209,9 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
 
   const subdomainLength = subdomain.length;
 
-  if (subdomainLength > 4) {
-    weight += 0.5;
-    if (subdomainLength > 10) {
+  if (subdomainLength > 6) {
+    weight += 0.25;
+    if (subdomainLength > 11) {
       weight += 0.6;
       if (subdomainLength > 20) {
         weight += 1;
@@ -220,9 +224,7 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
       }
     }
 
-    if (subdomain.startsWith('www.')) {
-      weight += 1;
-    } else if (subdomain.slice(1).includes('.')) {
+    if (subdomain.slice(1).includes('.')) {
       weight += 1;
       if (subdomain.includes('www.')) {
         weight += 1;
