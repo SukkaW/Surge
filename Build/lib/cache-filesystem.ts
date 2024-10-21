@@ -382,7 +382,7 @@ export class Cache<S = string> {
         }
       }
 
-      console.log({ e });
+      console.log({ e, name: (e as any).name });
 
       console.log(`Download Rule for [${primaryUrl}] failed`);
       throw e;
