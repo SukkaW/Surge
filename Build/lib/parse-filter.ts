@@ -129,7 +129,8 @@ const enum ParseType {
   BlackAbsolute = 1,
   BlackIncludeSubdomain = 2,
   ErrorMessage = 10,
-  Null = 1000
+  Null = 1000,
+  NotParsed = 2000
 }
 
 export { type ParseType };
@@ -151,7 +152,7 @@ export async function processFilterRules(
 
       const warningMessages: string[] = [];
 
-      const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', 1000];
+      const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', ParseType.NotParsed];
       /**
        * @param {string} line
        */
@@ -159,6 +160,9 @@ export async function processFilterRules(
         const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
         const flag = result[1];
 
+        if (flag === ParseType.NotParsed) {
+          throw new Error(`Didn't parse line: ${line}`);
+        }
         if (flag === ParseType.Null) {
           return;
         }
@@ -187,15 +191,15 @@ export async function processFilterRules(
           case ParseType.WhiteAbsolute:
             whitelistDomainSets.add(hostname);
             break;
-          case ParseType.BlackAbsolute:
-            blacklistDomainSets.add(hostname);
-            break;
           case ParseType.BlackIncludeSubdomain:
             if (hostname[0] === '.') {
               blacklistDomainSets.add(hostname);
             } else {
               blacklistDomainSets.add(`.${hostname}`);
             }
+            break;
+          case ParseType.BlackAbsolute:
+            blacklistDomainSets.add(hostname);
             break;
           case ParseType.ErrorMessage:
             warningMessages.push(hostname);
