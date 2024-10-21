@@ -96,7 +96,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+gdtimg.com',
       '+idqqimg.com',
       '+udqqimg.com',
-      'igamecj.com',
+      '+igamecj.com', // apex domain no DNS resolution
       'myapp.com',
       '+myqcloud.com',
       'dnspod.com',
@@ -109,6 +109,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'qqmail.com',
       'qzone.com',
       '+tencent-cloud.net',
+      '+tencent-cloud.com', // apex doain resolve to 0.0.0.1 by DNSPod public DNS
       'tencent.com',
       'tencent.com.cn',
       'tencentmusic.com',
@@ -120,7 +121,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'sogo.com',
       'sogou.com',
       '+sogoucdn.com',
-      'roblox.cn',
+      '+roblox.cn', // main domain is redirected to roblox.qq.com, only subdomain no redirect
       'robloxdev.cn',
       'wegame.com',
       'wegame.com.cn',
@@ -193,7 +194,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'duokan.com',
       '+mi-img.com',
       '+mi-idc.com',
-      'mi-fds.com',
+      '+xiaoaisound.com', // only subdomains
+      '+xiaomixiaoai.com', // only subdomains
+      '+mi-fds.com',
       '+mifile.cn',
       'miui.com',
       'xiaomi.com',
