@@ -105,11 +105,21 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
           for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
             const [type, value] = line.split(',');
-            if (type === 'DOMAIN-KEYWORD') {
-              rejectOutput.addDomainKeyword(value); // Add for later deduplication
-              rejectExtraOutput.addDomainKeyword(value); // Add for later deduplication
-            } else if (type === 'DOMAIN-SUFFIX') {
-              filterRuleWhitelistDomainSets.add('.' + value);
+            switch (type) {
+              case 'DOMAIN-KEYWORD': {
+                rejectOutput.addDomainKeyword(value); // Add for later deduplication
+                rejectExtraOutput.addDomainKeyword(value); // Add for later deduplication
+                break;
+              }
+              case 'DOMAIN-SUFFIX': {
+                filterRuleWhitelistDomainSets.add('.' + value);
+                break;
+              }
+              case 'DOMAIN': {
+                rejectOutput.addDomain(value);
+                break;
+              }
+              // no default
             }
           }
         })
