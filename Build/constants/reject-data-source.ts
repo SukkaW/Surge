@@ -396,6 +396,8 @@ export const PREDEFINED_WHITELIST = [
   'jnn-pa.googleapis.com', // ad-wars
   'imasdk.googleapis.com', // ad-wars
   '.l.qq.com', // ad-wars
+  '.in-addr.arpa', // rDNS
+  '.ip6.arpa', // rDNS
   '.clients.your-server.de', // rDNS .static.183.213.201.138.clients.your-server.de
   '.bc.googleusercontent.com', // rDNS 218.178.172.34.bc.googleusercontent.com
   '.host.secureserver.net', // rDNS .64.149.167.72.host.secureserver.net,
