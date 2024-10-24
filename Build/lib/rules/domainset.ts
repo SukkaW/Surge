@@ -123,6 +123,11 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       }
     }
 
+    for (const keyword of this.domainKeywords) {
+      // Use regex to match keyword
+      results.push(`/${keyword}/`);
+    }
+
     return results;
   }
 }
