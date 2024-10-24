@@ -114,6 +114,15 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       }
     }
 
+    for (const wildcard of this.domainWildcard) {
+      const processed = wildcard.replaceAll('?', '*');
+      if (processed.startsWith('*.')) {
+        results.push(`||${processed.slice(2)}^`);
+      } else {
+        results.push(`|${processed}^`);
+      }
+    }
+
     return results;
   }
 }

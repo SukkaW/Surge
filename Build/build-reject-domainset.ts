@@ -101,28 +101,12 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
         readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf')).then(appendArrayToRejectOutput),
         // Dedupe domainSets
-        span.traceChildAsync('collect black keywords/suffixes', async () => {
-          /** Collect DOMAIN-KEYWORD from non_ip/reject.conf for deduplication */
-          for await (const line of readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf'))) {
-            const [type, value] = line.split(',');
-            switch (type) {
-              case 'DOMAIN-KEYWORD': {
-                rejectOutput.addDomainKeyword(value); // Add for later deduplication
-                rejectExtraOutput.addDomainKeyword(value); // Add for later deduplication
-                break;
-              }
-              case 'DOMAIN-SUFFIX': {
-                filterRuleWhitelistDomainSets.add('.' + value);
-                break;
-              }
-              case 'DOMAIN': {
-                rejectOutput.addDomain(value);
-                break;
-              }
-              // no default
-            }
-          }
-        })
+        // span.traceChildAsync('collect black keywords/suffixes', async () =>
+        /**
+         * Collect DOMAIN, DOMAIN-SUFFIX, and DOMAIN-KEYWORD from non_ip/reject.conf for deduplication
+         * DOMAIN-WILDCARD is not really useful for deduplication, it is only included in AdGuardHome output
+        */
+        rejectOutput.addFromRuleset(readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf')))
       ].flat());
       // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;
