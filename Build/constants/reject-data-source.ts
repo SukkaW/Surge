@@ -386,6 +386,7 @@ export const PREDEFINED_WHITELIST = [
   'email.accounts.bitly.com', // Fuck Peter Lowe Hosts
   'adsense.google.com', // Fuck Peter Lowe Hosts
   'api.vip.miui.com', // Fuck Goodbye Xiaomi Ads
+  'api.comm.miui.com', // Xiaomi MIUI phone number database update URL
   '.ai.api.xiaomi.com', // Fuck Goodbye Xiaomi Ads
   'm.stripe.com', // EasyPrivacy only blocks m.stripe.com wwith $third-party,
   // yet stupid AdGuardDNSFilter blocks all of it. Stupid AdGuard
