@@ -128,6 +128,27 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       results.push(`/${keyword}/`);
     }
 
+    for (const ipGroup of [this.ipcidr, this.ipcidrNoResolve]) {
+      for (const ipcidr of ipGroup) {
+        if (ipcidr.endsWith('/32')) {
+          results.push(`||${ipcidr.slice(0, -3)}`);
+        } else if (ipcidr.endsWith('.0/24')) {
+          results.push(`||${ipcidr.slice(0, -6)}.*`);
+        } else {
+          results.push(`||${ipcidr}^`);
+        }
+      }
+    }
+    for (const ipGroup of [this.ipcidr6, this.ipcidr6NoResolve]) {
+      for (const ipcidr of ipGroup) {
+        if (ipcidr.endsWith('/128')) {
+          results.push(`||${ipcidr.slice(0, -4)}`);
+        } else {
+          results.push(`||${ipcidr}`);
+        }
+      }
+    }
+
     return results;
   }
 }

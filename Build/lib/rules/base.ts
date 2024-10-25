@@ -241,8 +241,6 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   private guardPendingPromise() {
-    console.log('Pending promise:', this.pendingPromise);
-
     // reverse invariant
     if (this.pendingPromise !== null) {
       console.trace('Pending promise:', this.pendingPromise);
