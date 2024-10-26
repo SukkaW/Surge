@@ -9,7 +9,7 @@ import FIFO from './fifo';
 
 type TrieNode<Meta = any> = [
   boolean, /** end */
-  boolean, /** includeAllSubdoain (.example.org, ||example.com) */
+  boolean, /** includeAllSubdomain (.example.org, ||example.com) */
   TrieNode | null, /** parent */
   Map<string, TrieNode>, /** children */
   Meta /** meta */
@@ -103,7 +103,7 @@ abstract class Triebase<Meta = any> {
     }
   }
 
-  public abstract add(suffix: string, includeAllSubdoain?: boolean, meta?: Meta): void;
+  public abstract add(suffix: string, includeAllSubdomain?: boolean, meta?: Meta): void;
 
   protected walkIntoLeafWithTokens(
     tokens: string[],
@@ -167,13 +167,13 @@ abstract class Triebase<Meta = any> {
     return { node, parent };
   };
 
-  public contains(suffix: string, includeAllSubdoain = suffix[0] === '.'): boolean {
+  public contains(suffix: string, includeAllSubdomain = suffix[0] === '.'): boolean {
     if (suffix[0] === '.') {
       suffix = suffix.slice(1);
     }
     const res = this.walkIntoLeafWithSuffix(suffix);
     if (!res) return false;
-    if (includeAllSubdoain) return res.node[1];
+    if (includeAllSubdomain) return res.node[1];
     return true;
   };
 
@@ -390,7 +390,7 @@ abstract class Triebase<Meta = any> {
   /**
    * Method used to assert whether the given prefix exists in the Trie.
    */
-  public has(suffix: string, includeAllSubdoain = suffix[0] === '.'): boolean {
+  public has(suffix: string, includeAllSubdomain = suffix[0] === '.'): boolean {
     if (suffix[0] === '.') {
       suffix = suffix.slice(1);
     }
@@ -399,7 +399,7 @@ abstract class Triebase<Meta = any> {
 
     if (res === null) return false;
     if (!res.node[0]) return false;
-    if (includeAllSubdoain) return res.node[1];
+    if (includeAllSubdomain) return res.node[1];
     return true;
   };
 
@@ -484,7 +484,7 @@ abstract class Triebase<Meta = any> {
 export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
   public smolTree = true;
 
-  add(suffix: string, includeAllSubdoain = suffix[0] === '.', meta?: Meta): void {
+  add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta): void {
     let node: TrieNode<Meta> = this.$root;
     let curNodeChildren: Map<string, TrieNode<Meta>> = node[3];
 
@@ -516,7 +516,7 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     }
 
     // If we are in smolTree mode, we need to do something at the end of the loop
-    if (includeAllSubdoain) {
+    if (includeAllSubdomain) {
       // Trying to add `[.]sub.example.com` where there is already a `blog.sub.example.com` in the trie
 
       // Make sure parent `[start]sub.example.com` (without dot) is removed (SETINEL to false)
@@ -534,11 +534,11 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     }
 
     node[0] = true;
-    node[1] = includeAllSubdoain;
+    node[1] = includeAllSubdomain;
     node[4] = meta!;
   }
 
-  public whitelist(suffix: string, includeAllSubdoain = suffix[0] === '.') {
+  public whitelist(suffix: string, includeAllSubdomain = suffix[0] === '.') {
     if (suffix[0] === '.') {
       suffix = suffix.slice(1);
     }
@@ -551,7 +551,7 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     const { node, toPrune, tokenToPrune } = res;
 
     // Trying to whitelist `[start].sub.example.com` where there might already be a `[start]blog.sub.example.com` in the trie
-    if (includeAllSubdoain) {
+    if (includeAllSubdomain) {
       // If there is a `[start]sub.example.com` here, remove it
       node[0] = false;
       node[1] = false;
@@ -578,7 +578,7 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
     return this.$size;
   }
 
-  add(suffix: string, includeAllSubdoain = suffix[0] === '.', meta?: Meta): void {
+  add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta): void {
     let node: TrieNode<Meta> = this.$root;
 
     const onToken = (token: string) => {
@@ -609,7 +609,7 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
 
     this.$size++;
     node[0] = true;
-    node[1] = includeAllSubdoain;
+    node[1] = includeAllSubdomain;
     node[4] = meta!;
   }
 }

@@ -26,9 +26,11 @@ export function buildParseDomainMap(inputs: string[]) {
   return { domainMap, subdomainMap };
 }
 
-export function sortDomains(inputs: string[],
+export function sortDomains(
+  inputs: string[],
   domainMap?: Map<string, string> | null,
-  subdomainMap?: Map<string, string> | null) {
+  subdomainMap?: Map<string, string> | null
+) {
   if (!domainMap || !subdomainMap) {
     const { domainMap: dm, subdomainMap: sm } = buildParseDomainMap(inputs);
     domainMap = dm;
