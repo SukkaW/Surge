@@ -171,6 +171,11 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
     }
   }
 
+  // console.log({
+  //   score: domainScoreMap['shoppy.gg'],
+  //   count: domainCountMap['shoppy.gg']
+  // });
+
   return Promise.resolve(domainArr);
 }, {
   serializer: serializeArray,

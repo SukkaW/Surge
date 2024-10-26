@@ -402,5 +402,6 @@ export const PREDEFINED_WHITELIST = [
   '.clients.your-server.de', // rDNS .static.183.213.201.138.clients.your-server.de
   '.bc.googleusercontent.com', // rDNS 218.178.172.34.bc.googleusercontent.com
   '.host.secureserver.net', // rDNS .64.149.167.72.host.secureserver.net,
-  '.ip.linodeusercontent.com' // rDNS 45-79-169-153.ip.linodeusercontent.com
+  '.ip.linodeusercontent.com', // rDNS 45-79-169-153.ip.linodeusercontent.com
+  '.shoppy.gg' // Spam404
 ];
