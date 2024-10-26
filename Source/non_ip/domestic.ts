@@ -326,7 +326,11 @@ export const DOMESTICS: Record<string, DNSMapping> = {
   }
 };
 
-/** This should only be used to build AfGu */
+/**
+ * This should only be used to build AdGuardHome
+ *
+ * Note that Surge only supports UDP 53 or Hosts as the bootstrap server of domain DoH
+ */
 export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
   ALIBABA: {
     hosts: {
@@ -347,9 +351,9 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
     realip: false,
     dns: 'https://1.12.12.12/dns-query',
     domains: [
-      '$dot.pub',
-      '$doh.pub',
-      '$dns.pub'
+      // '$dot.pub',
+      '$doh.pub'
+      // '$dns.pub'
     ]
   },
   QIHOO360: {
@@ -365,17 +369,18 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
       // dot.360.net CNAME dns.360.net
     },
     realip: false,
-    dns: 'https://101.198.198.198/dns-query', // https://101.198.199.200/dns-query
+    // Surge only supports UDP 53 or Hosts as the bootstrap server of domain DoH
+    dns: '101.198.198.198', // 'https://101.198.198.198/dns-query', // https://101.198.199.200/dns-query
     domains: [
-      '$dns.360.cn',
-      '$dot.360.cn',
-      '$doh.360.cn',
+      // '$dns.360.cn',
+      // '$dot.360.cn',
+      '$doh.360.cn'
 
-      '$sdns.360.net',
+      // '$sdns.360.net',
 
-      '$dns.360.net',
-      '$dot.360.net',
-      '$doh.360.net'
+      // '$dns.360.net',
+      // '$dot.360.net',
+      // '$doh.360.net'
     ]
   }
 };
