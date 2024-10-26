@@ -18,32 +18,25 @@ const DOMAIN_SUFFIXES = ['download.prss.microsoft.com'];
 
 const BLACKLIST = [
   'www.microsoft.com',
-  'learn.microsoft.com',
-  'devblogs.microsoft.com',
-  'docs.microsoft.com',
-  'developer.microsoft.com',
   'windowsupdate.com'
 ];
 
 export const getMicrosoftCdnRulesetPromise = createMemoizedPromise<[domains: string[], domainSuffixes: string[]]>(async () => {
   // First trie is to find the microsoft domains that matches probe domains
   const trie = new HostnameSmolTrie();
+
   for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
     const domain = extractDomainsFromFelixDnsmasq(line);
     if (domain) {
       trie.add(domain);
     }
   }
-  const foundMicrosoftCdnDomains = PROBE_DOMAINS.flatMap(domain => trie.find(domain));
 
-  // Second trie is to remove blacklisted domains
-  const trie2 = new HostnameSmolTrie(foundMicrosoftCdnDomains);
-  BLACKLIST.forEach(black => trie2.whitelist(black));
+  // remove blacklist domain from trie, to prevent them from being included in the later dump
+  BLACKLIST.forEach(black => trie.whitelist(black));
 
   const domains: string[] = DOMAINS;
-  const domainSuffixes: string[] = DOMAIN_SUFFIXES;
-
-  appendArrayInPlace(domainSuffixes, trie2.dump());
+  const domainSuffixes = appendArrayInPlace(PROBE_DOMAINS.flatMap(domain => trie.find(domain)), DOMAIN_SUFFIXES);
 
   return [domains, domainSuffixes] as const;
 });
