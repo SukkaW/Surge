@@ -29,7 +29,9 @@ const agent = new Agent({
 setGlobalDispatcher(agent.compose(
   interceptors.retry({
     maxRetries: 5,
-    minTimeout: 10000,
+    minTimeout: 500, // The initial retry delay in milliseconds
+    maxTimeout: 10 * 1000, // The maximum retry delay in milliseconds
+
     // TODO: this part of code is only for allow more errors to be retried by default
     // This should be removed once https://github.com/nodejs/undici/issues/3728 is implemented
     // @ts-expect-error -- retry return type should be void
@@ -58,7 +60,7 @@ setGlobalDispatcher(agent.compose(
       const {
         maxRetries = 5,
         minTimeout = 500,
-        maxTimeout = 30 * 1000,
+        maxTimeout = 10 * 1000,
         timeoutFactor = 2,
         methods = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE', 'TRACE']
       } = retryOptions;
