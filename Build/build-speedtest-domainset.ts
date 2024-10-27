@@ -9,6 +9,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 
 import { DomainsetOutput } from './lib/create-file';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
+import { createMemoizedPromise } from './lib/memo-promise';
 
 const KEYWORDS = [
   'Hong Kong',
@@ -183,6 +184,8 @@ async function querySpeedtestApi(keyword: string): Promise<Array<string | null>>
   }
 }
 
+const getSpeedtestHostsGroupsPromise = createMemoizedPromise(() => Promise.all(KEYWORDS.flatMap(querySpeedtestApi)));
+
 export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
   const output = new DomainsetOutput(span, 'speedtest')
     .withTitle('Sukka\'s Ruleset - Speedtest Domains')
@@ -194,14 +197,9 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
     .addFromDomainset(PREDEFINE_DOMAINS)
     .addFromDomainset(await readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')));
 
-  await Promise.all(KEYWORDS.map((keyword) => span.traceChildAsync(
-    `fetch speedtest endpoints: ${keyword}`,
-    () => querySpeedtestApi(keyword)
-  ).then(hostnameGroup => hostnameGroup.forEach(hostname => {
-    if (hostname) {
-      output.addDomain(hostname);
-    }
-  }))));
+  const hostnameGroup = await span.traceChildPromise('get speedtest hosts groups', getSpeedtestHostsGroupsPromise());
+
+  hostnameGroup.forEach(hostname => output.bulkAddDomain(hostname));
 
   return output.write();
 });

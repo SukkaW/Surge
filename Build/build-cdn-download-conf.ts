@@ -29,7 +29,7 @@ const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
       (line.startsWith('s3-') || line.startsWith('s3.'))
       && !line.includes('cn-')
     ) {
-      S3OSSDomains.add(line);
+      S3OSSDomains.add('.' + line);
     }
   });
   trie.find('.scw.cloud').forEach((line: string) => {
@@ -37,14 +37,14 @@ const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
       (line.startsWith('s3-') || line.startsWith('s3.'))
       && !line.includes('cn-')
     ) {
-      S3OSSDomains.add(line);
+      S3OSSDomains.add('.' + line);
     }
   });
   trie.find('sakurastorage.jp').forEach((line: string) => {
     if (
       (line.startsWith('s3-') || line.startsWith('s3.'))
     ) {
-      S3OSSDomains.add(line);
+      S3OSSDomains.add('.' + line);
     }
   });
 
@@ -66,7 +66,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
   ]);
 
   // Move S3 domains to download domain set, since S3 files may be large
-  appendArrayInPlace(downloadDomainSet, S3OSSDomains.map(domain => `.${domain}`));
+  appendArrayInPlace(downloadDomainSet, S3OSSDomains);
   appendArrayInPlace(downloadDomainSet, steamDomainSet);
 
   // we have whitelisted the crashlytics domain, and we also want to put it in CDN policy

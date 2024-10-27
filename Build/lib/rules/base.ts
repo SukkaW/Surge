@@ -90,9 +90,13 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
-  bulkAddDomain(domains: string[]) {
+  bulkAddDomain(domains: Array<string | null>) {
+    let d: string | null;
     for (let i = 0, len = domains.length; i < len; i++) {
-      this.addDomain(domains[i]);
+      d = domains[i];
+      if (d !== null) {
+        this.addDomain(d);
+      }
     }
     return this;
   }
