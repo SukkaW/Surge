@@ -29,6 +29,7 @@
     "ci-info": "^4.0.0",
     "cli-table3": "^0.6.5",
     "csv-parse": "^5.5.6",
+    "devalue": "^5.1.1",
     "fast-cidr-tools": "^0.3.1",
     "fdir": "^6.4.2",
     "foxact": "^0.2.39",
@@ -41,7 +42,6 @@
     "tar-fs": "^3.0.6",
     "tldts": "^6.1.52",
     "tldts-experimental": "^6.1.52",
-    "typeson-registry": "^11.1.1",
     "undici": "6.20.1",
     "why-is-node-running": "^3.2.0",
     "yaml": "^2.6.0"

@@ -43,6 +43,9 @@ importers:
       csv-parse:
         specifier: ^5.5.6
         version: 5.5.6
+      devalue:
+        specifier: ^5.1.1
+        version: 5.1.1
       fast-cidr-tools:
         specifier: ^0.3.1
         version: 0.3.1
@@ -79,9 +82,6 @@ importers:
       tldts-experimental:
         specifier: ^6.1.52
         version: 6.1.52
-      typeson-registry:
-        specifier: ^11.1.1
-        version: 11.1.1
       undici:
         specifier: 6.20.1
         version: 6.20.1(patch_hash=yuj5uy4vvwj67xoliq5togiyme)
@@ -706,10 +706,6 @@ packages:
   bare-stream@2.2.1:
     resolution: {integrity: sha512-YTB47kHwBW9zSG8LD77MIBAAQXjU2WjAkMHeeb7hUplVs6+IoM5I7uEVQNPMB7lj9r8I76UMdoMkGnCodHOLqg==}
 
-  base64-arraybuffer-es6@3.1.0:
-    resolution: {integrity: sha512-QKKtftiSrKjilihGNLXxnrb9LJj7rnEdB1cYAqVpekFy0tisDklAf1RAgvpm0HsGYx9sv7FUbgpsrfwTyCPVLg==}
-    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
-
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
@@ -877,6 +873,9 @@ packages:
   detect-libc@2.0.3:
     resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
     engines: {node: '>=8'}
+
+  devalue@5.1.1:
+    resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
 
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
@@ -1812,10 +1811,6 @@ packages:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
 
-  tr46@5.0.0:
-    resolution: {integrity: sha512-tk2G5R2KRwBd+ZN0zaEXpmzdKyOYksXwywulIX95MBODjSzMIuQnQ3m8JxgbhnL1LeVo7lqQKsYa1O3Htl7K5g==}
-    engines: {node: '>=18'}
-
   ts-api-utils@1.3.0:
     resolution: {integrity: sha512-UQMIo7pb8WRomKR1/+MFVLTroIvDVtMX3K6OUir8ynLyzB8Jeriont2bTAtmNPa1ekAgN7YPDyf6V+ygrdU+eQ==}
     engines: {node: '>=16'}
@@ -1853,14 +1848,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typeson-registry@11.1.1:
-    resolution: {integrity: sha512-WF8meNtURfGXXY2RitEMgZrMEclHU8IdxxN4YTcnXTQUHvisPYsKrxxPFhc4DKTCAc6sVvWVtKelOXFDtw/OQQ==}
-    engines: {node: '>=18.14.0'}
-
-  typeson@9.0.3:
-    resolution: {integrity: sha512-vsOn+VPbIYI3jgj96vwIhAO0BNmlBxEgBKVmuzl1dwXzQe+3XjRi/gK2zYgAansWYlrtvluy4lvWcL8LF01P3Q==}
-    engines: {node: '>=16.0.0'}
-
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
@@ -1881,14 +1868,6 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
-
-  webidl-conversions@7.0.0:
-    resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
-    engines: {node: '>=12'}
-
-  whatwg-url@14.0.0:
-    resolution: {integrity: sha512-1lfMEm2IEr7RIV+f4lUNPOqfFL+pO+Xw3fJSqmjX9AbXcXcYOkCe1P6+9VBZB6n94af16NfZf+sSk0JCBZC9aw==}
-    engines: {node: '>=18'}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -2555,8 +2534,6 @@ snapshots:
       streamx: 2.20.0
     optional: true
 
-  base64-arraybuffer-es6@3.1.0: {}
-
   base64-js@1.5.1: {}
 
   better-sqlite3@11.4.0:
@@ -2721,6 +2698,8 @@ snapshots:
   delayed-stream@1.0.0: {}
 
   detect-libc@2.0.3: {}
+
+  devalue@5.1.1: {}
 
   diff-sequences@29.6.3: {}
 
@@ -3763,10 +3742,6 @@ snapshots:
     dependencies:
       is-number: 7.0.0
 
-  tr46@5.0.0:
-    dependencies:
-      punycode: 2.3.1
-
   ts-api-utils@1.3.0(typescript@5.6.3):
     dependencies:
       typescript: 5.6.3
@@ -3798,14 +3773,6 @@ snapshots:
 
   typescript@5.6.3: {}
 
-  typeson-registry@11.1.1:
-    dependencies:
-      base64-arraybuffer-es6: 3.1.0
-      typeson: 9.0.3
-      whatwg-url: 14.0.0
-
-  typeson@9.0.3: {}
-
   undici-types@6.19.8: {}
 
   undici@6.20.1(patch_hash=yuj5uy4vvwj67xoliq5togiyme): {}
@@ -3823,13 +3790,6 @@ snapshots:
       punycode: 2.3.1
 
   util-deprecate@1.0.2: {}
-
-  webidl-conversions@7.0.0: {}
-
-  whatwg-url@14.0.0:
-    dependencies:
-      tr46: 5.0.0
-      webidl-conversions: 7.0.0
 
   which@2.0.2:
     dependencies:
