@@ -115,7 +115,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'tencentmusic.com',
       'weixinbridge.com',
       'weixin.com',
-      'wechat.com',
+      // 'wechat.com', exclude `sgshort.wechat.com`
       'weiyun.com',
       'soso.com',
       'sogo.com',
