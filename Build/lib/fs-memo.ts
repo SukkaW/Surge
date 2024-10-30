@@ -44,92 +44,73 @@ export type FsMemoCacheOptions<T> = CacheApplyOption<T, string> & {
   ttl?: undefined | never
 };
 
-export function cache<Args extends Devalue[], T>(
-  fn: (...args: Args) => Promise<T>,
-  opt: FsMemoCacheOptions<T>
-): (...args: Args) => Promise<T> {
-  const fixedKey = fn.toString();
-
-  return async function cachedCb(...args: Args) {
-    const { stringify: devalueStringify } = await import('devalue');
-
-    // Construct the complete cache key for this function invocation
-    // typeson.stringify is still limited. For now we uses typescript to guard the args.
-    const cacheKey = (await Promise.all([
-      xxhash64(fixedKey),
-      xxhash64(devalueStringify(args))
-    ])).join('|');
-
-    const cacheName = fn.name || fixedKey;
+function createCache(onlyUseCachedIfFail: boolean) {
+  return function cache<Args extends Devalue[], T>(
+    fn: (...args: Args) => Promise<T>,
+    opt: FsMemoCacheOptions<T>
+  ): (...args: Args) => Promise<T> {
+    const fixedKey = fn.toString();
 
     if (opt.temporaryBypass) {
-      return fn(...args);
+      return fn;
     }
 
-    const cached = fsMemoCache.get(cacheKey);
-    if (cached == null) {
-      console.log(picocolors.yellow('[cache] miss'), picocolors.gray(cacheName || cacheKey));
+    return async function cachedCb(...args: Args) {
+      const { stringify: devalueStringify } = await import('devalue');
+
+      // Construct the complete cache key for this function invocation
+      // typeson.stringify is still limited. For now we uses typescript to guard the args.
+      const cacheKey = (await Promise.all([
+        xxhash64(fixedKey),
+        xxhash64(devalueStringify(args))
+      ])).join('|');
+
+      const cacheName = picocolors.gray(fn.name || fixedKey || cacheKey);
+
+      const cached = fsMemoCache.get(cacheKey);
 
       const serializer = 'serializer' in opt ? opt.serializer : identity as any;
-
-      const value = await fn(...args);
-
-      fsMemoCache.set(cacheKey, serializer(value), TTL);
-      return value;
-    }
-
-    console.log(picocolors.green('[cache] hit'), picocolors.gray(cacheName || cacheKey));
-
-    fsMemoCache.updateTtl(cacheKey, TTL);
-
-    const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
-    return deserializer(cached);
-  };
-}
-
-export function cachedOnlyFail<Args extends Devalue[], T>(
-  fn: (...args: Args) => Promise<T>,
-  opt: FsMemoCacheOptions<T>
-): (...args: Args) => Promise<T> {
-  const fixedKey = fn.toString();
-
-  return async function cachedCb(...args: Args) {
-    const { stringify: devalueStringify } = await import('devalue');
-
-    // Construct the complete cache key for this function invocation
-    // typeson.stringify is still limited. For now we uses typescript to guard the args.
-    const cacheKey = (await Promise.all([
-      xxhash64(fixedKey),
-      xxhash64(devalueStringify(args))
-    ])).join('|');
-
-    const cacheName = fn.name || fixedKey;
-
-    if (opt.temporaryBypass) {
-      return fn(...args);
-    }
-
-    const cached = fsMemoCache.get(cacheKey);
-
-    try {
-      const value = await fn(...args);
-
-      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
-      fsMemoCache.set(cacheKey, serializer(value), TTL);
-
-      return value;
-    } catch (e) {
-      if (cached == null) {
-        console.log(picocolors.red('[fail] and no cache, throwing'), picocolors.gray(cacheName || cacheKey));
-        throw e;
-      }
-
-      fsMemoCache.updateTtl(cacheKey, TTL);
-
-      console.log(picocolors.yellow('[fail] try cache'), picocolors.gray(cacheName || cacheKey));
       const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
 
-      return deserializer(cached);
-    }
+      if (onlyUseCachedIfFail) {
+        try {
+          const value = await fn(...args);
+
+          console.log(picocolors.gray('[cache] update'), cacheName);
+          fsMemoCache.set(cacheKey, serializer(value), TTL);
+
+          return value;
+        } catch (e) {
+          if (cached == null) {
+            console.log(picocolors.red('[fail] and no cache, throwing'), cacheName);
+            throw e;
+          }
+
+          fsMemoCache.updateTtl(cacheKey, TTL);
+
+          console.log(picocolors.yellow('[fail] try cache'), cacheName);
+
+          return deserializer(cached);
+        }
+      } else {
+        if (cached == null) {
+          console.log(picocolors.yellow('[cache] miss'), cacheName);
+
+          const value = await fn(...args);
+
+          fsMemoCache.set(cacheKey, serializer(value), TTL);
+          return value;
+        }
+
+        console.log(picocolors.green('[cache] hit'), cacheName);
+
+        fsMemoCache.updateTtl(cacheKey, TTL);
+
+        return deserializer(cached);
+      }
+    };
   };
 }
+
+export const cache = createCache(false);
+export const cachedOnlyFail = createCache(true);
