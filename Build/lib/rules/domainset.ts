@@ -103,7 +103,7 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
     for (let i = 0, len = whitelistArray.length; i < len; i++) {
       const domain = whitelistArray[i];
       if (domain[0] === '.') {
-        results.push(`@@||${domain.slice(1)}&`);
+        results.push(`@@||${domain.slice(1)}^`);
       } else {
         results.push(`@@|${domain}^`);
       }
