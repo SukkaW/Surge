@@ -332,7 +332,8 @@ export const CRASHLYTICS_WHITELIST = [
   '.lr-ingest.com',
   '.cdn.rollbar.com',
   '.api.instabug.com',
-  '.ensighten.com'
+  '.ensighten.com',
+  'api.crashguard.me'
 ];
 
 export const PREDEFINED_WHITELIST = [
