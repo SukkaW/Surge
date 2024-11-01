@@ -1,123 +1,143 @@
 import { processLine } from './lib/process-line';
 import { normalizeDomain } from './lib/normalize-domain';
-import { createTrie } from './lib/trie';
+import { HostnameSmolTrie } from './lib/trie';
 // import { Readable } from 'stream';
 import { parse } from 'csv-parse/sync';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
-import { SOURCE_DIR } from './constants/dir';
+import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { $fetch } from './lib/make-fetch-happen';
+import createKeywordFilter from './lib/aho-corasick';
 
 export async function parseGfwList() {
   const whiteSet = new Set<string>();
-  const blackSet = new Set<string>();
+  const trie = new HostnameSmolTrie();
+
+  const excludeGfwList = createKeywordFilter([
+    '.*',
+    '*',
+    '=',
+    '[',
+    '/',
+    '?'
+  ]);
 
   const text = await (await $fetch('https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt')).text();
   for (const l of atob(text).split('\n')) {
     const line = processLine(l);
     if (!line) continue;
-    if (line[0] === '[') {
-      continue;
-    }
-    if (line.includes('.*')) {
-      continue;
-    }
-    if (line.includes('*')) {
+
+    if (excludeGfwList(line)) {
       continue;
     }
     if (line.startsWith('@@||')) {
-      whiteSet.add(line.slice(4));
+      whiteSet.add('.' + line.slice(4));
       continue;
     }
     if (line.startsWith('@@|http://')) {
-      whiteSet.add(line.slice(8));
+      whiteSet.add(line.slice(10));
       continue;
     }
     if (line.startsWith('@@|https://')) {
-      whiteSet.add(line.slice(9));
+      whiteSet.add(line.slice(11));
       continue;
     }
     if (line.startsWith('||')) {
-      blackSet.add(line.slice(2));
+      trie.add('.' + line.slice(2));
       continue;
     }
     if (line.startsWith('|')) {
-      blackSet.add(line.slice(1));
+      trie.add(line.slice(1));
       continue;
     }
     if (line.startsWith('.')) {
-      blackSet.add(line.slice(1));
+      trie.add(line);
       continue;
     }
     const d = normalizeDomain(line);
     if (d) {
-      blackSet.add(d);
+      trie.add(d);
       continue;
     }
   }
   for (const l of (await (await $fetch('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
-    blackSet.add(l);
+    trie.add(l);
   }
 
-  const top500Gfwed = new Set<string>();
-
-  const res = await (await $fetch('https://radar.cloudflare.com/charts/LargerTopDomainsTable/attachment?id=1077&top=10000', {
+  const res = await (await $fetch('https://litter.catbox.moe/wed48e.csv', {
     headers: {
-      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-      'accept-language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,es;q=0.5',
-      'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': '"macOS"',
-      'sec-fetch-dest': 'document',
-      'sec-fetch-mode': 'navigate',
-      'sec-fetch-site': 'none',
-      'sec-fetch-user': '?1',
-      'upgrade-insecure-requests': '1'
+      accept: '*/*',
+      'user-agent': 'curl/8.9.1'
     }
   })).text();
   const topDomains = parse(res);
 
-  const trie = createTrie(blackSet);
-
-  for await (const [domain] of topDomains) {
-    if (trie.has(domain)) {
-      top500Gfwed.add(domain);
-    }
-  }
-
-  const notIncludedTop500Gfwed = new Set<string>(top500Gfwed);
+  const keywordSet = new Set<string>();
 
   const runAgainstRuleset = async (ruleset: string) => {
     for await (const l of readFileByLine(ruleset)) {
       const line = processLine(l);
       if (!line) continue;
       const [type, domain] = line.split(',');
-      if (type === 'DOMAIN-SUFFIX') {
-        if (top500Gfwed.has(domain)) {
-          notIncludedTop500Gfwed.delete(domain);
+      switch (type) {
+        case 'DOMAIN-SUFFIX': {
+          trie.whitelist('.' + domain);
+          break;
         }
-      } else if (type === 'DOMAIN-KEYWORD') {
-        for (const d of top500Gfwed) {
-          if (d.includes(domain)) {
-            notIncludedTop500Gfwed.delete(d);
-          }
+        case 'DOMAIN': {
+          trie.whitelist(domain);
+          break;
         }
+        case 'DOMAIN-KEYWORD': {
+          keywordSet.add(domain);
+          break;
+        }
+        // no default
       }
     }
   };
 
+  const runAgainstDomainset = async (ruleset: string) => {
+    for await (const l of readFileByLine(ruleset)) {
+      const line = processLine(l);
+      if (!line) continue;
+      trie.whitelist(line);
+    }
+  };
   await Promise.all([
-    runAgainstRuleset(path.join(SOURCE_DIR, 'non_ip/global.conf')),
-    runAgainstRuleset(path.join(SOURCE_DIR, 'non_ip/telegram.conf')),
-    runAgainstRuleset(path.resolve(SOURCE_DIR, 'non_ip/stream.conf'))
+    runAgainstRuleset(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf')),
+    runAgainstRuleset(path.join(OUTPUT_SURGE_DIR, 'non_ip/reject.conf')),
+    runAgainstRuleset(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf')),
+    runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf')),
+    runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/ai.conf')),
+    runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf')),
+    runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf')),
+    runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'))
   ]);
 
-  console.log(notIncludedTop500Gfwed);
+  whiteSet.forEach(domain => trie.whitelist(domain));
+
+  const kwfilter = createKeywordFilter(keywordSet);
+
+  const missingTop10000Gfwed = new Set<string>();
+
+  console.log(trie.has('.mojim.com'));
+
+  for await (const [domain] of topDomains) {
+    if (trie.has(domain) && !kwfilter(domain)) {
+      missingTop10000Gfwed.add(domain);
+    }
+  }
+
+  console.log(JSON.stringify(Array.from(missingTop10000Gfwed)), null, 2);
 
   return [
     whiteSet,
-    blackSet,
     trie,
-    top500Gfwed
+    missingTop10000Gfwed
   ] as const;
+}
+
+if (require.main === module) {
+  parseGfwList().catch(console.error);
 }
