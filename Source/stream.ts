@@ -766,6 +766,13 @@ const WETV: StreamService = {
   ]
 };
 
+const VUDU: StreamService = {
+  name: 'Vudu',
+  rules: [
+    'DOMAIN-SUFFIX,vudu.com'
+  ]
+};
+
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -784,12 +791,11 @@ export const ALL: StreamService[] = [
   NETFLIX, NAVER_TV, NICONICO, NOW_E,
   OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
-  SOUNDCLOUD, SPOTIFY,
+  SOUNDCLOUD, SHOWTIME, SPOTIFY,
   TAIWAN_GOOD, TIDAL, TIKTOK, TVB_ANYWHERE, TWITCH,
-  VIUTV,
+  VIUTV, VUDU,
   WETV,
-  YOUTUBE, YOUTUBE_MUSIC,
-  SHOWTIME
+  YOUTUBE, YOUTUBE_MUSIC
 ];
 
 export const NORTH_AMERICA: StreamService[] = [
@@ -797,6 +803,7 @@ export const NORTH_AMERICA: StreamService[] = [
   FOX_PLUS,
   HULU, // Hulu US
   HULU_JP,
+  VUDU,
   // HBO,
   // www.nfl.com
   // epix.com
