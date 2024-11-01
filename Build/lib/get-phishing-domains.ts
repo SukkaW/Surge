@@ -63,8 +63,7 @@ const sensitiveKeywords = createKeywordFilter([
   'facebook-',
   'focebaak',
   '.facebook.',
-  'metamask-',
-  '-metamask',
+  'metamask',
   'www.apple',
   '-coinbase',
   'coinbase-',
@@ -83,9 +82,9 @@ const sensitiveKeywords = createKeywordFilter([
 ]);
 const lowKeywords = createKeywordFilter([
   'transactions-',
-  'payment-',
+  'payment',
+  'wallet',
   '-transactions',
-  '-payment',
   '-faceb', // facebook fake
   '.faceb', // facebook fake
   'facebook',
@@ -213,9 +212,9 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
   const sensitiveKeywordsHit = sensitiveKeywords(fullDomain);
 
   if (sensitiveKeywordsHit) {
-    weight += 9;
+    weight += 10;
     if (hitLowKeywords) {
-      weight += 5;
+      weight += 6;
     }
   } else if (hitLowKeywords) {
     weight += 1.5;
