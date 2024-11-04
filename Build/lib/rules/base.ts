@@ -1,6 +1,6 @@
 import { OUTPUT_CLASH_DIR, OUTPUT_MODULES_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
 import type { Span } from '../../trace';
-import { createTrie } from '../trie';
+import { HostnameSmolTrie } from '../trie';
 import stringify from 'json-stringify-pretty-compact';
 import path from 'node:path';
 import { withBannerArray } from '../misc';
@@ -12,7 +12,7 @@ import { readFileByLine } from '../fetch-text-by-line';
 import { asyncWriteToStream } from '../async-write-to-stream';
 
 export abstract class RuleOutput<TPreprocessed = unknown> {
-  protected domainTrie = createTrie(null, true);
+  protected domainTrie = new HostnameSmolTrie(null);
   protected domainKeywords = new Set<string>();
   protected domainWildcard = new Set<string>();
   protected userAgent = new Set<string>();
