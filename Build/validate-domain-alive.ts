@@ -10,6 +10,7 @@ import { newQueue } from '@henrygd/queue';
 import asyncRetry from 'async-retry';
 import * as whoiser from 'whoiser';
 import picocolors from 'picocolors';
+import createKeywordFilter from './lib/aho-corasick';
 
 const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   '8.8.8.8',
@@ -97,6 +98,12 @@ const resolve: DNS2.DnsResolver<DnsResponse> = async (...args) => {
   console.log('done');
 })();
 
+const whoisNotFoundKeywordTest = createKeywordFilter([
+  'no match for',
+  'does not exist',
+  'not found'
+]);
+
 const domainAliveMap = new Map<string, boolean>();
 async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]> {
   if (domainAliveMap.has(apexDomain)) {
@@ -121,7 +128,7 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
 
   if (Object.keys(whois).length > 0) {
     // TODO: this is a workaround for https://github.com/LayeredStudio/whoiser/issues/117
-    if ('text' in whois && (whois.text as string[]).some(value => value.includes('No match for'))) {
+    if ('text' in whois && Array.isArray(whois.text) && whois.text.some(value => whoisNotFoundKeywordTest(value.toLowerCase()))) {
       console.log(picocolors.red('[domain dead]'), 'whois no match', { domain: apexDomain });
       domainAliveMap.set(apexDomain, false);
       return [apexDomain, false];
