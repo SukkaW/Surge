@@ -19,9 +19,15 @@ importers:
       '@ghostery/adblocker':
         specifier: ^2.0.3
         version: 2.0.3
+      '@henrygd/queue':
+        specifier: ^1.0.7
+        version: 1.0.7
       '@jsdevtools/ez-spawn':
         specifier: ^3.0.4
         version: 3.0.4
+      async-retry:
+        specifier: ^1.3.3
+        version: 1.3.3
       async-sema:
         specifier: ^3.1.1
         version: 3.1.1
@@ -46,6 +52,9 @@ importers:
       devalue:
         specifier: ^5.1.1
         version: 5.1.1
+      dns2:
+        specifier: ^2.1.0
+        version: 2.1.0
       fast-cidr-tools:
         specifier: ^0.3.1
         version: 0.3.1
@@ -85,6 +94,9 @@ importers:
       undici:
         specifier: 6.20.1
         version: 6.20.1(patch_hash=yuj5uy4vvwj67xoliq5togiyme)
+      whoiser:
+        specifier: ^1.18.0
+        version: 1.18.0
       why-is-node-running:
         specifier: ^3.2.1
         version: 3.2.1
@@ -101,12 +113,18 @@ importers:
       '@swc/core':
         specifier: ^1.7.42
         version: 1.7.42
+      '@types/async-retry':
+        specifier: ^1.4.9
+        version: 1.4.9
       '@types/better-sqlite3':
         specifier: ^7.6.11
         version: 7.6.11
       '@types/cacache':
         specifier: ^17.0.2
         version: 17.0.2
+      '@types/dns2':
+        specifier: ^2.0.9
+        version: 2.0.9
       '@types/make-fetch-happen':
         specifier: ^10.0.4
         version: 10.0.4
@@ -245,6 +263,9 @@ packages:
 
   '@ghostery/adblocker@2.0.3':
     resolution: {integrity: sha512-b6sbsYzfwWeFpvOSs8VMiBc+d39xvErpLz8pxCJIyOAiDD41NgT72sDHlTNZkeYYHq2fKe4sArsjUMjCyjtI6A==}
+
+  '@henrygd/queue@1.0.7':
+    resolution: {integrity: sha512-Jmt/iO6yDlz9UYGILkm/Qzi/ckkEiTNZcqDvt3QFLE4OThPeiCj6tKsynHFm/ppl8RumWXAx1dZPBPiRPaaGig==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -507,6 +528,9 @@ packages:
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
+  '@types/async-retry@1.4.9':
+    resolution: {integrity: sha512-s1ciZQJzRh3708X/m3vPExr5KJlzlZJvXsKpbtE2luqNcbROr64qU+3KpJsYHqWMeaxI839OvXf9PrUSw1Xtyg==}
+
   '@types/better-sqlite3@7.6.11':
     resolution: {integrity: sha512-i8KcD3PgGtGBLl3+mMYA8PdKkButvPyARxA7IQAd6qeslht13qxb1zzO8dRCtE7U3IoJS782zDBAeoKiM695kg==}
 
@@ -515,6 +539,9 @@ packages:
 
   '@types/chrome@0.0.279':
     resolution: {integrity: sha512-wl0IxQ2OQiMazPZM5LimHQ7Jwd72/O8UvvzyptplXT2S4eUqXH5C0n8S+v8PtKhyX89p0igCPpNy3Bwksyk57g==}
+
+  '@types/dns2@2.0.9':
+    resolution: {integrity: sha512-+eiPSuo/KfvaaW7DiMf/vrt9mhxbZCCgxoCa/c2qMVSuZQus4BzBuKRh8XBwcUXWAtvI8QuZOp13UODJNq9DXg==}
 
   '@types/eslint@9.6.1':
     resolution: {integrity: sha512-FXx2pKgId/WyYo2jXw63kk7/+TY7u7AziEJxJAnSFzHlqTAS3Ync6SvgYAN/k4/PQpnnVuzoMuVnByKK2qp0ag==}
@@ -723,6 +750,9 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  async-retry@1.3.3:
+    resolution: {integrity: sha512-wfr/jstw9xNi/0teMHrRW7dsz3Lt5ARhYNZ2ewpadnhaIp5mbALhOAP+EAdsC7t4Z6wqsDVv9+W6gm1Dk9mEyw==}
+
   async-sema@3.1.1:
     resolution: {integrity: sha512-tLRNUXati5MFePdAk8dw7Qt7DpxPB60ofAgn8WRhW6a2rcimZnYBP9oxHiv0OHy+Wz7kPMG+t4LGdt31+4EmGg==}
 
@@ -928,6 +958,9 @@ packages:
   diff@5.2.0:
     resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
     engines: {node: '>=0.3.1'}
+
+  dns2@2.1.0:
+    resolution: {integrity: sha512-m27K11aQalRbmUs7RLaz6aPyceLjAoqjPRNTdE7qUouQpl+PC8Bi67O+i9SuJUPbQC8dxFrczAxfmTPuTKHNkw==}
 
   doctrine@3.0.0:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
@@ -1677,6 +1710,10 @@ packages:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
     engines: {node: '>= 4'}
 
+  retry@0.13.1:
+    resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
+    engines: {node: '>= 4'}
+
   reusify@1.0.4:
     resolution: {integrity: sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
@@ -1926,6 +1963,10 @@ packages:
     engines: {node: '>= 8'}
     hasBin: true
 
+  whoiser@1.18.0:
+    resolution: {integrity: sha512-QRIGreBuouc8d9i+UVMFqYJSiG7gaoaGX8nKugYDGqnuNLLgjDBwmlKODOIGHveBawza3Kfkk/OuM9VsTUYwaA==}
+    engines: {node: '>=15.0.0'}
+
   why-is-node-running@3.2.1:
     resolution: {integrity: sha512-Tb2FUhB4vUsGQlfSquQLYkApkuPAFQXGFzxWKHHumVz2dK+X1RUm/HnID4+TfIGYJ1kTcwOaCk/buYCEJr6YjQ==}
     engines: {node: '>=20.11'}
@@ -2106,6 +2147,8 @@ snapshots:
       '@types/chrome': 0.0.279
       '@types/firefox-webext-browser': 120.0.4
       tldts-experimental: 6.1.58
+
+  '@henrygd/queue@1.0.7': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -2351,6 +2394,10 @@ snapshots:
       tslib: 2.8.0
     optional: true
 
+  '@types/async-retry@1.4.9':
+    dependencies:
+      '@types/retry': 0.12.5
+
   '@types/better-sqlite3@7.6.11':
     dependencies:
       '@types/node': 22.8.7
@@ -2363,6 +2410,10 @@ snapshots:
     dependencies:
       '@types/filesystem': 0.0.36
       '@types/har-format': 1.2.16
+
+  '@types/dns2@2.0.9':
+    dependencies:
+      '@types/node': 22.8.7
 
   '@types/eslint@9.6.1':
     dependencies:
@@ -2604,6 +2655,10 @@ snapshots:
 
   argparse@2.0.1: {}
 
+  async-retry@1.3.3:
+    dependencies:
+      retry: 0.13.1
+
   async-sema@3.1.1: {}
 
   asynckit@0.4.0: {}
@@ -2806,6 +2861,8 @@ snapshots:
   diff-sequences@29.6.3: {}
 
   diff@5.2.0: {}
+
+  dns2@2.1.0: {}
 
   doctrine@3.0.0:
     dependencies:
@@ -3653,6 +3710,8 @@ snapshots:
 
   retry@0.12.0: {}
 
+  retry@0.13.1: {}
+
   reusify@1.0.4: {}
 
   rimraf@5.0.10:
@@ -3904,6 +3963,10 @@ snapshots:
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  whoiser@1.18.0:
+    dependencies:
+      punycode: 2.3.1
 
   why-is-node-running@3.2.1: {}
 

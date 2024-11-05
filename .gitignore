@@ -4,4 +4,4 @@ node_modules
 .wireit
 .cache
 public
-tmp*
+tmp.*
