@@ -1,20 +1,14 @@
-const WORDEND = Symbol('wordEnd');
-const FAIL = Symbol('fail');
-
-type Node = Map<string, Node> & {
-  [WORDEND]: boolean,
-  [FAIL]: Node | undefined
-};
-
-function createNode(): Node {
-  const node = new Map<string, Node | undefined>() as Node;
-  node[WORDEND] = false;
-  node[FAIL] = undefined;
-  return node;
+class Node extends Map<string, Node> {
+  constructor(
+    public wordEnd: boolean,
+    public fail: Node | undefined
+  ) {
+    super();
+  }
 }
 
 function createKeywordFilter(keys: string[] | Set<string>) {
-  const root = createNode();
+  const root = new Node(false, undefined);
 
   // Create a trie with extra fields and information
   const put = (key: string) => {
@@ -28,7 +22,7 @@ function createKeywordFilter(keys: string[] | Set<string>) {
       if (node.has(char)) {
         node = node.get(char)!;
       } else {
-        const newNode = createNode();
+        const newNode = new Node(false, undefined);
         node.set(char, newNode);
         node = newNode;
       }
@@ -36,7 +30,7 @@ function createKeywordFilter(keys: string[] | Set<string>) {
 
     // If a new node is created, mark it as a word end when loop finish
     if (node !== root) {
-      node[WORDEND] = true;
+      node.wordEnd = true;
     }
   };
 
@@ -49,13 +43,13 @@ function createKeywordFilter(keys: string[] | Set<string>) {
     const beginNode = queue.pop()!;
 
     beginNode.forEach((node, char) => {
-      let failNode = beginNode[FAIL];
+      let failNode = beginNode.fail;
 
       while (failNode && !failNode.has(char)) {
-        failNode = failNode[FAIL];
+        failNode = failNode.fail;
       }
 
-      node[FAIL] = failNode ? failNode.get(char) : root;
+      node.fail = failNode ? failNode.get(char) : root;
 
       queue.push(node);
     });
@@ -70,12 +64,12 @@ function createKeywordFilter(keys: string[] | Set<string>) {
       const char = text[i];
 
       while (node && !node.has(char)) {
-        node = node[FAIL];
+        node = node.fail;
       }
 
       node = node ? node.get(char)! : root;
 
-      if (node[WORDEND]) {
+      if (node.wordEnd) {
         return true;
       }
     }
