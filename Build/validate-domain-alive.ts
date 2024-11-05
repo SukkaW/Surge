@@ -113,7 +113,6 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
   const resp = await resolve(apexDomain, 'NS');
 
   if (resp.answers.length > 0) {
-    console.log(picocolors.green('[domain alive]'), 'NS record', apexDomain);
     return [apexDomain, true];
   }
 
@@ -134,7 +133,6 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
       return [apexDomain, false];
     }
 
-    console.log(picocolors.green('[domain alive]'), 'recorded in whois', apexDomain);
     return [apexDomain, true];
   }
 
@@ -233,5 +231,6 @@ export async function runAgainstDomainset(filepath: string) {
     promises.push(isDomainAlive(line, line[0] === '.'));
   }
 
-  return Promise.all(promises);
+  await Promise.all(promises);
+  console.log('[done]', filepath);
 }
