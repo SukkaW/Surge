@@ -46,7 +46,16 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   })
 ] as const);
 
-const queue = newQueue(8);
+const queue = newQueue(20);
+const mutex = new Map<string, Promise<unknown>>();
+function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
+  if (mutex.has(key)) {
+    return mutex.get(key) as Promise<T>;
+  }
+  const promise = queue.add(() => fn()).finally(() => mutex.delete(key));
+  mutex.set(key, promise);
+  return promise;
+}
 
 class DnsError extends Error {
   name = 'DnsError';
@@ -128,7 +137,7 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
   if (Object.keys(whois).length > 0) {
     // TODO: this is a workaround for https://github.com/LayeredStudio/whoiser/issues/117
     if ('text' in whois && Array.isArray(whois.text) && whois.text.some(value => whoisNotFoundKeywordTest(value.toLowerCase()))) {
-      console.log(picocolors.red('[domain dead]'), 'whois no match', { domain: apexDomain });
+      console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain });
       domainAliveMap.set(apexDomain, false);
       return [apexDomain, false];
     }
@@ -140,35 +149,24 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
     console.log({ whois });
   }
 
-  console.log(picocolors.red('[domain dead]'), 'whois no match', { domain: apexDomain });
+  console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain });
   domainAliveMap.set(apexDomain, false);
   return [apexDomain, false];
 }
 
-const domainMutex = new Map<string, Promise<[string, boolean]>>();
-
 export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<[string, boolean]> {
-  if (domain[0] === '.') {
-    domain = domain.slice(1);
+  if (domainAliveMap.has(domain)) {
+    return [domain, domainAliveMap.get(domain)!];
   }
 
   const apexDomain = tldts.getDomain(domain, looseTldtsOpt);
   if (!apexDomain) {
     console.log('[domain invalid]', 'no apex domain', { domain });
+    domainAliveMap.set(domain, true);
     return [domain, true] as const;
   }
 
-  let apexDomainAlivePromise;
-  if (domainMutex.has(domain)) {
-    apexDomainAlivePromise = domainMutex.get(domain)!;
-  } else {
-    apexDomainAlivePromise = queue.add(() => isApexDomainAlive(apexDomain).then(res => {
-      domainMutex.delete(domain);
-      return res;
-    }));
-    domainMutex.set(domain, apexDomainAlivePromise);
-  }
-  const apexDomainAlive = await apexDomainAlivePromise;
+  const apexDomainAlive = await keyedAsyncMutexWithQueue(apexDomain, () => isApexDomainAlive(apexDomain));
 
   if (!apexDomainAlive[1]) {
     domainAliveMap.set(domain, false);
@@ -176,12 +174,14 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
   }
 
   if (!isSuffix) {
-    const aRecords = (await resolve(domain, 'A'));
+    const $domain = domain[0] === '.' ? domain.slice(1) : domain;
+
+    const aRecords = (await resolve($domain, 'A'));
     if (aRecords.answers.length === 0) {
-      const aaaaRecords = (await resolve(domain, 'AAAA'));
+      const aaaaRecords = (await resolve($domain, 'AAAA'));
       if (aaaaRecords.answers.length === 0) {
         console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aRecords.dns, aaaa: aaaaRecords.dns });
-        domainAliveMap.set(domain, false);
+        domainAliveMap.set($domain, false);
         return [domain, false] as const;
       }
     }
@@ -201,14 +201,8 @@ export async function runAgainstRuleset(filepath: string) {
     switch (type) {
       case 'DOMAIN-SUFFIX':
       case 'DOMAIN': {
-        if (!domainMutex.has(domain)) {
-          const promise = queue.add(() => isDomainAlive(domain, type === 'DOMAIN-SUFFIX')).then(res => {
-            domainMutex.delete(domain);
-            return res;
-          });
-          domainMutex.set(domain, promise);
-          promises.push(promise);
-        }
+        promises.push(keyedAsyncMutexWithQueue(domain, () => isDomainAlive(domain, type === 'DOMAIN-SUFFIX')));
+
         break;
       }
       // no default
