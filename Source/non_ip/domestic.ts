@@ -74,6 +74,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'npmmirror.com',
       'alios.cn',
       'wandoujia.com',
+      'aligames.com',
+      '25pp.com',
       '+aliapp.org',
       'tanx.com',
       'hellobike.com',
