@@ -26,6 +26,25 @@ export const DIRECTS = {
       '$hotspot.cslwifi.com'
     ]
   },
+  SYSTEM: {
+    dns: 'system',
+    hosts: {},
+    realip: true,
+    domains: [
+      '+m2m',
+      // '+ts.net', // TailScale Magic DNS
+      // AdGuard
+      '$injections.adguard.org',
+      '$local.adguard.org',
+      // Auto Discovery
+      '+_tcp',
+      '+bogon',
+      '+_msdcs'
+    ]
+  }
+} as const satisfies Record<string, DNSMapping>;
+
+export const LAN = {
   ROUTER: {
     dns: 'system',
     hosts: {},
@@ -81,22 +100,6 @@ export const DIRECTS = {
       '$pi.hole',
       '+plex.direct'
       // 'web.setup'
-    ]
-  },
-  SYSTEM: {
-    dns: 'system',
-    hosts: {},
-    realip: true,
-    domains: [
-      '+m2m',
-      // '+ts.net', // TailScale Magic DNS
-      // AdGuard
-      '$injections.adguard.org',
-      '$local.adguard.org',
-      // Auto Discovery
-      '+_tcp',
-      '+bogon',
-      '+_msdcs'
     ]
   },
   LAN: {

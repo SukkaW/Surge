@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { task } from './trace';
 import { compareAndWriteFile, DomainsetOutput } from './lib/create-file';
-import { DIRECTS } from '../Source/non_ip/direct';
+import { DIRECTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
 import { DOMESTICS, DOH_BOOTSTRAP } from '../Source/non_ip/domestic';
 import * as yaml from 'yaml';
@@ -47,7 +47,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
     ]);
 
   // Intranet, Router Setup, and mant more
-  const dataset = [DIRECTS, DOMESTICS, DOH_BOOTSTRAP].reduce<DNSMapping[]>((acc, item) => {
+  const dataset = [DIRECTS, LAN, DOMESTICS, DOH_BOOTSTRAP].reduce<DNSMapping[]>((acc, item) => {
     Object.values(item).forEach((i: DNSMapping) => {
       if (i.realip) {
         acc.push(i);

@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'node:path';
 import { DOMESTICS, DOH_BOOTSTRAP } from '../Source/non_ip/domestic';
-import { DIRECTS } from '../Source/non_ip/direct';
+import { DIRECTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
@@ -68,8 +68,8 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
     appendArrayInPlace(directs, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
 
-  DIRECTS.LAN.domains.forEach((domain) => {
-    appendArrayInPlace(lans, getDnsMappingRuleWithWildcard(domain));
+  Object.values(LAN).forEach(({ domains }) => {
+    appendArrayInPlace(directs, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
 
   return [domestics, directs, lans] as const;
