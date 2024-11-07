@@ -22,20 +22,23 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   '101.101.101.101', // TWNIC
   '185.222.222.222', // DNS.SB
   '45.11.45.11', // DNS.SB
-  '9.9.9.10', // Quad9 unfiltered
-  '149.112.112.10', // Quad9 unfiltered
-  '208.67.222.2', // OpenDNS sandbox (unfiltered)
-  '208.67.220.2', // OpenDNS sandbox (unfiltered)
-  '94.140.14.140', // AdGuard unfiltered
-  '94.140.14.141', // AdGuard unfiltered
+  'dns10.quad9.net', // Quad9 unfiltered
+  'doh.sandbox.opendns.com', // OpenDNS sandbox (unfiltered)
+  'unfiltered.adguard-dns.com',
+  // '0ms.dev', // Proxy Cloudflare
   // '76.76.2.0', // ControlD unfiltered, path not /dns-query
   // '76.76.10.0', // ControlD unfiltered, path not /dns-query
+  // 'dns.bebasid.com', // BebasID, path not /dns-query but /unfiltered
   '193.110.81.0', // dns0.eu
   '185.253.5.0', // dns0.eu
   'dns.nextdns.io',
+  'anycast.dns.nextdns.io',
   'wikimedia-dns.org',
   // 'ordns.he.net',
-  'dns.mullvad.net'
+  'dns.mullvad.net',
+  'zero.dns0.eu',
+  '193.110.81.0',
+  'basic.rethinkdns.com'
   // 'ada.openbld.net',
   // 'dns.rabbitdns.org'
 ] as const).map(server => [
@@ -46,7 +49,7 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   })
 ] as const);
 
-const queue = newQueue(20);
+const queue = newQueue(24);
 const mutex = new Map<string, Promise<unknown>>();
 function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
   if (mutex.has(key)) {
@@ -192,6 +195,12 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
 }
 
 export async function runAgainstRuleset(filepath: string) {
+  const extname = path.extname(filepath);
+  if (extname !== '.conf') {
+    console.log('[skip]', filepath);
+    return;
+  }
+
   const promises: Array<Promise<[string, boolean]>> = [];
 
   for await (const l of readFileByLine(filepath)) {
@@ -213,10 +222,17 @@ export async function runAgainstRuleset(filepath: string) {
     }
   }
 
-  return Promise.all(promises);
+  await Promise.all(promises);
+  console.log('[done]', filepath);
 }
 
 export async function runAgainstDomainset(filepath: string) {
+  const extname = path.extname(filepath);
+  if (extname !== '.conf') {
+    console.log('[skip]', filepath);
+    return;
+  }
+
   const promises: Array<Promise<[string, boolean]>> = [];
 
   for await (const l of readFileByLine(filepath)) {
