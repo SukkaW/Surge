@@ -15,7 +15,7 @@ export interface DNSMapping {
   domains: string[]
 }
 
-export const DIRECTS: Record<string, DNSMapping> = {
+export const DIRECTS = {
   HOTSPOT_CAPTIVE_PORTAL: {
     dns: 'system',
     hosts: {},
@@ -134,4 +134,4 @@ export const DIRECTS: Record<string, DNSMapping> = {
       '254.169.in-addr.arpa'
     ]
   }
-};
+} as const satisfies Record<string, DNSMapping>;

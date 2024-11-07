@@ -68,6 +68,10 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
     appendArrayInPlace(directs, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
 
+  DIRECTS.LAN.domains.forEach((domain) => {
+    appendArrayInPlace(lans, getDnsMappingRuleWithWildcard(domain));
+  });
+
   return [domestics, directs, lans] as const;
 });
 
