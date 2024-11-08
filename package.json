@@ -20,7 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ghostery/adblocker": "^2.0.3",
+    "@ghostery/adblocker": "^2.0.4",
     "@henrygd/queue": "^1.0.7",
     "@jsdevtools/ez-spawn": "^3.0.4",
     "async-retry": "^1.3.3",
@@ -43,9 +43,9 @@
     "picocolors": "^1.1.1",
     "punycode": "^2.3.1",
     "tar-fs": "^3.0.6",
-    "tldts": "^6.1.58",
-    "tldts-experimental": "^6.1.58",
-    "undici": "6.20.1",
+    "tldts": "^6.1.59",
+    "tldts-experimental": "^6.1.59",
+    "undici": "^6.20.1",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.1",
     "yaml": "^2.6.0"
@@ -53,14 +53,14 @@
   "devDependencies": {
     "@eslint-sukka/node": "^6.9.0",
     "@swc-node/register": "^1.10.9",
-    "@swc/core": "^1.7.42",
+    "@swc/core": "^1.9.1",
     "@types/async-retry": "^1.4.9",
     "@types/better-sqlite3": "^7.6.11",
     "@types/cacache": "^17.0.2",
     "@types/dns2": "^2.0.9",
     "@types/make-fetch-happen": "^10.0.4",
     "@types/mocha": "^10.0.9",
-    "@types/node": "^22.8.7",
+    "@types/node": "^22.9.0",
     "@types/node-fetch": "2",
     "@types/punycode": "^2.1.4",
     "@types/tar-fs": "^2.0.4",
@@ -74,12 +74,12 @@
     "typescript": "^5.6.3"
   },
   "packageManager": "pnpm@9.12.3",
-  "resolutions": {
-    "has": "npm:@nolyfill/has@latest"
-  },
   "pnpm": {
     "patchedDependencies": {
       "undici": "patches/undici.patch"
     }
+  },
+  "resolutions": {
+    "has": "npm:@nolyfill/has@latest"
   }
 }
