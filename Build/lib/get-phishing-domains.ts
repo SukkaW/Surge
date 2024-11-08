@@ -40,12 +40,14 @@ const WHITELIST_MAIN_DOMAINS = new Set([
   // 'dweb.link', // ipfs gateway
   // 'nftstorage.link', // ipfs gateway
   'fleek.cool', // ipfs gateway
+  'flk-ipfs.xyz', // ipfs gateway
   'business.site', // Drag'n'Drop site building platform
   'page.link', // Firebase URL Shortener
   // 'notion.site',
   // 'vercel.app',
   'gitbook.io',
-  'zendesk.com'
+  'zendesk.com',
+  'ipfs.eth.aragon.network'
 ]);
 
 const leathalKeywords = createKeywordFilter([
