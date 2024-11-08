@@ -11,6 +11,7 @@ import asyncRetry from 'async-retry';
 import * as whoiser from 'whoiser';
 import picocolors from 'picocolors';
 import createKeywordFilter from './lib/aho-corasick';
+import './lib/fetch-retry';
 
 const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   '8.8.8.8',
@@ -31,12 +32,12 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   // 'dns.bebasid.com', // BebasID, path not /dns-query but /unfiltered
   // '193.110.81.0', // dns0.eu
   // '185.253.5.0', // dns0.eu
+  // 'zero.dns0.eu',
   'dns.nextdns.io',
   'anycast.dns.nextdns.io',
   'wikimedia-dns.org',
   // 'ordns.he.net',
-  'dns.mullvad.net',
-  // 'zero.dns0.eu',
+  // 'dns.mullvad.net',
   'basic.rethinkdns.com'
   // 'ada.openbld.net',
   // 'dns.rabbitdns.org'
@@ -45,16 +46,17 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   DNS2.DOHClient({
     dns: server,
     http: false
+    // get: (url: string) => undici.request(url).then(r => r.body)
   })
 ] as const);
 
-const queue = newQueue(18);
+const queue = newQueue(32);
 const mutex = new Map<string, Promise<unknown>>();
 function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
   if (mutex.has(key)) {
     return mutex.get(key) as Promise<T>;
   }
-  const promise = queue.add(() => fn()).finally(() => mutex.delete(key));
+  const promise = queue.add(() => fn());
   mutex.set(key, promise);
   return promise;
 }
@@ -76,12 +78,12 @@ const resolve: DNS2.DnsResolver<DnsResponse> = async (...args) => {
       const [dohServer, dohClient] = dohServers[Math.floor(Math.random() * dohServers.length)];
 
       try {
-        const resp = await dohClient(...args);
         return {
-          ...resp,
+          ...await dohClient(...args),
           dns: dohServer
         } satisfies DnsResponse;
       } catch (e) {
+        console.error(e);
         throw new DnsError((e as Error).message, dohServer);
       }
     }, { retries: 5 });
@@ -172,7 +174,7 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
     return [domain, true] as const;
   }
 
-  const apexDomainAlive = await keyedAsyncMutexWithQueue(apexDomain, () => isApexDomainAlive(apexDomain));
+  const apexDomainAlive = await isApexDomainAlive(apexDomain);
 
   if (!apexDomainAlive[1]) {
     domainAliveMap.set(domain, false);
@@ -214,14 +216,8 @@ export async function runAgainstRuleset(filepath: string) {
       case 'DOMAIN-SUFFIX':
       case 'DOMAIN': {
         promises.push(keyedAsyncMutexWithQueue(domain, () => isDomainAlive(domain, type === 'DOMAIN-SUFFIX')));
-        continue;
+        break;
       }
-      default:
-        continue;
-      // no default
-      // case 'DOMAIN-KEYWORD': {
-      //   break;
-      // }
       // no default
     }
   }

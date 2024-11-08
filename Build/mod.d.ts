@@ -8,7 +8,9 @@ declare module 'dns2' {
       /** @example dns.google.com */
       dns: string,
       /** @description whether to use HTTP or HTTPS */
-      http: boolean
+      http: boolean,
+
+      get?: (url: string) => any
     }
 
     export type DnsResolver<T = DnsResponse> = (name: string, type: PacketQuestion) => Promise<T>;
