@@ -1,6 +1,5 @@
 import path from 'node:path';
 
-import { Sema } from 'async-sema';
 import { getHostname } from 'tldts-experimental';
 import { task } from './trace';
 import { $fetch } from './lib/make-fetch-happen';
@@ -10,6 +9,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { DomainsetOutput } from './lib/create-file';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { createMemoizedPromise } from './lib/memo-promise';
+import { Sema } from 'async-sema';
 
 const KEYWORDS = [
   'Hong Kong',
@@ -142,7 +142,7 @@ const latestTopUserAgentsPromise = $fetch('https://cdn.jsdelivr.net/npm/top-user
   .then(res => res.json())
   .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
-async function querySpeedtestApi(keyword: string): Promise<Array<string | null>> {
+async function querySpeedtestApi(keyword: string) {
   const topUserAgents = await latestTopUserAgentsPromise;
 
   const url = `https://www.speedtest.net/api/js/servers?engine=js&search=${keyword}&limit=100`;
@@ -150,7 +150,9 @@ async function querySpeedtestApi(keyword: string): Promise<Array<string | null>>
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
-    return await s.acquire().then(() => $fetch(url, {
+    await s.acquire();
+
+    const r = await $fetch(url, {
       headers: {
         dnt: '1',
         Referer: 'https://www.speedtest.net/',
@@ -168,19 +170,25 @@ async function querySpeedtestApi(keyword: string): Promise<Array<string | null>>
           : {})
       },
       timeout: 1000 * 60
-    })).then(r => r.json() as any).then((data: Array<{ url: string, host: string }>) => data.reduce<string[]>(
+    });
+
+    const data: Array<{ url: string, host: string }> = await r.json();
+
+    return data.reduce<string[]>(
       (prev, cur) => {
-        const line = cur.host || cur.url;
-        const hn = getHostname(line, { detectIp: false, validateHostname: true });
+        const hn = getHostname(cur.host || cur.url, { detectIp: false, validateHostname: true });
         if (hn) {
           prev.push(hn);
         }
         return prev;
-      }, []
-    )).finally(() => s.release());
+      },
+      []
+    );
   } catch (e) {
     console.error(e);
     return [];
+  } finally {
+    s.release();
   }
 }
 

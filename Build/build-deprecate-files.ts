@@ -28,9 +28,6 @@ export const buildDeprecateFiles = task(require.main === module, __filename)((sp
     ));
 
   for (const [filePath, description] of DEPRECATED_FILES) {
-    const surgeFile = path.resolve(OUTPUT_SURGE_DIR, `${filePath}.conf`);
-    const clashFile = path.resolve(OUTPUT_CLASH_DIR, `${filePath}.txt`);
-
     const content = [
       '#########################################',
       '# Sukka\'s Ruleset - Deprecated',
@@ -39,8 +36,8 @@ export const buildDeprecateFiles = task(require.main === module, __filename)((sp
     ];
 
     promises.push(
-      compareAndWriteFile(childSpan, content, surgeFile),
-      compareAndWriteFile(childSpan, content, clashFile)
+      compareAndWriteFile(childSpan, content, path.resolve(OUTPUT_SURGE_DIR, `${filePath}.conf`)),
+      compareAndWriteFile(childSpan, content, path.resolve(OUTPUT_CLASH_DIR, `${filePath}.txt`))
     );
   }
 
