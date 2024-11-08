@@ -36,7 +36,7 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   'wikimedia-dns.org',
   // 'ordns.he.net',
   'dns.mullvad.net',
-  'zero.dns0.eu',
+  // 'zero.dns0.eu',
   'basic.rethinkdns.com'
   // 'ada.openbld.net',
   // 'dns.rabbitdns.org'
@@ -48,7 +48,7 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   })
 ] as const);
 
-const queue = newQueue(24);
+const queue = newQueue(18);
 const mutex = new Map<string, Promise<unknown>>();
 function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
   if (mutex.has(key)) {
@@ -91,6 +91,10 @@ const resolve: DNS2.DnsResolver<DnsResponse> = async (...args) => {
   }
 };
 
+async function getWhois(domain: string) {
+  return asyncRetry(() => whoiser.domain(domain), { retries: 5 });
+}
+
 (async () => {
   const domainSets = await new Fdir()
     .withFullPaths()
@@ -130,7 +134,7 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
   let whois;
 
   try {
-    whois = await whoiser.domain(apexDomain);
+    whois = await getWhois(apexDomain);
   } catch (e) {
     console.log('[whois fail]', 'whois error', { domain: apexDomain }, e);
     return [apexDomain, true];
@@ -238,7 +242,7 @@ export async function runAgainstDomainset(filepath: string) {
   for await (const l of readFileByLine(filepath)) {
     const line = processLine(l);
     if (!line) continue;
-    promises.push(isDomainAlive(line, line[0] === '.'));
+    promises.push(keyedAsyncMutexWithQueue(line, () => isDomainAlive(line, line[0] === '.')));
   }
 
   await Promise.all(promises);
