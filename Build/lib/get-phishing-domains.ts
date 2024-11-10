@@ -143,7 +143,7 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
     if (!(apexDomain in domainScoreMap)) {
       domainScoreMap[apexDomain] = 0;
       if (BLACK_TLD.has(tld)) {
-        domainScoreMap[apexDomain] += 4;
+        domainScoreMap[apexDomain] += 3;
       } else if (tld.length > 6) {
         domainScoreMap[apexDomain] += 2;
       }
@@ -166,16 +166,16 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
       || (domainScoreMap[apexDomain] >= 16 && domainCountMap[apexDomain] >= 7)
       || (domainScoreMap[apexDomain] >= 13 && domainCountMap[apexDomain] >= 11)
       || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 14)
-      || (domainScoreMap[apexDomain] >= 3 && domainCountMap[apexDomain] >= 20)
+      || (domainScoreMap[apexDomain] >= 3 && domainCountMap[apexDomain] >= 21)
     ) {
       domainArr.push('.' + apexDomain);
     }
   }
 
-  // console.log({
-  //   score: domainScoreMap['shoppy.gg'],
-  //   count: domainCountMap['shoppy.gg']
-  // });
+  console.log({
+    score: domainScoreMap['flk-ipfs.xyz'],
+    count: domainCountMap['flk-ipfs.xyz']
+  });
 
   return Promise.resolve(domainArr);
 }, {
