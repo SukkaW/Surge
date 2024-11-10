@@ -52,10 +52,10 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
           result += String.raw`\.`;
           break;
         case '*':
-          result += '[a-zA-Z0-9-_.]*?';
+          result += String.raw`[\w.-]*?`;
           break;
         case '?':
-          result += '[a-zA-Z0-9-_.]';
+          result += String.raw`[\w.-]`;
           break;
         default:
           result += domain[i];
