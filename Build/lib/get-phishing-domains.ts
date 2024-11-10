@@ -1,7 +1,7 @@
 import { processDomainLists, processHosts } from './parse-filter';
 import * as tldts from 'tldts-experimental';
 
-import { dummySpan } from '../trace';
+import { dummySpan, printTraceResult } from '../trace';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
@@ -108,25 +108,24 @@ const lowKeywords = createKeywordFilter([
   'banking'
 ]);
 
-const cacheKey = createCacheKey(__filename);
-
 const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: string[]): Promise<string[]> {
-  const domainCountMap: Record<string, number> = {};
+  const domainCountMap = new Map<string, number>();
   const domainScoreMap: Record<string, number> = {};
+
+  let tld: string | null = '';
+  let apexDomain: string | null = '';
+  let subdomain: string | null = '';
 
   for (let i = 0, len = domainArr.length; i < len; i++) {
     const line = domainArr[i];
 
-    const {
-      publicSuffix: tld,
-      domain: apexDomain,
-      subdomain,
-      isPrivate
-    } = tldts.parse(line, loosTldOptWithPrivateDomains);
-
-    if (isPrivate) {
+    const parsed = tldts.parse(line, loosTldOptWithPrivateDomains);
+    if (parsed.isPrivate) {
       continue;
     }
+
+    tld = parsed.publicSuffix;
+    apexDomain = parsed.domain;
 
     if (!tld) {
       console.log(picocolors.yellow('[phishing domains] E0001'), 'missing tld', { line, tld });
@@ -137,8 +136,12 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
       continue;
     }
 
-    domainCountMap[apexDomain] ||= 0;
-    domainCountMap[apexDomain] += 1;
+    domainCountMap.set(
+      apexDomain,
+      domainCountMap.has(apexDomain)
+        ? domainCountMap.get(apexDomain)! + 1
+        : 1
+    );
 
     if (!(apexDomain in domainScoreMap)) {
       domainScoreMap[apexDomain] = 0;
@@ -151,6 +154,9 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
         domainScoreMap[apexDomain] += 0.5;
       }
     }
+
+    subdomain = parsed.subdomain;
+
     if (
       subdomain
       && !WHITELIST_MAIN_DOMAINS.has(apexDomain)
@@ -159,29 +165,32 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
     }
   }
 
-  for (const apexDomain in domainCountMap) {
+  domainCountMap.forEach((count, apexDomain) => {
     if (
       // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
       (domainScoreMap[apexDomain] >= 24)
-      || (domainScoreMap[apexDomain] >= 16 && domainCountMap[apexDomain] >= 7)
-      || (domainScoreMap[apexDomain] >= 13 && domainCountMap[apexDomain] >= 11)
-      || (domainScoreMap[apexDomain] >= 5 && domainCountMap[apexDomain] >= 14)
-      || (domainScoreMap[apexDomain] >= 3 && domainCountMap[apexDomain] >= 21)
+      || (domainScoreMap[apexDomain] >= 16 && count >= 7)
+      || (domainScoreMap[apexDomain] >= 13 && count >= 11)
+      || (domainScoreMap[apexDomain] >= 5 && count >= 14)
+      || (domainScoreMap[apexDomain] >= 3 && count >= 21)
     ) {
       domainArr.push('.' + apexDomain);
     }
-  }
-
-  console.log({
-    score: domainScoreMap['flk-ipfs.xyz'],
-    count: domainCountMap['flk-ipfs.xyz']
   });
+
+  // console.log({
+  //   score: domainScoreMap['flk-ipfs.xyz'],
+  //   count: domainCountMap.get('flk-ipfs.xyz')
+  // });
 
   return Promise.resolve(domainArr);
 }, {
   serializer: serializeArray,
-  deserializer: deserializeArray
+  deserializer: deserializeArray,
+  temporaryBypass: true
 });
+
+const cacheKey = createCacheKey(__filename);
 
 export function getPhishingDomains(parentSpan: Span) {
   return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
@@ -219,7 +228,7 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
       weight += 6;
     }
   } else if (hitLowKeywords) {
-    weight += 1.5;
+    weight += 1.7;
   }
 
   const subdomainLength = subdomain.length;
@@ -236,11 +245,8 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
       }
     }
 
-    if (subdomain.slice(1).includes('.')) {
+    if (subdomain.indexOf('.', 1) > 1) {
       weight += 1;
-      if (subdomain.includes('www.')) {
-        weight += 1;
-      }
     }
   }
 
@@ -249,5 +255,9 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
 
 if (require.main === module) {
   getPhishingDomains(dummySpan)
-    .catch(console.error);
+    .catch(console.error)
+    .finally(() => {
+      dummySpan.stop();
+      printTraceResult(dummySpan.traceResult);
+    });
 }

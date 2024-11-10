@@ -6,7 +6,7 @@ import { isCI } from 'ci-info';
 import { xxhash64 } from 'hash-wasm';
 
 import picocolors from 'picocolors';
-import { identity } from './misc';
+import { fastStringArrayJoin, identity } from './misc';
 
 const fsMemoCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache'), tableName: 'fs_memo_cache' });
 
@@ -49,28 +49,34 @@ function createCache(onlyUseCachedIfFail: boolean) {
     fn: (...args: Args) => Promise<T>,
     opt: FsMemoCacheOptions<T>
   ): (...args: Args) => Promise<T> {
-    const fixedKey = fn.toString();
-
     if (opt.temporaryBypass) {
       return fn;
     }
 
+    const serializer = 'serializer' in opt ? opt.serializer : identity<T, string>;
+    const deserializer = 'deserializer' in opt ? opt.deserializer : identity<string, T>;
+
+    const fixedKey = fn.toString();
+
+    const fixedKeyHashPromise = xxhash64(fixedKey);
+    const devalueModulePromise = import('devalue');
+
     return async function cachedCb(...args: Args) {
-      const { stringify: devalueStringify } = await import('devalue');
+      const devalueStringify = (await devalueModulePromise).stringify;
 
       // Construct the complete cache key for this function invocation
       // typeson.stringify is still limited. For now we uses typescript to guard the args.
-      const cacheKey = (await Promise.all([
-        xxhash64(fixedKey),
-        xxhash64(devalueStringify(args))
-      ])).join('|');
+      const cacheKey = fastStringArrayJoin(
+        await Promise.all([
+          fixedKeyHashPromise,
+          xxhash64(devalueStringify(args))
+        ]),
+        '|'
+      );
 
       const cacheName = picocolors.gray(fn.name || fixedKey || cacheKey);
 
       const cached = fsMemoCache.get(cacheKey);
-
-      const serializer = 'serializer' in opt ? opt.serializer : identity as any;
-      const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
 
       if (onlyUseCachedIfFail) {
         try {

@@ -66,7 +66,7 @@ export function domainWildCardToRegex(domain: string) {
   return result;
 }
 
-export const identity = <T>(x: T): T => x;
+export const identity = <T, R = T>(x: T): R => x as any;
 
 export function appendArrayFromSet<T>(dest: T[], source: Set<T> | Array<Set<T>>, transformer: (item: T) => T = identity) {
   const casted = Array.isArray(source) ? source : [source];
