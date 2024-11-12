@@ -35,16 +35,16 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   // 'zero.dns0.eu',
   'dns.nextdns.io',
   'anycast.dns.nextdns.io',
-  'wikimedia-dns.org',
+  // 'wikimedia-dns.org',
   // 'ordns.he.net',
   // 'dns.mullvad.net',
   'basic.rethinkdns.com'
   // 'ada.openbld.net',
   // 'dns.rabbitdns.org'
-] as const).map(server => [
-  server,
+] as const).map(dns => [
+  dns,
   DNS2.DOHClient({
-    dns: server,
+    dns,
     http: false
     // get: (url: string) => undici.request(url).then(r => r.body)
   })
