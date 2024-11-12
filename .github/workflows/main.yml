@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Tune GitHub-hosted runner network
-        # https://github.com/actions/runner-images/issues/1187
-        uses: smorimoto/tune-github-hosted-runner-network@v1
+      # - name: Tune GitHub-hosted runner network
+      #   # https://github.com/actions/runner-images/issues/1187
+      #   uses: smorimoto/tune-github-hosted-runner-network@v1
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
