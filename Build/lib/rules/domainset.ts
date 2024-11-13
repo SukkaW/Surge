@@ -1,6 +1,5 @@
 import { invariant } from 'foxact/invariant';
 import createKeywordFilter from '../aho-corasick';
-import { sortDomains } from '../stable-sort-domain';
 import { RuleOutput } from './base';
 import type { SingboxSourceFormat } from '../singbox';
 
@@ -96,18 +95,18 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
 
   mitmSgmodule = undefined;
 
-  adguardhome(whitelist: Set<string | `.${string}`>): string[] {
+  adguardhome(): string[] {
     const results: string[] = [];
 
-    const whitelistArray = sortDomains(Array.from(whitelist));
-    for (let i = 0, len = whitelistArray.length; i < len; i++) {
-      const domain = whitelistArray[i];
-      if (domain[0] === '.') {
-        results.push(`@@||${domain.slice(1)}^`);
-      } else {
-        results.push(`@@|${domain}^`);
-      }
-    }
+    // const whitelistArray = sortDomains(Array.from(whitelist));
+    // for (let i = 0, len = whitelistArray.length; i < len; i++) {
+    //   const domain = whitelistArray[i];
+    //   if (domain[0] === '.') {
+    //     results.push(`@@||${domain.slice(1)}^`);
+    //   } else {
+    //     results.push(`@@|${domain}^`);
+    //   }
+    // }
 
     for (let i = 0, len = this.$preprocessed.length; i < len; i++) {
       const domain = this.$preprocessed[i];
