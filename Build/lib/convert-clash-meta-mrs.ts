@@ -5,7 +5,7 @@ import { pipeline } from 'node:stream/promises';
 import zlib from 'node:zlib';
 import process from 'node:process';
 
-import { async as ezspawn } from '@jsdevtools/ez-spawn';
+import { exec } from 'tinyexec';
 import { mkdirp } from './misc';
 import { $fetch } from './make-fetch-happen';
 
@@ -52,7 +52,7 @@ async function ensureMihomoBinary() {
 export async function convertClashMetaMrs(type: 'domain', format: 'text', input: string, output: string) {
   await ensureMihomoBinary();
 
-  const { stderr } = await ezspawn(mihomoBinaryPath, ['convert-ruleset', type, format, input, output]);
+  const { stderr } = await exec(mihomoBinaryPath, ['convert-ruleset', type, format, input, output]);
 
   if (stderr) {
     throw new Error(stderr);
