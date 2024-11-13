@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { Readable } from 'node:stream';
 import type { FileHandle } from 'node:fs/promises';
+import readline from 'node:readline';
 
 import { TextLineStream } from './text-line-transform-stream';
 import type { ReadableStream } from 'node:stream/web';
@@ -18,10 +19,16 @@ function getReadableStream(file: string | FileHandle): ReadableStream {
   }
   return file.readableWebStream();
 }
+
 // TODO: use FileHandle.readLine()
-export const readFileByLine: ((file: string | FileHandle) => AsyncIterable<string>) = (file: string | FileHandle) => getReadableStream(file)
+export const readFileByLineLegacy: ((file: string /* | FileHandle */) => AsyncIterable<string>) = (file: string | FileHandle) => getReadableStream(file)
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextLineStream());
+
+export const readFileByLine: ((file: string /* | FileHandle */) => AsyncIterable<string>) = (file: string) => readline.createInterface({
+  input: fs.createReadStream(file/* , { encoding: 'utf-8' } */),
+  crlfDelay: Infinity
+});
 
 function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData | UnidiciWebResponse>(resp: T): NonNullable<T['body']> {
   if (resp.body == null) {
@@ -53,7 +60,7 @@ export function fetchRemoteTextByLine(url: string) {
   return $fetch(url).then(createReadlineInterfaceFromResponse);
 }
 
-export async function readFileIntoProcessedArray(file: string | FileHandle) {
+export async function readFileIntoProcessedArray(file: string /* | FileHandle */) {
   const results = [];
   for await (const line of readFileByLine(file)) {
     if (processLine(line)) {
