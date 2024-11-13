@@ -1,4 +1,5 @@
 import { basename, extname } from 'node:path';
+import process from 'node:process';
 import picocolors from 'picocolors';
 
 const SPAN_STATUS_START = 0;
@@ -102,6 +103,15 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
 
     const dummySpan = createSpan(taskName);
     if (importMetaMain) {
+      process.on('uncaughtException', (error) => {
+        console.error('Uncaught exception:', error);
+        process.exit(1);
+      });
+      process.on('unhandledRejection', (reason) => {
+        console.error('Unhandled rejection:', reason);
+        process.exit(1);
+      });
+
       dummySpan.traceChildAsync('dummy', fn).finally(() => {
         dummySpan.stop();
         printTraceResult(dummySpan.traceResult);
