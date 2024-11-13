@@ -1,5 +1,5 @@
 import { DOMAINS, PROCESS_NAMES } from '../Source/non_ip/cloudmounter';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { task } from './trace';
 import { RulesetOutput } from './lib/create-file';
 

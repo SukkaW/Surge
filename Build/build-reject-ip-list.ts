@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
 import { fsFetchCache, getFileContentHash } from './lib/cache-filesystem';
 import { processLine } from './lib/process-line';

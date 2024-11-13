@@ -11,14 +11,13 @@ import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
 // (since it is hashes based). But the result is still deterministic, which is
 // enough when creating a simple stat of reject hosts.
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import { setAddFromArray } from './lib/set-add-from-array';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
-import { withBannerArray } from './lib/misc';
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectBaseDescription = [
@@ -155,10 +154,16 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     ),
     compareAndWriteFile(
       span,
-      withBannerArray(
-        'Sukka\'s Ruleset - Blocklist for AdGuardHome',
-        rejectBaseDescription,
-        new Date(),
+      appendArrayInPlace(
+        [
+          '! Title: Sukka\'s Ruleset - Blocklist for AdGuardHome',
+          '! Last modified: ' + new Date().toUTCString(),
+          '! Expires: 6 hours',
+          '! License: https://github.com/SukkaW/Surge/blob/master/LICENSE',
+          '! Homepage: https://github.com/SukkaW/Surge',
+          '! Description: The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+          '!'
+        ],
         rejectOutput.adguardhome(filterRuleWhitelistDomainSets)
       ),
       path.join(OUTPUT_INTERNAL_DIR, 'reject-adguardhome.txt')

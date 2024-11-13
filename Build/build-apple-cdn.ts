@@ -1,6 +1,6 @@
 import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
 import { task } from './trace';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { DomainsetOutput } from './lib/create-file';
 import { $fetch } from './lib/make-fetch-happen';

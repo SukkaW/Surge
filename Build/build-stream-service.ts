@@ -3,7 +3,7 @@ import type { Span } from './trace';
 import { task } from './trace';
 
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { RulesetOutput } from './lib/create-file';
 
 export function createRulesetForStreamService(span: Span,

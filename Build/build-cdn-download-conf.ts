@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { HostnameTrie } from './lib/trie';
 import { task } from './trace';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { processLine } from './lib/process-line';

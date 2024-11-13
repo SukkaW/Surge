@@ -7,7 +7,7 @@ import { DOMESTICS, DOH_BOOTSTRAP } from '../Source/non_ip/domestic';
 import * as yaml from 'yaml';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { createGetDnsMappingRule } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
 
 const HOSTNAMES = [

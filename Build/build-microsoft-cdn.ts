@@ -1,7 +1,7 @@
 import { task } from './trace';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { HostnameSmolTrie } from './lib/trie';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
 import { RulesetOutput } from './lib/create-file';

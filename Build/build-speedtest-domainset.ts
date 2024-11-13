@@ -3,7 +3,7 @@ import path from 'node:path';
 import { getHostname } from 'tldts-experimental';
 import { task } from './trace';
 import { $fetch } from './lib/make-fetch-happen';
-import { SHARED_DESCRIPTION } from './lib/constants';
+import { SHARED_DESCRIPTION } from './constants/description';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 
 import { DomainsetOutput } from './lib/create-file';
