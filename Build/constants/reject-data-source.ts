@@ -404,5 +404,6 @@ export const PREDEFINED_WHITELIST = [
   '.bc.googleusercontent.com', // rDNS 218.178.172.34.bc.googleusercontent.com
   '.host.secureserver.net', // rDNS .64.149.167.72.host.secureserver.net,
   '.ip.linodeusercontent.com', // rDNS 45-79-169-153.ip.linodeusercontent.com
-  '.shoppy.gg' // Spam404
+  '.shoppy.gg', // Spam404
+  'transcend-cdn.com' // AdGuard Annoyances
 ];
