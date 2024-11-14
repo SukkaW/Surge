@@ -258,7 +258,7 @@ const FOX_NOW: StreamService = {
 const FOX_PLUS: StreamService = {
   name: 'Fox+',
   rules: [
-    'DOMAIN,dashasiafox.akamaized.netflix',
+    'DOMAIN,dashasiafox.akamaized.net',
     'DOMAIN,staticasiafox.akamaized.net',
 
     'DOMAIN-SUFFIX,foxplus.com',
