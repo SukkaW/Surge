@@ -308,7 +308,6 @@ const HBO_ASIA: StreamService = {
     'DOMAIN,hbogoprod-vod.akamaized.net',
     'DOMAIN,manifest.prod.boltdns.net',
     'DOMAIN,players.brightcove.net',
-    'DOMAIN,s3-ap-southeast-1.amazonaws.com',
     'DOMAIN,hboasialive.akamaized.net',
     'DOMAIN,hbounify-prod.evergent.com',
     'DOMAIN,hbolb.onwardsmg.com',
