@@ -90,9 +90,18 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
+      - name: Get NPM cache directory path
+        id: npm_cache_path
+        shell: sh
+        run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
+      - name: Cache NPM cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm_cache_path.outputs.dir }}
+          key: ${{ runner.os }}-deploy-to-cloudflare-npm
       - uses: actions/download-artifact@v4
         with:
-          name: build-artifact-${{ github. ref_name }}
+          name: build-artifact-${{ github.ref_name }}
           path: public
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
