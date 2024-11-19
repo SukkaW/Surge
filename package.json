@@ -48,7 +48,7 @@
     "undici": "^6.21.0",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.1",
-    "yaml": "^2.6.0"
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@eslint-sukka/node": "^6.11.0",
