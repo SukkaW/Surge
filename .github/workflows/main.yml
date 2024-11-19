@@ -124,7 +124,7 @@ jobs:
           path: public
       - name: Upload Dist to GitLab
         run: |
-          git clone --filter=blob:none https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git ./deploy-git
+          git clone --filter=tree:0 https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git ./deploy-git
           cd ./deploy-git
           git config --global push.default matching
           git config --global user.email "${GITLAB_EMAIL}"
@@ -142,13 +142,22 @@ jobs:
           GITLAB_TOKEN_NAME: ${{ secrets.GITLAB_TOKEN_NAME }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
       - name: Upload Dist to GitHub
-        uses: peaceiris/actions-gh-pages@v4
         continue-on-error: true
-        with:
-          personal_token: ${{ secrets.GIT_TOKEN }}
-          user_name: ${{ secrets.GIT_USER }}
-          user_email: ${{ secrets.GIT_EMAIL }}
-          external_repository: SukkaLab/ruleset.skk.moe
-          publish_branch: master
-          publish_dir: public
-          cname: ruleset.skk.moe
+        run: |
+          git clone --filter=tree:0 https://${GH_USER}:${GH_TOKEN}@github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git
+          cd ./deploy-git
+          git config --global push.default matching
+          git config --global user.email "${GH_EMAIL}"
+          git config --global user.name "${GH_USER}"
+          rm -rf ./*
+          cp -rf ../public/* ./
+          echo "ruleset.skk.moe" > CNAME
+          git add --all .
+          git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
+          git push --quiet --force origin HEAD:master
+          cd ..
+          rm -rf ./deploy-git
+        env:
+          GH_EMAIL: ${{ secrets.GIT_EMAIL }}
+          GH_USER: ${{ secrets.GIT_USER }}
+          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
