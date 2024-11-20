@@ -45,7 +45,7 @@ export const buildCommon = task(require.main === module, __filename)(async (span
     const fullPath = SOURCE_DIR + path.sep + relativePath;
 
     if (relativePath.startsWith(domainsetSrcFolder)) {
-      promises.push(transformDomainset(span, fullPath, relativePath));
+      promises.push(transformDomainset(span, fullPath));
       continue;
     }
     // if (
@@ -107,15 +107,17 @@ function processFile(span: Span, sourcePath: string) {
   });
 }
 
-function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: string) {
+function transformDomainset(parentSpan: Span, sourcePath: string) {
+  const extname = path.extname(sourcePath);
+  const basename = path.basename(sourcePath, extname);
   return parentSpan
     .traceChildAsync(
-      `transform domainset: ${path.basename(sourcePath, path.extname(sourcePath))}`,
+      `transform domainset: ${basename}`,
       async (span) => {
         const res = await processFile(span, sourcePath);
         if (res === $skip) return;
 
-        const id = path.basename(relativePath).slice(0, -path.extname(relativePath).length);
+        const id = basename;
         const [title, descriptions, lines] = res;
 
         let description: string[];
@@ -140,13 +142,20 @@ function transformDomainset(parentSpan: Span, sourcePath: string, relativePath: 
  * Output Surge RULE-SET and Clash classical text format
  */
 async function transformRuleset(parentSpan: Span, sourcePath: string, relativePath: string) {
+  const extname = path.extname(sourcePath);
+  const basename = path.basename(sourcePath, extname);
+
   return parentSpan
-    .traceChild(`transform ruleset: ${path.basename(sourcePath, path.extname(sourcePath))}`)
+    .traceChild(`transform ruleset: ${basename}`)
     .traceAsyncFn(async (span) => {
       const res = await processFile(span, sourcePath);
       if (res === $skip) return;
 
-      const [type, id] = relativePath.slice(0, -path.extname(relativePath).length).split(path.sep);
+      const id = basename;
+      const [type] = relativePath.slice(0, -extname.length).split(path.sep);
+
+      console.log({ relativePath, basename, id, type });
+
       if (type !== 'ip' && type !== 'non_ip') {
         throw new TypeError(`Invalid type: ${type}`);
       }
