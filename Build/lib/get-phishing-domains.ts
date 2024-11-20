@@ -4,12 +4,13 @@ import * as tldts from 'tldts-experimental';
 import { dummySpan, printTraceResult } from '../trace';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
-import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
+import { DEBUG_DOMAIN_TO_FIND, PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import createKeywordFilter from './aho-corasick';
 import { createCacheKey, deserializeArray, serializeArray } from './cache-filesystem';
 import { cache } from './fs-memo';
+import { isCI } from 'ci-info';
 
 const BLACK_TLD = new Set([
   'accountant', 'art', 'autos',
@@ -112,12 +113,22 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
   const domainCountMap = new Map<string, number>();
   const domainScoreMap: Record<string, number> = {};
 
+  let line = '';
   let tld: string | null = '';
   let apexDomain: string | null = '';
   let subdomain: string | null = '';
 
+  // const set = new Set<string>();
+  // let duplicateCount = 0;
+
   for (let i = 0, len = domainArr.length; i < len; i++) {
-    const line = domainArr[i];
+    line = domainArr[i];
+
+    // if (set.has(line)) {
+    //   duplicateCount++;
+    // } else {
+    //   set.add(line);
+    // }
 
     const parsed = tldts.parse(line, loosTldOptWithPrivateDomains);
     if (parsed.isPrivate) {
@@ -183,11 +194,13 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
   //   count: domainCountMap.get('flk-ipfs.xyz')
   // });
 
+  // console.log({ duplicateCount, domainArrLen: domainArr.length });
+
   return Promise.resolve(domainArr);
 }, {
   serializer: serializeArray,
   deserializer: deserializeArray,
-  temporaryBypass: true
+  temporaryBypass: !isCI || DEBUG_DOMAIN_TO_FIND !== null
 });
 
 const cacheKey = createCacheKey(__filename);
@@ -204,6 +217,8 @@ export function getPhishingDomains(parentSpan: Span) {
 
       return domainArr;
     });
+
+    console.log({ len: domainArr.length });
 
     return span.traceChildAsync(
       'process phishing domain set',

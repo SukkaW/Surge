@@ -65,7 +65,11 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return result;
   };
 
-  constructor(protected readonly span: Span, protected readonly id: string) { }
+  protected readonly span: Span;
+
+  constructor($span: Span, protected readonly id: string) {
+    this.span = $span.traceChild('RuleOutput#' + id);
+  }
 
   protected title: string | null = null;
   withTitle(title: string) {
@@ -201,7 +205,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
-  static readonly ipToCidr = (ip: string, version: 4 | 6 = 4) => {
+  static readonly ipToCidr = (ip: string, version: 4 | 6) => {
     if (ip.includes('/')) return ip;
     if (version === 4) {
       return ip + '/32';
@@ -257,7 +261,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     if (this.$$preprocessed === null) {
       this.guardPendingPromise();
 
-      this.$$preprocessed = this.span.traceChildSync('RuleOutput#preprocess: ' + this.id, () => this.preprocess());
+      this.$$preprocessed = this.span.traceChildSync('preprocess', () => this.preprocess());
     }
     return this.$$preprocessed;
   }
@@ -280,56 +284,56 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     );
   }
 
-  async write(): Promise<void> {
-    await this.done();
+  write(): Promise<void> {
+    return this.done().then(() => this.span.traceChildAsync('write all', async () => {
+      invariant(this.title, 'Missing title');
+      invariant(this.description, 'Missing description');
 
-    invariant(this.title, 'Missing title');
-    invariant(this.description, 'Missing description');
-
-    const promises = [
-      compareAndWriteFile(
-        this.span,
-        withBannerArray(
-          this.title,
-          this.description,
-          this.date,
-          this.surge()
+      const promises = [
+        compareAndWriteFile(
+          this.span,
+          withBannerArray(
+            this.title,
+            this.description,
+            this.date,
+            this.surge()
+          ),
+          path.join(OUTPUT_SURGE_DIR, this.type, this.id + '.conf')
         ),
-        path.join(OUTPUT_SURGE_DIR, this.type, this.id + '.conf')
-      ),
-      compareAndWriteFile(
-        this.span,
-        withBannerArray(
-          this.title,
-          this.description,
-          this.date,
-          this.clash()
+        compareAndWriteFile(
+          this.span,
+          withBannerArray(
+            this.title,
+            this.description,
+            this.date,
+            this.clash()
+          ),
+          path.join(OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
         ),
-        path.join(OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
-      ),
-      compareAndWriteFile(
-        this.span,
-        this.singbox(),
-        path.join(OUTPUT_SINGBOX_DIR, this.type, this.id + '.json')
-      )
-    ];
+        compareAndWriteFile(
+          this.span,
+          this.singbox(),
+          path.join(OUTPUT_SINGBOX_DIR, this.type, this.id + '.json')
+        )
+      ];
 
-    if (this.mitmSgmodule) {
-      const sgmodule = this.mitmSgmodule();
-      const sgModulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
+      if (this.mitmSgmodule) {
+        const sgmodule = this.mitmSgmodule();
+        const sgModulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
 
-      if (sgmodule) {
-        promises.push(
-          compareAndWriteFile(
-            this.span,
-            sgmodule,
-            path.join(OUTPUT_MODULES_DIR, sgModulePath)
-          )
-        );
+        if (sgmodule) {
+          promises.push(
+            compareAndWriteFile(
+              this.span,
+              sgmodule,
+              path.join(OUTPUT_MODULES_DIR, sgModulePath)
+            )
+          );
+        }
       }
-    }
 
-    await Promise.all(promises);
+      await Promise.all(promises);
+    }));
   }
 
   abstract surge(): string[];

@@ -148,7 +148,15 @@ export async function whyIsNodeRunning() {
 
 export function printTraceResult(traceResult: TraceResult = rootTraceResult) {
   printStats(traceResult.children);
-  printTree(traceResult, node => `${node.name} ${picocolors.bold(`${(node.end - node.start).toFixed(3)}ms`)}`);
+  printTree(
+    traceResult,
+    node => {
+      if (node.end - node.start < 0) {
+        return node.name;
+      }
+      return `${node.name} ${picocolors.bold(`${(node.end - node.start).toFixed(3)}ms`)}`;
+    }
+  );
 }
 
 function printTree(initialTree: TraceResult, printNode: (node: TraceResult, branch: string) => string) {

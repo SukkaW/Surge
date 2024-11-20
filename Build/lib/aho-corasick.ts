@@ -12,11 +12,9 @@ function createKeywordFilter(keys: string[] | Set<string>) {
 
   // Create a trie with extra fields and information
   const put = (key: string) => {
-    const len = key.length;
-
     let node = root;
 
-    for (let idx = 0; idx < len; idx++) {
+    for (let idx = 0, len = key.length; idx < len; idx++) {
       const char = key[idx];
 
       if (node.has(char)) {

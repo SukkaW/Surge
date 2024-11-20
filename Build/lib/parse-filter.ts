@@ -9,8 +9,8 @@ import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import { identity } from './misc';
+import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';
 
-const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 let foundDebugDomain = false;
 const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
 

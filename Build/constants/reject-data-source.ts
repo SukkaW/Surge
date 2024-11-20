@@ -1,5 +1,7 @@
 import { TTL } from '../lib/cache-filesystem';
 
+export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
+
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean, ttl: number];
 
 export const HOSTS: HostsSource[] = [

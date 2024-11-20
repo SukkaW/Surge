@@ -153,7 +153,7 @@ export class Cache<S = string> {
     }
 
     const end = performance.now();
-    console.log(`${picocolors.gray(`[${((end - start) / 1e6).toFixed(3)}ms]`)} cache initialized from ${this.cachePath}`);
+    console.log(`${picocolors.gray(`[${((end - start)).toFixed(3)}ns]`)} cache initialized from ${this.tableName} @ ${this.cachePath}`);
   }
 
   set(key: string, value: string, ttl = 60 * 1000): void {
