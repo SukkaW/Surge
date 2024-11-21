@@ -100,6 +100,9 @@ importers:
       why-is-node-running:
         specifier: ^3.2.1
         version: 3.2.1
+      xbits:
+        specifier: ^0.2.0
+        version: 0.2.0
       yaml:
         specifier: ^2.6.1
         version: 2.6.1
@@ -1898,6 +1901,9 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  xbits@0.2.0:
+    resolution: {integrity: sha512-JMd+tT2WwmbQZxIE9lQ3WoziWgTngKwdMbuk1CBqjos2zn9y5LYYSGRkYqzsFlwITHJehpdHgDdTOf4Qls/Q+w==}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -3785,6 +3791,8 @@ snapshots:
       strip-ansi: 7.1.0
 
   wrappy@1.0.2: {}
+
+  xbits@0.2.0: {}
 
   y18n@5.0.8: {}
 

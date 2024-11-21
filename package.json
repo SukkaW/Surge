@@ -48,6 +48,7 @@
     "undici": "^6.21.0",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.1",
+    "xbits": "^0.2.0",
     "yaml": "^2.6.1"
   },
   "devDependencies": {

@@ -27,6 +27,7 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
 import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
+import { cacheGc } from './lib/make-fetch-happen';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -115,6 +116,7 @@ process.on('unhandledRejection', (reason) => {
 
     await buildDeprecateFiles(rootSpan);
     await buildPublic(rootSpan);
+    await cacheGc(rootSpan);
 
     rootSpan.stop();
 

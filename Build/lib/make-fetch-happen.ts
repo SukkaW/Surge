@@ -6,11 +6,47 @@ import cacache from 'cacache';
 import picocolors from 'picocolors';
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports -- type only
 import type { Response as NodeFetchResponse } from 'node-fetch';
+import { task } from '../trace';
+import { bytes } from 'xbits';
 
 export type { NodeFetchResponse };
 
 const cachePath = path.resolve(__dirname, '../../.cache/__make_fetch_happen__');
 fs.mkdirSync(cachePath, { recursive: true });
+
+interface CacacheVerifyStats {
+  startTime: Date,
+  endTime: Date,
+  runTime: {
+    markStartTime: 0,
+    fixPerms: number,
+    garbageCollect: number,
+    rebuildIndex: number,
+    cleanTmp: number,
+    writeVerifile: number,
+    markEndTime: number,
+    total: number
+  },
+  verifiedContent: number,
+  reclaimedCount: number,
+  reclaimedSize: number,
+  badContentCount: number,
+  keptSize: number,
+  missingContent: number,
+  rejectedEntries: number,
+  totalEntries: number
+}
+
+export const cacheGc = task(require.main === module, __filename)(
+  (span) => span
+    .traceChildAsync('cacache gc', () => cacache.verify(cachePath, { concurrency: 64 }))
+    .then((stats: CacacheVerifyStats) => {
+      // console.log({ stats });
+      console.log(picocolors.green('[cacheGc] running gc on cache:'), cachePath);
+      console.log(picocolors.green('[cacheGc] content verified:'), stats.verifiedContent, '(' + bytes(stats.keptSize) + ')');
+      console.log(picocolors.green('[cacheGc] reclaimed:'), stats.reclaimedCount, '(' + bytes(stats.reclaimedSize) + ')');
+    })
+);
 
 const _fetch = makeFetchHappen.defaults({
   cachePath,
