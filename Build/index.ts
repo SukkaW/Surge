@@ -114,9 +114,10 @@ process.on('unhandledRejection', (reason) => {
       downloadMockAssetsPromise
     ]);
 
-    await buildDeprecateFiles(rootSpan);
-    await buildPublic(rootSpan);
-    await cacheGc(rootSpan);
+    await Promise.all([
+      buildDeprecateFiles(rootSpan).then(() => buildPublic(rootSpan)),
+      cacheGc(rootSpan)
+    ]);
 
     rootSpan.stop();
 
