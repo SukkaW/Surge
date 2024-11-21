@@ -3,10 +3,11 @@
 // enough when sorting.
 import * as tldts from 'tldts-experimental';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
+import { fastStringCompare } from './misc';
 
 export function compare(a: string, b: string) {
   if (a === b) return 0;
-  return (a.length - b.length) || a.localeCompare(b);
+  return (a.length - b.length) || fastStringCompare(a, b);
 }
 
 export function buildParseDomainMap(inputs: string[]) {

@@ -5,6 +5,7 @@ import type { SingboxSourceFormat } from '../singbox';
 
 import * as tldts from 'tldts-experimental';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
+import { fastStringCompare } from '../misc';
 
 type Preprocessed = string[];
 
@@ -89,7 +90,7 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
       )
       .entries())
       .filter(a => a[1] > 9)
-      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
+      .sort((a, b) => (b[1] - a[1]) || fastStringCompare(a[0], b[0]))
       .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`);
   }
 

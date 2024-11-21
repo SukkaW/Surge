@@ -7,7 +7,7 @@ import { treeDir } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
 import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
-import { mkdirp, writeFile } from './lib/misc';
+import { fastStringCompare, mkdirp, writeFile } from './lib/misc';
 import picocolors from 'picocolors';
 import { compareAndWriteFile } from './lib/create-file';
 
@@ -90,7 +90,7 @@ const priorityOrder: Record<'default' | string & {}, number> = {
   LICENSE: 70,
   default: Number.MAX_VALUE
 };
-const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || a.name.localeCompare(b.name);
+const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || fastStringCompare(a.name, b.name);
 
 const html = (string: TemplateStringsArray, ...values: any[]) => string.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
 

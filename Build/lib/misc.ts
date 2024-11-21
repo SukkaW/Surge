@@ -21,6 +21,26 @@ export function fastStringArrayJoin(arr: string[], sep: string) {
   return result;
 }
 
+export function fastStringCompare(a: string, b: string) {
+  const lenA = a.length;
+  const lenB = b.length;
+  const minLen = lenA < lenB ? lenA : lenB;
+
+  for (let i = 0; i < minLen; ++i) {
+    const ca = a.charCodeAt(i);
+    const cb = b.charCodeAt(i);
+
+    if (ca > cb) return 1;
+    if (ca < cb) return -1;
+  }
+
+  if (lenA === lenB) {
+    return 0;
+  }
+
+  return lenA > lenB ? 1 : -1;
+};
+
 interface Write {
   (
     destination: string,

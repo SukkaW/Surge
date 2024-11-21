@@ -2,7 +2,7 @@
  * Hostbane-Optimized Trie based on Mnemonist Trie
  */
 
-import { fastStringArrayJoin } from './misc';
+import { fastStringArrayJoin, fastStringCompare } from './misc';
 import util from 'node:util';
 import { noop } from 'foxact/noop';
 import FIFO from './fifo';
@@ -251,7 +251,7 @@ abstract class Triebase<Meta = any> {
 
   static compare(this: void, a: string, b: string) {
     if (a === b) return 0;
-    return (a.length - b.length) || a.localeCompare(b);
+    return (a.length - b.length) || fastStringCompare(a, b);
   }
 
   private walkWithSort(
