@@ -68,5 +68,8 @@ export const CN_CIDR_MISSING_IN_CHNROUTE = [
 
   // NetEase
   '223.252.194.0/24',
-  '223.252.196.0/24'
+  '223.252.196.0/24',
+
+  // Xiamen Kuaikuai
+  '180.188.36.0/22' // no route globally
 ];
