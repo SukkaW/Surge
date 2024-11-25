@@ -18,3 +18,4 @@ hostname = %APPEND% *.google-analytics.com, *.googletagmanager.com, *.googlesynd
 ^https?://.+\.amazon-adsystem\.com/aax2/apstag\.js https://ruleset.skk.moe/Mock/amazon-adsystem-com_amazon-apstag.js 302
 ^https?://static\.chartbeat\.com/chartbeat\.js https://ruleset.skk.moe/Mock/static-chartbeat-com_chartbeat_mab.js 302
 ^https?://widgets\.outbrain\.com/outbrain\.js https://ruleset.skk.moe/Mock/widgets-outbrain-com_outbrain.js 302
+^https?://securepubads\.g\.doubleclick\.net/tag/js/gpt\.js https://ruleset.skk.moe/Mock/securepubads-g-doubleclick-net_tag_js_gpt.js 302
