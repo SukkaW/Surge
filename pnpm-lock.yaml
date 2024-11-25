@@ -52,6 +52,9 @@ importers:
       dns2:
         specifier: ^2.1.0
         version: 2.1.0
+      escape-string-regexp-node:
+        specifier: ^1.0.2
+        version: 1.0.2
       fast-cidr-tools:
         specifier: ^0.3.1
         version: 0.3.1
@@ -919,6 +922,9 @@ packages:
   escalade@3.2.0:
     resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
     engines: {node: '>=6'}
+
+  escape-string-regexp-node@1.0.2:
+    resolution: {integrity: sha512-tv6v/7vF8ob7vTNPBHJ6cdRGtb9t6wBZJt6ZWzJ5kDacXa3jplof+mmoXYLuEUtFXWw8xwR2wVbT2c20HvVubA==}
 
   escape-string-regexp@2.0.0:
     resolution: {integrity: sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==}
@@ -2710,6 +2716,8 @@ snapshots:
   err-code@2.0.3: {}
 
   escalade@3.2.0: {}
+
+  escape-string-regexp-node@1.0.2: {}
 
   escape-string-regexp@2.0.0: {}
 

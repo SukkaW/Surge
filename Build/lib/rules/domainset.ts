@@ -6,6 +6,7 @@ import type { SingboxSourceFormat } from '../singbox';
 import * as tldts from 'tldts-experimental';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import { fastStringCompare } from '../misc';
+import escapeStringRegexp from 'escape-string-regexp-node';
 
 type Preprocessed = string[];
 
@@ -129,15 +130,16 @@ export class DomainsetOutput extends RuleOutput<Preprocessed> {
 
     for (const keyword of this.domainKeywords) {
       // Use regex to match keyword
-      results.push(`/${keyword}/`);
+      results.push(`/${escapeStringRegexp(keyword)}/`);
     }
 
     for (const ipGroup of [this.ipcidr, this.ipcidrNoResolve]) {
       for (const ipcidr of ipGroup) {
         if (ipcidr.endsWith('/32')) {
           results.push(`||${ipcidr.slice(0, -3)}`);
-        } else if (ipcidr.endsWith('.0/24')) {
-          results.push(`||${ipcidr.slice(0, -6)}.*`);
+          /* else if (ipcidr.endsWith('.0/24')) {
+            results.push(`||${ipcidr.slice(0, -6)}.*`);
+          } */
         } else {
           results.push(`||${ipcidr}^`);
         }
