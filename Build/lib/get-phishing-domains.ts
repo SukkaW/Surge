@@ -48,7 +48,8 @@ const WHITELIST_MAIN_DOMAINS = new Set([
   // 'vercel.app',
   'gitbook.io',
   'zendesk.com',
-  'ipfs.eth.aragon.network'
+  'ipfs.eth.aragon.network',
+  'wordpress.com'
 ]);
 
 const leathalKeywords = createKeywordFilter([
