@@ -9,7 +9,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { DomainsetOutput } from './lib/create-file';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { Sema } from 'async-sema';
+import { newQueue } from '@henrygd/queue';
 
 const KEYWORDS = [
   'Hong Kong',
@@ -136,7 +136,7 @@ const PREDEFINE_DOMAINS = [
 
 ];
 
-const s = new Sema(2);
+const s = newQueue(2);
 
 const latestTopUserAgentsPromise = $fetch('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json')
   .then(res => res.json())
@@ -150,9 +150,7 @@ async function querySpeedtestApi(keyword: string) {
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
-    await s.acquire();
-
-    const r = await $fetch(url, {
+    const data = await s.add<Array<{ url: string, host: string }>>(() => $fetch(url, {
       headers: {
         dnt: '1',
         Referer: 'https://www.speedtest.net/',
@@ -170,9 +168,7 @@ async function querySpeedtestApi(keyword: string) {
           : {})
       },
       timeout: 1000 * 60
-    });
-
-    const data: Array<{ url: string, host: string }> = await r.json();
+    }).then(res => res.json()));
 
     return data.reduce<string[]>(
       (prev, cur) => {
@@ -187,8 +183,6 @@ async function querySpeedtestApi(keyword: string) {
   } catch (e) {
     console.error(e);
     return [];
-  } finally {
-    s.release();
   }
 }
 
