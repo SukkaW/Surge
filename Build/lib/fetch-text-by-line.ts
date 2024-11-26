@@ -6,7 +6,7 @@ import readline from 'node:readline';
 import { TextLineStream } from './text-line-transform-stream';
 import type { ReadableStream } from 'node:stream/web';
 import { TextDecoderStream } from 'node:stream/web';
-import { processLine } from './process-line';
+import { processLine, ProcessLineStream } from './process-line';
 import { $fetch } from './make-fetch-happen';
 import type { NodeFetchResponse } from './make-fetch-happen';
 import type { UndiciResponseData } from './fetch-retry';
@@ -40,7 +40,7 @@ function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData | U
   return resp.body;
 }
 
-export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | UndiciResponseData | UnidiciWebResponse) => AsyncIterable<string>) = (resp) => {
+export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | UndiciResponseData | UnidiciWebResponse, processLine?: boolean) => ReadableStream<string>) = (resp, processLine = false) => {
   const stream = ensureResponseBody(resp);
 
   const webStream: ReadableStream<Uint8Array> = 'getReader' in stream
@@ -51,13 +51,18 @@ export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | Un
         : Readable.toWeb(new Readable().wrap(stream))
     );
 
-  return webStream
+  const resultStream = webStream
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(new TextLineStream());
+
+  if (processLine) {
+    return resultStream.pipeThrough(new ProcessLineStream());
+  }
+  return resultStream;
 };
 
-export function fetchRemoteTextByLine(url: string) {
-  return $fetch(url).then(createReadlineInterfaceFromResponse);
+export function fetchRemoteTextByLine(url: string, processLine = false): Promise<AsyncIterable<string>> {
+  return $fetch(url).then(resp => createReadlineInterfaceFromResponse(resp, processLine));
 }
 
 export async function readFileIntoProcessedArray(file: string /* | FileHandle */) {

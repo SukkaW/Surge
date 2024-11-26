@@ -1,5 +1,4 @@
 import { fetchRemoteTextByLine } from './fetch-text-by-line';
-import { processLineFromReadline } from './process-line';
 
 import createKeywordFilter from './aho-corasick';
 
@@ -36,7 +35,7 @@ if (require.main === module) {
   (async () => {
     const { bench, group, run } = await import('mitata');
 
-    const data = await processLineFromReadline(await fetchRemoteTextByLine('https://easylist.to/easylist/easylist.txt'));
+    const data = await Array.fromAsync(await fetchRemoteTextByLine('https://easylist.to/easylist/easylist.txt', true));
     console.log({ dataLen: data.length });
     const keywordsSet = [
       '!',

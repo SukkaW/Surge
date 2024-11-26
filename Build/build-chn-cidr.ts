@@ -1,5 +1,4 @@
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
-import { processLineFromReadline } from './lib/process-line';
 import { task } from './trace';
 
 import { contains as containsCidr, exclude as excludeCidr } from 'fast-cidr-tools';
@@ -19,8 +18,8 @@ const PROBE_CHN_CIDR_V4 = [
 export const getChnCidrPromise = createMemoizedPromise(cachedOnlyFail(
   async function getChnCidr() {
     const [_cidr4, cidr6] = await Promise.all([
-      fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt').then(processLineFromReadline),
-      fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt').then(processLineFromReadline)
+      fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt', true).then(Array.fromAsync<string>),
+      fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt', true).then(Array.fromAsync<string>)
     ]);
 
     const cidr4 = excludeCidr(

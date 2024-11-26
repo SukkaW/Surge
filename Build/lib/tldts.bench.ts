@@ -1,5 +1,4 @@
 import { fetchRemoteTextByLine } from './fetch-text-by-line';
-import { processLineFromReadline } from './process-line';
 
 import { bench, group, run } from 'mitata';
 
@@ -7,7 +6,7 @@ import * as tldts from 'tldts';
 import * as tldtsExperimental from 'tldts-experimental';
 
 (async () => {
-  const data = await processLineFromReadline(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt'));
+  const data = await Array.fromAsync(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true));
 
   const tldtsOpt: Parameters<typeof tldts.getDomain>[1] = {
     allowPrivateDomains: false,

@@ -15,7 +15,7 @@ const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $f
   const ipv4: string[] = [];
   const ipv6: string[] = [];
 
-  for await (const line of createReadlineInterfaceFromResponse(resp)) {
+  for await (const line of createReadlineInterfaceFromResponse(resp, true)) {
     if (line.startsWith('bogus-nxdomain=')) {
       const ip = line.slice(15).trim();
       if (isProbablyIpv4(ip)) {

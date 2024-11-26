@@ -1,7 +1,6 @@
 // @ts-check
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
-import { processLine } from './lib/process-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
@@ -16,10 +15,7 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const ipcidr: string[] = [];
   const ipcidr6: string[] = [];
 
-  for await (const line of createReadlineInterfaceFromResponse(resp)) {
-    const cidr = processLine(line);
-    if (!cidr) continue;
-
+  for await (const cidr of createReadlineInterfaceFromResponse(resp, true)) {
     const [subnet] = cidr.split('/');
     if (isProbablyIpv4(subnet)) {
       ipcidr.push(cidr);

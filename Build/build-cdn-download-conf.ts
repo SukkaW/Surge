@@ -5,18 +5,14 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
-import { processLine } from './lib/process-line';
 import { DomainsetOutput } from './lib/create-file';
 import { CRASHLYTICS_WHITELIST } from './constants/reject-data-source';
 
 const getS3OSSDomainsPromise = (async (): Promise<string[]> => {
   const trie = new HostnameTrie();
 
-  for await (const line of await fetchRemoteTextByLine('https://publicsuffix.org/list/public_suffix_list.dat')) {
-    const tmp = processLine(line);
-    if (tmp) {
-      trie.add(tmp);
-    }
+  for await (const line of await fetchRemoteTextByLine('https://publicsuffix.org/list/public_suffix_list.dat', true)) {
+    trie.add(line);
   }
 
   /**

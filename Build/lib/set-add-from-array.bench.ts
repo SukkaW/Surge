@@ -1,10 +1,9 @@
 import { fetchRemoteTextByLine } from './fetch-text-by-line';
-import { processLineFromReadline } from './process-line';
 
 import { bench, group, run } from 'mitata';
 
 (async () => {
-  const data = await processLineFromReadline(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt'));
+  const data = await Array.fromAsync(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true));
 
   group(() => {
     bench('setAddFromArray', () => {
