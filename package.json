@@ -25,7 +25,6 @@
     "async-retry": "^1.3.3",
     "better-sqlite3": "^11.6.0",
     "cacache": "^19.0.1",
-    "cacheable-lookup": "^6.1.0",
     "ci-info": "^4.1.0",
     "cli-table3": "^0.6.5",
     "csv-parse": "^5.6.0",
@@ -45,7 +44,7 @@
     "tinyexec": "^0.3.1",
     "tldts": "^6.1.64",
     "tldts-experimental": "^6.1.64",
-    "undici": "^6.21.0",
+    "undici": "^7.0.0",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.1",
     "xbits": "^0.2.0",
@@ -61,25 +60,20 @@
     "@types/dns2": "^2.0.9",
     "@types/make-fetch-happen": "^10.0.4",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.10.1",
     "@types/node-fetch": "^2.6.12",
     "@types/punycode": "^2.1.4",
     "@types/tar-fs": "^2.0.4",
     "@types/tar-stream": "^3.1.3",
-    "eslint": "^9.15.0",
+    "eslint": "^9.16.0",
     "eslint-config-sukka": "^6.12.0",
     "eslint-formatter-sukka": "^6.12.0",
     "expect": "^29.7.0",
-    "mitata": "^1.0.17",
+    "mitata": "^1.0.19",
     "mocha": "^10.8.2",
     "typescript": "^5.7.2"
   },
-  "packageManager": "pnpm@9.14.2",
-  "pnpm": {
-    "patchedDependencies": {
-      "undici": "patches/undici.patch"
-    }
-  },
+  "packageManager": "pnpm@9.14.4",
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"
   }

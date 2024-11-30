@@ -10,21 +10,11 @@ import type {
   Response
 } from 'undici';
 
-export type UndiciResponseData = Dispatcher.ResponseData;
+export type UndiciResponseData<T = unknown> = Dispatcher.ResponseData<T>;
 
-import CacheableLookup from 'cacheable-lookup';
-import type { LookupOptions as CacheableLookupOptions } from 'cacheable-lookup';
 import { inspect } from 'node:util';
 
-const cacheableLookup = new CacheableLookup();
-
-const agent = new Agent({
-  connect: {
-    lookup(hostname, opt, cb) {
-      return cacheableLookup.lookup(hostname, opt as CacheableLookupOptions, cb);
-    }
-  }
-});
+const agent = new Agent({});
 
 setGlobalDispatcher(agent.compose(
   interceptors.retry({
@@ -34,7 +24,6 @@ setGlobalDispatcher(agent.compose(
 
     // TODO: this part of code is only for allow more errors to be retried by default
     // This should be removed once https://github.com/nodejs/undici/issues/3728 is implemented
-    // @ts-expect-error -- retry return type should be void
     retry(err, { state, opts }, cb) {
       const statusCode = 'statusCode' in err && typeof err.statusCode === 'number' ? err.statusCode : null;
       const errorCode = 'code' in err ? (err as NodeJS.ErrnoException).code : undefined;
