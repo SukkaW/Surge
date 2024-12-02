@@ -142,7 +142,7 @@ export async function processFilterRules(
   ttl: number | null = null,
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.applyWithHttp304AndMirrors<Readonly<[ white: string[], black: string[], warningMessages: string[] ]>>(
+  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.applyWithHttp304AndMirrors<Readonly<[white: string[], black: string[], warningMessages: string[]]>>(
     filterRulesUrl,
     fallbackUrls ?? [],
     getFileContentHash(__filename),
@@ -334,9 +334,19 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
       || filter.isRedirectRule()
       || filter.hasDomains()
       || filter.isCSP() // must not be csp rule
-      || (!filter.fromAny() && !filter.fromDocument())
+      || (!filter.fromHttp() && !filter.fromHttps())
     ) {
       // not supported type
+      result[1] = ParseType.Null;
+      return result;
+    }
+
+    if (
+      !filter.fromAny()
+      // $image, $websocket, $xhr this are all non-any
+      && !filter.fromDocument() // $document, $doc
+      // && !filter.fromSubdocument() // $subdocument, $subdoc
+    ) {
       result[1] = ParseType.Null;
       return result;
     }
@@ -366,10 +376,11 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
       const _1p = filter.firstParty();
       const _3p = filter.thirdParty();
 
-      if (_1p) {
-        if (_1p === _3p) {
+      if (_1p) { // first party is true
+        if (_3p) { // third party is also true
           result[0] = hostname;
           result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+
           return result;
         }
         result[1] = ParseType.Null;
@@ -548,6 +559,16 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
     result[1] = ParseType.ErrorMessage;
     return result;
   }
+
+  // if (line.endsWith('$image')) {
+  //   /**
+  //    * Some $image filters are not NetworkFilter:
+  //    *
+  //    * `app.site123.com$image`
+  //    * `t.signaux$image`
+  //    * `track.customer.io$image`
+  //    */
+  // }
 
   const lineStartsWithSingleDot = firstCharCode === 46; // 46 `.`
   if (
