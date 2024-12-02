@@ -34,6 +34,10 @@ export const DOMAIN_LISTS: HostsSource[] = [
 ];
 
 export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
+  // CoinBlockerList - Full
+  // Lat update 8 months ago, so we set a 14 days cache ttl
+  ['https://zerodot1.gitlab.io/CoinBlockerLists/list.txt', [], true, TTL.TWO_WEEKS()],
+
   // BarbBlock
   // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
   [
