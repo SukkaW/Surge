@@ -408,5 +408,6 @@ export const PREDEFINED_WHITELIST = [
   '.ip.linodeusercontent.com', // rDNS 45-79-169-153.ip.linodeusercontent.com
   '.shoppy.gg', // Spam404
   'transcend-cdn.com', // AdGuard Annoyances
-  'store1.gofile.io' // Dandelion Sprout's Annoyances List
+  'store1.gofile.io', // Dandelion Sprout's Annoyances List
+  'ad.12306.cn' // https://github.com/jdlingyu/ad-wars
 ];
