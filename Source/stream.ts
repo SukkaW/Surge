@@ -121,7 +121,7 @@ const BAHAMUT: StreamService = {
     'DOMAIN-SUFFIX,viblast.com',
 
     'DOMAIN-SUFFIX,bahamut.com.tw',
-    'DOMAIN-SUFFIX,gamer.com.tw',
+    'DOMAIN-SUFFIX,ani.gamer.com.tw',
 
     'USER-AGENT,Anime*'
   ]
