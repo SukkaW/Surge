@@ -288,6 +288,7 @@ export const CRASHLYTICS_WHITELIST = [
   'sts.online.visualstudio.com',
   // Sentry
   '.ingest.sentry.io',
+  '.ingest.us.sentry.io',
   // bugsnag
   '.sessions.bugsnag.com',
   '.notify.bugsnag.com',
