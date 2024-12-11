@@ -1,6 +1,6 @@
 import type { Span } from '../../trace';
 import { appendArrayInPlace } from '../append-array-in-place';
-import { appendArrayFromSet } from '../misc';
+import { appendSetElementsToArray } from 'foxts/append-set-elements-to-array';
 import type { SingboxSourceFormat } from '../singbox';
 import { RuleOutput } from './base';
 
@@ -26,8 +26,8 @@ export class IPListOutput extends RuleOutput<Preprocessed> {
         true
       )
     );
-    appendArrayFromSet(results, this.ipcidr6NoResolve);
-    appendArrayFromSet(results, this.ipcidr6);
+    appendSetElementsToArray(results, this.ipcidr6NoResolve);
+    appendSetElementsToArray(results, this.ipcidr6);
 
     return results;
   }
@@ -42,12 +42,12 @@ export class IPListOutput extends RuleOutput<Preprocessed> {
         results,
         merge(Array.from(this.ipcidrNoResolve)).map(i => `IP-CIDR,${i},no-resolve`, true)
       );
-      appendArrayFromSet(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
+      appendSetElementsToArray(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
       appendArrayInPlace(
         results,
         merge(Array.from(this.ipcidr)).map(i => `IP-CIDR,${i}`, true)
       );
-      appendArrayFromSet(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
+      appendSetElementsToArray(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
 
       this.$surge = results;
     }

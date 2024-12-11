@@ -4,7 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
 import picocolors from 'picocolors';
-import { fastStringArrayJoin, identity, mergeHeaders } from './misc';
+import { mergeHeaders } from 'foxts/merge-headers';
+import { headersToObject } from 'foxts/headers-to-object';
+import { identity } from 'foxts/identity';
+import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { performance } from 'node:perf_hooks';
 import fs from 'node:fs';
 import { stringHash } from './string-hash';
@@ -250,7 +253,7 @@ export class Cache<S = string> {
       {
         ...defaultRequestInit,
         headers: (typeof etag === 'string' && etag.length > 0)
-          ? mergeHeaders<Record<string, string>>(defaultRequestInit.headers, { 'If-None-Match': etag })
+          ? headersToObject(mergeHeaders(defaultRequestInit.headers, { 'If-None-Match': etag }))
           : defaultRequestInit.headers
       }
     );
@@ -308,7 +311,7 @@ export class Cache<S = string> {
           signal: controller.signal,
           ...defaultRequestInit,
           headers: (typeof etag === 'string' && etag.length > 0 && typeof previouslyCached === 'string' && previouslyCached.length > 1)
-            ? mergeHeaders<Record<string, string>>(defaultRequestInit.headers, { 'If-None-Match': etag })
+            ? headersToObject(mergeHeaders(defaultRequestInit.headers, { 'If-None-Match': etag }))
             : defaultRequestInit.headers
         }
       );

@@ -53,6 +53,9 @@ importers:
       foxact:
         specifier: ^0.2.42
         version: 0.2.42
+      foxts:
+        specifier: 1.0.4
+        version: 1.0.4
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -1149,6 +1152,9 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  foxts@1.0.4:
+    resolution: {integrity: sha512-RMQrpp4uLC2GIuW1G/RvwiHAhYHT2qU5elsOlNtkYibDfMgd+vQWfcP27mmlfy+nIuTYbiI1AB205KxnMsIi9g==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -3014,6 +3020,8 @@ snapshots:
     dependencies:
       client-only: 0.0.1
       server-only: 0.0.1
+
+  foxts@1.0.4: {}
 
   fs-constants@1.0.0: {}
 

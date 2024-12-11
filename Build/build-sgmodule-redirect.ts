@@ -2,7 +2,7 @@ import path from 'node:path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts-experimental';
-import { isTruthy } from './lib/misc';
+import { isTruthy } from 'foxts/guard';
 import { OUTPUT_MODULES_DIR } from './constants/dir';
 
 function escapeRegExp(string = '') {

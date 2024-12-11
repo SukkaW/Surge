@@ -8,7 +8,7 @@ import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } fr
 import type { Span } from '../trace';
 import createKeywordFilter from './aho-corasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
-import { identity } from './misc';
+import { identity } from 'foxts/identity';
 import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';
 
 let foundDebugDomain = false;

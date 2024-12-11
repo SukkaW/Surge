@@ -2,9 +2,10 @@
  * Hostbane-Optimized Trie based on Mnemonist Trie
  */
 
-import { fastStringArrayJoin, fastStringCompare } from './misc';
+import { fastStringCompare } from './misc';
 import util from 'node:util';
 import { noop } from 'foxact/noop';
+import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import FIFO from './fifo';
 
 type TrieNode<Meta = any> = [

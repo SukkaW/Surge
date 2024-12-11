@@ -6,7 +6,8 @@ import { isCI } from 'ci-info';
 import { xxhash64 } from 'hash-wasm';
 
 import picocolors from 'picocolors';
-import { fastStringArrayJoin, identity } from './misc';
+import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
+import { identity } from 'foxts/identity';
 
 const fsMemoCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache'), tableName: 'fs_memo_cache' });
 
