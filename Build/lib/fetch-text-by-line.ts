@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { Readable } from 'node:stream';
+import fsp from 'node:fs/promises';
 import type { FileHandle } from 'node:fs/promises';
 import readline from 'node:readline';
 
@@ -25,10 +26,17 @@ export const readFileByLineLegacy: ((file: string /* | FileHandle */) => AsyncIt
   .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextLineStream());
 
-export const readFileByLine: ((file: string /* | FileHandle */) => AsyncIterable<string>) = (file: string) => readline.createInterface({
-  input: fs.createReadStream(file/* , { encoding: 'utf-8' } */),
-  crlfDelay: Infinity
-});
+export function readFileByLine(file: string): AsyncIterable<string> {
+  return readline.createInterface({
+    input: fs.createReadStream(file/* , { encoding: 'utf-8' } */),
+    crlfDelay: Infinity
+  });
+}
+
+const fdReadLines = (fd: FileHandle) => fd.readLines();
+export async function readFileByLineNew(file: string): Promise<AsyncIterable<string>> {
+  return fsp.open(file, 'r').then(fdReadLines);
+}
 
 function ensureResponseBody<T extends NodeFetchResponse | UndiciResponseData | UnidiciWebResponse>(resp: T): NonNullable<T['body']> {
   if (resp.body == null) {

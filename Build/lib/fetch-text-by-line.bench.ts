@@ -1,9 +1,9 @@
-import { readFileByLine, readFileByLineLegacy } from './fetch-text-by-line';
+import { readFileByLine, readFileByLineLegacy, readFileByLineNew } from './fetch-text-by-line';
 import path from 'node:path';
 import fsp from 'node:fs/promises';
-import { SOURCE_DIR } from '../constants/dir';
+import { OUTPUT_SURGE_DIR } from '../constants/dir';
 
-const file = path.join(SOURCE_DIR, 'domainset/cdn.conf');
+const file = path.join(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf');
 
 (async () => {
   const { bench, group, run } = await import('mitata');
@@ -11,6 +11,7 @@ const file = path.join(SOURCE_DIR, 'domainset/cdn.conf');
   group(() => {
     bench('readFileByLine', () => Array.fromAsync(readFileByLine(file)));
     bench('readFileByLineLegacy', () => Array.fromAsync(readFileByLineLegacy(file)));
+    bench('readFileByLineNew', async () => Array.fromAsync(await readFileByLineNew(file)));
     bench('fsp.readFile', () => fsp.readFile(file, 'utf-8').then((content) => content.split('\n')));
   });
 

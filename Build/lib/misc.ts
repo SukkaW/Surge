@@ -1,7 +1,6 @@
-import path, { dirname } from 'node:path';
+import { dirname } from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { OUTPUT_CLASH_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../constants/dir';
 
 export function fastStringCompare(a: string, b: string) {
   const lenA = a.length;
@@ -66,14 +65,6 @@ export function domainWildCardToRegex(domain: string) {
   }
   result += '$';
   return result;
-}
-
-export function output(id: string, type: 'non_ip' | 'ip' | 'domainset') {
-  return [
-    path.join(OUTPUT_SURGE_DIR, type, id + '.conf'),
-    path.join(OUTPUT_CLASH_DIR, type, id + '.txt'),
-    path.join(OUTPUT_SINGBOX_DIR, type, id + '.json')
-  ] as const;
 }
 
 export function withBannerArray(title: string, description: string[] | readonly string[], date: Date, content: string[]) {
