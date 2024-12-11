@@ -7,7 +7,7 @@ import { NON_CN_CIDR_INCLUDED_IN_CHNROUTE, RESERVED_IPV4_CIDR } from './constant
 
 import fs from 'node:fs';
 import { OUTPUT_INTERNAL_DIR } from './constants/dir';
-import { asyncWriteToStream } from './lib/async-write-to-stream';
+import { asyncWriteToStream } from 'foxts/async-write-to-stream';
 import { mkdirp } from './lib/misc';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 

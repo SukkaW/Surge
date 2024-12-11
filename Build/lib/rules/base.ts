@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import { writeFile } from '../misc';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { readFileByLine } from '../fetch-text-by-line';
-import { asyncWriteToStream } from '../async-write-to-stream';
+import { asyncWriteToStream } from 'foxts/async-write-to-stream';
 
 export abstract class RuleOutput<TPreprocessed = unknown> {
   protected domainTrie = new HostnameSmolTrie(null);
