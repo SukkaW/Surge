@@ -4,7 +4,7 @@ import { HostnameSmolTrie } from '../trie';
 import stringify from 'json-stringify-pretty-compact';
 import path from 'node:path';
 import { withBannerArray } from '../misc';
-import { invariant } from 'foxact/invariant';
+import { invariant } from 'foxts/guard';
 import picocolors from 'picocolors';
 import fs from 'node:fs';
 import { writeFile } from '../misc';

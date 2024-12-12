@@ -50,12 +50,9 @@ importers:
       fdir:
         specifier: ^6.4.2
         version: 6.4.2(picomatch@4.0.2)
-      foxact:
-        specifier: ^0.2.42
-        version: 0.2.42
       foxts:
-        specifier: 1.0.4
-        version: 1.0.4
+        specifier: 1.0.6
+        version: 1.0.6
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -791,9 +788,6 @@ packages:
     resolution: {integrity: sha512-+W/5efTR7y5HRD7gACw9yQjqMVvEMLBHmboM/kPWam+H+Hmyrgjh6YncVKK122YZkXrLudzTuAukUw9FnMf7IQ==}
     engines: {node: 10.* || >= 12.*}
 
-  client-only@0.0.1:
-    resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
-
   cliui@7.0.4:
     resolution: {integrity: sha512-OcRE68cOsVMXp1Yvonl/fzkQOyjLSu/8bhPDfQt0e0/Eb283TKP20Fs2MqoPsr9SwA595rRCA+QMzYc9nBP+JQ==}
 
@@ -1145,16 +1139,8 @@ packages:
     resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
 
-  foxact@0.2.42:
-    resolution: {integrity: sha512-dMlOuU2Yib3OiutdWTebmUy2io4RONE7bc5QZD9W7vM58p459PQ6UM2wxhakLiZnyCsEWdEXeJ9JPo6G5caFcA==}
-    peerDependencies:
-      react: '*'
-    peerDependenciesMeta:
-      react:
-        optional: true
-
-  foxts@1.0.4:
-    resolution: {integrity: sha512-RMQrpp4uLC2GIuW1G/RvwiHAhYHT2qU5elsOlNtkYibDfMgd+vQWfcP27mmlfy+nIuTYbiI1AB205KxnMsIi9g==}
+  foxts@1.0.6:
+    resolution: {integrity: sha512-hVrqkUX5kH1BIQLXgD4a7VZcwWW6xJEFiiVBwA46i9Kq1TzGLhZHY2nDwxDOOp2DSgKaL70zmwGFR845hes3lQ==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -1666,9 +1652,6 @@ packages:
 
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
-
-  server-only@0.0.1:
-    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
@@ -2613,8 +2596,6 @@ snapshots:
     optionalDependencies:
       '@colors/colors': 1.5.0
 
-  client-only@0.0.1: {}
-
   cliui@7.0.4:
     dependencies:
       string-width: 4.2.3
@@ -3016,12 +2997,7 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
-  foxact@0.2.42:
-    dependencies:
-      client-only: 0.0.1
-      server-only: 0.0.1
-
-  foxts@1.0.4: {}
+  foxts@1.0.6: {}
 
   fs-constants@1.0.0: {}
 
@@ -3554,8 +3530,6 @@ snapshots:
   serialize-javascript@6.0.2:
     dependencies:
       randombytes: 2.1.0
-
-  server-only@0.0.1: {}
 
   shebang-command@2.0.0:
     dependencies:

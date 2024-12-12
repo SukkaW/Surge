@@ -4,7 +4,7 @@
 
 import { fastStringCompare } from './misc';
 import util from 'node:util';
-import { noop } from 'foxact/noop';
+import { noop } from 'foxts/noop';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import FIFO from './fifo';
 
