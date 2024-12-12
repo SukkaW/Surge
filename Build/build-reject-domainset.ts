@@ -14,7 +14,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
-import { setAddFromArray } from './lib/set-add-from-array';
+import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
@@ -77,7 +77,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
                 shouldStop = true;
                 // we should not break here, as we want to see full matches from all data source
               }
-              setAddFromArray(filterRuleWhitelistDomainSets, white);
+              addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
               appendArrayToRejectOutput(black);
             })
         ),
@@ -89,13 +89,13 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
                 shouldStop = true;
                 // we should not break here, as we want to see full matches from all data source
               }
-              setAddFromArray(filterRuleWhitelistDomainSets, white);
+              addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
               appendArrayToRejectExtraOutput(black);
             })
         ),
         ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRules(childSpan, ...entry).then(({ white, black }) => {
-          setAddFromArray(filterRuleWhitelistDomainSets, white);
-          setAddFromArray(filterRuleWhitelistDomainSets, black);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
         })),
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
         readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf')).then(appendArrayToRejectOutput),

@@ -1,6 +1,6 @@
 // @ts-check
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
-import { isProbablyIpv4, isProbablyIpv6 } from './lib/is-fast-ip';
+import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';

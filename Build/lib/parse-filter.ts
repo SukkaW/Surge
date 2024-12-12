@@ -6,7 +6,7 @@ import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } from './cache-filesystem';
 import type { Span } from '../trace';
-import createKeywordFilter from './aho-corasick';
+import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import { identity } from 'foxts/identity';
 import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';

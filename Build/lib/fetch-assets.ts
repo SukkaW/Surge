@@ -1,6 +1,6 @@
 import picocolors from 'picocolors';
 import { defaultRequestInit, requestWithLog, ResponseError } from './fetch-retry';
-import { setTimeout } from 'node:timers/promises';
+import { wait } from 'foxts/wait';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 export class CustomAbortError extends Error {
@@ -35,8 +35,7 @@ export function sleepWithAbort(ms: number, signal: AbortSignal) {
 
     signal.addEventListener('abort', stop, { once: true });
 
-    // eslint-disable-next-line sukka/prefer-timer-id -- node:timers/promises
-    setTimeout(ms, undefined, { ref: false }).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
+    wait(ms).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
 
     function stop(this: AbortSignal) { reject(this.reason as Error); }
   });

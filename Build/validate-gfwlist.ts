@@ -7,7 +7,7 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { $fetch } from './lib/make-fetch-happen';
-import createKeywordFilter from './lib/aho-corasick';
+import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
 
 export async function parseGfwList() {
   const whiteSet = new Set<string>();

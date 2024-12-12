@@ -10,7 +10,7 @@ import { newQueue } from '@henrygd/queue';
 import asyncRetry from 'async-retry';
 import * as whoiser from 'whoiser';
 import picocolors from 'picocolors';
-import createKeywordFilter from './lib/aho-corasick';
+import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
 import './lib/fetch-retry';
 
 const dohServers: Array<[string, DNS2.DnsResolver]> = ([

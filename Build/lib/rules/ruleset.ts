@@ -1,13 +1,13 @@
 import { merge } from 'fast-cidr-tools';
 import type { Span } from '../../trace';
-import createKeywordFilter from '../aho-corasick';
+import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
 import { appendArrayInPlace } from '../append-array-in-place';
 import { appendSetElementsToArray } from 'foxts/append-set-elements-to-array';
 import type { SingboxSourceFormat } from '../singbox';
 import { RuleOutput } from './base';
 import picocolors from 'picocolors';
 import { normalizeDomain } from '../normalize-domain';
-import { isProbablyIpv4, isProbablyIpv6 } from '../is-fast-ip';
+import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 
 type Preprocessed = [domain: string[], domainSuffix: string[], sortedDomainRules: string[]];
 

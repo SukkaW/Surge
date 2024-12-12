@@ -1,5 +1,5 @@
 import { invariant } from 'foxts/guard';
-import createKeywordFilter from '../aho-corasick';
+import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
 import { RuleOutput } from './base';
 import type { SingboxSourceFormat } from '../singbox';
 
