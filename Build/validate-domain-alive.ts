@@ -35,7 +35,7 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   // 'zero.dns0.eu',
   'dns.nextdns.io',
   'anycast.dns.nextdns.io',
-  // 'wikimedia-dns.org',
+  'wikimedia-dns.org',
   // 'ordns.he.net',
   // 'dns.mullvad.net',
   'basic.rethinkdns.com'
@@ -181,22 +181,39 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
     return [domain, false] as const;
   }
 
-  if (!isSuffix) {
-    const $domain = domain[0] === '.' ? domain.slice(1) : domain;
+  const $domain = domain[0] === '.' ? domain.slice(1) : domain;
 
-    const aRecords = (await resolve($domain, 'A'));
-    if (aRecords.answers.length === 0) {
-      const aaaaRecords = (await resolve($domain, 'AAAA'));
-      if (aaaaRecords.answers.length === 0) {
-        console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aRecords.dns, aaaa: aaaaRecords.dns });
-        domainAliveMap.set($domain, false);
-        return [domain, false] as const;
+  if (!isSuffix) {
+    const aDns: string[] = [];
+    const aaaaDns: string[] = [];
+
+    // test 2 times before make sure record is empty
+    for (let i = 0; i < 2; i++) {
+      // eslint-disable-next-line no-await-in-loop -- sequential
+      const aRecords = (await resolve($domain, 'A'));
+      if (aRecords.answers.length !== 0) {
+        domainAliveMap.set(domain, true);
+        return [domain, true] as const;
       }
+
+      aDns.push(aRecords.dns);
     }
+    for (let i = 0; i < 2; i++) {
+      // eslint-disable-next-line no-await-in-loop -- sequential
+      const aaaaRecords = (await resolve($domain, 'AAAA'));
+      if (aaaaRecords.answers.length !== 0) {
+        domainAliveMap.set(domain, true);
+        return [domain, true] as const;
+      }
+
+      aaaaDns.push(aaaaRecords.dns);
+    }
+
+    console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
   }
 
-  domainAliveMap.set(domain, true);
-  return [domain, true] as const;
+  domainAliveMap.set($domain, false);
+  return [domain, false] as const;
 }
 
 export async function runAgainstRuleset(filepath: string) {
