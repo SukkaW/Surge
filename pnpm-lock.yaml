@@ -44,6 +44,9 @@ importers:
       fast-cidr-tools:
         specifier: ^0.3.1
         version: 0.3.1
+      fast-fifo:
+        specifier: ^1.3.2
+        version: 1.3.2
       fdir:
         specifier: ^6.4.2
         version: 6.4.2(picomatch@4.0.2)
@@ -111,6 +114,9 @@ importers:
       '@types/dns2':
         specifier: ^2.0.9
         version: 2.0.9
+      '@types/fast-fifo':
+        specifier: ^1.3.0
+        version: 1.3.0
       '@types/make-fetch-happen':
         specifier: ^10.0.4
         version: 10.0.4
@@ -512,6 +518,9 @@ packages:
 
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
+
+  '@types/fast-fifo@1.3.0':
+    resolution: {integrity: sha512-xTVvla2QX5ruNmVUqCFc++xm42xl6RBaroppSleSczvM2rAwClr88MbnrgDGLIStt4RCVegeKO4z2HM5AHFOng==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -2251,6 +2260,8 @@ snapshots:
       '@types/json-schema': 7.0.15
 
   '@types/estree@1.0.6': {}
+
+  '@types/fast-fifo@1.3.0': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 

@@ -6,7 +6,7 @@ import { fastStringCompare } from './misc';
 import util from 'node:util';
 import { noop } from 'foxts/noop';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
-import FIFO from './fifo';
+import FIFO from 'fast-fifo';
 
 type TrieNode<Meta = any> = [
   boolean, /** end */
@@ -181,14 +181,14 @@ abstract class Triebase<Meta = any> {
   private static bfsResults: [node: TrieNode | null, suffix: string[]] = [null, []];
 
   private static bfs<Meta>(this: void, nodeStack: FIFO<TrieNode<Meta>>, suffixStack: FIFO<string[]>) {
-    const node = nodeStack.dequeue()!;
-    const suffix = suffixStack.dequeue()!;
+    const node = nodeStack.shift()!;
+    const suffix = suffixStack.shift()!;
 
     node[3].forEach((childNode, k) => {
       // Pushing the child node to the stack for next iteration of DFS
-      nodeStack.enqueue(childNode);
+      nodeStack.push(childNode);
 
-      suffixStack.enqueue([k, ...suffix]);
+      suffixStack.push([k, ...suffix]);
     });
 
     Triebase.bfsResults[0] = node;
@@ -198,8 +198,8 @@ abstract class Triebase<Meta = any> {
   }
 
   private static bfsWithSort<Meta>(this: void, nodeStack: FIFO<TrieNode<Meta>>, suffixStack: FIFO<string[]>) {
-    const node = nodeStack.dequeue()!;
-    const suffix = suffixStack.dequeue()!;
+    const node = nodeStack.shift()!;
+    const suffix = suffixStack.shift()!;
 
     if (node[3].size) {
       const keys = Array.from(node[3].keys()).sort(Triebase.compare);
@@ -209,8 +209,8 @@ abstract class Triebase<Meta = any> {
         const childNode = node[3].get(key)!;
 
         // Pushing the child node to the stack for next iteration of DFS
-        nodeStack.enqueue(childNode);
-        suffixStack.enqueue([key, ...suffix]);
+        nodeStack.push(childNode);
+        suffixStack.push([key, ...suffix]);
       }
     }
 
@@ -229,11 +229,11 @@ abstract class Triebase<Meta = any> {
     const bfsImpl = withSort ? Triebase.bfsWithSort : Triebase.bfs;
 
     const nodeStack = new FIFO<TrieNode<Meta>>();
-    nodeStack.enqueue(initialNode);
+    nodeStack.push(initialNode);
 
     // Resolving initial string (begin the start of the stack)
     const suffixStack = new FIFO<string[]>();
-    suffixStack.enqueue(initialSuffix);
+    suffixStack.push(initialSuffix);
 
     let node: TrieNode<Meta> = initialNode;
     let r;
@@ -247,7 +247,7 @@ abstract class Triebase<Meta = any> {
       if (node[0]) {
         onMatches(suffix, node[1], node[4]);
       }
-    } while (nodeStack.size);
+    } while (nodeStack.length);
   };
 
   static compare(this: void, a: string, b: string) {
@@ -261,17 +261,17 @@ abstract class Triebase<Meta = any> {
     initialSuffix: string[] = []
   ) {
     const nodeStack = new FIFO<TrieNode<Meta>>();
-    nodeStack.enqueue(initialNode);
+    nodeStack.push(initialNode);
 
     // Resolving initial string (begin the start of the stack)
     const suffixStack = new FIFO<string[]>();
-    suffixStack.enqueue(initialSuffix);
+    suffixStack.push(initialSuffix);
 
     let node: TrieNode<Meta> = initialNode;
 
     do {
-      node = nodeStack.dequeue()!;
-      const suffix = suffixStack.dequeue()!;
+      node = nodeStack.shift()!;
+      const suffix = suffixStack.shift()!;
 
       if (node[3].size) {
         const keys = Array.from(node[3].keys()).sort(Triebase.compare);
@@ -281,8 +281,8 @@ abstract class Triebase<Meta = any> {
           const childNode = node[3].get(key)!;
 
           // Pushing the child node to the stack for next iteration of DFS
-          nodeStack.enqueue(childNode);
-          suffixStack.enqueue([key, ...suffix]);
+          nodeStack.push(childNode);
+          suffixStack.push([key, ...suffix]);
         }
       }
 
@@ -290,7 +290,7 @@ abstract class Triebase<Meta = any> {
       if (node[0]) {
         onMatches(suffix, node[1], node[4]);
       }
-    } while (nodeStack.size);
+    } while (nodeStack.length);
   };
 
   protected getSingleChildLeaf(tokens: string[]): FindSingleChildLeafResult<Meta> | null {
