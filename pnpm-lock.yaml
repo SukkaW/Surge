@@ -148,8 +148,8 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0
       mitata:
-        specifier: ^1.0.20
-        version: 1.0.20
+        specifier: ^1.0.21
+        version: 1.0.21
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -1413,8 +1413,8 @@ packages:
     resolution: {integrity: sha512-umcy022ILvb5/3Djuu8LWeqUa8D68JaBzlttKeMWen48SjabqS3iY5w/vzeMzMUNhLDifyhbOwKDSznB1vvrwg==}
     engines: {node: '>= 18'}
 
-  mitata@1.0.20:
-    resolution: {integrity: sha512-oHWYGX5bi4wGT/1zrhiZAEzqTV14Vq6/PUTW8WK0b3YHBBQcZz2QFm+InHhjnD0I7B6CMtwdGt2K0938r7YTdQ==}
+  mitata@1.0.21:
+    resolution: {integrity: sha512-5HnbQJpz0Ub/7x7lxaxPhd3U3zXr7rD+24FIgEp/hjVE5wz6ye/pQRBrgH3MUK8KLy/FfPy/yfZbpi0sbmsNFg==}
 
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
@@ -3247,7 +3247,7 @@ snapshots:
       minipass: 7.1.2
       rimraf: 5.0.10
 
-  mitata@1.0.20: {}
+  mitata@1.0.21: {}
 
   mkdirp-classic@0.5.3: {}
 
