@@ -242,7 +242,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
-  protected abstract preprocess(): NonNullable<TPreprocessed>;
+  protected abstract preprocess(): TPreprocessed extends null ? null : NonNullable<TPreprocessed>;
 
   async done() {
     await this.pendingPromise;
@@ -258,13 +258,17 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   }
 
   private $$preprocessed: TPreprocessed | null = null;
-  get $preprocessed() {
+  protected runPreprocess() {
     if (this.$$preprocessed === null) {
       this.guardPendingPromise();
 
       this.$$preprocessed = this.span.traceChildSync('preprocess', () => this.preprocess());
     }
-    return this.$$preprocessed;
+  }
+
+  get $preprocessed(): TPreprocessed extends null ? null : NonNullable<TPreprocessed> {
+    this.runPreprocess();
+    return this.$$preprocessed as any;
   }
 
   async writeClash(outputDir?: null | string) {

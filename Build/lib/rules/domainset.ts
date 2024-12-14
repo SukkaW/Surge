@@ -15,10 +15,9 @@ export class DomainsetOutput extends RuleOutput<string[]> {
   private $clash: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
   private $singbox_domains: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
   private $singbox_domains_suffixes: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
-
+  private $adguardhome: string[] = [];
   preprocess() {
     const kwfilter = createKeywordFilter(this.domainKeywords);
-    const results: string[] = [];
 
     this.domainTrie.dumpWithoutDot((domain, subdomain) => {
       if (kwfilter(domain)) {
@@ -27,23 +26,31 @@ export class DomainsetOutput extends RuleOutput<string[]> {
 
       this.$surge.push(subdomain ? '.' + domain : domain);
       this.$clash.push(subdomain ? `+.${domain}` : domain);
-      (subdomain ? this.$singbox_domains : this.$singbox_domains_suffixes).push(domain);
+      (subdomain ? this.$singbox_domains_suffixes : this.$singbox_domains).push(domain);
 
-      results.push(domain);
+      if (subdomain) {
+        this.$adguardhome.push(`||${domain}^`);
+      } else {
+        this.$adguardhome.push(`|${domain}^`);
+      }
     }, true);
 
-    return results;
+    return this.$surge;
   }
 
   surge(): string[] {
+    this.runPreprocess();
     return this.$surge;
   }
 
   clash(): string[] {
+    this.runPreprocess();
     return this.$clash;
   }
 
   singbox(): string[] {
+    this.runPreprocess();
+
     return RuleOutput.jsonToLines({
       version: 2,
       rules: [{
@@ -55,6 +62,8 @@ export class DomainsetOutput extends RuleOutput<string[]> {
 
   protected apexDomainMap: Map<string, string> | null = null;
   getStatMap() {
+    this.runPreprocess();
+
     invariant(this.$preprocessed, 'Non dumped yet');
 
     if (!this.apexDomainMap) {
@@ -90,7 +99,7 @@ export class DomainsetOutput extends RuleOutput<string[]> {
   mitmSgmodule = undefined;
 
   adguardhome(): string[] {
-    const results: string[] = [];
+    this.runPreprocess();
 
     // const whitelistArray = sortDomains(Array.from(whitelist));
     // for (let i = 0, len = whitelistArray.length; i < len; i++) {
@@ -102,51 +111,42 @@ export class DomainsetOutput extends RuleOutput<string[]> {
     //   }
     // }
 
-    for (let i = 0, len = this.$preprocessed.length; i < len; i++) {
-      const domain = this.$preprocessed[i];
-      if (domain[0] === '.') {
-        results.push(`||${domain.slice(1)}^`);
-      } else {
-        results.push(`|${domain}^`);
-      }
-    }
-
     for (const wildcard of this.domainWildcard) {
       const processed = wildcard.replaceAll('?', '*');
       if (processed.startsWith('*.')) {
-        results.push(`||${processed.slice(2)}^`);
+        this.$adguardhome.push(`||${processed.slice(2)}^`);
       } else {
-        results.push(`|${processed}^`);
+        this.$adguardhome.push(`|${processed}^`);
       }
     }
 
     for (const keyword of this.domainKeywords) {
       // Use regex to match keyword
-      results.push(`/${escapeStringRegexp(keyword)}/`);
+      this.$adguardhome.push(`/${escapeStringRegexp(keyword)}/`);
     }
 
     for (const ipGroup of [this.ipcidr, this.ipcidrNoResolve]) {
       for (const ipcidr of ipGroup) {
         if (ipcidr.endsWith('/32')) {
-          results.push(`||${ipcidr.slice(0, -3)}`);
+          this.$adguardhome.push(`||${ipcidr.slice(0, -3)}`);
           /* else if (ipcidr.endsWith('.0/24')) {
             results.push(`||${ipcidr.slice(0, -6)}.*`);
           } */
         } else {
-          results.push(`||${ipcidr}^`);
+          this.$adguardhome.push(`||${ipcidr}^`);
         }
       }
     }
     for (const ipGroup of [this.ipcidr6, this.ipcidr6NoResolve]) {
       for (const ipcidr of ipGroup) {
         if (ipcidr.endsWith('/128')) {
-          results.push(`||${ipcidr.slice(0, -4)}`);
+          this.$adguardhome.push(`||${ipcidr.slice(0, -4)}`);
         } else {
-          results.push(`||${ipcidr}`);
+          this.$adguardhome.push(`||${ipcidr}`);
         }
       }
     }
 
-    return results;
+    return this.$adguardhome;
   }
 }
