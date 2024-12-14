@@ -1,6 +1,15 @@
-import { createTrie } from './trie';
 import { describe, it } from 'mocha';
 import { expect } from 'expect';
+import { HostnameSmolTrie, HostnameTrie } from './trie';
+
+function createTrie<Meta = any>(from: string[] | Set<string> | null, smolTree: true): HostnameSmolTrie<Meta>;
+function createTrie<Meta = any>(from?: string[] | Set<string> | null, smolTree?: false): HostnameTrie<Meta>;
+function createTrie<_Meta = any>(from?: string[] | Set<string> | null, smolTree = true) {
+  if (smolTree) {
+    return new HostnameSmolTrie(from);
+  }
+  return new HostnameTrie(from);
+};
 
 // describe('hostname to tokens', () => {
 //   it('should split hostname into tokens.', () => {

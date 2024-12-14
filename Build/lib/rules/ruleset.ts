@@ -23,13 +23,13 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
     const domainSuffixes: string[] = [];
     const sortedDomainRules: string[] = [];
 
-    this.domainTrie.dump((domain) => {
+    this.domainTrie.dumpWithoutDot((domain, includeAllSubdomain) => {
       if (kwfilter(domain)) {
         return;
       }
-      if (domain[0] === '.') {
-        domainSuffixes.push(domain.slice(1));
-        sortedDomainRules.push(`DOMAIN-SUFFIX,${domain.slice(1)}`);
+      if (includeAllSubdomain) {
+        domainSuffixes.push(domain);
+        sortedDomainRules.push(`DOMAIN-SUFFIX,${domain}`);
       } else {
         domains.push(domain);
         sortedDomainRules.push(`DOMAIN,${domain}`);

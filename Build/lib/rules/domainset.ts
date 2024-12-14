@@ -8,55 +8,47 @@ import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import { fastStringCompare } from '../misc';
 import escapeStringRegexp from 'escape-string-regexp-node';
 
-type Preprocessed = string[];
-
-export class DomainsetOutput extends RuleOutput<Preprocessed> {
+export class DomainsetOutput extends RuleOutput<string[]> {
   protected type = 'domainset' as const;
+
+  private $surge: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  private $clash: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  private $singbox_domains: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  private $singbox_domains_suffixes: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
   preprocess() {
     const kwfilter = createKeywordFilter(this.domainKeywords);
-
     const results: string[] = [];
 
-    this.domainTrie.dump((domain) => {
+    this.domainTrie.dumpWithoutDot((domain, subdomain) => {
       if (kwfilter(domain)) {
         return;
       }
+
+      this.$surge.push(subdomain ? '.' + domain : domain);
+      this.$clash.push(subdomain ? `+.${domain}` : domain);
+      (subdomain ? this.$singbox_domains : this.$singbox_domains_suffixes).push(domain);
+
       results.push(domain);
     }, true);
 
-    const sorted = results;
-    sorted.push('this_ruleset_is_made_by_sukkaw.ruleset.skk.moe');
-
-    return sorted;
+    return results;
   }
 
   surge(): string[] {
-    return this.$preprocessed;
+    return this.$surge;
   }
 
   clash(): string[] {
-    return this.$preprocessed.map(i => (i[0] === '.' ? `+${i}` : i));
+    return this.$clash;
   }
 
   singbox(): string[] {
-    const domains: string[] = [];
-    const domainSuffixes: string[] = [];
-
-    for (let i = 0, len = this.$preprocessed.length; i < len; i++) {
-      const domain = this.$preprocessed[i];
-      if (domain[0] === '.') {
-        domainSuffixes.push(domain.slice(1));
-      } else {
-        domains.push(domain);
-      }
-    }
-
     return RuleOutput.jsonToLines({
       version: 2,
       rules: [{
-        domain: domains,
-        domain_suffix: domainSuffixes
+        domain: this.$singbox_domains,
+        domain_suffix: this.$singbox_domains_suffixes
       }]
     } satisfies SingboxSourceFormat);
   }

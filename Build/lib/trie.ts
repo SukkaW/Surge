@@ -170,10 +170,8 @@ abstract class Triebase<Meta = any> {
   };
 
   public contains(suffix: string, includeAllSubdomain = suffix[0] === '.'): boolean {
-    let hostnameFromIndex = 0;
-    if (suffix[0] === '.') {
-      hostnameFromIndex = 1;
-    }
+    const hostnameFromIndex = suffix[0] === '.' ? 1 : 0;
+
     const res = this.walkIntoLeafWithSuffix(suffix, hostnameFromIndex);
     if (!res) return false;
     if (includeAllSubdomain) return res.node[1];
@@ -333,13 +331,9 @@ abstract class Triebase<Meta = any> {
   public find(
     inputSuffix: string,
     subdomainOnly = inputSuffix[0] === '.',
-    hostnameFromIndex = 0
+    hostnameFromIndex = inputSuffix[0] === '.' ? 1 : 0
     // /** @default true */ includeEqualWithSuffix = true
   ): string[] {
-    if (inputSuffix[0] === '.') {
-      hostnameFromIndex = 1;
-    }
-
     const inputTokens = hostnameToTokens(inputSuffix, hostnameFromIndex);
     const res = this.walkIntoLeafWithTokens(inputTokens);
     if (res === null) return [];
@@ -395,11 +389,7 @@ abstract class Triebase<Meta = any> {
    * Method used to assert whether the given prefix exists in the Trie.
    */
   public has(suffix: string, includeAllSubdomain = suffix[0] === '.'): boolean {
-    let hostnameFromIndex = 0;
-
-    if (suffix[0] === '.') {
-      hostnameFromIndex = 1;
-    }
+    const hostnameFromIndex = suffix[0] === '.' ? 1 : 0;
 
     const res = this.walkIntoLeafWithSuffix(suffix, hostnameFromIndex);
 
@@ -408,6 +398,18 @@ abstract class Triebase<Meta = any> {
     if (includeAllSubdomain) return res.node[1];
     return true;
   };
+
+  public dumpWithoutDot(onSuffix: (suffix: string, subdomain: boolean) => void, withSort = false) {
+    const handleSuffix = (suffix: string[], subdomain: boolean) => {
+      onSuffix(fastStringArrayJoin(suffix, '.'), subdomain);
+    };
+
+    if (withSort) {
+      this.walkWithSort(handleSuffix);
+    } else {
+      this.walk(handleSuffix);
+    }
+  }
 
   public dump(onSuffix: (suffix: string) => void, withSort?: boolean): void;
   public dump(onSuffix?: null, withSort?: boolean): string[];
@@ -490,13 +492,9 @@ abstract class Triebase<Meta = any> {
 export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
   public smolTree = true;
 
-  add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = 0): void {
+  add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = suffix[0] === '.' ? 1 : 0): void {
     let node: TrieNode<Meta> = this.$root;
     let curNodeChildren: Map<string, TrieNode<Meta>> = node[3];
-
-    if (hostnameFromIndex === 0 && suffix[0] === '.') {
-      hostnameFromIndex = 1;
-    }
 
     const onToken = (token: string) => {
       curNodeChildren = node[3];
@@ -544,11 +542,7 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     node[4] = meta!;
   }
 
-  public whitelist(suffix: string, includeAllSubdomain = suffix[0] === '.', hostnameFromIndex = 0) {
-    if (suffix[0] === '.') {
-      hostnameFromIndex = 1;
-    }
-
+  public whitelist(suffix: string, includeAllSubdomain = suffix[0] === '.', hostnameFromIndex = suffix[0] === '.' ? 1 : 0) {
     const tokens = hostnameToTokens(suffix, hostnameFromIndex);
     const res = this.getSingleChildLeaf(tokens);
 
@@ -584,7 +578,7 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
     return this.$size;
   }
 
-  add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = 0): void {
+  add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = suffix[0] === '.' ? 1 : 0): void {
     let node: TrieNode<Meta> = this.$root;
 
     const onToken = (token: string) => {
@@ -598,10 +592,6 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
 
       return false;
     };
-
-    if (hostnameFromIndex === 0 && suffix[0] === '.') {
-      hostnameFromIndex = 1;
-    }
 
     // When walkHostnameTokens returns true, we should skip the rest
     if (walkHostnameTokens(suffix, onToken, hostnameFromIndex)) {
@@ -619,17 +609,6 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
     node[4] = meta!;
   }
 }
-
-export function createTrie<Meta = any>(from: string[] | Set<string> | null, smolTree: true): HostnameSmolTrie<Meta>;
-export function createTrie<Meta = any>(from?: string[] | Set<string> | null, smolTree?: false): HostnameTrie<Meta>;
-export function createTrie<_Meta = any>(from?: string[] | Set<string> | null, smolTree = true) {
-  if (smolTree) {
-    return new HostnameSmolTrie(from);
-  }
-  return new HostnameTrie(from);
-};
-
-export type Trie = ReturnType<typeof createTrie>;
 
 // function deepEqualArray(a: string[], b: string[]) {
 //   let len = a.length;

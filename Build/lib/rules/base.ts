@@ -100,14 +100,14 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     for (let i = 0, len = domains.length; i < len; i++) {
       d = domains[i];
       if (d !== null) {
-        this.addDomain(d);
+        this.domainTrie.add(d, false, null, 0);
       }
     }
     return this;
   }
 
-  addDomainSuffix(domain: string) {
-    this.domainTrie.add(domain, true);
+  addDomainSuffix(domain: string, lineFromDot = domain[0] === '.') {
+    this.domainTrie.add(domain, true, lineFromDot ? 1 : 0);
     return this;
   }
 
@@ -126,9 +126,9 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   private async addFromDomainsetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
     for await (const line of source) {
       if (line[0] === '.') {
-        this.addDomainSuffix(line);
+        this.addDomainSuffix(line, true);
       } else {
-        this.addDomain(line);
+        this.domainTrie.add(line, false, null, 0);
       }
     }
   }
@@ -147,10 +147,10 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
 
       switch (type) {
         case 'DOMAIN':
-          this.addDomain(value);
+          this.domainTrie.add(value, false, null, 0);
           break;
         case 'DOMAIN-SUFFIX':
-          this.addDomainSuffix(value);
+          this.addDomainSuffix(value, false);
           break;
         case 'DOMAIN-KEYWORD':
           this.addDomainKeyword(value);
