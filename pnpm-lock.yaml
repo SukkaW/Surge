@@ -48,7 +48,7 @@ importers:
         specifier: ^6.4.2
         version: 6.4.2(picomatch@4.0.2)
       foxts:
-        specifier: 1.0.9
+        specifier: ^1.0.9
         version: 1.0.9
       hash-wasm:
         specifier: ^4.12.0
@@ -211,10 +211,6 @@ packages:
 
   '@eslint/eslintrc@3.2.0':
     resolution: {integrity: sha512-grOjVNN8P3hjJn/eIETF1wwd12DdnwFDoyceUJLYYdkpbwq3nLi+4fqrTAONx7XDALqlL220wC/RHSC/QTI/0w==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/js@9.15.0':
-    resolution: {integrity: sha512-tMTqrY+EzbXmKJR5ToI8lxu7jaN5EdmrBFJpQk5JmSlyLsx6o4t27r883K5xsLuCYCpfKBCGswMSWXsM+jB7lg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.17.0':
@@ -1968,8 +1964,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/js@9.15.0': {}
-
   '@eslint/js@9.17.0': {}
 
   '@eslint/object-schema@2.1.4': {}
@@ -2659,7 +2653,7 @@ snapshots:
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.4.1(eslint@9.17.0)
       '@eslint-sukka/shared': 6.12.0(eslint@9.17.0)(typescript@5.7.2)
-      '@eslint/js': 9.15.0
+      '@eslint/js': 9.17.0
       '@stylistic/eslint-plugin-js': 2.11.0(eslint@9.17.0)
       '@stylistic/eslint-plugin-plus': 2.11.0(eslint@9.17.0)
       '@stylistic/eslint-plugin-ts': 2.11.0(eslint@9.17.0)(typescript@5.7.2)
