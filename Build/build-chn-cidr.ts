@@ -7,6 +7,7 @@ import { CN_CIDR_MISSING_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from '.
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { IPListOutput } from './lib/create-file';
 import { cachedOnlyFail } from './lib/fs-memo';
+import { createFileDescription } from './constants/description';
 
 const PROBE_CHN_CIDR_V4 = [
   // NetEase Hangzhou
@@ -48,12 +49,7 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
   const [filteredCidr4, cidr6] = await span.traceChildAsync('download chnroutes2', getChnCidrPromise);
 
   // Can not use SHARED_DESCRIPTION here as different license
-  const description = [
-    'License: CC BY-SA 2.0',
-    'Homepage: https://ruleset.skk.moe',
-    'GitHub: https://github.com/SukkaW/Surge',
-    ''
-  ];
+  const description = createFileDescription('CC BY-SA 2.0');
 
   return Promise.all([
     new IPListOutput(span, 'china_ip', false)

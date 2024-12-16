@@ -63,7 +63,18 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     const extract = tarExtract(
       publicDir,
       {
-        ignore: tarOnIgnore,
+        ignore(_: string, header?: TarEntryHeaders) {
+          if (header) {
+            if (header.type !== 'file' && header.type !== 'directory') {
+              return true;
+            }
+            if (header.type === 'file' && path.extname(header.name) === '.ts') {
+              return true;
+            }
+          }
+
+          return false;
+        },
         map(header) {
           header.name = header.name.replace(pathPrefix, '');
           return header;
@@ -78,18 +89,3 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
     );
   });
 });
-
-function tarOnIgnore(_: string, header?: TarEntryHeaders) {
-  if (header) {
-    if (header.type !== 'file' && header.type !== 'directory') {
-      return true;
-    }
-
-    const extname = path.extname(header.name);
-    if (extname === '.ts') {
-      return true;
-    }
-  }
-
-  return false;
-}
