@@ -1,12 +1,16 @@
 import { createReadlineInterfaceFromResponse } from './fetch-text-by-line';
-import { parse as tldtsParse } from 'tldts';
+
+// https://github.com/remusao/tldts/issues/2121
+// In short, single label domain suffix is ignored due to the size optimization, so no isIcann
+// import tldts from 'tldts-experimental';
+import tldts from 'tldts';
 import type { NodeFetchResponse } from './make-fetch-happen';
 import type { UndiciResponseData } from './fetch-retry';
 import type { Response } from 'undici';
 
 function isDomainLoose(domain: string): boolean {
-  const { isIcann, isPrivate, isIp } = tldtsParse(domain);
-  return !!(!isIp && (isIcann || isPrivate));
+  const r = tldts.parse(domain);
+  return !!(!r.isIp && (r.isIcann || r.isPrivate));
 }
 
 export function extractDomainsFromFelixDnsmasq(line: string): string | null {

@@ -1,7 +1,7 @@
 import DNS2 from 'dns2';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import tldts from 'tldts';
+import tldts from 'tldts-experimental';
 import { looseTldtsOpt } from './constants/loose-tldts-opt';
 import { fdir as Fdir } from 'fdir';
 import { SOURCE_DIR } from './constants/dir';

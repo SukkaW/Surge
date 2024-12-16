@@ -3,7 +3,7 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import { HostnameSmolTrie } from './lib/trie';
 import { OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { ICP_TLD } from './constants/domains';
-import tldts from 'tldts';
+import tldts from 'tldts-experimental';
 import { looseTldtsOpt } from './constants/loose-tldts-opt';
 
 (async () => {
