@@ -6,7 +6,7 @@ import type { SingboxSourceFormat } from '../singbox';
 import * as tldts from 'tldts-experimental';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import { fastStringCompare } from '../misc';
-import escapeStringRegexp from 'escape-string-regexp-node';
+import { escapeStringRegexp } from 'foxts/escape-string-regexp';
 
 export class DomainsetOutput extends RuleOutput<string[]> {
   protected type = 'domainset' as const;
