@@ -75,8 +75,8 @@ importers:
         specifier: ^6.1.68
         version: 6.1.68
       undici:
-        specifier: ^7.1.0
-        version: 7.1.0
+        specifier: ^7.1.1
+        version: 7.1.1
       whoiser:
         specifier: ^1.18.0
         version: 1.18.0
@@ -1791,8 +1791,8 @@ packages:
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
-  undici@7.1.0:
-    resolution: {integrity: sha512-3+mdX2R31khuLCm2mKExSlMdJsfol7bJkIMH80tdXA74W34rT1jKemUTlYR7WY3TqsV4wfOgpatWmmB2Jl1+5g==}
+  undici@7.1.1:
+    resolution: {integrity: sha512-WZkQ6eH9f5ZT93gaIffsbUaDpBwjbpvmMbfaEhOnbdUneurTESeRxwPGwjI28mRFESH3W3e8Togijh37ptOQqA==}
     engines: {node: '>=20.18.1'}
 
   unique-filename@4.0.0:
@@ -3646,7 +3646,7 @@ snapshots:
 
   undici-types@6.20.0: {}
 
-  undici@7.1.0: {}
+  undici@7.1.1: {}
 
   unique-filename@4.0.0:
     dependencies:
