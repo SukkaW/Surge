@@ -7,12 +7,15 @@ import undici, {
 
 import type {
   Dispatcher,
-  Response
+  Response,
+  RequestInit
 } from 'undici';
+import { BetterSqlite3CacheStore } from 'undici-cache-store-better-sqlite3';
 
 export type UndiciResponseData<T = unknown> = Dispatcher.ResponseData<T>;
 
 import { inspect } from 'node:util';
+import path from 'node:path';
 
 const agent = new Agent({});
 
@@ -99,6 +102,11 @@ setGlobalDispatcher(agent.compose(
   }),
   interceptors.redirect({
     maxRedirections: 5
+  }),
+  interceptors.cache({
+    store: new BetterSqlite3CacheStore({
+      location: path.resolve(__dirname, '../../.cache/undici-better-sqlite3-cache-store.db')
+    })
   })
 ));
 
@@ -133,34 +141,35 @@ export const defaultRequestInit = {
   }
 };
 
-// export async function fetchWithLog(url: string, init?: RequestInit) {
-//   try {
-//     const res = await undici.fetch(url, init);
-//     if (res.status >= 400) {
-//       throw new ResponseError(res, url);
-//     }
+export async function $$fetch(url: string, init?: RequestInit) {
+  try {
+    const res = await undici.fetch(url, init);
+    if (res.status >= 400) {
+      throw new ResponseError(res, url);
+    }
 
-//     if (!(res.status >= 200 && res.status <= 299) && res.status !== 304) {
-//       throw new ResponseError(res, url);
-//     }
+    if (!(res.status >= 200 && res.status <= 299) && res.status !== 304) {
+      throw new ResponseError(res, url);
+    }
 
-//     return res;
-//   } catch (err: unknown) {
-//     if (typeof err === 'object' && err !== null && 'name' in err) {
-//       if ((
-//         err.name === 'AbortError'
-//         || ('digest' in err && err.digest === 'AbortError')
-//       )) {
-//         console.log(picocolors.gray('[fetch abort]'), url);
-//       }
-//     } else {
-//       console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
-//     }
+    return res;
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'name' in err) {
+      if ((
+        err.name === 'AbortError'
+        || ('digest' in err && err.digest === 'AbortError')
+      )) {
+        console.log(picocolors.gray('[fetch abort]'), url);
+      }
+    } else {
+      console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
+    }
 
-//     throw err;
-//   }
-// }
+    throw err;
+  }
+}
 
+/** @deprecated -- undici.requests doesn't support gzip/br/deflate, and has difficulty w/ undidi cache */
 export async function requestWithLog(url: string, opt?: Parameters<typeof undici.request>[1]) {
   try {
     const res = await undici.request(url, opt);

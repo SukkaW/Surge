@@ -42,6 +42,7 @@
     "tldts": "^6.1.68",
     "tldts-experimental": "^6.1.68",
     "undici": "^7.1.1",
+    "undici-cache-store-better-sqlite3": "^0.1.1",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.1",
     "xbits": "^0.2.0",
