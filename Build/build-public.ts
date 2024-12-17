@@ -51,10 +51,12 @@ export const buildPublic = task(require.main === module, __filename)(async (span
     span,
     [
       '/*',
-      '  cloudflare-cdn-cache-control: public, max-age=180, stale-while-revalidate=60, stale-if-error=30',
+      '  cache-control: public, max-age=180, stale-while-revalidate=60, stale-if-error=30',
       'https://:project.pages.dev/*',
       '  X-Robots-Tag: noindex',
       '/Modules/*',
+      '  content-type: text/plain; charset=utf-8',
+      '/List/*',
       '  content-type: text/plain; charset=utf-8'
     ],
     path.join(PUBLIC_DIR, '_headers')
