@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build
+  check:
+    name: Check
     runs-on: ubuntu-latest
 
     steps:
