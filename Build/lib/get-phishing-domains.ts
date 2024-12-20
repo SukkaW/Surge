@@ -110,7 +110,7 @@ const lowKeywords = createKeywordFilter([
   'banking'
 ]);
 
-const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: string[]): Promise<string[]> {
+const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: string[]): string[] {
   const domainCountMap = new Map<string, number>();
   const domainScoreMap: Record<string, number> = {};
 
@@ -197,7 +197,7 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
 
   // console.log({ duplicateCount, domainArrLen: domainArr.length });
 
-  return Promise.resolve(domainArr);
+  return domainArr;
 }, {
   serializer: serializeArray,
   deserializer: deserializeArray,
