@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 
 import { task } from './trace';
-import { treeDir } from './lib/tree-dir';
+import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
 import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
@@ -101,7 +101,7 @@ function walk(tree: TreeTypeArray) {
   tree.sort(prioritySorter);
   for (let i = 0, len = tree.length; i < len; i++) {
     const entry = tree[i];
-    if (entry.type === 'directory') {
+    if (entry.type === TreeFileType.DIRECTORY) {
       result += html`
         <li class="folder">
           ${entry.name}

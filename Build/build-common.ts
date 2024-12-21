@@ -23,13 +23,6 @@ export const buildCommon = task(require.main === module, __filename)(async (span
 
   const paths = await new Fdir()
     .withRelativePaths()
-    // .exclude((dirName, dirPath) => {
-    //   if (dirName === 'domainset' || dirName === 'ip' || dirName === 'non_ip') {
-    //     return false;
-    //   }
-    //   console.error(picocolors.red(`[build-comman] Unknown dir: ${dirPath}`));
-    //   return true;
-    // })
     .filter((filepath, isDirectory) => {
       if (isDirectory) return true;
 
