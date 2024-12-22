@@ -61,7 +61,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
 
     appendArrayInPlace(
       results,
-      merge(Array.from(this.ipcidrNoResolve)).map(i => `IP-CIDR,${i},no-resolve`, true)
+      merge(Array.from(this.ipcidrNoResolve), true).map(i => `IP-CIDR,${i},no-resolve`)
     );
     appendSetElementsToArray(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
     appendSetElementsToArray(results, this.ipasnNoResolve, i => `IP-ASN,${i},no-resolve`);
@@ -69,7 +69,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
 
     appendArrayInPlace(
       results,
-      merge(Array.from(this.ipcidr)).map(i => `IP-CIDR,${i}`, true)
+      merge(Array.from(this.ipcidr), true).map(i => `IP-CIDR,${i}`)
     );
     appendSetElementsToArray(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
     appendSetElementsToArray(results, this.ipasn, i => `IP-ASN,${i}`);
@@ -108,7 +108,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
 
     appendArrayInPlace(
       results,
-      merge(Array.from(this.ipcidrNoResolve)).map(i => `IP-CIDR,${i},no-resolve`, true)
+      merge(Array.from(this.ipcidrNoResolve), true).map(i => `IP-CIDR,${i},no-resolve`)
     );
     appendSetElementsToArray(results, this.ipcidr6NoResolve, i => `IP-CIDR6,${i},no-resolve`);
     appendSetElementsToArray(results, this.ipasnNoResolve, i => `IP-ASN,${i},no-resolve`);
@@ -116,7 +116,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
 
     appendArrayInPlace(
       results,
-      merge(Array.from(this.ipcidr)).map(i => `IP-CIDR,${i}`, true)
+      merge(Array.from(this.ipcidr), true).map(i => `IP-CIDR,${i}`)
     );
     appendSetElementsToArray(results, this.ipcidr6, i => `IP-CIDR6,${i}`);
     appendSetElementsToArray(results, this.ipasn, i => `IP-ASN,${i}`);
@@ -130,7 +130,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
     appendArrayInPlace(
       ip_cidr,
       merge(
-        appendArrayInPlace(Array.from(this.ipcidrNoResolve), Array.from(this.ipcidr)),
+        appendSetElementsToArray(Array.from(this.ipcidrNoResolve), this.ipcidr),
         true
       )
     );
@@ -143,7 +143,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
         domain: appendArrayInPlace(['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'], this.$preprocessed[0]),
         domain_suffix: this.$preprocessed[1],
         domain_keyword: Array.from(this.domainKeywords),
-        domain_regex: Array.from(this.domainWildcard).map(RuleOutput.domainWildCardToRegex),
+        domain_regex: Array.from(this.domainWildcard, RuleOutput.domainWildCardToRegex),
         ip_cidr,
         source_ip_cidr: [...this.sourceIpOrCidr].reduce<string[]>((acc, cur) => {
           if (cur.includes('/')) {

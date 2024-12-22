@@ -164,7 +164,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           '! Description: The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
           '!'
         ],
-        rejectOutput.adguardhome(/* filterRuleWhitelistDomainSets */)
+        rejectOutput.adguardhome()
       ),
       path.join(OUTPUT_INTERNAL_DIR, 'reject-adguardhome.txt')
     )

@@ -22,7 +22,7 @@ export class IPListOutput extends RuleOutput<Preprocessed> {
     appendArrayInPlace(
       results,
       merge(
-        appendArrayInPlace(Array.from(this.ipcidrNoResolve), Array.from(this.ipcidr)),
+        appendSetElementsToArray(Array.from(this.ipcidrNoResolve), this.ipcidr),
         true
       )
     );

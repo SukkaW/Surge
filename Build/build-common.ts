@@ -145,7 +145,7 @@ async function transformRuleset(parentSpan: Span, sourcePath: string, relativePa
       if (res === $skip) return;
 
       const id = basename;
-      const [type] = relativePath.slice(0, -extname.length).split(path.sep);
+      const type = relativePath.slice(0, -extname.length).split(path.sep)[0];
 
       if (type !== 'ip' && type !== 'non_ip') {
         throw new TypeError(`Invalid type: ${type}`);
