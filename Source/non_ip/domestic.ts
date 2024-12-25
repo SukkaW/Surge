@@ -138,7 +138,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '$url.cn',
       '+qlivecdn.com',
       '+tcdnlive.com',
-      '+dnsv1.com'
+      '+dnsv1.com',
+      '+smtcdns.net'
     ]
   },
   BILIBILI_ALI: {
