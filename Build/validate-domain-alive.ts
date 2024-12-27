@@ -50,6 +50,20 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   })
 ] as const);
 
+const domesticDohServers: Array<[string, DNS2.DnsResolver]> = ([
+  '223.5.5.5',
+  '223.6.6.6',
+  '120.53.53.53',
+  '1.12.12.12'
+] as const).map(dns => [
+  dns,
+  DNS2.DOHClient({
+    dns,
+    http: false
+    // get: (url: string) => undici.request(url).then(r => r.body)
+  })
+] as const);
+
 const queue = newQueue(32);
 const mutex = new Map<string, Promise<unknown>>();
 function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
@@ -72,26 +86,31 @@ interface DnsResponse extends DNS2.$DnsResponse {
   dns: string
 }
 
-const resolve: DNS2.DnsResolver<DnsResponse> = async (...args) => {
-  try {
-    return await asyncRetry(async () => {
-      const [dohServer, dohClient] = dohServers[Math.floor(Math.random() * dohServers.length)];
+function createResolve(server: Array<[string, DNS2.DnsResolver]>): DNS2.DnsResolver<DnsResponse> {
+  return async (...args) => {
+    try {
+      return await asyncRetry(async () => {
+        const [dohServer, dohClient] = server[Math.floor(Math.random() * server.length)];
 
-      try {
-        return {
-          ...await dohClient(...args),
-          dns: dohServer
-        } satisfies DnsResponse;
-      } catch (e) {
-        console.error(e);
-        throw new DnsError((e as Error).message, dohServer);
-      }
-    }, { retries: 5 });
-  } catch (e) {
-    console.log('[doh error]', ...args, e);
-    throw e;
-  }
-};
+        try {
+          return {
+            ...await dohClient(...args),
+            dns: dohServer
+          } satisfies DnsResponse;
+        } catch (e) {
+          console.error(e);
+          throw new DnsError((e as Error).message, dohServer);
+        }
+      }, { retries: 5 });
+    } catch (e) {
+      console.log('[doh error]', ...args, e);
+      throw e;
+    }
+  };
+}
+
+const resolve = createResolve(dohServers);
+const domesticResolve = createResolve(domesticDohServers);
 
 async function getWhois(domain: string) {
   return asyncRetry(() => whoiser.domain(domain), { retries: 5 });
@@ -208,6 +227,21 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
 
       aaaaDns.push(aaaaRecords.dns);
     }
+
+    // only then, let's test once with domesticDohServers
+    const aRecords = (await domesticResolve($domain, 'A'));
+    if (aRecords.answers.length !== 0) {
+      domainAliveMap.set(domain, true);
+      return [domain, true] as const;
+    }
+    aDns.push(aRecords.dns);
+
+    const aaaaRecords = (await domesticResolve($domain, 'AAAA'));
+    if (aaaaRecords.answers.length !== 0) {
+      domainAliveMap.set(domain, true);
+      return [domain, true] as const;
+    }
+    aaaaDns.push(aaaaRecords.dns);
 
     console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
   }
