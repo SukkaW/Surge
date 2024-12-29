@@ -27,12 +27,7 @@ export class DomainsetOutput extends RuleOutput<string[]> {
       this.$surge.push(subdomain ? '.' + domain : domain);
       this.$clash.push(subdomain ? `+.${domain}` : domain);
       (subdomain ? this.$singbox_domains_suffixes : this.$singbox_domains).push(domain);
-
-      if (subdomain) {
-        this.$adguardhome.push(`||${domain}^`);
-      } else {
-        this.$adguardhome.push(`|${domain}^`);
-      }
+      this.$adguardhome.push(subdomain ? `||${domain}^` : `|${domain}^`);
     }, true);
 
     return this.$surge;

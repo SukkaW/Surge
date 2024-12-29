@@ -10,9 +10,28 @@ import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import { identity } from 'foxts/identity';
 import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';
+import { noop } from 'foxts/noop';
 
 let foundDebugDomain = false;
 const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
+
+const onBlackFound = DEBUG_DOMAIN_TO_FIND
+  ? (line: string, meta: string) => {
+    if (line.includes(DEBUG_DOMAIN_TO_FIND!)) {
+      console.warn(picocolors.red(meta), '(black)', line.replaceAll(DEBUG_DOMAIN_TO_FIND!, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+      foundDebugDomain = true;
+    }
+  }
+  : noop;
+
+const onWhiteFound = DEBUG_DOMAIN_TO_FIND
+  ? (line: string, meta: string) => {
+    if (line.includes(DEBUG_DOMAIN_TO_FIND!)) {
+      console.warn(picocolors.red(meta), '(white)', line.replaceAll(DEBUG_DOMAIN_TO_FIND!, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
+      foundDebugDomain = true;
+    }
+  }
+  : noop;
 
 function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
   let line = processLine(l);
@@ -32,10 +51,7 @@ function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean
     return;
   }
 
-  if (DEBUG_DOMAIN_TO_FIND && line.includes(DEBUG_DOMAIN_TO_FIND)) {
-    console.warn(picocolors.red(meta), '(black)', line.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-    foundDebugDomain = true;
-  }
+  onBlackFound(domain, meta);
 
   set.push(includeAllSubDomain ? `.${line}` : line);
 }
@@ -84,10 +100,8 @@ function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, met
   if (!domain) {
     return;
   }
-  if (DEBUG_DOMAIN_TO_FIND && domain.includes(DEBUG_DOMAIN_TO_FIND)) {
-    console.warn(picocolors.red(meta), '(black)', domain.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-    foundDebugDomain = true;
-  }
+
+  onBlackFound(domain, meta);
 
   set.push(includeAllSubDomain ? `.${domain}` : domain);
 }
@@ -169,15 +183,10 @@ export async function processFilterRules(
 
         const hostname = result[0];
 
-        if (DEBUG_DOMAIN_TO_FIND && hostname.includes(DEBUG_DOMAIN_TO_FIND)) {
-          console.warn(
-            picocolors.red(filterRulesUrl),
-            flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute
-              ? '(white)'
-              : '(black)',
-            hostname.replaceAll(DEBUG_DOMAIN_TO_FIND, picocolors.bold(DEBUG_DOMAIN_TO_FIND))
-          );
-          foundDebugDomain = true;
+        if (flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute) {
+          onWhiteFound(hostname, filterRulesUrl);
+        } else {
+          onBlackFound(hostname, filterRulesUrl);
         }
 
         switch (flag) {
