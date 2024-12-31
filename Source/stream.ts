@@ -67,7 +67,8 @@ const AMAZON_PRIME_VIDEO: StreamService = {
 const ABEMA_TV: StreamService = {
   name: 'AbemaTV',
   rules: [
-    'DOMAIN-KEYWORD,abematv.akamaized.net',
+    // Pure Front-End detection https://ds-linear-abematv.akamaized.net/region check HTTP 200
+    'DOMAIN,ds-linear-abematv.akamaized.net',
     'DOMAIN-SUFFIX,abema.io',
     'DOMAIN-SUFFIX,abema.tv',
     'DOMAIN-SUFFIX,ameba.jp',
@@ -531,6 +532,14 @@ const NETFLIX: StreamService = {
   ]
 };
 
+const NHK_PLUS: StreamService = {
+  name: 'NHK Plus',
+  rules: [
+    // Pure Front-End detection just like AbemaTV: https://location-plus.nhk.jp/geoip/area.json
+    'DOMAIN-SUFFIX,location-plus.nhk.jp'
+  ]
+};
+
 const NOW_E: StreamService = {
   name: 'Now E',
   rules: [
@@ -787,7 +796,7 @@ export const ALL: StreamService[] = [
   KKTV,
   LINE_TV, LITV,
   MY5, MYTV_SUPER,
-  NETFLIX, NAVER_TV, NICONICO, NOW_E,
+  NETFLIX, NAVER_TV, NICONICO, NHK_PLUS, NOW_E,
   OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
   SOUNDCLOUD, SHOWTIME, SPOTIFY,
@@ -897,7 +906,8 @@ export const JP: StreamService[] = [
   // Paravi
   // unext
   HULU_JP,
-  ENCORE_TVB_JP_TVER
+  ENCORE_TVB_JP_TVER,
+  NHK_PLUS
   // GYAO!
   // wowow
   // VideoMarket
