@@ -260,7 +260,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+byteimg.com', // Uses alidns.com as NS
       '+byteacctimg.com', // Uses alidns.com as NS
       '+ibytedapm.com', // China NS
-      'oceanengine.com'
+      'oceanengine.com',
+      '+edge-byted.com',
+      '+volcvideo.com'
     ]
   },
   BAIDU: {
