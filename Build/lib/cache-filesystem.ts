@@ -398,7 +398,7 @@ export class Cache<S = string> {
               }
             }
 
-            console.log(picocolors.red('[fetch error]'), picocolors.gray(error.url), error);
+            console.log(picocolors.red('[fetch error]'), picocolors.gray(`[${primaryUrl}]`), error);
           }
         } else {
           if ('name' in e) {
@@ -418,7 +418,7 @@ export class Cache<S = string> {
             }
           }
 
-          console.log(picocolors.red('[fetch error]'), picocolors.gray(primaryUrl), e);
+          console.log(picocolors.red('[fetch error]'), picocolors.gray(`[${primaryUrl}]`), e);
         }
       }
 
