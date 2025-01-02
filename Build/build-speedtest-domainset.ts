@@ -138,7 +138,7 @@ const PREDEFINE_DOMAINS = [
 
 const s = newQueue(2);
 
-const latestTopUserAgentsPromise = $fetch('https://cdn.jsdelivr.net/npm/top-user-agents@latest/src/desktop.json')
+const latestTopUserAgentsPromise = $fetch('https://raw.githubusercontent.com/microlinkhq/top-user-agents/master/src/desktop.json')
   .then(res => res.json())
   .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
