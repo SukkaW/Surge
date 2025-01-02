@@ -120,7 +120,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://secure.fanboy.co.nz/easylist.txt',
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
       'https://ublockorigin.pages.dev/thirdparties/easylist.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt'
+      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
+      'https://filters.adtidy.org/extension/ublock/filters/101_optimized.txt'
     ],
     TTL.TWLVE_HOURS()
   ],
@@ -132,7 +133,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://secure.fanboy.co.nz/easyprivacy.txt',
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
       'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt'
+      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
+      'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt'
     ],
     TTL.TWLVE_HOURS()
   ],
