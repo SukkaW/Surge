@@ -19,6 +19,8 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
 
+const readLocalNonIpRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
+
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectBaseDescription = [
     ...SHARED_DESCRIPTION,
@@ -98,7 +100,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
         })),
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
-        readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf')).then(appendArrayToRejectOutput),
+        readLocalNonIpRejectRulesetPromise.then(appendArrayToRejectOutput),
         // Dedupe domainSets
         // span.traceChildAsync('collect black keywords/suffixes', async () =>
         /**

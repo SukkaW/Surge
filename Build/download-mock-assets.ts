@@ -14,20 +14,36 @@ const ASSETS_LIST = {
   'amazon-adsystem-com_amazon-apstag.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/amazon-apstag.js'
 } as const;
 
-export const downloadMockAssets = task(require.main === module, __filename)((span) => Promise.all(Object.entries(ASSETS_LIST).map(
-  ([filename, url]) => span
-    .traceChildAsync(url, async () => {
-      const res = await $fetch(url);
-      if (!res.body) {
-        throw new Error(`Empty body from ${url}`);
-      }
+export const downloadMockAssets = task(require.main === module, __filename)(async (span) => {
+  const p = mkdirp(OUTPUT_MOCK_DIR);
+  if (p) {
+    await p;
+  }
 
-      await mkdirp(OUTPUT_MOCK_DIR);
-      const src = path.join(OUTPUT_MOCK_DIR, filename);
+  return Promise.all(Object.entries(ASSETS_LIST).map(
+    ([filename, url]) => span
+      .traceChildAsync(url, async () => {
+        const res = await $fetch(url);
+        if (!res.ok) {
+          console.error(`Failed to download ${url}`);
 
-      return pipeline(
-        res.body,
-        fs.createWriteStream(src, 'utf-8')
-      );
-    })
-)));
+          // we can safely skip this since we can always use previous version
+          return;
+        }
+
+        if (!res.body) {
+          console.error(`Empty body from ${url}`);
+
+          // we can safely skip this since we can always use previous version
+          return;
+        }
+
+        const src = path.join(OUTPUT_MOCK_DIR, filename);
+
+        return pipeline(
+          res.body,
+          fs.createWriteStream(src, 'utf-8')
+        );
+      })
+  ));
+});

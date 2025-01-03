@@ -7,14 +7,13 @@ import type { Headers as TarEntryHeaders } from 'tar-fs';
 import zlib from 'node:zlib';
 import undici from 'undici';
 import picocolors from 'picocolors';
+import { PUBLIC_DIR } from './constants/dir';
 
 const GITHUB_CODELOAD_URL = 'https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master';
 const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive/master/ruleset.skk.moe-master.tar.gz';
 
 export const downloadPreviousBuild = task(require.main === module, __filename)(async (span) => {
-  const publicDir = path.resolve(__dirname, '..', 'public');
-
-  if (fs.existsSync(publicDir)) {
+  if (fs.existsSync(PUBLIC_DIR)) {
     console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
     return;
   }
@@ -61,7 +60,7 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
 
     const gunzip = zlib.createGunzip();
     const extract = tarExtract(
-      publicDir,
+      PUBLIC_DIR,
       {
         ignore(_: string, header?: TarEntryHeaders) {
           if (header) {

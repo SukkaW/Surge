@@ -62,55 +62,30 @@ process.on('unhandledRejection', (reason) => {
 
   try {
     const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
-
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
-    const buildRejectIPListPromise = downloadPreviousBuildPromise.then(() => buildRejectIPList(rootSpan));
-    const buildAppleCdnPromise = downloadPreviousBuildPromise.then(() => buildAppleCdn(rootSpan));
-    const buildCdnConfPromise = downloadPreviousBuildPromise.then(() => buildCdnDownloadConf(rootSpan));
-    const buildRejectDomainSetPromise = downloadPreviousBuildPromise.then(() => buildRejectDomainSet(rootSpan));
-    const buildTelegramCIDRPromise = downloadPreviousBuildPromise.then(() => buildTelegramCIDR(rootSpan));
-    const buildChnCidrPromise = downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan));
-    const buildSpeedtestDomainSetPromise = downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan));
-
-    const buildInternalReverseChnCIDRPromise = buildInternalReverseChnCIDR(rootSpan);
-
-    // const buildInternalChnDomainsPromise = buildInternalChnDomains();
-    const buildDomesticRulesetPromise = downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan));
-
-    const buildRedirectModulePromise = downloadPreviousBuildPromise.then(() => buildRedirectModule(rootSpan));
-    const buildAlwaysRealIPModulePromise = downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan));
-
-    const buildStreamServicePromise = downloadPreviousBuildPromise.then(() => buildStreamService(rootSpan));
-
-    const buildMicrosoftCdnPromise = downloadPreviousBuildPromise.then(() => buildMicrosoftCdn(rootSpan));
-
-    const buildSSPanelUIMAppProfilePromise = downloadPreviousBuildPromise.then(() => buildSSPanelUIMAppProfile(rootSpan));
-
-    const downloadMockAssetsPromise = downloadMockAssets(rootSpan);
-
-    const buildCloudMounterRulesPromise = downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan));
 
     await Promise.all([
       downloadPreviousBuildPromise,
       buildCommonPromise,
-      buildRejectIPListPromise,
-      buildAppleCdnPromise,
-      buildCdnConfPromise,
-      buildRejectDomainSetPromise,
-      buildTelegramCIDRPromise,
-      buildChnCidrPromise,
-      buildSpeedtestDomainSetPromise,
-      buildInternalReverseChnCIDRPromise,
-      buildInternalReverseChnCIDRPromise,
-      // buildInternalChnDomainsPromise,
-      buildDomesticRulesetPromise,
-      buildRedirectModulePromise,
-      buildAlwaysRealIPModulePromise,
-      buildStreamServicePromise,
-      buildMicrosoftCdnPromise,
-      buildSSPanelUIMAppProfilePromise,
-      buildCloudMounterRulesPromise,
-      downloadMockAssetsPromise
+      downloadPreviousBuildPromise.then(() => buildRejectIPList(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildAppleCdn(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildCdnDownloadConf(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildRejectDomainSet(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildTelegramCIDR(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan)),
+      buildInternalReverseChnCIDR(rootSpan),
+      downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildRedirectModule(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildStreamService(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildMicrosoftCdn(rootSpan)),
+      Promise.all([
+        downloadPreviousBuildPromise,
+        buildCommonPromise
+      ]).then(() => buildSSPanelUIMAppProfile(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan)),
+      downloadMockAssets(rootSpan)
     ]);
 
     await Promise.all([

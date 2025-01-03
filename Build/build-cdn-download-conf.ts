@@ -48,18 +48,21 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   return S3OSSDomains;
 })();
 
+const cdnDomainsListPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/cdn.conf'));
+const downloadDomainSetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/download.conf'));
+const steamDomainSetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/game-download.conf'));
+
 export const buildCdnDownloadConf = task(require.main === module, __filename)(async (span) => {
   const [
     S3OSSDomains,
-
     cdnDomainsList,
     downloadDomainSet,
     steamDomainSet
   ] = await Promise.all([
     getS3OSSDomainsPromise,
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/cdn.conf')),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/download.conf')),
-    readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/game-download.conf'))
+    cdnDomainsListPromise,
+    downloadDomainSetPromise,
+    steamDomainSetPromise
   ]);
 
   // Move S3 domains to download domain set, since S3 files may be large

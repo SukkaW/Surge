@@ -219,8 +219,6 @@ export function getPhishingDomains(parentSpan: Span) {
       return domainArr;
     });
 
-    console.log({ len: domainArr.length });
-
     return span.traceChildAsync(
       'process phishing domain set',
       () => processPhihsingDomains(domainArr)

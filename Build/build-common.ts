@@ -18,20 +18,22 @@ const MAGIC_COMMAND_SGMODULE_MITM_HOSTNAMES = '# $ sgmodule_mitm_hostnames ';
 
 const domainsetSrcFolder = 'domainset' + path.sep;
 
+const clawSourceDirPromise = new Fdir()
+  .withRelativePaths()
+  .filter((filepath, isDirectory) => {
+    if (isDirectory) return true;
+
+    const extname = path.extname(filepath);
+
+    return !(extname === '.js' || extname === '.ts');
+  })
+  .crawl(SOURCE_DIR)
+  .withPromise();
+
 export const buildCommon = task(require.main === module, __filename)(async (span) => {
   const promises: Array<Promise<unknown>> = [];
 
-  const paths = await new Fdir()
-    .withRelativePaths()
-    .filter((filepath, isDirectory) => {
-      if (isDirectory) return true;
-
-      const extname = path.extname(filepath);
-
-      return !(extname === '.js' || extname === '.ts');
-    })
-    .crawl(SOURCE_DIR)
-    .withPromise();
+  const paths = await clawSourceDirPromise;
 
   for (let i = 0, len = paths.length; i < len; i++) {
     const relativePath = paths[i];
