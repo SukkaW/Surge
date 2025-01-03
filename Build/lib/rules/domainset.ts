@@ -1,5 +1,5 @@
 import { invariant } from 'foxts/guard';
-import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
+import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { RuleOutput } from './base';
 import type { SingboxSourceFormat } from '../singbox';
 
@@ -17,7 +17,7 @@ export class DomainsetOutput extends RuleOutput<string[]> {
   private $singbox_domains_suffixes: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
   private $adguardhome: string[] = [];
   preprocess() {
-    const kwfilter = createKeywordFilter(this.domainKeywords);
+    const kwfilter = createKeywordFilter(Array.from(this.domainKeywords));
 
     this.domainTrie.dumpWithoutDot((domain, subdomain) => {
       if (kwfilter(domain)) {

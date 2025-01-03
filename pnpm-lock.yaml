@@ -45,8 +45,8 @@ importers:
         specifier: ^6.4.2
         version: 6.4.2(picomatch@4.0.2)
       foxts:
-        specifier: ^1.0.13
-        version: 1.0.13
+        specifier: ^1.1.3
+        version: 1.1.3
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -1145,8 +1145,8 @@ packages:
     resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
 
-  foxts@1.0.13:
-    resolution: {integrity: sha512-OTxteinRnc7hZ8NbcPH5gOji/D2JmSEoYEVzCZ08YEb1T7zudsK/+Kp4wUkBjBBvcjvWnxOv4EILBsbwnddMAg==}
+  foxts@1.1.3:
+    resolution: {integrity: sha512-xF599E5aoxmBBN1Q+CJjlJdQndkjcw2Drc59qfQmSWR/0mOVI2zK+zEIb1lvq6wdRZZHAdrI/x+kfRvjF+lpHQ==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -3030,7 +3030,7 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
-  foxts@1.0.13: {}
+  foxts@1.1.3: {}
 
   fs-constants@1.0.0: {}
 

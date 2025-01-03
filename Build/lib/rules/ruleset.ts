@@ -1,6 +1,6 @@
 import { merge } from 'fast-cidr-tools';
 import type { Span } from '../../trace';
-import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
+import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { appendArrayInPlace } from '../append-array-in-place';
 import { appendSetElementsToArray } from 'foxts/append-set-elements-to-array';
 import type { SingboxSourceFormat } from '../singbox';
@@ -17,7 +17,7 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
   }
 
   protected preprocess() {
-    const kwfilter = createKeywordFilter(this.domainKeywords);
+    const kwfilter = createKeywordFilter(Array.from(this.domainKeywords));
 
     const domains: string[] = [];
     const domainSuffixes: string[] = [];

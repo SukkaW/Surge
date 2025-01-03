@@ -7,7 +7,7 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { $fetch } from './lib/make-fetch-happen';
-import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
+import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 
 export async function parseGfwList() {
   const whiteSet = new Set<string>();
@@ -117,7 +117,7 @@ export async function parseGfwList() {
 
   whiteSet.forEach(domain => trie.whitelist(domain));
 
-  const kwfilter = createKeywordFilter(keywordSet);
+  const kwfilter = createKeywordFilter([...keywordSet]);
 
   const missingTop10000Gfwed = new Set<string>();
 
