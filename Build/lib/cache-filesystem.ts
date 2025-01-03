@@ -291,9 +291,9 @@ export class Cache<S = string> {
 
     const createFetchFallbackPromise = async (url: string, index: number) => {
       // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
-      if (index > 0) {
+      if (index >= 0) {
         try {
-          await sleepWithAbort(100 + (index + 1) * 10, controller.signal);
+          await sleepWithAbort(50 + (index + 1) * 100, controller.signal);
         } catch {
           console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
           throw new CustomAbortError();
