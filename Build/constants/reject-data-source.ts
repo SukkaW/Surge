@@ -29,14 +29,26 @@ export const HOSTS_EXTRA: HostsSource[] = [
 
 export const DOMAIN_LISTS: HostsSource[] = [
   // CoinBlockerList
-  // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2021-07, so we set a 14 days cache ttl
-  ['https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt', [], true, TTL.TWO_WEEKS()]
+  // Although the hosts file is still actively maintained, the hosts_browser file is not updated since 2024-03, so we set a 14 days cache ttl
+  [
+    'https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt',
+    [
+      'https://anyflare.scirex.workers.dev/proxy/https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt'
+    ],
+    true,
+    TTL.TWO_WEEKS()
+  ]
 ];
 
 export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // CoinBlockerList - Full
-  // Lat update 8 months ago, so we set a 14 days cache ttl
-  ['https://zerodot1.gitlab.io/CoinBlockerLists/list.txt', [], true, TTL.TWO_WEEKS()],
+  // Lat update 10 months ago, so we set a 14 days cache ttl
+  [
+    'https://zerodot1.gitlab.io/CoinBlockerLists/list.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://zerodot1.gitlab.io/CoinBlockerLists/list.txt'],
+    true,
+    TTL.TWO_WEEKS()
+  ],
 
   // BarbBlock
   // The barbblock list has never been updated since 2019-05, so we set a 14 days cache ttl
