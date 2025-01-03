@@ -490,8 +490,10 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
     case 104: { /** h */
       /** |http://x.o2.pl^ */
       if (line.startsWith('http://', sliceStart)) {
+        includeAllSubDomain = false;
         sliceStart += 7;
       } else if (line.startsWith('https://', sliceStart)) {
+        includeAllSubDomain = false;
         sliceStart += 8;
       }
       break;
