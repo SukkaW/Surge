@@ -6,7 +6,7 @@ import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
 import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } from './cache-filesystem';
 import type { Span } from '../trace';
-import { createAhoCorasick as createKeywordFilter } from 'foxts/ahocorasick';
+import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import { identity } from 'foxts/identity';
 import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';
@@ -302,15 +302,13 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
 
   let line = $line.trim();
 
-  /** @example line.length */
-  const len = line.length;
-  if (len === 0) {
+  if (line.length === 0) {
     result[1] = ParseType.Null;
     return result;
   }
 
-  const firstCharCode = line[0].charCodeAt(0);
-  const lastCharCode = line[len - 1].charCodeAt(0);
+  const firstCharCode = line.charCodeAt(0);
+  let lastCharCode = line.charCodeAt(line.length - 1);
 
   if (
     firstCharCode === 47 // 47 `/`
@@ -430,10 +428,14 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
       .replace('$third-party', '');
   }
 
+  lastCharCode = line.charCodeAt(line.length - 1);
+
   /** @example line.endsWith('^') */
   const lineEndsWithCaret = lastCharCode === 94; // lastChar === '^';
+  /** @example line.endsWith('|') */
+  const lineEndsWithVerticalBar = lastCharCode === 124; // lastChar === '|';
   /** @example line.endsWith('^|') */
-  const lineEndsWithCaretVerticalBar = (lastCharCode === 124 /** lastChar === '|' */) && line[len - 2] === '^';
+  const lineEndsWithCaretVerticalBar = lineEndsWithVerticalBar && line[line.length - 2] === '^';
   /** @example line.endsWith('^') || line.endsWith('^|') */
   const lineEndsWithCaretOrCaretVerticalBar = lineEndsWithCaret || lineEndsWithCaretVerticalBar;
 
@@ -496,16 +498,20 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
         break;
     }
 
-    if (lineEndsWithCaretOrCaretVerticalBar) {
-      sliceEnd = -2;
+    if (lineEndsWithCaret) {
+      sliceEnd = -1;
+    } else if (lineEndsWithVerticalBar) {
+      // It is possible that a whitelist filter ends with '|' without '^|'
+      // @@|www.auslogics.com|
+      sliceEnd = lineEndsWithCaretVerticalBar ? -2 : -1;
     } else if (line.endsWith('$genericblock')) {
       sliceEnd = -13;
-      if (line[len - 14] === '^') { // line.endsWith('^$genericblock')
+      if (line[line.length - 14] === '^') { // line.endsWith('^$genericblock')
         sliceEnd = -14;
       }
     } else if (line.endsWith('$document')) {
       sliceEnd = -9;
-      if (line[len - 10] === '^') { // line.endsWith('^$document')
+      if (line[line.length - 10] === '^') { // line.endsWith('^$document')
         sliceEnd = -10;
       }
     }
@@ -578,8 +584,8 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
   //    * `track.customer.io$image`
   //    */
   // }
-
   const lineStartsWithSingleDot = firstCharCode === 46; // 46 `.`
+
   if (
     lineStartsWithSingleDot
     && lineEndsWithCaretOrCaretVerticalBar
@@ -713,34 +719,55 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
    * `@@://www.liquidweb.com/kb/wp-content/themes/lw-kb-theme/images/ads/vps-sidebar.jpg`
    */
   let sliceStart = 0;
-  let sliceEnd: number | undefined;
+  let sliceEnd = line.length;
+  let isWhieList = false;
 
   if (lineStartsWithSingleDot) {
+    // .usercentrics.eu^
     sliceStart = 1;
+  } else if (firstCharCode === 58 /** : */ && line.startsWith('://')) {
+    // ://backcb.one^$all
+    sliceStart = 3;
   }
-  if (line.endsWith('^$all')) { // This salvage line `thepiratebay3.com^$all`
-    sliceEnd = -5;
-  } else if (
-    // Try to salvage line like `://account.smba.$document`
-    // For this specific line, it will fail anyway though.
-    line.endsWith('$document')
-  ) {
-    sliceEnd = -9;
+
+  if (line.endsWith('$all')) {
+    sliceEnd -= 4;
+  } else if (line.endsWith('$document')) {
+    sliceEnd -= 9;
   } else if (line.endsWith('$badfilter')) {
-    sliceEnd = -10;
+    isWhieList = true;
+    sliceEnd -= 10;
   }
-  const sliced = (sliceStart !== 0 || sliceEnd !== undefined) ? line.slice(sliceStart, sliceEnd) : line;
+
+  const charBeforeModifier = line.charCodeAt(sliceEnd - 1);
+  if (
+    charBeforeModifier === 94 /** ^$all, ^$document, etc. */
+    || charBeforeModifier === 46 /** .$all */
+  ) {
+    sliceEnd -= 1;
+  }
+
+  const sliced = (sliceStart !== 0 || sliceEnd !== line.length) ? line.slice(sliceStart, sliceEnd) : line;
 
   const tryNormalizeDomain = normalizeDomain(sliced);
   if (tryNormalizeDomain === sliced) {
     // the entire rule is domain
     result[0] = sliced;
-    result[1] = ParseType.BlackIncludeSubdomain;
+    result[1] = isWhieList
+      ? ParseType.WhiteIncludeSubdomain
+      : ParseType.BlackIncludeSubdomain;
 
     return result;
   }
 
-  result[0] = `[parse-filter ${tryNormalizeDomain === null ? 'E0010' : 'E0011'}] can not parse: ${JSON.stringify({ line, tryNormalizeDomain, sliced })}`;
+  console.log({
+    line,
+    lineEndsWithCaret,
+    lineEndsWithCaretOrCaretVerticalBar,
+    lineEndsWithCaretVerticalBar
+  });
+
+  result[0] = `[parse-filter ${tryNormalizeDomain === null ? 'E0010' : 'E0011'}] can not parse: ${JSON.stringify({ line, tryNormalizeDomain, sliced, sliceStart, sliceEnd })}`;
   result[1] = ParseType.ErrorMessage;
   return result;
 }
