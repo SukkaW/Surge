@@ -14,6 +14,6 @@ export const loosTldOptWithPrivateDomains: Parameters<typeof tldts.getSubdomain>
 };
 
 export const normalizeTldtsOpt: Parameters<typeof tldts.getSubdomain>[1] = {
-  allowPrivateDomains: true
-  // detectIp: true
+  allowPrivateDomains: true,
+  detectIp: true
 };

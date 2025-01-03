@@ -575,7 +575,8 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
   }
 
   const domain = normalizeDomain(sliced);
-  if (domain) {
+
+  if (domain && domain === sliced) {
     result[0] = domain;
 
     if (white) {
