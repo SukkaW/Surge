@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { getHostname } from 'tldts-experimental';
+import tldts from 'tldts-experimental';
 import { task } from './trace';
 import { $fetch } from './lib/make-fetch-happen';
 import { SHARED_DESCRIPTION } from './constants/description';
@@ -48,6 +48,36 @@ const latestTopUserAgentsPromise = $fetch('https://raw.githubusercontent.com/mic
   .then(res => res.json())
   .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
+const getSpeedtestHostsGroupsPromise = Promise.all(KEYWORDS.flatMap(querySpeedtestApi));
+
+export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
+  const output = new DomainsetOutput(span, 'speedtest')
+    .withTitle('Sukka\'s Ruleset - Speedtest Domains')
+    .withDescription([
+      ...SHARED_DESCRIPTION,
+      '',
+      'This file contains common speedtest endpoints.'
+    ])
+    .addFromDomainset(await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'domainset/speedtest.conf')))
+    .addFromDomainset(
+      (await readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')))
+        .reduce<string[]>((acc, cur) => {
+          const hn = tldts.getHostname(cur, { detectIp: false, validateHostname: true });
+          if (hn) {
+            acc.push(hn);
+          }
+          return acc;
+        }, [])
+    );
+
+  const hostnameGroup = await span.traceChildPromise('get speedtest hosts groups', getSpeedtestHostsGroupsPromise);
+
+  hostnameGroup.forEach(hostname => output.bulkAddDomain(hostname));
+  await output.done();
+
+  return output.write();
+});
+
 async function querySpeedtestApi(keyword: string) {
   const topUserAgents = await latestTopUserAgentsPromise;
 
@@ -78,7 +108,7 @@ async function querySpeedtestApi(keyword: string) {
 
     return data.reduce<string[]>(
       (prev, cur) => {
-        const hn = getHostname(cur.host || cur.url, { detectIp: false, validateHostname: true });
+        const hn = tldts.getHostname(cur.host || cur.url, { detectIp: false, validateHostname: true });
         if (hn) {
           prev.push(hn);
         }
@@ -91,24 +121,3 @@ async function querySpeedtestApi(keyword: string) {
     return [];
   }
 }
-
-const getSpeedtestHostsGroupsPromise = Promise.all(KEYWORDS.flatMap(querySpeedtestApi));
-
-export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
-  const output = new DomainsetOutput(span, 'speedtest')
-    .withTitle('Sukka\'s Ruleset - Speedtest Domains')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
-      '',
-      'This file contains common speedtest endpoints.'
-    ])
-    .addFromDomainset(await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'domainset/speedtest.conf')))
-    .addFromDomainset(await readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')));
-
-  const hostnameGroup = await span.traceChildPromise('get speedtest hosts groups', getSpeedtestHostsGroupsPromise);
-
-  hostnameGroup.forEach(hostname => output.bulkAddDomain(hostname));
-  await output.done();
-
-  return output.write();
-});
