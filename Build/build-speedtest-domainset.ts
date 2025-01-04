@@ -109,6 +109,8 @@ const PREDEFINE_DOMAINS = [
   '.speedtest.pni.tw',
   '.speedtest.cmcnetworks.net',
   '.speedtestwnet.com.br',
+  '.speedtest.moack.co.kr',
+  'speedtest.mtnetworks.mn',
   // Cloudflare
   '.speed.cloudflare.com',
   // Wi-Fi Man
@@ -133,7 +135,6 @@ const PREDEFINE_DOMAINS = [
   'mensura.cdn-apple.com', // From netQuality command
   // OpenSpeedtest
   'open.cachefly.net' // This is also used for openspeedtest server download
-
 ];
 
 const s = newQueue(2);
