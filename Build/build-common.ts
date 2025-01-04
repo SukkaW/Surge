@@ -113,20 +113,20 @@ function transformDomainset(parentSpan: Span, sourcePath: string) {
         if (res === $skip) return;
 
         const id = basename;
-        const [title, descriptions, lines] = res;
+        const [title, incomingDescriptions, lines] = res;
 
-        let description: string[];
-        if (descriptions.length) {
-          description = SHARED_DESCRIPTION.slice();
-          description.push('');
-          appendArrayInPlace(description, descriptions);
+        let finalDescriptions: string[];
+        if (incomingDescriptions.length) {
+          finalDescriptions = SHARED_DESCRIPTION.slice();
+          finalDescriptions.push('');
+          appendArrayInPlace(finalDescriptions, incomingDescriptions);
         } else {
-          description = SHARED_DESCRIPTION;
+          finalDescriptions = SHARED_DESCRIPTION;
         }
 
         return new DomainsetOutput(span, id)
           .withTitle(title)
-          .withDescription(description)
+          .withDescription(finalDescriptions)
           .addFromDomainset(lines)
           .write();
       }

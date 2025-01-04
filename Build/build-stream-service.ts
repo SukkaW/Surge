@@ -10,7 +10,7 @@ export function createRulesetForStreamService(span: Span,
   fileId: string, title: string,
   streamServices: Array<import('../Source/stream').StreamService>) {
   return span.traceChildAsync(fileId, async (childSpan) => Promise.all([
-  // Domains
+    // Domains
     new RulesetOutput(childSpan, fileId, 'non_ip')
       .withTitle(`Sukka's Ruleset - Stream Services: ${title}`)
       .withDescription([
