@@ -233,12 +233,15 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   'no match for',
   'does not exist',
   'not found',
+  'no found',
   'no entries',
   'no data found',
   'is available for registration',
   'currently available for application',
   'no matching record',
-  'no information available about domain name'
+  'no information available about domain name',
+  'not been registered',
+  'no match!!'
 ]);
 
 // whois server can redirect, so whoiser might/will get info from multiple whois servers
