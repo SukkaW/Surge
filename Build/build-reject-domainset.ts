@@ -20,7 +20,8 @@ import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
-const reloadLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
+const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
+const readLocalRejectRulesetPromise = readFileByLine(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectBaseDescription = [
@@ -102,14 +103,15 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         })),
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
         readLocalRejectDomainsetPromise.then(appendArrayToRejectOutput),
-        reloadLocalRejectExtraDomainsetPromise.then(appendArrayToRejectExtraOutput),
+        readLocalRejectExtraDomainsetPromise.then(appendArrayToRejectExtraOutput),
         // Dedupe domainSets
         // span.traceChildAsync('collect black keywords/suffixes', async () =>
         /**
          * Collect DOMAIN, DOMAIN-SUFFIX, and DOMAIN-KEYWORD from non_ip/reject.conf for deduplication
          * DOMAIN-WILDCARD is not really useful for deduplication, it is only included in AdGuardHome output
         */
-        rejectOutput.addFromRuleset(readFileByLine(path.resolve(__dirname, '../Source/non_ip/reject.conf')))
+        rejectOutput.addFromRuleset(readLocalRejectRulesetPromise),
+        rejectExtraOutput.addFromRuleset(readLocalRejectRulesetPromise)
       ].flat());
       // eslint-disable-next-line sukka/no-single-return -- not single return
       return shouldStop;
