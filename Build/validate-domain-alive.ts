@@ -11,7 +11,6 @@ import asyncRetry from 'async-retry';
 import * as whoiser from 'whoiser';
 import picocolors from 'picocolors';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
-import './lib/fetch-retry';
 
 const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   '8.8.8.8',
@@ -98,7 +97,7 @@ function createResolve(server: Array<[string, DNS2.DnsResolver]>): DNS2.DnsResol
             dns: dohServer
           } satisfies DnsResponse;
         } catch (e) {
-          console.error(e);
+          // console.error(e);
           throw new DnsError((e as Error).message, dohServer);
         }
       }, { retries: 5 });
