@@ -469,5 +469,7 @@ export const PREDEFINED_WHITELIST = [
   'transcend-cdn.com', // AdGuard Annoyances
   'store1.gofile.io', // Dandelion Sprout's Annoyances List
   'ad.12306.cn', // https://github.com/jdlingyu/ad-wars
-  '.ib.snssdk.com' // AdGuard Tracking Protection -- breaks 今日头条专业版
+  '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
+  '.expobarrio.com', // domain expired
+  '.hamdandates.com' // domain expired
 ];
