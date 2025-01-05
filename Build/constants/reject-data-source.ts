@@ -160,13 +160,29 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     TTL.TWLVE_HOURS()
   ],
   // AdGuard Base Filter
-  ['https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt', null, TTL.THREE_HOURS()],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt'],
+    TTL.THREE_HOURS()
+  ],
   // AdGuard Mobile AD
-  ['https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt', null, TTL.THREE_HOURS()],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt'],
+    TTL.THREE_HOURS()
+  ],
   // AdGuard Tracking Protection
-  ['https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt', null, TTL.THREE_HOURS()],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt'],
+    TTL.THREE_HOURS()
+  ],
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
-  ['https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt', null, TTL.THREE_HOURS()],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt'],
+    TTL.THREE_HOURS()
+  ],
   // GameConsoleAdblockList
   // Update almost once per 1 to 3 months, let's set a 10 days cache ttl
   ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt', null, TTL.TEN_DAYS()],
@@ -208,7 +224,12 @@ export const ADGUARD_FILTERS_WHITELIST: AdGuardFilterSource[] = [
 
 export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Annoyances filter
-  ['https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt', null, TTL.THREE_HOURS(), true],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt'],
+    TTL.THREE_HOURS(),
+    true
+  ],
   // AdGuard Cookie Notices, included in Annoyances filter
   // ['https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt', null, TTL.THREE_HOURS(), true],
   // EasyList Germany filter, not even included in extra for now
@@ -220,7 +241,11 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   //   TTL.TWLVE_HOURS()
   // ],
   // AdGuard Japanese filter
-  ['https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt', null, TTL.THREE_HOURS()],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt'],
+    TTL.THREE_HOURS()
+  ],
   // uBlock Origin Filter List
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
@@ -268,7 +293,12 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
     TTL.THREE_HOURS()
   ],
   // Dandelion Sprout's Annoyances
-  ['https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt', null, TTL.THREE_HOURS(), true],
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt',
+    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
+    TTL.THREE_HOURS(),
+    true
+  ],
   // EasyList - Newsletters
   [
     'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-newsletters.txt',
