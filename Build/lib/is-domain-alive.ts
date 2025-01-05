@@ -8,6 +8,8 @@ import * as whoiser from 'whoiser';
 
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 
+import process from 'node:process';
+
 const mutex = new Map<string, Promise<unknown>>();
 export function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
   if (mutex.has(key)) {
@@ -201,6 +203,8 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
     return onDomainAlive(apexDomain);
   }
 
+  console.log(picocolors.gray('[domain check]'), picocolors.gray('no NS records'), { domain: apexDomain });
+
   let whois;
 
   try {
@@ -210,10 +214,12 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
     return onDomainDead(apexDomain);
   }
 
-  // console.log(JSON.stringify(whois, null, 2));
+  if (process.env.DEBUG) {
+    console.log(JSON.stringify(whois, null, 2));
+  }
 
   if (whoisExists(whois)) {
-    console.log(picocolors.gray('[domain alive]'), 'whois found', { domain: apexDomain });
+    console.log(picocolors.gray('[domain alive]'), picocolors.gray('whois found'), { domain: apexDomain });
     return onDomainAlive(apexDomain);
   }
 
@@ -229,9 +235,14 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   'no entries',
   'no data found',
   'is available for registration',
-  'currently available for application'
+  'currently available for application',
+  'no matching record',
+  'no information available about domain name'
 ]);
 
+// whois server can redirect, so whoiser might/will get info from multiple whois servers
+// some servers (like TLD whois servers) might have cached/outdated results
+// we can only make sure a domain is alive once all response from all whois servers demonstrate so
 export function whoisExists(whois: whoiser.WhoisSearchResult) {
   let empty = true;
 
@@ -240,13 +251,13 @@ export function whoisExists(whois: whoiser.WhoisSearchResult) {
       empty = false;
 
       if (key === 'error') {
-        if (
-          (typeof whois.error === 'string' && whois.error)
-          || (Array.isArray(whois.error) && whois.error.length > 0)
-        ) {
-          console.error(whois);
-          return true;
-        }
+        // if (
+        //   (typeof whois.error === 'string' && whois.error)
+        //   || (Array.isArray(whois.error) && whois.error.length > 0)
+        // ) {
+        //   console.error(whois);
+        //   return true;
+        // }
         continue;
       }
 
@@ -257,9 +268,9 @@ export function whoisExists(whois: whoiser.WhoisSearchResult) {
         continue;
       }
       if (key === 'Name Server') {
-        if (Array.isArray(whois[key]) && whois[key].length === 0) {
-          return false;
-        }
+        // if (Array.isArray(whois[key]) && whois[key].length === 0) {
+        //   return false;
+        // }
         continue;
       }
 
@@ -268,5 +279,6 @@ export function whoisExists(whois: whoiser.WhoisSearchResult) {
       }
     }
   }
+
   return !empty;
 }
