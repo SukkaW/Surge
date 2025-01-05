@@ -280,7 +280,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   //   'https://ublockorigin.github.io/uAssetsCDN/filters/resource-abuse.txt',
   //   ['https://ublockorigin.pages.dev/filters/resource-abuse.txt']
   // ],
-  // uBlock Origin Annoyances
+  // uBlock Origin Annoyances (the un-merged of Fanboy Annoyances List)
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/annoyances.min.txt',
     ['https://ublockorigin.pages.dev/filters/annoyances.min.txt'],
@@ -291,13 +291,6 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
     'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-annoyances.txt',
     ['https://ublockorigin.pages.dev/thirdparties/easylist-annoyances.txt'],
     TTL.THREE_HOURS()
-  ],
-  // Dandelion Sprout's Annoyances
-  [
-    'https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
-    TTL.THREE_HOURS(),
-    true
   ],
   // EasyList - Newsletters
   [
@@ -319,6 +312,22 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
       'https://secure.fanboy.co.nz/fanboy-cookiemonster_ubo.txt'
     ],
     TTL.TWLVE_HOURS()
+  ],
+  // Dandelion Sprout's Annoyances
+  [
+    'https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt',
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
+    TTL.THREE_HOURS(),
+    true
+  ],
+  // Adblock Warning Removal List
+  [
+    'https://easylist-downloads.adblockplus.org/antiadblockfilters.txt',
+    [
+      'https://filters.adtidy.org/extension/ublock/filters/207_optimized.txt'
+    ],
+    TTL.TWLVE_HOURS(),
+    true
   ]
 ];
 
