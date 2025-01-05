@@ -33,7 +33,7 @@ export const DOMAIN_LISTS: HostsSource[] = [
   [
     'https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt',
     [
-      'https://anyflare.scirex.workers.dev/proxy/https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt'
+      'https://proxy.cdn.skk.moe/?https://zerodot1.gitlab.io/CoinBlockerLists/list_browser.txt'
     ],
     true,
     TTL.TWO_WEEKS()
@@ -45,7 +45,7 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // Lat update 10 months ago, so we set a 14 days cache ttl
   [
     'https://zerodot1.gitlab.io/CoinBlockerLists/list.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://zerodot1.gitlab.io/CoinBlockerLists/list.txt'],
+    ['https://proxy.cdn.skk.moe/?https://zerodot1.gitlab.io/CoinBlockerLists/list.txt'],
     true,
     TTL.TWO_WEEKS()
   ],
@@ -162,25 +162,25 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // AdGuard Base Filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt'],
     TTL.THREE_HOURS()
   ],
   // AdGuard Mobile AD
   [
     'https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt'],
     TTL.THREE_HOURS()
   ],
   // AdGuard Tracking Protection
   [
     'https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt'],
     TTL.THREE_HOURS()
   ],
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
   [
     'https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt'],
     TTL.THREE_HOURS()
   ],
   // GameConsoleAdblockList
@@ -226,7 +226,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Annoyances filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt'],
     TTL.THREE_HOURS(),
     true
   ],
@@ -243,7 +243,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Japanese filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt'],
     TTL.THREE_HOURS()
   ],
   // uBlock Origin Filter List
@@ -295,7 +295,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // Dandelion Sprout's Annoyances
   [
     'https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt',
-    ['https://anyflare.scirex.workers.dev/proxy/https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
     TTL.THREE_HOURS(),
     true
   ],
