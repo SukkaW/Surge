@@ -1,13 +1,13 @@
 import { describe, it } from 'mocha';
 
-import { isDomainAlive, whoisExists } from './is-domain-alive';
+import { isDomainAlive, noWhois } from './is-domain-alive';
 import { expect } from 'expect';
 
 import process from 'node:process';
 
 describe('whoisExists', () => {
   it('.cryptocrawler.io', () => {
-    expect(whoisExists({
+    expect(noWhois({
       'whois.nic.io': {
         'Domain Status': [],
         'Name Server': [],
@@ -18,11 +18,11 @@ describe('whoisExists', () => {
           'Terms of Use: Access to WHOIS'
         ]
       }
-    })).toBe(false);
+    })).toBe('Domain not found.');
   });
 
   it('.tunevideo.ru', () => {
-    expect(whoisExists({
+    expect(noWhois({
       'whois.tcinet.ru': {
         'Domain Status': [],
         'Name Server': [],
@@ -36,25 +36,7 @@ describe('whoisExists', () => {
           'Last updated on 2025-01-05T11:03:01Z'
         ]
       }
-    })).toBe(false);
-  });
-
-  it('.myqloud.com', () => {
-    expect(whoisExists({
-      'whois.tcinet.ru': {
-        'Domain Status': [],
-        'Name Server': [],
-        text: [
-          '% TCI Whois Service. Terms of use:',
-          '% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)',
-          '% https://tcinet.ru/documents/whois_su.pdf (in Russian)',
-          '',
-          'No entries found for the selected source(s).',
-          '',
-          'Last updated on 2025-01-05T11:03:01Z'
-        ]
-      }
-    })).toBe(false);
+    })).toBe('No entries found for the selected source(s).');
   });
 });
 
@@ -93,8 +75,8 @@ describe('isDomainAlive', function () {
   //   expect((await isDomainAlive('.tayfundogdas.me', true))[1]).toEqual(true);
   // });
 
-  it('hamdandates.com', async () => {
+  it('9s6q.cn', async () => {
     process.env.DEBUG = 'true';
-    expect((await isDomainAlive('.hamdandates.com', true))[1]).toEqual(false);
+    expect((await isDomainAlive('.9s6q.cn', true))[1]).toEqual(false);
   });
 });

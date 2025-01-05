@@ -218,12 +218,13 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
     console.log(JSON.stringify(whois, null, 2));
   }
 
-  if (whoisExists(whois)) {
+  const whoisError = noWhois(whois);
+  if (!whoisError) {
     console.log(picocolors.gray('[domain alive]'), picocolors.gray('whois found'), { domain: apexDomain });
     return onDomainAlive(apexDomain);
   }
 
-  console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain });
+  console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain, whoisError });
   return onDomainDead(apexDomain);
 }
 
@@ -243,7 +244,7 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
 // whois server can redirect, so whoiser might/will get info from multiple whois servers
 // some servers (like TLD whois servers) might have cached/outdated results
 // we can only make sure a domain is alive once all response from all whois servers demonstrate so
-export function whoisExists(whois: whoiser.WhoisSearchResult) {
+export function noWhois(whois: whoiser.WhoisSearchResult): null | string {
   let empty = true;
 
   for (const key in whois) {
@@ -262,8 +263,12 @@ export function whoisExists(whois: whoiser.WhoisSearchResult) {
       }
 
       if (key === 'text') {
-        if (Array.isArray(whois.text) && whois.text.some(value => whoisNotFoundKeywordTest(value.toLowerCase()))) {
-          return false;
+        if (Array.isArray(whois.text)) {
+          for (const value of whois.text) {
+            if (whoisNotFoundKeywordTest(value.toLowerCase())) {
+              return value;
+            }
+          }
         }
         continue;
       }
@@ -274,11 +279,19 @@ export function whoisExists(whois: whoiser.WhoisSearchResult) {
         continue;
       }
 
-      if (typeof whois[key] === 'object' && !Array.isArray(whois[key]) && !whoisExists(whois[key])) {
-        return false;
+      if (typeof whois[key] === 'object' && !Array.isArray(whois[key])) {
+        const tmp = noWhois(whois[key]);
+        if (tmp) {
+          return tmp;
+        }
+        continue;
       }
     }
   }
 
-  return !empty;
+  if (empty) {
+    return 'whois is empty';
+  }
+
+  return null;
 }
