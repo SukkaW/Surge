@@ -203,15 +203,13 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
     return onDomainAlive(apexDomain);
   }
 
-  console.log(picocolors.gray('[domain check]'), picocolors.gray('no NS records'), { domain: apexDomain });
-
   let whois;
 
   try {
     whois = await getWhois(apexDomain);
   } catch (e) {
     console.log(picocolors.red('[domain dead]'), 'whois error', { domain: apexDomain }, e);
-    return onDomainDead(apexDomain);
+    return onDomainAlive(apexDomain);
   }
 
   if (process.env.DEBUG) {
@@ -224,7 +222,7 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
     return onDomainAlive(apexDomain);
   }
 
-  console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain, whoisError });
+  console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain, err: whoisError });
   return onDomainDead(apexDomain);
 }
 
@@ -241,7 +239,11 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   'no matching record',
   'no information available about domain name',
   'not been registered',
-  'no match!!'
+  'no match!!',
+  'status: available',
+  ' is free',
+  'no object found',
+  'nothing found'
 ]);
 
 // whois server can redirect, so whoiser might/will get info from multiple whois servers

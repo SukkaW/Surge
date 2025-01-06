@@ -9,6 +9,13 @@ import { fdir as Fdir } from 'fdir';
 
 const queue = newQueue(32);
 
+const deadDomains: string[] = [];
+function onDomain(args: [string, boolean]) {
+  if (!args[1]) {
+    deadDomains.push(args[0]);
+  }
+}
+
 (async () => {
   const domainSets = await new Fdir()
     .withFullPaths()
@@ -24,7 +31,9 @@ const queue = newQueue(32);
     ...domainRules.map(runAgainstRuleset)
   ]);
 
-  console.log('done');
+  console.log();
+  console.log();
+  console.log(JSON.stringify(deadDomains));
 })();
 
 export async function runAgainstRuleset(filepath: string) {
@@ -34,7 +43,7 @@ export async function runAgainstRuleset(filepath: string) {
     return;
   }
 
-  const promises: Array<Promise<[string, boolean]>> = [];
+  const promises: Array<Promise<void>> = [];
 
   for await (const l of readFileByLine(filepath)) {
     const line = processLine(l);
@@ -43,7 +52,10 @@ export async function runAgainstRuleset(filepath: string) {
     switch (type) {
       case 'DOMAIN-SUFFIX':
       case 'DOMAIN': {
-        promises.push(queue.add(() => keyedAsyncMutexWithQueue(domain, () => isDomainAlive(domain, type === 'DOMAIN-SUFFIX'))));
+        promises.push(
+          queue.add(() => keyedAsyncMutexWithQueue(domain, () => isDomainAlive(domain, type === 'DOMAIN-SUFFIX')))
+            .then(onDomain)
+        );
         break;
       }
       // no default
@@ -61,12 +73,15 @@ export async function runAgainstDomainset(filepath: string) {
     return;
   }
 
-  const promises: Array<Promise<[string, boolean]>> = [];
+  const promises: Array<Promise<void>> = [];
 
   for await (const l of readFileByLine(filepath)) {
     const line = processLine(l);
     if (!line) continue;
-    promises.push(queue.add(() => keyedAsyncMutexWithQueue(line, () => isDomainAlive(line, line[0] === '.'))));
+    promises.push(
+      queue.add(() => keyedAsyncMutexWithQueue(line, () => isDomainAlive(line, line[0] === '.')))
+        .then(onDomain)
+    );
   }
 
   await Promise.all(promises);
