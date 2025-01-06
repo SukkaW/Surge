@@ -363,68 +363,63 @@ export class Cache<S = string> {
     } catch (e) {
       const deserializer = 'deserializer' in opt ? opt.deserializer : identity as any;
 
-      const on304 = (error: Custom304NotModifiedError) => {
+      const on304 = (error: Custom304NotModifiedError): NonNullable<T> => {
         console.log(picocolors.green('[cache] http 304'), picocolors.gray(primaryUrl));
         this.updateTtl(cachedKey, TTL.ONE_WEEK_STATIC);
         return deserializer(error.data);
       };
 
-      const onNoETagFallback = (error: CustomNoETagFallbackError) => {
+      const onNoETagFallback = (error: CustomNoETagFallbackError): NonNullable<T> => {
         console.log(picocolors.green('[cache] hit'), picocolors.gray(primaryUrl));
         return deserializer(error.data);
+      };
+
+      const onSingleError = (error: object & {}) => {
+        if ('name' in error) {
+          if (error.name === 'Custom304NotModifiedError') {
+            return on304(error as Custom304NotModifiedError);
+          }
+          if (error.name === 'CustomNoETagFallbackError') {
+            return onNoETagFallback(error as CustomNoETagFallbackError);
+          }
+          if (error.name === 'CustomAbortError' || error.name === 'AbortError') {
+            // noop
+          }
+        }
+        if ('digest' in error) {
+          if (error.digest === 'Custom304NotModifiedError') {
+            return on304(error as Custom304NotModifiedError);
+          }
+          if (error.digest === 'CustomNoETagFallbackError') {
+            return onNoETagFallback(error as CustomNoETagFallbackError);
+          }
+        }
+        return null;
       };
 
       if (e && typeof e === 'object') {
         if ('errors' in e && Array.isArray(e.errors)) {
           for (let i = 0, len = e.errors.length; i < len; i++) {
             const error = e.errors[i];
-            if ('name' in error) {
-              if (error.name === 'CustomAbortError' || error.name === 'AbortError') {
-                continue;
-              }
-              if (error.name === 'Custom304NotModifiedError') {
-                return on304(error);
-              }
-              if (error.name === 'CustomNoETagFallbackError') {
-                return onNoETagFallback(error);
-              }
-            }
-            if ('digest' in error) {
-              if (error.digest === 'Custom304NotModifiedError') {
-                return on304(error);
-              }
-              if (error.digest === 'CustomNoETagFallbackError') {
-                return onNoETagFallback(error);
-              }
+
+            const result = onSingleError(error);
+            if (result !== null) {
+              return result;
             }
 
-            console.log(picocolors.red('[fetch error]'), picocolors.gray(`[${primaryUrl}]`), error);
+            console.log(picocolors.red('[fetch error 1]'), picocolors.gray(`[${primaryUrl}]`), error);
           }
         } else {
-          if ('name' in e) {
-            if (e.name === 'Custom304NotModifiedError') {
-              return on304(e as Custom304NotModifiedError);
-            }
-            if (e.name === 'CustomNoETagFallbackError') {
-              return onNoETagFallback(e as CustomNoETagFallbackError);
-            }
-          }
-          if ('digest' in e) {
-            if (e.digest === 'Custom304NotModifiedError') {
-              return on304(e as Custom304NotModifiedError);
-            }
-            if (e.digest === 'CustomNoETagFallbackError') {
-              return onNoETagFallback(e as CustomNoETagFallbackError);
-            }
+          const result = onSingleError(e);
+          if (result !== null) {
+            return result;
           }
 
-          console.log(picocolors.red('[fetch error]'), picocolors.gray(`[${primaryUrl}]`), e);
+          console.log(picocolors.red('[fetch error 2]'), picocolors.gray(`[${primaryUrl}]`), e);
         }
       }
 
-      console.log({ e, name: (e as any).name });
-
-      console.log(`Download Rule for [${primaryUrl}] failed`);
+      console.log(`Download Rule for [${primaryUrl}] failed`, { e, name: (e as any).name });
       throw e;
     }
   }
