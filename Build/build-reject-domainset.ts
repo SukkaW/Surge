@@ -103,6 +103,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
         })),
         getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
         readLocalRejectDomainsetPromise.then(appendArrayToRejectOutput),
+        readLocalRejectDomainsetPromise.then(appendArrayToRejectExtraOutput),
         readLocalRejectExtraDomainsetPromise.then(appendArrayToRejectExtraOutput),
         // Dedupe domainSets
         // span.traceChildAsync('collect black keywords/suffixes', async () =>
