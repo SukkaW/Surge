@@ -465,6 +465,7 @@ export const PREDEFINED_WHITELIST = [
   '.host.secureserver.net', // rDNS .64.149.167.72.host.secureserver.net,
   '.ip.linodeusercontent.com', // rDNS 45-79-169-153.ip.linodeusercontent.com
   '.static.akamaitechnologies.com', // rDNS a23-57-90-107.deploy.static.akamaitechnologies.com
+  '.compute.amazonaws.com', // rDNS ec2-3-22-96-128.us-east-2.compute.amazonaws.com
   '.shoppy.gg', // Spam404
   'transcend-cdn.com', // AdGuard Annoyances
   'store1.gofile.io', // Dandelion Sprout's Annoyances List
