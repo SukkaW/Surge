@@ -6,7 +6,7 @@ import { processHosts, processFilterRules, processDomainLists } from './lib/pars
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
 import { compareAndWriteFile } from './lib/create-file';
-import { readFileByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
 // (since it is hashes based). But the result is still deterministic, which is
@@ -21,7 +21,8 @@ import { DomainsetOutput } from './lib/create-file';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
-const readLocalRejectRulesetPromise = readFileByLine(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
+const readLocalRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
+const readLocalMyRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/my_reject.conf'));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectBaseDescription = [
@@ -171,7 +172,15 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           '! Description: The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
           '!'
         ],
-        rejectOutput.adguardhome()
+        appendArrayInPlace(
+          rejectOutput.adguardhome(),
+          (
+            await new DomainsetOutput(span, 'my_reject')
+              .addFromRuleset(readLocalMyRejectRulesetPromise)
+              .addFromRuleset(readLocalRejectRulesetPromise)
+              .done()
+          ).adguardhome()
+        )
       ),
       path.join(OUTPUT_INTERNAL_DIR, 'reject-adguardhome.txt')
     )
