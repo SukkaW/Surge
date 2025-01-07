@@ -5,3 +5,4 @@ node_modules
 .cache
 public
 tmp.*
+.BUILD_FINISHED

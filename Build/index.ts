@@ -1,5 +1,6 @@
 import process from 'node:process';
 import os from 'node:os';
+import fs from 'node:fs';
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
@@ -28,6 +29,7 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 import { cacheGc } from './lib/make-fetch-happen';
+import path from 'node:path';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -37,6 +39,8 @@ process.on('unhandledRejection', (reason) => {
   console.error('Unhandled rejection:', reason);
   process.exit(1);
 });
+
+const buildFinishedLock = path.join(__dirname, '../.BUILD_FINISHED');
 
 (async () => {
   console.log('Version:', process.version);
@@ -59,6 +63,10 @@ process.on('unhandledRejection', (reason) => {
   console.log(`Memory: ${os.totalmem() / (1024 * 1024)} MiB`);
 
   const rootSpan = createSpan('root');
+
+  if (fs.existsSync(buildFinishedLock)) {
+    fs.unlinkSync(buildFinishedLock);
+  }
 
   try {
     const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
@@ -96,6 +104,9 @@ process.on('unhandledRejection', (reason) => {
     rootSpan.stop();
 
     printTraceResult(rootSpan.traceResult);
+
+    // write a file to demonstrate that the build is finished
+    fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
 
     // Finish the build to avoid leaking timer/fetch ref
     await whyIsNodeRunning();

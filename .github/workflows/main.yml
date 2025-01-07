@@ -68,6 +68,10 @@ jobs:
             echo "public directory is empty"
             exit 1
           fi
+          if [ ! -f .BUILD_FINISHED ]; then
+            echo ".BUILD_FINISHED not found"
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: build-artifact-${{ github. ref_name }}
