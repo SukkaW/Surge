@@ -607,7 +607,7 @@ const PORNHUB: StreamService = {
 const SOUNDCLOUD: StreamService = {
   name: 'SoundCloud',
   rules: [
-    'DOMAIN-SUFFIX,sndcdn.com',
+    // 'DOMAIN-SUFFIX,sndcdn.com',
     'DOMAIN-SUFFIX,soundcloud.com',
 
     'USER-AGENT,SoundCloud*'
