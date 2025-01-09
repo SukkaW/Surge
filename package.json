@@ -44,6 +44,7 @@
     "undici-cache-store-better-sqlite3": "^0.1.1",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.1",
+    "worktank": "^2.7.3",
     "xbits": "^0.2.0",
     "yaml": "^2.7.0"
   },

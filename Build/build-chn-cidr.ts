@@ -16,7 +16,7 @@ const PROBE_CHN_CIDR_V4 = [
   '120.78.92.171'
 ];
 
-export const getChnCidrPromise = createMemoizedPromise(cachedOnlyFail(
+export const getChnCidrPromise = createMemoizedPromise(cachedOnlyFail<[], [string[], string[]]>(
   async function getChnCidr() {
     const [_cidr4, cidr6] = await Promise.all([
       fetchRemoteTextByLine('https://raw.githubusercontent.com/misakaio/chnroutes2/master/chnroutes.txt', true).then(Array.fromAsync<string>),
