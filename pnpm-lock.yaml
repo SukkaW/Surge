@@ -7,6 +7,11 @@ settings:
 overrides:
   has: npm:@nolyfill/has@latest
 
+patchedDependencies:
+  undici:
+    hash: eyidnukwfhrd7exzoydz2h5cfq
+    path: patches/undici.patch
+
 importers:
 
   .:
@@ -73,10 +78,10 @@ importers:
         version: 6.1.71
       undici:
         specifier: ^7.2.1
-        version: 7.2.1
+        version: 7.2.1(patch_hash=eyidnukwfhrd7exzoydz2h5cfq)
       undici-cache-store-better-sqlite3:
         specifier: ^0.1.1
-        version: 0.1.1(undici@7.2.1)
+        version: 0.1.1(undici@7.2.1(patch_hash=eyidnukwfhrd7exzoydz2h5cfq))
       whoiser:
         specifier: ^1.18.0
         version: 1.18.0
@@ -3749,14 +3754,14 @@ snapshots:
 
   typescript@5.7.3: {}
 
-  undici-cache-store-better-sqlite3@0.1.1(undici@7.2.1):
+  undici-cache-store-better-sqlite3@0.1.1(undici@7.2.1(patch_hash=eyidnukwfhrd7exzoydz2h5cfq)):
     dependencies:
       better-sqlite3: 11.7.2
-      undici: 7.2.1
+      undici: 7.2.1(patch_hash=eyidnukwfhrd7exzoydz2h5cfq)
 
   undici-types@6.20.0: {}
 
-  undici@7.2.1: {}
+  undici@7.2.1(patch_hash=eyidnukwfhrd7exzoydz2h5cfq): {}
 
   unique-filename@4.0.0:
     dependencies:

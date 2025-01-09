@@ -1,0 +1,13 @@
+diff --git a/lib/util/cache.js b/lib/util/cache.js
+index 35c53512b2acea09657b888e42dbfd04e45d7dbe..6ebce36bf7f3c50d6afabe5b3ab0e692605403dd 100644
+--- a/lib/util/cache.js
++++ b/lib/util/cache.js
+@@ -270,8 +270,6 @@ function parseVaryHeader (varyHeader, headers) {
+ 
+     if (headers[trimmedHeader]) {
+       output[trimmedHeader] = headers[trimmedHeader]
+-    } else {
+-      return undefined
+     }
+   }
+ 
