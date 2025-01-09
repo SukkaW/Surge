@@ -44,10 +44,6 @@ const KEYWORDS = [
 
 const s = newQueue(2);
 
-const latestTopUserAgentsPromise = $fetch('https://raw.githubusercontent.com/microlinkhq/top-user-agents/master/src/desktop.json')
-  .then(res => res.json())
-  .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
-
 const getSpeedtestHostsGroupsPromise = Promise.all(KEYWORDS.flatMap(querySpeedtestApi));
 
 export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
@@ -77,6 +73,10 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
 
   return output.write();
 });
+
+const latestTopUserAgentsPromise = $fetch('https://raw.githubusercontent.com/microlinkhq/top-user-agents/master/src/desktop.json')
+  .then(res => res.json())
+  .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 
 async function querySpeedtestApi(keyword: string) {
   const topUserAgents = await latestTopUserAgentsPromise;

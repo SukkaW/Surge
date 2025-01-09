@@ -64,7 +64,6 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   DNS2.DOHClient({
     dns,
     http: false
-    // get: (url: string) => undici.request(url).then(r => r.body)
   })
 ] as const);
 
@@ -78,7 +77,6 @@ const domesticDohServers: Array<[string, DNS2.DnsResolver]> = ([
   DNS2.DOHClient({
     dns,
     http: false
-    // get: (url: string) => undici.request(url).then(r => r.body)
   })
 ] as const);
 

@@ -40,10 +40,10 @@
     "tinyexec": "^0.3.2",
     "tldts": "^6.1.71",
     "tldts-experimental": "^6.1.71",
-    "undici": "^7.2.0",
+    "undici": "^7.2.1",
     "undici-cache-store-better-sqlite3": "^0.1.1",
     "whoiser": "^1.18.0",
-    "why-is-node-running": "^3.2.1",
+    "why-is-node-running": "^3.2.2",
     "worktank": "^2.7.3",
     "xbits": "^0.2.0",
     "yaml": "^2.7.0"
@@ -67,9 +67,9 @@
     "eslint-config-sukka": "^6.13.0",
     "eslint-formatter-sukka": "^6.13.0",
     "expect": "^29.7.0",
-    "mitata": "^1.0.26",
+    "mitata": "^1.0.27",
     "mocha": "^11.0.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "packageManager": "pnpm@9.15.3",
   "resolutions": {
