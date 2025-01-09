@@ -6,8 +6,8 @@ import { parse } from 'csv-parse/sync';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
-import { $fetch } from './lib/make-fetch-happen';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
+import { $$fetch } from './lib/fetch-retry';
 
 export async function parseGfwList() {
   const whiteSet = new Set<string>();
@@ -22,7 +22,7 @@ export async function parseGfwList() {
     '?'
   ]);
 
-  const text = await (await $fetch('https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt')).text();
+  const text = await (await $$fetch('https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt')).text();
   for (const l of atob(text).split('\n')) {
     const line = processLine(l);
     if (!line) continue;
@@ -60,11 +60,11 @@ export async function parseGfwList() {
       continue;
     }
   }
-  for (const l of (await (await $fetch('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
+  for (const l of (await (await $$fetch('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
     trie.add(l);
   }
 
-  const res = await (await $fetch('https://litter.catbox.moe/sqmgyn.csv', {
+  const res = await (await $$fetch('https://litter.catbox.moe/sqmgyn.csv', {
     headers: {
       accept: '*/*',
       'user-agent': 'curl/8.9.1'
