@@ -379,6 +379,10 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string>)
     if (lineA[0] === '#' && lineB[0] === '#') {
       continue;
     }
+    // adguard conf
+    if (lineA[0] === '!' && lineB[0] === '!') {
+      continue;
+    }
     if (
       lineA[0] === '/'
       && lineA[1] === '/'
