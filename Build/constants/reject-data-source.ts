@@ -472,5 +472,6 @@ export const PREDEFINED_WHITELIST = [
   'ad.12306.cn', // https://github.com/jdlingyu/ad-wars
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
   '.expobarrio.com', // domain expired
-  '.hamdandates.com' // domain expired
+  '.hamdandates.com', // domain expired
+  '.nstool.netease.com' // it is only used to check local dns
 ];
