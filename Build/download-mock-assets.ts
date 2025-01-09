@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { OUTPUT_MOCK_DIR } from './constants/dir';
 import { mkdirp } from './lib/misc';
-import { $fetch } from './lib/make-fetch-happen';
+import { $$fetch } from './lib/fetch-retry';
 
 const ASSETS_LIST = {
   'www-google-analytics-com_ga.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/google-analytics-ga.js',
@@ -23,7 +23,7 @@ export const downloadMockAssets = task(require.main === module, __filename)(asyn
   return Promise.all(Object.entries(ASSETS_LIST).map(
     ([filename, url]) => span
       .traceChildAsync(url, async () => {
-        const res = await $fetch(url);
+        const res = await $$fetch(url);
         if (!res.ok) {
           console.error(`Failed to download ${url}`);
 

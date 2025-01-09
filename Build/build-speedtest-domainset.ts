@@ -2,13 +2,13 @@ import path from 'node:path';
 
 import tldts from 'tldts-experimental';
 import { task } from './trace';
-import { $fetch } from './lib/make-fetch-happen';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 
 import { DomainsetOutput } from './lib/create-file';
 import { OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { newQueue } from '@henrygd/queue';
+import { $$fetch } from './lib/fetch-retry';
 
 const KEYWORDS = [
   'Hong Kong',
@@ -44,6 +44,9 @@ const KEYWORDS = [
 
 const s = newQueue(2);
 
+const latestTopUserAgentsPromise = $$fetch('https://raw.githubusercontent.com/microlinkhq/top-user-agents/master/src/desktop.json')
+  .then(res => res.json() as Promise<string[]>)
+  .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
 const getSpeedtestHostsGroupsPromise = Promise.all(KEYWORDS.flatMap(querySpeedtestApi));
 
 export const buildSpeedtestDomainSet = task(require.main === module, __filename)(async (span) => {
@@ -74,10 +77,6 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
   return output.write();
 });
 
-const latestTopUserAgentsPromise = $fetch('https://raw.githubusercontent.com/microlinkhq/top-user-agents/master/src/desktop.json')
-  .then(res => res.json())
-  .then((userAgents: string[]) => userAgents.filter(ua => ua.startsWith('Mozilla/5.0 ')));
-
 async function querySpeedtestApi(keyword: string) {
   const topUserAgents = await latestTopUserAgentsPromise;
 
@@ -86,7 +85,7 @@ async function querySpeedtestApi(keyword: string) {
   try {
     const randomUserAgent = topUserAgents[Math.floor(Math.random() * topUserAgents.length)];
 
-    const data = await s.add<Array<{ url: string, host: string }>>(() => $fetch(url, {
+    const data = await s.add<Array<{ url: string, host: string }>>(() => $$fetch(url, {
       headers: {
         dnt: '1',
         Referer: 'https://www.speedtest.net/',
@@ -103,8 +102,8 @@ async function querySpeedtestApi(keyword: string) {
           }
           : {})
       },
-      timeout: 1000 * 60
-    }).then(res => res.json()));
+      signal: AbortSignal.timeout(1000 * 60)
+    }).then(res => res.json() as any));
 
     return data.reduce<string[]>(
       (prev, cur) => {

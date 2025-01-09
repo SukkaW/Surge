@@ -8,10 +8,10 @@ import { fsFetchCache, getFileContentHash } from './lib/cache-filesystem';
 import { processLine } from './lib/process-line';
 import { RulesetOutput } from './lib/create-file';
 import { SOURCE_DIR } from './constants/dir';
-import { $fetch } from './lib/make-fetch-happen';
+import { $$fetch } from './lib/fetch-retry';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
-const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
+const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
   const ipv4: string[] = [];
   const ipv6: string[] = [];
 

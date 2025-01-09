@@ -5,10 +5,10 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { RulesetOutput } from './lib/create-file';
-import { $fetch } from './lib/make-fetch-happen';
+import { $$fetch } from './lib/fetch-retry';
 
 export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
-  const resp = await $fetch('https://core.telegram.org/resources/cidr.txt');
+  const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();
 

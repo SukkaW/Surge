@@ -8,8 +8,8 @@ import { TextLineStream } from './text-line-transform-stream';
 import type { ReadableStream } from 'node:stream/web';
 import { TextDecoderStream } from 'node:stream/web';
 import { processLine, ProcessLineStream } from './process-line';
-import { $fetch } from './make-fetch-happen';
 import type { NodeFetchResponse } from './make-fetch-happen';
+import { $$fetch } from './fetch-retry';
 import type { UndiciResponseData } from './fetch-retry';
 import type { Response as UnidiciWebResponse } from 'undici';
 
@@ -70,7 +70,7 @@ export const createReadlineInterfaceFromResponse: ((resp: NodeFetchResponse | Un
 };
 
 export function fetchRemoteTextByLine(url: string, processLine = false): Promise<AsyncIterable<string>> {
-  return $fetch(url).then(resp => createReadlineInterfaceFromResponse(resp, processLine));
+  return $$fetch(url).then(resp => createReadlineInterfaceFromResponse(resp, processLine));
 }
 
 export async function readFileIntoProcessedArray(file: string /* | FileHandle */) {
