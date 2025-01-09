@@ -139,7 +139,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+qlivecdn.com',
       '+tcdnlive.com',
       '+dnsv1.com',
-      '+smtcdns.net'
+      '+smtcdns.net',
+      'coding.net',
+      '+codehub.cn'
     ]
   },
   BILIBILI_ALI: {
