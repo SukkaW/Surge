@@ -23,5 +23,37 @@ jobs:
         with:
           node-version-file: ".node-version"
           cache: "pnpm"
+      - name: Get current date
+        id: date
+        run: |
+          echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
+          echo "month=$(date +'%m')" >> $GITHUB_OUTPUT
+          echo "day=$(date +'%d')" >> $GITHUB_OUTPUT
+          echo "hour=$(date +'%H')" >> $GITHUB_OUTPUT
+          echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
+          echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
+      - name: Restore cache.db
+        uses: actions/cache/restore@v4
+        id: cache-db-restore
+        with:
+          path: |
+            .cache
+          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }}
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
+            ${{ runner.os }}-v3-
       - run: pnpm install
       - run: pnpm run node Build/validate-domain-alive.ts
+      - name: Cache cache.db
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .cache
+          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
