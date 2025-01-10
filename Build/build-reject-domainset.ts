@@ -22,6 +22,8 @@ import { DomainsetOutput } from './lib/create-file';
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
 const readLocalRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
+const readLocalRejectDropRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-drop.conf'));
+const readLocalRejectNoDropRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-no-drop.conf'));
 const readLocalMyRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/my_reject.conf'));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
@@ -178,6 +180,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
             await new DomainsetOutput(span, 'my_reject')
               .addFromRuleset(readLocalMyRejectRulesetPromise)
               .addFromRuleset(readLocalRejectRulesetPromise)
+              .addFromRuleset(readLocalRejectDropRulesetPromise)
+              .addFromRuleset(readLocalRejectNoDropRulesetPromise)
               .done()
           ).adguardhome()
         )
