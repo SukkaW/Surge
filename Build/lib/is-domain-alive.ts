@@ -107,7 +107,7 @@ const resolve = createResolve(dohServers);
 const domesticResolve = createResolve(domesticDohServers);
 
 async function getWhois(domain: string) {
-  return asyncRetry(() => whoiser.domain(domain), { retries: 5 });
+  return asyncRetry(() => whoiser.domain(domain, { raw: true }), { retries: 5 });
 }
 
 const domainAliveMap = new Map<string, boolean>();
@@ -206,7 +206,7 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
   try {
     whois = await getWhois(apexDomain);
   } catch (e) {
-    console.log(picocolors.red('[domain dead]'), 'whois error', { domain: apexDomain }, e);
+    console.log(picocolors.red('[whois error]'), { domain: apexDomain }, e);
     return onDomainAlive(apexDomain);
   }
 
@@ -241,7 +241,8 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   'status: available',
   ' is free',
   'no object found',
-  'nothing found'
+  'nothing found',
+  'status: free'
 ]);
 
 // whois server can redirect, so whoiser might/will get info from multiple whois servers
@@ -254,51 +255,69 @@ export function noWhois(whois: whoiser.WhoisSearchResult): null | string {
     if (Object.hasOwn(whois, key)) {
       empty = false;
 
-      if (key === 'error') {
-        // if (
-        //   (typeof whois.error === 'string' && whois.error)
-        //   || (Array.isArray(whois.error) && whois.error.length > 0)
-        // ) {
-        //   console.error(whois);
-        //   return true;
-        // }
-        continue;
-      }
+      // if (key === 'error') {
+      //   // if (
+      //   //   (typeof whois.error === 'string' && whois.error)
+      //   //   || (Array.isArray(whois.error) && whois.error.length > 0)
+      //   // ) {
+      //   //   console.error(whois);
+      //   //   return true;
+      //   // }
+      //   continue;
+      // }
 
-      if (key === 'text') {
-        if (Array.isArray(whois.text)) {
-          for (const value of whois.text) {
-            if (whoisNotFoundKeywordTest(value.toLowerCase())) {
-              return value;
-            }
+      // if (key === 'text') {
+      //   if (Array.isArray(whois.text)) {
+      //     for (const value of whois.text) {
+      //       if (whoisNotFoundKeywordTest(value.toLowerCase())) {
+      //         return value;
+      //       }
+      //     }
+      //   }
+      //   continue;
+      // }
+      // if (key === 'Name Server') {
+      //   // if (Array.isArray(whois[key]) && whois[key].length === 0) {
+      //   //   return false;
+      //   // }
+      //   continue;
+      // }
+
+      // if (key === 'Domain Status') {
+      //   if (Array.isArray(whois[key])) {
+      //     for (const status of whois[key]) {
+      //       if (status === 'free' || status === 'AVAILABLE') {
+      //         return key + ': ' + status;
+      //       }
+      //       if (whoisNotFoundKeywordTest(status.toLowerCase())) {
+      //         return key + ': ' + status;
+      //       }
+      //     }
+      //   }
+
+      //   continue;
+      // }
+
+      // if (typeof whois[key] === 'string' && whois[key]) {
+      //   if (whoisNotFoundKeywordTest(whois[key].toLowerCase())) {
+      //     return key + ': ' + whois[key];
+      //   }
+
+      //   continue;
+      // }
+
+      if (key === '__raw' && typeof whois.__raw === 'string') {
+        const lines = whois.__raw.trim().toLowerCase().replaceAll(/[\t ]+/g, ' ').split(/\r?\n/);
+
+        if (process.env.DEBUG) {
+          console.log({ lines });
+        }
+
+        for (const line of lines) {
+          if (whoisNotFoundKeywordTest(line)) {
+            return line;
           }
         }
-        continue;
-      }
-      if (key === 'Name Server') {
-        // if (Array.isArray(whois[key]) && whois[key].length === 0) {
-        //   return false;
-        // }
-        continue;
-      }
-
-      if (key === 'Domain Status') {
-        if (Array.isArray(whois[key])) {
-          for (const status of whois[key]) {
-            if (whoisNotFoundKeywordTest(status.toLowerCase())) {
-              return key + ': ' + status;
-            }
-          }
-        }
-
-        continue;
-      }
-
-      if (typeof whois[key] === 'string' && whois[key]) {
-        if (whoisNotFoundKeywordTest(whois[key].toLowerCase())) {
-          return key + ': ' + whois[key];
-        }
-
         continue;
       }
 
