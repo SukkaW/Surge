@@ -149,6 +149,7 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/speedtest.conf,[替换你的�
 - 自动生成 + 人工维护
 - 包含所有常见静态资源 CDN 域名、对象存储域名
 - 如果你正在使用商业性质的公共代理服务、且你的服务商提供按低倍率结算流量消耗的节点，可使用上述规则组将流量分配给这部分节点
+- 包含部分未包含在 `global.conf` 的域名，因此即使你不专门分流也建议添加并分配与 `global.conf` 相同的策略
 
 **Surge**
 
