@@ -39,7 +39,7 @@ describe('whoisExists', () => {
     })).toBe('No entries found for the selected source(s).');
   });
 
-  it('nosuchpool.cl', async () => {
+  it('nosuchpool.cl', () => {
     expect(noWhois({
       'whois.nic.cl': {
         'Domain Status': [],
@@ -55,6 +55,18 @@ describe('whoisExists', () => {
         ]
       }
     })).toBe('nosuchpool.cl: no entries found.');
+  });
+
+  it('whois.domain-registry.nl', () => {
+    expect(noWhois({
+      'whois.domain-registry.nl': {
+        'Domain Status': [],
+        'Name Server': [],
+        text: [
+          'spookyplanet.nl is free'
+        ]
+      }
+    })).toBe('spookyplanet.nl is free');
   });
 });
 
@@ -93,8 +105,8 @@ describe('isDomainAlive', function () {
   //   expect((await isDomainAlive('.tayfundogdas.me', true))[1]).toEqual(true);
   // });
 
-  it('nosuchpool.cl', async () => {
+  it('spookyplanet.nl', async () => {
     process.env.DEBUG = 'true';
-    expect((await isDomainAlive('.nosuchpool.cl', true))[1]).toEqual(false);
+    expect((await isDomainAlive('.spookyplanet.nl', true))[1]).toEqual(false);
   });
 });
