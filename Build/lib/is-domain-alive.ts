@@ -282,6 +282,26 @@ export function noWhois(whois: whoiser.WhoisSearchResult): null | string {
         continue;
       }
 
+      if (key === 'Domain Status') {
+        if (Array.isArray(whois[key])) {
+          for (const status of whois[key]) {
+            if (whoisNotFoundKeywordTest(status.toLowerCase())) {
+              return key + ': ' + status;
+            }
+          }
+        }
+
+        continue;
+      }
+
+      if (typeof whois[key] === 'string' && whois[key]) {
+        if (whoisNotFoundKeywordTest(whois[key].toLowerCase())) {
+          return key + ': ' + whois[key];
+        }
+
+        continue;
+      }
+
       if (typeof whois[key] === 'object' && !Array.isArray(whois[key])) {
         const tmp = noWhois(whois[key]);
         if (tmp) {

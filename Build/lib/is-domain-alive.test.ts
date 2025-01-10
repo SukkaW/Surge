@@ -38,6 +38,24 @@ describe('whoisExists', () => {
       }
     })).toBe('No entries found for the selected source(s).');
   });
+
+  it('nosuchpool.cl', async () => {
+    expect(noWhois({
+      'whois.nic.cl': {
+        'Domain Status': [],
+        'Name Server': [],
+        'nosuchpool.cl': 'no entries found.',
+        text: [
+          '%%',
+          '%% This is the NIC Chile Whois server (whois.nic.cl).',
+          '%%',
+          '%% Rights restricted by copyright.',
+          '%% See https://www.nic.cl/normativa/politica-publicacion-de-datos-cl.pdf',
+          '%%'
+        ]
+      }
+    })).toBe('nosuchpool.cl: no entries found.');
+  });
 });
 
 describe('isDomainAlive', function () {
@@ -75,8 +93,8 @@ describe('isDomainAlive', function () {
   //   expect((await isDomainAlive('.tayfundogdas.me', true))[1]).toEqual(true);
   // });
 
-  it('9s6q.cn', async () => {
+  it('nosuchpool.cl', async () => {
     process.env.DEBUG = 'true';
-    expect((await isDomainAlive('.9s6q.cn', true))[1]).toEqual(false);
+    expect((await isDomainAlive('.nosuchpool.cl', true))[1]).toEqual(false);
   });
 });
