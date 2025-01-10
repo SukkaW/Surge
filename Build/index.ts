@@ -30,6 +30,7 @@ import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 import { cacheGc } from './lib/make-fetch-happen';
 import path from 'node:path';
+import { ROOT_DIR } from './constants/dir';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -40,7 +41,7 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
-const buildFinishedLock = path.join(__dirname, '../.BUILD_FINISHED');
+const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
 
 (async () => {
   console.log('Version:', process.version);

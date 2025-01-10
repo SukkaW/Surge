@@ -5,8 +5,9 @@ import picocolors from 'picocolors';
 import { Cache } from './cache-filesystem';
 import { createMemoize } from 'foxts/serialized-memo';
 import type { MemoizeStorageProvider } from 'foxts/serialized-memo';
+import { ROOT_DIR } from '../constants/dir';
 
-const fsMemoCache = new Cache({ cachePath: path.resolve(__dirname, '../../.cache'), tableName: 'fs_memo_cache' });
+const fsMemoCache = new Cache({ cachePath: path.join(ROOT_DIR, '.cache'), tableName: 'fs_memo_cache' });
 
 const fsMemoCacheProvider: MemoizeStorageProvider = {
   has(key) {

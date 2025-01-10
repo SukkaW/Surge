@@ -8,8 +8,9 @@ import process from 'node:process';
 import { exec } from 'tinyexec';
 import { mkdirp } from './misc';
 import { $$fetch } from './fetch-retry';
+import { ROOT_DIR } from '../constants/dir';
 
-const mihomoBinaryDir = path.join(__dirname, '../../node_modules/.cache/mihomo');
+const mihomoBinaryDir = path.join(ROOT_DIR, '.cache/mihomo');
 const mihomoBinaryPath = path.join(mihomoBinaryDir, 'mihomo');
 
 const mihomoBinaryUrl: Partial<Record<NodeJS.Platform, Partial<Record<NodeJS.Architecture, string>>>> = {

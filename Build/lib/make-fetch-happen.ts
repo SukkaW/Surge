@@ -6,9 +6,10 @@ import fsp from 'node:fs/promises';
 // import picocolors from 'picocolors';
 
 import { task } from '../trace';
+import { ROOT_DIR } from '../constants/dir';
 // import { bytes } from 'xbits';
 
-const cachePath = path.resolve(__dirname, '../../.cache/__make_fetch_happen__');
+const cachePath = path.join(ROOT_DIR, '.cache/__make_fetch_happen__');
 // fs.mkdirSync(cachePath, { recursive: true });
 
 // interface CacacheVerifyStats {
