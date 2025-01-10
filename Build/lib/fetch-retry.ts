@@ -16,9 +16,8 @@ export type UndiciResponseData<T = unknown> = Dispatcher.ResponseData<T>;
 
 import { inspect } from 'node:util';
 import path from 'node:path';
-import { ROOT_DIR } from '../constants/dir';
-
 import fs from 'node:fs';
+import { ROOT_DIR } from '../constants/dir';
 
 const undiciSqliteCacheDbPath = path.join(
   ROOT_DIR,
