@@ -471,7 +471,10 @@ export const PREDEFINED_WHITELIST = [
   'store1.gofile.io', // Dandelion Sprout's Annoyances List
   'ad.12306.cn', // https://github.com/jdlingyu/ad-wars
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
-  '.expobarrio.com', // domain expired
-  '.hamdandates.com', // domain expired
-  '.nstool.netease.com' // it is only used to check local dns
+  '.nstool.netease.com', // it is only used to check local dns
+
+  // Expired domains
+  '.expobarrio.com',
+  '.hamdandates.com',
+  '.amzone.co.jp'
 ];
