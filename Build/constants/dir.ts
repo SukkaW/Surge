@@ -2,6 +2,8 @@ import path from 'node:path';
 
 export const ROOT_DIR = path.resolve(__dirname, '../..');
 
+export const CACHE_DIR = path.resolve(ROOT_DIR, '.cache');
+
 export const SOURCE_DIR = path.join(ROOT_DIR, 'Source');
 
 export const PUBLIC_DIR = path.resolve(ROOT_DIR, 'public');

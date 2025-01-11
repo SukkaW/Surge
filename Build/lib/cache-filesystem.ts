@@ -18,7 +18,7 @@ import { Custom304NotModifiedError, CustomAbortError, CustomNoETagFallbackError,
 
 import type { IncomingHttpHeaders } from 'undici/types/header';
 import { Headers } from 'undici';
-import { ROOT_DIR } from '../constants/dir';
+import { CACHE_DIR } from '../constants/dir';
 
 export interface CacheOptions<S = string> {
   /** Path to sqlite file dir */
@@ -430,7 +430,7 @@ export class Cache<S = string> {
   }
 }
 
-export const fsFetchCache = new Cache({ cachePath: path.resolve(ROOT_DIR, '.cache') });
+export const fsFetchCache = new Cache({ cachePath: CACHE_DIR });
 // process.on('exit', () => {
 //   fsFetchCache.destroy();
 // });
