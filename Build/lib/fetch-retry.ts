@@ -112,7 +112,7 @@ setGlobalDispatcher(agent.compose(
   interceptors.cache({
     store: new BetterSqlite3CacheStore({
       location: path.join(CACHE_DIR, 'undici-better-sqlite3-cache-store.db'),
-      maxEntrySize: 1024 * 1024 * 50 // 50 MiB
+      maxEntrySize: 1024 * 1024 * 100 // 100 MiB
     })
   })
 ));
