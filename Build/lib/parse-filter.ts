@@ -133,7 +133,6 @@ export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
   fallbackUrls?: string[] | null,
-  _ttl: number | null = null,
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn(async (span) => {
@@ -256,6 +255,7 @@ const kwfilter = createKeywordFilter([
   '$popunder',
   '$cname',
   '$frame',
+  '$domain',
   // some bad syntax
   '^popup'
 ]);
