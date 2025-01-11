@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 
-import { parse, processFilterRules } from './parse-filter';
-import type { ParseType } from './parse-filter';
+import { parse, processFilterRules } from './parse-filter/filters';
+import type { ParseType } from './parse-filter/filters';
 import { createCacheKey } from './cache-filesystem';
 import { createSpan } from '../trace';
 
@@ -20,8 +20,7 @@ describe.skip('processFilterRules', () => {
     console.log(processFilterRules(
       createSpan('noop'),
       cacheKey('https://filters.adtidy.org/extension/ublock/filters/18_optimized.txt'),
-      [],
-      7_200_000
+      []
     ));
   });
 });

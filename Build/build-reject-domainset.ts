@@ -2,7 +2,9 @@
 import path from 'node:path';
 import process from 'node:process';
 
-import { processHosts, processFilterRules, processDomainLists } from './lib/parse-filter';
+import { processHosts } from './lib/parse-filter/hosts';
+import { processDomainLists } from './lib/parse-filter/domainlists';
+import { processFilterRules } from './lib/parse-filter/filters';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
 import { compareAndWriteFile } from './lib/create-file';
@@ -18,6 +20,7 @@ import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
+import { foundDebugDomain } from './lib/parse-filter/shared';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
@@ -63,65 +66,49 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
 
   // Parse from AdGuard Filters
-  const shouldStop = await span
+  await span
     .traceChild('download and process hosts / adblock filter rules')
-    .traceAsyncFn(async (childSpan) => {
-      // eslint-disable-next-line sukka/no-single-return -- not single return
-      let shouldStop = false;
-      await Promise.all([
-        // Parse from remote hosts & domain lists
-        HOSTS.map(entry => processHosts(childSpan, ...entry).then(appendArrayToRejectOutput)),
-        HOSTS_EXTRA.map(entry => processHosts(childSpan, ...entry).then(appendArrayToRejectExtraOutput)),
+    .traceAsyncFn((childSpan) => Promise.all([
+      // Parse from remote hosts & domain lists
+      HOSTS.map(entry => processHosts(childSpan, ...entry).then(appendArrayToRejectOutput)),
+      HOSTS_EXTRA.map(entry => processHosts(childSpan, ...entry).then(appendArrayToRejectExtraOutput)),
 
-        DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToRejectOutput)),
-        DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToRejectExtraOutput)),
+      DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToRejectOutput)),
+      DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToRejectExtraOutput)),
 
-        ADGUARD_FILTERS.map(
-          entry => processFilterRules(childSpan, ...entry)
-            .then(({ white, black, foundDebugDomain }) => {
-              if (foundDebugDomain) {
-                // eslint-disable-next-line sukka/no-single-return -- not single return
-                shouldStop = true;
-                // we should not break here, as we want to see full matches from all data source
-              }
-              addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-              appendArrayToRejectOutput(black);
-            })
-        ),
-        ADGUARD_FILTERS_EXTRA.map(
-          entry => processFilterRules(childSpan, ...entry)
-            .then(({ white, black, foundDebugDomain }) => {
-              if (foundDebugDomain) {
-                // eslint-disable-next-line sukka/no-single-return -- not single return
-                shouldStop = true;
-                // we should not break here, as we want to see full matches from all data source
-              }
-              addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-              appendArrayToRejectExtraOutput(black);
-            })
-        ),
-        ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRules(childSpan, ...entry).then(({ white, black }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
-        })),
-        getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
-        readLocalRejectDomainsetPromise.then(appendArrayToRejectOutput),
-        readLocalRejectDomainsetPromise.then(appendArrayToRejectExtraOutput),
-        readLocalRejectExtraDomainsetPromise.then(appendArrayToRejectExtraOutput),
-        // Dedupe domainSets
-        // span.traceChildAsync('collect black keywords/suffixes', async () =>
-        /**
+      ADGUARD_FILTERS.map(
+        entry => processFilterRules(childSpan, ...entry)
+          .then(({ white, black }) => {
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+            appendArrayToRejectOutput(black);
+          })
+      ),
+      ADGUARD_FILTERS_EXTRA.map(
+        entry => processFilterRules(childSpan, ...entry)
+          .then(({ white, black }) => {
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+            appendArrayToRejectExtraOutput(black);
+          })
+      ),
+      ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRules(childSpan, ...entry).then(({ white, black }) => {
+        addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+        addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
+      })),
+      getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
+      readLocalRejectDomainsetPromise.then(appendArrayToRejectOutput),
+      readLocalRejectDomainsetPromise.then(appendArrayToRejectExtraOutput),
+      readLocalRejectExtraDomainsetPromise.then(appendArrayToRejectExtraOutput),
+      // Dedupe domainSets
+      // span.traceChildAsync('collect black keywords/suffixes', async () =>
+      /**
          * Collect DOMAIN, DOMAIN-SUFFIX, and DOMAIN-KEYWORD from non_ip/reject.conf for deduplication
          * DOMAIN-WILDCARD is not really useful for deduplication, it is only included in AdGuardHome output
         */
-        rejectOutput.addFromRuleset(readLocalRejectRulesetPromise),
-        rejectExtraOutput.addFromRuleset(readLocalRejectRulesetPromise)
-      ].flat());
-      // eslint-disable-next-line sukka/no-single-return -- not single return
-      return shouldStop;
-    });
+      rejectOutput.addFromRuleset(readLocalRejectRulesetPromise),
+      rejectExtraOutput.addFromRuleset(readLocalRejectRulesetPromise)
+    ].flat()));
 
-  if (shouldStop) {
+  if (foundDebugDomain.value) {
     process.exit(1);
   }
 

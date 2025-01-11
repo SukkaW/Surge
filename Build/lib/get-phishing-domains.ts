@@ -1,4 +1,6 @@
-import { processDomainLists, processHosts } from './parse-filter';
+import { processHosts } from './parse-filter/hosts';
+import { processDomainLists } from './parse-filter/domainlists';
+
 import * as tldts from 'tldts-experimental';
 
 import { dummySpan, printTraceResult } from '../trace';

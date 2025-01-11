@@ -1,121 +1,12 @@
-import { NetworkFilter } from '@ghostery/adblocker';
-import { processLine } from './process-line';
-import tldts from 'tldts-experimental';
-
 import picocolors from 'picocolors';
-import { normalizeDomain } from './normalize-domain';
-import type { Span } from '../trace';
+import type { Span } from '../../trace';
+import { fetchAssetsWithout304 } from '../fetch-assets';
+import { onBlackFound, onWhiteFound } from './shared';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
-import { looseTldtsOpt } from '../constants/loose-tldts-opt';
-import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';
-import { noop } from 'foxts/noop';
-import { fetchAssetsWithout304 } from './fetch-assets';
-
-let foundDebugDomain = false;
-
-const onBlackFound = DEBUG_DOMAIN_TO_FIND
-  ? (line: string, meta: string) => {
-    if (line.includes(DEBUG_DOMAIN_TO_FIND!)) {
-      console.warn(picocolors.red(meta), '(black)', line.replaceAll(DEBUG_DOMAIN_TO_FIND!, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-      foundDebugDomain = true;
-    }
-  }
-  : noop;
-
-const onWhiteFound = DEBUG_DOMAIN_TO_FIND
-  ? (line: string, meta: string) => {
-    if (line.includes(DEBUG_DOMAIN_TO_FIND!)) {
-      console.warn(picocolors.red(meta), '(white)', line.replaceAll(DEBUG_DOMAIN_TO_FIND!, picocolors.bold(DEBUG_DOMAIN_TO_FIND)));
-      foundDebugDomain = true;
-    }
-  }
-  : noop;
-
-function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
-  let line = processLine(l);
-  if (!line) return;
-  line = line.toLowerCase();
-
-  const domain = normalizeDomain(line);
-  if (!domain) return;
-  if (domain !== line) {
-    console.log(
-      picocolors.red('[process domain list]'),
-      picocolors.gray(`line: ${line}`),
-      picocolors.gray(`domain: ${domain}`),
-      picocolors.gray(meta)
-    );
-
-    return;
-  }
-
-  onBlackFound(domain, meta);
-
-  set.push(includeAllSubDomain ? `.${line}` : line);
-}
-
-export function processDomainLists(
-  span: Span,
-  domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
-) {
-  return span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
-    const text = await span.traceChildAsync(`process domainlist: ${domainListsUrl}`, () => fetchAssetsWithout304(
-      domainListsUrl,
-      mirrors
-    ));
-    const domainSets: string[] = [];
-    const filterRules = text.split('\n');
-
-    span.traceChildSync('parse domain list', () => {
-      for (let i = 0, len = filterRules.length; i < len; i++) {
-        domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
-      }
-    });
-
-    return domainSets;
-  });
-}
-
-function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
-  const line = processLine(l);
-  if (!line) {
-    return;
-  }
-
-  const _domain = line.split(/\s/)[1]?.trim();
-  if (!_domain) {
-    return;
-  }
-  const domain = normalizeDomain(_domain);
-  if (!domain) {
-    return;
-  }
-
-  onBlackFound(domain, meta);
-
-  set.push(includeAllSubDomain ? `.${domain}` : domain);
-}
-
-export function processHosts(
-  span: Span,
-  hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
-) {
-  return span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
-    const text = await span.traceChild('download').traceAsyncFn(() => fetchAssetsWithout304(hostsUrl, mirrors));
-
-    const domainSets: string[] = [];
-
-    const filterRules = text.split('\n');
-
-    span.traceChild('parse hosts').traceSyncFn(() => {
-      for (let i = 0, len = filterRules.length; i < len; i++) {
-        hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
-      }
-    });
-
-    return domainSets;
-  });
-}
+import { normalizeDomain } from '../normalize-domain';
+import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
+import tldts from 'tldts-experimental';
+import { NetworkFilter } from '@ghostery/adblocker';
 
 const enum ParseType {
   WhiteIncludeSubdomain = 0,
@@ -134,7 +25,7 @@ export async function processFilterRules(
   filterRulesUrl: string,
   fallbackUrls?: string[] | null,
   allowThirdParty = false
-): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
+): Promise<{ white: string[], black: string[] }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn(async (span) => {
     const text = await fetchAssetsWithout304(filterRulesUrl, fallbackUrls);
 
@@ -226,8 +117,7 @@ export async function processFilterRules(
 
   return {
     white,
-    black,
-    foundDebugDomain
+    black
   };
 }
 
