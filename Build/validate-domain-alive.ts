@@ -7,7 +7,7 @@ import { newQueue } from '@henrygd/queue';
 import { isDomainAlive, keyedAsyncMutexWithQueue } from './lib/is-domain-alive';
 import { fdir as Fdir } from 'fdir';
 
-const queue = newQueue(32);
+const queue = newQueue(24);
 
 const deadDomains: string[] = [];
 function onDomain(args: [string, boolean]) {
