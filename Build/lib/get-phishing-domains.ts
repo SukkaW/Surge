@@ -8,7 +8,7 @@ import { DEBUG_DOMAIN_TO_FIND, PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
 import picocolors from 'picocolors';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
-import { createCacheKey, deserializeArray, serializeArray } from './cache-filesystem';
+import { deserializeArray, serializeArray } from './cache-filesystem';
 import { cache } from './fs-memo';
 import { isCI } from 'ci-info';
 
@@ -205,16 +205,14 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
   temporaryBypass: !isCI || DEBUG_DOMAIN_TO_FIND !== null
 });
 
-const cacheKey = createCacheKey(__filename);
-
 export function getPhishingDomains(parentSpan: Span) {
   return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
     const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
       const domainArr: string[] = [];
 
       await Promise.all([
-        ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry, cacheKey)),
-        ...PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry, cacheKey))
+        ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry)),
+        ...PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry))
       ]).then(domainGroups => domainGroups.forEach(appendArrayInPlaceCurried(domainArr)));
 
       return domainArr;
