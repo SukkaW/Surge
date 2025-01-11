@@ -404,15 +404,16 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string>)
 }
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
-  let isEqual = true;
   const linesALen = linesA.length;
 
-  if (fs.existsSync(filePath)) {
-    isEqual = await fileEqual(linesA, readFileByLine(filePath));
-  } else {
+  const isEqual = await span.traceChildAsync(`compare ${filePath}`, async () => {
+    if (fs.existsSync(filePath)) {
+      return fileEqual(linesA, readFileByLine(filePath));
+    }
+
     console.log(`${filePath} does not exists, writing...`);
-    isEqual = false;
-  }
+    return false;
+  });
 
   if (isEqual) {
     console.log(picocolors.gray(picocolors.dim(`same content, bail out writing: ${filePath}`)));

@@ -49,6 +49,8 @@ const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fet
   return acc;
 }, [[], []]));
 
+const readLocalRejectIpListPromise = readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'ip/reject.conf'));
+
 export const buildRejectIPList = task(require.main === module, __filename)(async (span) => {
   const [bogusNxDomainIPs, botNetIPs] = await Promise.all([
     span.traceChildPromise('get bogus nxdomain ips', getBogusNxDomainIPsPromise),
@@ -66,7 +68,7 @@ export const buildRejectIPList = task(require.main === module, __filename)(async
       ' - https://github.com/felixonmars/dnsmasq-china-list',
       ' - https://github.com/curbengh/botnet-filter'
     ])
-    .addFromRuleset(await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'ip/reject.conf')))
+    .addFromRuleset(readLocalRejectIpListPromise)
     .bulkAddCIDR4NoResolve(bogusNxDomainIPs[0])
     .bulkAddCIDR6NoResolve(bogusNxDomainIPs[1])
     .bulkAddCIDR4NoResolve(botNetIPs[0])

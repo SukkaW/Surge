@@ -6,9 +6,8 @@ import { fetchAssetsWithout304 } from '../fetch-assets';
 import type { Span } from '../../trace';
 
 function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
-  let line = processLine(l);
+  const line = processLine(l);
   if (!line) return;
-  line = line.toLowerCase();
 
   const domain = normalizeDomain(line);
   if (!domain) return;
@@ -33,7 +32,7 @@ export function processDomainLists(
   domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
 ) {
   return span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
-    const text = await span.traceChildAsync(`process domainlist: ${domainListsUrl}`, () => fetchAssetsWithout304(
+    const text = await span.traceChildAsync('download', () => fetchAssetsWithout304(
       domainListsUrl,
       mirrors
     ));

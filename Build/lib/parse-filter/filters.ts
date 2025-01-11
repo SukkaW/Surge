@@ -27,7 +27,7 @@ export async function processFilterRules(
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[] }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn(async (span) => {
-    const text = await fetchAssetsWithout304(filterRulesUrl, fallbackUrls);
+    const text = await span.traceChildAsync('download', () => fetchAssetsWithout304(filterRulesUrl, fallbackUrls));
 
     const whitelistDomainSets = new Set<string>();
     const blacklistDomainSets = new Set<string>();
