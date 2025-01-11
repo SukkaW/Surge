@@ -1,5 +1,5 @@
 import picocolors from 'picocolors';
-import { defaultRequestInit, requestWithLog, ResponseError } from './fetch-retry';
+import { $$fetch, defaultRequestInit, ResponseError } from './fetch-retry';
 import { wait } from 'foxts/wait';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
@@ -41,7 +41,7 @@ export function sleepWithAbort(ms: number, signal: AbortSignal) {
   });
 }
 
-export async function fetchAssetsWithout304(url: string, fallbackUrls: string[] | readonly string[]) {
+export async function fetchAssetsWithout304(url: string, fallbackUrls: null | undefined | string[] | readonly string[]) {
   const controller = new AbortController();
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
@@ -58,8 +58,8 @@ export async function fetchAssetsWithout304(url: string, fallbackUrls: string[] 
       console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
       throw new CustomAbortError();
     }
-    const res = await requestWithLog(url, { signal: controller.signal, ...defaultRequestInit });
-    const text = await res.body.text();
+    const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
+    const text = await res.text();
 
     if (text.length < 2) {
       throw new ResponseError(res, url, 'empty response w/o 304');
@@ -69,6 +69,9 @@ export async function fetchAssetsWithout304(url: string, fallbackUrls: string[] 
     return text;
   };
 
+  if (!fallbackUrls || fallbackUrls.length === 0) {
+    return createFetchFallbackPromise(url, -1);
+  }
   return Promise.any([
     createFetchFallbackPromise(url, -1),
     ...fallbackUrls.map(createFetchFallbackPromise)

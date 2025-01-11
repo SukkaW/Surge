@@ -4,16 +4,14 @@ import tldts from 'tldts-experimental';
 
 import picocolors from 'picocolors';
 import { normalizeDomain } from './normalize-domain';
-import { deserializeArray, fsFetchCache, serializeArray, getFileContentHash } from './cache-filesystem';
 import type { Span } from '../trace';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
-import { identity } from 'foxts/identity';
 import { DEBUG_DOMAIN_TO_FIND } from '../constants/reject-data-source';
 import { noop } from 'foxts/noop';
+import { fetchAssetsWithout304 } from './fetch-assets';
 
 let foundDebugDomain = false;
-const temporaryBypass = typeof DEBUG_DOMAIN_TO_FIND === 'string';
 
 const onBlackFound = DEBUG_DOMAIN_TO_FIND
   ? (line: string, meta: string) => {
@@ -58,32 +56,24 @@ function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean
 
 export function processDomainLists(
   span: Span,
-  domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false,
-  ttl: number | null = null, extraCacheKey: (input: string) => string = identity
+  domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
 ) {
-  return span.traceChild(`process domainlist: ${domainListsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.applyWithHttp304AndMirrors<string[]>(
-    domainListsUrl,
-    mirrors ?? [],
-    extraCacheKey(getFileContentHash(__filename)),
-    (text) => {
-      const domainSets: string[] = [];
-      const filterRules = text.split('\n');
+  return span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
+    const text = await span.traceChildAsync(`process domainlist: ${domainListsUrl}`, () => fetchAssetsWithout304(
+      domainListsUrl,
+      mirrors
+    ));
+    const domainSets: string[] = [];
+    const filterRules = text.split('\n');
 
-      childSpan.traceChild('parse domain list').traceSyncFn(() => {
-        for (let i = 0, len = filterRules.length; i < len; i++) {
-          domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
-        }
-      });
+    span.traceChildSync('parse domain list', () => {
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
+      }
+    });
 
-      return domainSets;
-    },
-    {
-      ttl,
-      temporaryBypass,
-      serializer: serializeArray,
-      deserializer: deserializeArray
-    }
-  ));
+    return domainSets;
+  });
 }
 
 function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
@@ -108,33 +98,23 @@ function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, met
 
 export function processHosts(
   span: Span,
-  hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false,
-  ttl: number | null = null, extraCacheKey: (input: string) => string = identity
+  hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
 ) {
-  return span.traceChild(`processhosts: ${hostsUrl}`).traceAsyncFn((childSpan) => fsFetchCache.applyWithHttp304AndMirrors<string[]>(
-    hostsUrl,
-    mirrors ?? [],
-    extraCacheKey(getFileContentHash(__filename)),
-    (text) => {
-      const domainSets: string[] = [];
+  return span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
+    const text = await span.traceChild('download').traceAsyncFn(() => fetchAssetsWithout304(hostsUrl, mirrors));
 
-      const filterRules = text.split('\n');
+    const domainSets: string[] = [];
 
-      childSpan.traceChild('parse hosts').traceSyncFn(() => {
-        for (let i = 0, len = filterRules.length; i < len; i++) {
-          hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
-        }
-      });
+    const filterRules = text.split('\n');
 
-      return domainSets;
-    },
-    {
-      ttl,
-      temporaryBypass,
-      serializer: serializeArray,
-      deserializer: deserializeArray
-    }
-  ));
+    span.traceChild('parse hosts').traceSyncFn(() => {
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
+      }
+    });
+
+    return domainSets;
+  });
 }
 
 const enum ParseType {
@@ -153,92 +133,83 @@ export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
   fallbackUrls?: string[] | null,
-  ttl: number | null = null,
+  _ttl: number | null = null,
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[], foundDebugDomain: boolean }> {
-  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn((span) => fsFetchCache.applyWithHttp304AndMirrors<Readonly<[white: string[], black: string[], warningMessages: string[]]>>(
-    filterRulesUrl,
-    fallbackUrls ?? [],
-    getFileContentHash(__filename),
-    (text) => {
-      const whitelistDomainSets = new Set<string>();
-      const blacklistDomainSets = new Set<string>();
+  const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn(async (span) => {
+    const text = await fetchAssetsWithout304(filterRulesUrl, fallbackUrls);
 
-      const warningMessages: string[] = [];
+    const whitelistDomainSets = new Set<string>();
+    const blacklistDomainSets = new Set<string>();
 
-      const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', ParseType.NotParsed];
-      /**
+    const warningMessages: string[] = [];
+
+    const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', ParseType.NotParsed];
+    /**
        * @param {string} line
        */
-      const lineCb = (line: string) => {
-        const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
-        const flag = result[1];
+    const lineCb = (line: string) => {
+      const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
+      const flag = result[1];
 
-        if (flag === ParseType.NotParsed) {
-          throw new Error(`Didn't parse line: ${line}`);
-        }
-        if (flag === ParseType.Null) {
-          return;
-        }
+      if (flag === ParseType.NotParsed) {
+        throw new Error(`Didn't parse line: ${line}`);
+      }
+      if (flag === ParseType.Null) {
+        return;
+      }
 
-        const hostname = result[0];
+      const hostname = result[0];
 
-        if (flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute) {
-          onWhiteFound(hostname, filterRulesUrl);
-        } else {
-          onBlackFound(hostname, filterRulesUrl);
-        }
+      if (flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute) {
+        onWhiteFound(hostname, filterRulesUrl);
+      } else {
+        onBlackFound(hostname, filterRulesUrl);
+      }
 
-        switch (flag) {
-          case ParseType.WhiteIncludeSubdomain:
-            if (hostname[0] === '.') {
-              whitelistDomainSets.add(hostname);
-            } else {
-              whitelistDomainSets.add(`.${hostname}`);
-            }
-            break;
-          case ParseType.WhiteAbsolute:
+      switch (flag) {
+        case ParseType.WhiteIncludeSubdomain:
+          if (hostname[0] === '.') {
             whitelistDomainSets.add(hostname);
-            break;
-          case ParseType.BlackIncludeSubdomain:
-            if (hostname[0] === '.') {
-              blacklistDomainSets.add(hostname);
-            } else {
-              blacklistDomainSets.add(`.${hostname}`);
-            }
-            break;
-          case ParseType.BlackAbsolute:
+          } else {
+            whitelistDomainSets.add(`.${hostname}`);
+          }
+          break;
+        case ParseType.WhiteAbsolute:
+          whitelistDomainSets.add(hostname);
+          break;
+        case ParseType.BlackIncludeSubdomain:
+          if (hostname[0] === '.') {
             blacklistDomainSets.add(hostname);
-            break;
-          case ParseType.ErrorMessage:
-            warningMessages.push(hostname);
-            break;
-          default:
-            break;
-        }
-      };
+          } else {
+            blacklistDomainSets.add(`.${hostname}`);
+          }
+          break;
+        case ParseType.BlackAbsolute:
+          blacklistDomainSets.add(hostname);
+          break;
+        case ParseType.ErrorMessage:
+          warningMessages.push(hostname);
+          break;
+        default:
+          break;
+      }
+    };
 
-      const filterRules = text.split('\n');
+    const filterRules = text.split('\n');
 
-      span.traceChild('parse adguard filter').traceSyncFn(() => {
-        for (let i = 0, len = filterRules.length; i < len; i++) {
-          lineCb(filterRules[i]);
-        }
-      });
+    span.traceChild('parse adguard filter').traceSyncFn(() => {
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        lineCb(filterRules[i]);
+      }
+    });
 
-      return [
-        Array.from(whitelistDomainSets),
-        Array.from(blacklistDomainSets),
-        warningMessages
-      ] as const;
-    },
-    {
-      ttl,
-      temporaryBypass,
-      serializer: JSON.stringify,
-      deserializer: JSON.parse
-    }
-  ));
+    return [
+      Array.from(whitelistDomainSets),
+      Array.from(blacklistDomainSets),
+      warningMessages
+    ] as const;
+  });
 
   for (let i = 0, len = warningMessages.length; i < len; i++) {
     console.warn(
