@@ -22,7 +22,12 @@ export const HOSTS_EXTRA: HostsSource[] = [
     TTL.THREE_HOURS()
   ],
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
-  ['https://someonewhocares.org/hosts/zero/hosts', null, true, TTL.THREE_HOURS()],
+  [
+    'https://someonewhocares.org/hosts/zero/hosts',
+    ['https://proxy.cdn.skk.moe/?https://someonewhocares.org/hosts/zero/hosts'],
+    true,
+    TTL.THREE_HOURS()
+  ],
   // ad-wars is not actively maintained, so we set a 7 days cache ttl
   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false, TTL.TWO_WEEKS()]
 ];
@@ -472,6 +477,9 @@ export const PREDEFINED_WHITELIST = [
   'ad.12306.cn', // https://github.com/jdlingyu/ad-wars
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
   '.nstool.netease.com', // it is only used to check local dns
+  '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
+  '.lon.llnw.net', // There is no point in adding these, many subdomains are dead anyway
+  '.lcy.llnw.net', // There is no point in adding these, many subdomains are dead anyway
 
   // Expired domains
   '.expobarrio.com',
