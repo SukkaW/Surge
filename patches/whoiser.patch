@@ -1,0 +1,13 @@
+diff --git a/src/whoiser.js b/src/whoiser.js
+index ff42b8c7fe1749d389df2d420f68f1ec6590fe69..dea40e123c8bab3c38c1e5d41b6da3bff43acbfe 100644
+--- a/src/whoiser.js
++++ b/src/whoiser.js
+@@ -50,6 +50,8 @@ let cacheTldWhoisServer = {
+ 	shop: 'whois.nic.shop',
+ 	site: 'whois.nic.site',
+ 	xyz: 'whois.nic.xyz',
++
++	ga: 'whois.nic.ga'
+ }
+ 
+ // misspelled whois servers..

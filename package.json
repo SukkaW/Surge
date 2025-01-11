@@ -77,7 +77,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "undici": "patches/undici.patch"
+      "undici": "patches/undici.patch",
+      "whoiser": "patches/whoiser.patch"
     }
   }
 }

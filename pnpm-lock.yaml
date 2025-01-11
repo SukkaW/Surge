@@ -11,6 +11,9 @@ patchedDependencies:
   undici:
     hash: eyidnukwfhrd7exzoydz2h5cfq
     path: patches/undici.patch
+  whoiser:
+    hash: jvdx7w7gioupgqcow7nnybv6ye
+    path: patches/whoiser.patch
 
 importers:
 
@@ -84,7 +87,7 @@ importers:
         version: 0.1.1(undici@7.2.1(patch_hash=eyidnukwfhrd7exzoydz2h5cfq))
       whoiser:
         specifier: ^1.18.0
-        version: 1.18.0
+        version: 1.18.0(patch_hash=jvdx7w7gioupgqcow7nnybv6ye)
       why-is-node-running:
         specifier: ^3.2.2
         version: 3.2.2
@@ -3783,7 +3786,7 @@ snapshots:
     dependencies:
       isexe: 2.0.0
 
-  whoiser@1.18.0:
+  whoiser@1.18.0(patch_hash=jvdx7w7gioupgqcow7nnybv6ye):
     dependencies:
       punycode: 2.3.1
 
