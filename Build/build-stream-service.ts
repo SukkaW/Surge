@@ -44,5 +44,5 @@ export const buildStreamService = task(require.main === module, __filename)(asyn
   // createRulesetForStreamService('stream_au', 'Oceania', AU),
   createRulesetForStreamService(span, 'stream_kr', 'Korean', KR),
   // createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
-  createRulesetForStreamService(span, 'stream_biliIntl', 'Bilibili International', BILI_INTL)
+  createRulesetForStreamService(span, 'stream_biliintl', 'Bilibili International', BILI_INTL)
 ]));
