@@ -2,7 +2,7 @@
 import type { Span } from './trace';
 import { task } from './trace';
 
-import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
+import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR, BILIBILI_INTL } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { RulesetOutput } from './lib/create-file';
 
@@ -44,4 +44,5 @@ export const buildStreamService = task(require.main === module, __filename)(asyn
   // createRulesetForStreamService('stream_au', 'Oceania', AU),
   createRulesetForStreamService(span, 'stream_kr', 'Korean', KR)
   // createRulesetForStreamService('stream_south_east_asia', 'South East Asia', SOUTH_EAST_ASIA)
+  createRulesetForStreamService(span, 'stream_biliIntl', 'Bilibili International', BILIBILI_INTL)
 ]));
