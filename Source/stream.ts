@@ -956,3 +956,7 @@ export const SOUTH_EAST_ASIA = [
   // TV360 VN
   // B-Global VN
 ];
+
+export const BILI_INTL = [
+  BILIBILI_INTL
+];
