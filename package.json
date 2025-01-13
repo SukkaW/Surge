@@ -63,11 +63,11 @@
     "@types/node-fetch": "^2.6.12",
     "@types/tar-fs": "^2.0.4",
     "@types/tar-stream": "^3.1.3",
-    "eslint": "^9.17.0",
+    "eslint": "^9.18.0",
     "eslint-config-sukka": "^6.13.0",
     "eslint-formatter-sukka": "^6.13.0",
     "expect": "^29.7.0",
-    "mitata": "^1.0.27",
+    "mitata": "^1.0.28",
     "mocha": "^11.0.1",
     "typescript": "^5.7.3"
   },
