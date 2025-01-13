@@ -880,7 +880,7 @@ export const HK: StreamService[] = [
   VIUTV,
   MYTV_SUPER,
   HBO_ASIA,
-  BILIBILI_INTL
+  // BILIBILI_INTL
 ];
 
 export const TW: StreamService[] = [
@@ -955,4 +955,8 @@ export const SOUTH_EAST_ASIA = [
   // K_Plus VN
   // TV360 VN
   // B-Global VN
+];
+
+export const BILI_INTL = [
+  BILIBILI_INTL
 ];
