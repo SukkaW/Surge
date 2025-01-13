@@ -474,6 +474,7 @@ export const PREDEFINED_WHITELIST = [
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
   '.lon.llnw.net', // There is no point in adding these, many subdomains are dead anyway
   '.lcy.llnw.net', // There is no point in adding these, many subdomains are dead anyway
+  'repo.huaweicloud.com', // urlhaus
 
   // Expired domains
   '.expobarrio.com',
