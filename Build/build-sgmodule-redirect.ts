@@ -105,7 +105,8 @@ const REDIRECT_MIRROR_307 = [
   ['acg.tv/', 'https://b23.tv/'],
   // Minecraft Wiki
   ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/'],
-  ['minecraft.fandom.com/', 'https://minecraft.wiki/']
+  ['minecraft.fandom.com/', 'https://minecraft.wiki/'],
+  ['missav.com/', 'https://missav.ws/']
 ];
 
 const REDIRECT_FAKEWEBSITES = [
