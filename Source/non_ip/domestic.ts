@@ -5,6 +5,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     hosts: {},
     dns: 'quic://dns.alidns.com:853',
     realip: false,
+    ruleset: true,
     domains: [
       'uc.cn',
       // 'ucweb.com', // UC International
@@ -82,13 +83,18 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'tanx.com',
       'hellobike.com',
       '+hichina.com',
-      '+yunos.com'
+      '+yunos.com',
+
+      // Bilibili Aliyun CDN
+      '$upos-sz-mirrorali.bilivideo.com',
+      '$upos-sz-estgoss.bilivideo.com'
     ]
   },
   TENCENT: {
     hosts: {},
     dns: 'https://doh.pub/dns-query',
     realip: false,
+    ruleset: true,
     domains: [
       // 'dns.pub',
       // 'doh.pub',
@@ -144,28 +150,11 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+codehub.cn'
     ]
   },
-  BILIBILI_ALI: {
-    dns: 'quic://dns.alidns.com:853',
-    hosts: {},
-    realip: false,
-    domains: [
-      '$upos-sz-mirrorali.bilivideo.com',
-      '$upos-sz-estgoss.bilivideo.com'
-    ]
-  },
-  BILIBILI_BD: {
-    dns: '180.76.76.76',
-    hosts: {},
-    realip: false,
-    domains: [
-      '$upos-sz-mirrorbd.bilivideo.com',
-      '$upos-sz-mirrorbos.bilivideo.com'
-    ]
-  },
   BILIBILI: {
     dns: 'https://doh.pub/dns-query',
     hosts: {},
     realip: false,
+    ruleset: true,
     domains: [
       // '$upos-sz-mirrorcoso1.bilivideo.com', // already included in bilivideo.com
       // '$upos-sz-estgcos.bilivideo.com', // already included in bilivideo.com, tencent cloud cdn
@@ -196,6 +185,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     dns: 'https://doh.pub/dns-query',
     hosts: {},
     realip: false,
+    ruleset: true,
     domains: [
       'mi.com',
       'duokan.com',
@@ -218,6 +208,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     dns: '180.184.2.2',
     hosts: {},
     realip: false,
+    ruleset: true,
     domains: [
       'bytedance.com',
       '+bytecdn.cn',
@@ -271,6 +262,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     dns: '180.76.76.76',
     hosts: {},
     realip: false,
+    ruleset: true,
     domains: [
       '91.com',
       'hao123.com',
@@ -295,13 +287,18 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+bdydns.com',
       '+jomoxc.com', // Baidu PCDN, of sort
       '+duapp.com',
-      '+antpcdn.com' // Baidu PCDN
+      '+antpcdn.com', // Baidu PCDN
+
+      // Bilibili Baidu CDN
+      '$upos-sz-mirrorbd.bilivideo.com',
+      '$upos-sz-mirrorbos.bilivideo.com'
     ]
   },
   QIHOO360: {
     hosts: {},
     dns: 'https://doh.360.cn/dns-query',
     realip: false,
+    ruleset: true,
     domains: [
       '+qhimg.com',
       '+qhimgs.com',
@@ -350,6 +347,7 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
       'dns.alidns.com': ['223.5.5.5', '223.6.6.6', '2400:3200:baba::1', '2400:3200::1']
     },
     realip: false,
+    ruleset: false,
     dns: 'quic://223.5.5.5:853',
     domains: [
       '$dns.alidns.com'
@@ -362,6 +360,7 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
       // 'dns.pub': ['120.53.53.53', '1.12.12.12']
     },
     realip: false,
+    ruleset: false,
     dns: 'https://1.12.12.12/dns-query',
     domains: [
       // '$dot.pub',
@@ -382,6 +381,7 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
       // dot.360.net CNAME dns.360.net
     },
     realip: false,
+    ruleset: false,
     // Surge only supports UDP 53 or Hosts as the bootstrap server of domain DoH
     dns: '101.198.198.198', // 'https://101.198.198.198/dns-query', // https://101.198.199.200/dns-query
     domains: [

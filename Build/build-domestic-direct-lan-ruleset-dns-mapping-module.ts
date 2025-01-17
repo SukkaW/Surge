@@ -10,7 +10,7 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, SOURCE_DIR } from './constants/dir';
+import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
 
 export function createGetDnsMappingRule(allowWildcard: boolean) {
@@ -78,7 +78,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 export const buildDomesticRuleset = task(require.main === module, __filename)(async (span) => {
   const [domestics, directs, lans] = await getDomesticAndDirectDomainsRulesetPromise();
 
-  const dataset: DNSMapping[] = ([DOH_BOOTSTRAP, DOMESTICS, DIRECTS] as const).flatMap(Object.values);
+  const dataset: Array<[name: string, DNSMapping]> = ([DOH_BOOTSTRAP, DOMESTICS, DIRECTS, LAN] as const).flatMap(Object.entries);
 
   return Promise.all([
     new RulesetOutput(span, 'domestic', 'non_ip')
@@ -108,6 +108,41 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       ])
       .addFromRuleset(lans)
       .write(),
+
+    ...dataset.map(([name, { ruleset, domains }]) => {
+      if (!ruleset) {
+        return;
+      }
+
+      const output = new RulesetOutput(span, name.toLowerCase(), 'sukka_local_dns_mapping').withTitle(`Sukka's Ruleset - Local DNS Mapping (${name})`).withDescription([
+        ...SHARED_DESCRIPTION,
+        '',
+        'This is an internal rule that is only referenced by sukka_local_dns_mapping.sgmodule',
+        'Do not use this file in your Rule section, all rules are included in non_ip/domestic.conf already.'
+      ]);
+
+      domains.forEach((domain) => {
+        switch (domain[0]) {
+          case '$':
+            output.addDomain(domain.slice(1));
+            break;
+          case '+':
+            output.addDomainSuffix(domain.slice(1));
+            break;
+          default:
+            output.addDomainSuffix(domain);
+            break;
+        }
+      });
+
+      return output.write({
+        surge: true,
+        clash: false,
+        singbox: false,
+        surgeDir: OUTPUT_MODULES_RULES_DIR
+      });
+    }),
+
     compareAndWriteFile(
       span,
       [
@@ -119,26 +154,31 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
           // I use an object to deduplicate the domains
           // Otherwise I could just construct an array directly
           dataset.reduce<Record<string, string>>((acc, cur) => {
-            const { domains, dns, hosts } = cur;
+            const ruleset_name = cur[0].toLowerCase();
+            const { domains, dns, hosts, ruleset } = cur[1];
 
             Object.entries(hosts).forEach(([dns, ips]) => {
               acc[dns] ||= ips.join(', ');
             });
 
-            domains.forEach((domain) => {
-              switch (domain[0]) {
-                case '$':
-                  acc[domain.slice(1)] ||= `server:${dns}`;
-                  break;
-                case '+':
-                  acc[`*.${domain.slice(1)}`] ||= `server:${dns}`;
-                  break;
-                default:
-                  acc[domain] ||= `server:${dns}`;
-                  acc[`*.${domain}`] ||= `server:${dns}`;
-                  break;
-              }
-            });
+            if (ruleset) {
+              acc[`RULE-SET:https://ruleset.skk.moe/Modules/Rules/sukka_local_dns_mapping/${ruleset_name}.conf`] ||= `server:${dns}`;
+            } else {
+              domains.forEach((domain) => {
+                switch (domain[0]) {
+                  case '$':
+                    acc[domain.slice(1)] ||= `server:${dns}`;
+                    break;
+                  case '+':
+                    acc[`*.${domain.slice(1)}`] ||= `server:${dns}`;
+                    break;
+                  default:
+                    acc[domain] ||= `server:${dns}`;
+                    acc[`*.${domain}`] ||= `server:${dns}`;
+                    break;
+                }
+              });
+            }
 
             return acc;
           }, {})
@@ -153,7 +193,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
           dns: { 'nameserver-policy': Record<string, string | string[]> },
           hosts: Record<string, string>
         }>((acc, cur) => {
-          const { domains, dns, ...rest } = cur;
+          const { domains, dns, ...rest } = cur[1];
           domains.forEach((domain) => {
             let domainWildcard = domain;
             if (domain[0] === '$') {

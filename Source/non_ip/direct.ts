@@ -4,6 +4,8 @@ export interface DNSMapping {
   },
   /** which also disallows wildcard */
   realip: boolean,
+  /** should convert to ruleset */
+  ruleset: boolean,
   dns: string,
   /**
    * domain[0]
@@ -20,6 +22,7 @@ export const DIRECTS = {
     dns: 'system',
     hosts: {},
     realip: false,
+    ruleset: false,
     domains: [
       'securelogin.com.cn',
       '$captive.apple.com',
@@ -30,6 +33,7 @@ export const DIRECTS = {
     dns: 'system',
     hosts: {},
     realip: true,
+    ruleset: false,
     domains: [
       '+m2m',
       // '+ts.net', // TailScale Magic DNS
@@ -47,6 +51,7 @@ export const LAN = {
     dns: 'system',
     hosts: {},
     realip: false,
+    ruleset: true,
     domains: [
       '+home',
       // 'zte.home', // ZTE CPE
@@ -106,6 +111,7 @@ export const LAN = {
       localhost: ['127.0.0.1']
     },
     realip: true,
+    ruleset: true,
     domains: [
       '+lan',
       // 'amplifi.lan',

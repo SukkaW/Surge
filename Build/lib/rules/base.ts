@@ -34,7 +34,7 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   protected destPort = new Set<string>();
 
   protected otherRules: string[] = [];
-  protected abstract type: 'domainset' | 'non_ip' | 'ip';
+  protected abstract type: 'domainset' | 'non_ip' | 'ip' | (string & {});
 
   private pendingPromise: Promise<any> | null = null;
 
@@ -295,13 +295,29 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     );
   }
 
-  write(): Promise<void> {
+  write({
+    surge = true,
+    clash = true,
+    singbox = true,
+    surgeDir = OUTPUT_SURGE_DIR,
+    clashDir = OUTPUT_CLASH_DIR,
+    singboxDir = OUTPUT_SINGBOX_DIR
+  }: {
+    surge?: boolean,
+    clash?: boolean,
+    singbox?: boolean,
+    surgeDir?: string,
+    clashDir?: string,
+    singboxDir?: string
+  } = {}): Promise<void> {
     return this.done().then(() => this.span.traceChildAsync('write all', async () => {
       invariant(this.title, 'Missing title');
       invariant(this.description, 'Missing description');
 
-      const promises = [
-        compareAndWriteFile(
+      const promises: Array<Promise<void>> = [];
+
+      if (surge) {
+        promises.push(compareAndWriteFile(
           this.span,
           withBannerArray(
             this.title,
@@ -309,9 +325,11 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
             this.date,
             this.surge()
           ),
-          path.join(OUTPUT_SURGE_DIR, this.type, this.id + '.conf')
-        ),
-        compareAndWriteFile(
+          path.join(surgeDir, this.type, this.id + '.conf')
+        ));
+      }
+      if (clash) {
+        promises.push(compareAndWriteFile(
           this.span,
           withBannerArray(
             this.title,
@@ -319,14 +337,16 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
             this.date,
             this.clash()
           ),
-          path.join(OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
-        ),
-        compareAndWriteFile(
+          path.join(clashDir, this.type, this.id + '.txt')
+        ));
+      }
+      if (singbox) {
+        promises.push(compareAndWriteFile(
           this.span,
           this.singbox(),
-          path.join(OUTPUT_SINGBOX_DIR, this.type, this.id + '.json')
-        )
-      ];
+          path.join(singboxDir, this.type, this.id + '.json')
+        ));
+      }
 
       if (this.mitmSgmodule) {
         const sgmodule = this.mitmSgmodule();

@@ -12,7 +12,7 @@ import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 type Preprocessed = [domain: string[], domainSuffix: string[], sortedDomainRules: string[]];
 
 export class RulesetOutput extends RuleOutput<Preprocessed> {
-  constructor(span: Span, id: string, protected type: 'non_ip' | 'ip') {
+  constructor(span: Span, id: string, protected type: 'non_ip' | 'ip' | (string & {})) {
     super(span, id);
   }
 
