@@ -1,5 +1,5 @@
-import { processHosts } from './parse-filter/hosts';
-import { processDomainLists } from './parse-filter/domainlists';
+import { processHostsWithPreload } from './parse-filter/hosts';
+import { processDomainListsWithPreload } from './parse-filter/domainlists';
 
 import * as tldts from 'tldts-experimental';
 
@@ -207,15 +207,18 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
   temporaryBypass: !isCI || DEBUG_DOMAIN_TO_FIND !== null
 });
 
+const downloads = [
+  ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
+  ...PHISHING_HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry))
+];
+
 export function getPhishingDomains(parentSpan: Span) {
   return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
     const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
       const domainArr: string[] = [];
 
-      await Promise.all([
-        ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(curSpan, ...entry)),
-        ...PHISHING_HOSTS_EXTRA.map(entry => processHosts(curSpan, ...entry))
-      ]).then(domainGroups => domainGroups.forEach(appendArrayInPlaceCurried(domainArr)));
+      const domainGroups = await Promise.all(downloads.map(task => task(curSpan)));
+      domainGroups.forEach(appendArrayInPlaceCurried(domainArr));
 
       return domainArr;
     });

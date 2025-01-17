@@ -48,3 +48,21 @@ export function processDomainLists(
     return domainSets;
   });
 }
+
+export function processDomainListsWithPreload(domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false) {
+  const downloadPromise = fetchAssets(domainListsUrl, mirrors);
+
+  return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
+    const text = await span.traceChildPromise('download', downloadPromise);
+    const domainSets: string[] = [];
+    const filterRules = text.split('\n');
+
+    span.traceChildSync('parse domain list', () => {
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl);
+      }
+    });
+
+    return domainSets;
+  });
+}

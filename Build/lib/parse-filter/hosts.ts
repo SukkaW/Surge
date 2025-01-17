@@ -44,3 +44,23 @@ export function processHosts(
     return domainSets;
   });
 }
+
+export function processHostsWithPreload(hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false) {
+  const downloadPromise = fetchAssets(hostsUrl, mirrors);
+
+  return (span: Span) => span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
+    const text = await span.traceChild('download').tracePromise(downloadPromise);
+
+    const domainSets: string[] = [];
+
+    const filterRules = text.split('\n');
+
+    span.traceChild('parse hosts').traceSyncFn(() => {
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        hostsLineCb(filterRules[i], domainSets, includeAllSubDomain, hostsUrl);
+      }
+    });
+
+    return domainSets;
+  });
+}
