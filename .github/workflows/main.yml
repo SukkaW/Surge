@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       # - name: Tune GitHub-hosted runner network
@@ -92,7 +92,7 @@ jobs:
       - build
     name: Deploy to Cloudflare Pages
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Get NPM cache directory path
         id: npm_cache_path
@@ -121,7 +121,7 @@ jobs:
       - build
     name: Deploy to GitHub and GitLab
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/download-artifact@v4
         with:
