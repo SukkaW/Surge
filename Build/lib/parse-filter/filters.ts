@@ -20,6 +20,102 @@ const enum ParseType {
 
 export { type ParseType };
 
+export function processFilterRulesWithPreload(
+  filterRulesUrl: string,
+  fallbackUrls?: string[] | null,
+  allowThirdParty = false
+) {
+  const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
+
+  return (span: Span) => span.traceChildAsync<{ white: string[], black: string[] }>(`process filter rules: ${filterRulesUrl}`, async (span) => {
+    const text = await span.traceChildPromise('download', downloadPromise);
+
+    const whitelistDomainSets = new Set<string>();
+    const blacklistDomainSets = new Set<string>();
+
+    const warningMessages: string[] = [];
+
+    const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', ParseType.NotParsed];
+    /**
+       * @param {string} line
+       */
+    const lineCb = (line: string) => {
+      const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
+      const flag = result[1];
+
+      if (flag === ParseType.NotParsed) {
+        throw new Error(`Didn't parse line: ${line}`);
+      }
+      if (flag === ParseType.Null) {
+        return;
+      }
+
+      const hostname = result[0];
+
+      if (flag === ParseType.WhiteIncludeSubdomain || flag === ParseType.WhiteAbsolute) {
+        onWhiteFound(hostname, filterRulesUrl);
+      } else {
+        onBlackFound(hostname, filterRulesUrl);
+      }
+
+      switch (flag) {
+        case ParseType.WhiteIncludeSubdomain:
+          if (hostname[0] === '.') {
+            whitelistDomainSets.add(hostname);
+          } else {
+            whitelistDomainSets.add(`.${hostname}`);
+          }
+          break;
+        case ParseType.WhiteAbsolute:
+          whitelistDomainSets.add(hostname);
+          break;
+        case ParseType.BlackIncludeSubdomain:
+          if (hostname[0] === '.') {
+            blacklistDomainSets.add(hostname);
+          } else {
+            blacklistDomainSets.add(`.${hostname}`);
+          }
+          break;
+        case ParseType.BlackAbsolute:
+          blacklistDomainSets.add(hostname);
+          break;
+        case ParseType.ErrorMessage:
+          warningMessages.push(hostname);
+          break;
+        default:
+          break;
+      }
+    };
+
+    const filterRules = text.split('\n');
+
+    span.traceChild('parse adguard filter').traceSyncFn(() => {
+      for (let i = 0, len = filterRules.length; i < len; i++) {
+        lineCb(filterRules[i]);
+      }
+    });
+
+    for (let i = 0, len = warningMessages.length; i < len; i++) {
+      console.warn(
+        picocolors.yellow(warningMessages[i]),
+        picocolors.gray(picocolors.underline(filterRulesUrl))
+      );
+    }
+
+    console.log(
+      picocolors.gray('[process filter]'),
+      picocolors.gray(filterRulesUrl),
+      picocolors.gray(`white: ${whitelistDomainSets.size}`),
+      picocolors.gray(`black: ${blacklistDomainSets.size}`)
+    );
+
+    return {
+      white: Array.from(whitelistDomainSets),
+      black: Array.from(blacklistDomainSets)
+    };
+  });
+}
+
 export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,

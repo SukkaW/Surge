@@ -4,7 +4,7 @@ import process from 'node:process';
 
 import { processHostsWithPreload } from './lib/parse-filter/hosts';
 import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
-import { processFilterRules } from './lib/parse-filter/filters';
+import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
 import { compareAndWriteFile } from './lib/create-file';
@@ -33,6 +33,9 @@ const hostsDownloads = HOSTS.map(entry => processHostsWithPreload(...entry));
 const hostsExtraDownloads = HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry));
 const domainListsDownloads = DOMAIN_LISTS.map(entry => processDomainListsWithPreload(...entry));
 const domainListsExtraDownloads = DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry));
+const adguardFiltersDownloads = ADGUARD_FILTERS.map(entry => processFilterRulesWithPreload(...entry));
+const adguardFiltersExtraDownloads = ADGUARD_FILTERS_EXTRA.map(entry => processFilterRulesWithPreload(...entry));
+const adguardFiltersWhitelistsDownloads = ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRulesWithPreload(...entry));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectBaseDescription = [
@@ -81,24 +84,24 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
       domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
-      ADGUARD_FILTERS.map(
-        entry => processFilterRules(childSpan, ...entry)
-          .then(({ white, black }) => {
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-            appendArrayToRejectOutput(black);
-          })
+      adguardFiltersDownloads.map(
+        task => task(childSpan).then(({ white, black }) => {
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+          appendArrayToRejectOutput(black);
+        })
       ),
-      ADGUARD_FILTERS_EXTRA.map(
-        entry => processFilterRules(childSpan, ...entry)
-          .then(({ white, black }) => {
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-            appendArrayToRejectExtraOutput(black);
-          })
+      adguardFiltersExtraDownloads.map(
+        task => task(childSpan).then(({ white, black }) => {
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+          appendArrayToRejectExtraOutput(black);
+        })
       ),
-      ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRules(childSpan, ...entry).then(({ white, black }) => {
-        addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-        addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
-      })),
+      adguardFiltersWhitelistsDownloads.map(
+        task => task(childSpan).then(({ white, black }) => {
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
+        })
+      ),
       getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
       readLocalRejectDomainsetPromise.then(appendArrayToRejectOutput),
       readLocalRejectDomainsetPromise.then(appendArrayToRejectExtraOutput),
