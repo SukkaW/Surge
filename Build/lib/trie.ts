@@ -8,9 +8,13 @@ import { noop } from 'foxts/noop';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import FIFO from 'fast-fifo';
 
+import { deleteBit, getBit, missingBit, setBit } from 'foxts/bitwise';
+
+const START = 1 << 1;
+const INCLUDE_ALL_SUBDOMAIN = 1 << 2;
+
 type TrieNode<Meta = any> = [
-  boolean, /** end */
-  boolean, /** includeAllSubdomain (.example.org, ||example.com) */
+  flag: number, /** end, includeAllSubdomain (.example.org, ||example.com) */
   TrieNode | null, /** parent */
   Map<string, TrieNode>, /** children */
   Meta /** meta */
@@ -19,24 +23,23 @@ type TrieNode<Meta = any> = [
 function deepTrieNodeToJSON(node: TrieNode,
   unpackMeta: ((meta?: any) => string) | undefined) {
   const obj: Record<string, any> = {};
-  if (node[0]) {
-    obj['[start]'] = node[0];
-  }
-  obj['[subdomain]'] = node[1];
-  if (node[4] != null) {
+
+  obj['[start]'] = getBit(node[0], START);
+  obj['[subdomain]'] = getBit(node[0], INCLUDE_ALL_SUBDOMAIN);
+  if (node[3] != null) {
     if (unpackMeta) {
       obj['[meta]'] = unpackMeta(node[3]);
     } else {
       obj['[meta]'] = node[3];
     }
   }
-  node[3].forEach((value, key) => {
+  node[2].forEach((value, key) => {
     obj[key] = deepTrieNodeToJSON(value, unpackMeta);
   });
   return obj;
 }
 
-const createNode = <Meta = any>(allSubdomain = false, parent: TrieNode | null = null): TrieNode => [false, allSubdomain, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
+const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => [1, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 
 export function hostnameToTokens(hostname: string, hostnameFromIndex: number): string[] {
   const tokens = hostname.split('.');
@@ -124,8 +127,8 @@ abstract class Triebase<Meta = any> {
 
       parent = node;
 
-      if (node[3].has(token)) {
-        node = node[3].get(token)!;
+      if (node[2].has(token)) {
+        node = node[2].get(token)!;
       } else {
         return null;
       }
@@ -151,8 +154,8 @@ abstract class Triebase<Meta = any> {
 
       parent = node;
 
-      if (node[3].has(token)) {
-        node = node[3].get(token)!;
+      if (node[2].has(token)) {
+        node = node[2].get(token)!;
       } else {
         return null;
       }
@@ -174,7 +177,7 @@ abstract class Triebase<Meta = any> {
 
     const res = this.walkIntoLeafWithSuffix(suffix, hostnameFromIndex);
     if (!res) return false;
-    if (includeAllSubdomain) return res.node[1];
+    if (includeAllSubdomain) return getBit(res.node[0], INCLUDE_ALL_SUBDOMAIN);
     return true;
   };
 
@@ -184,7 +187,7 @@ abstract class Triebase<Meta = any> {
     const node = nodeStack.shift()!;
     const suffix = suffixStack.shift()!;
 
-    node[3].forEach((childNode, k) => {
+    node[2].forEach((childNode, k) => {
       // Pushing the child node to the stack for next iteration of DFS
       nodeStack.push(childNode);
 
@@ -201,12 +204,12 @@ abstract class Triebase<Meta = any> {
     const node = nodeStack.shift()!;
     const suffix = suffixStack.shift()!;
 
-    if (node[3].size) {
-      const keys = Array.from(node[3].keys()).sort(Triebase.compare);
+    if (node[2].size) {
+      const keys = Array.from(node[2].keys()).sort(Triebase.compare);
 
       for (let i = 0, l = keys.length; i < l; i++) {
         const key = keys[i];
-        const childNode = node[3].get(key)!;
+        const childNode = node[2].get(key)!;
 
         // Pushing the child node to the stack for next iteration of DFS
         nodeStack.push(childNode);
@@ -244,8 +247,8 @@ abstract class Triebase<Meta = any> {
       const suffix = r[1];
 
       // If the node is a sentinel, we push the suffix to the results
-      if (node[0]) {
-        onMatches(suffix, node[1], node[4]);
+      if (getBit(node[0], START)) {
+        onMatches(suffix, getBit(node[0], INCLUDE_ALL_SUBDOMAIN), node[3]);
       }
     } while (nodeStack.length);
   };
@@ -273,12 +276,12 @@ abstract class Triebase<Meta = any> {
       node = nodeStack.shift()!;
       const suffix = suffixStack.shift()!;
 
-      if (node[3].size) {
-        const keys = Array.from(node[3].keys()).sort(Triebase.compare);
+      if (node[2].size) {
+        const keys = Array.from(node[2].keys()).sort(Triebase.compare);
 
         for (let i = 0, l = keys.length; i < l; i++) {
           const key = keys[i];
-          const childNode = node[3].get(key)!;
+          const childNode = node[2].get(key)!;
 
           // Pushing the child node to the stack for next iteration of DFS
           nodeStack.push(childNode);
@@ -287,8 +290,8 @@ abstract class Triebase<Meta = any> {
       }
 
       // If the node is a sentinel, we push the suffix to the results
-      if (node[0]) {
-        onMatches(suffix, node[1], node[4]);
+      if (getBit(node[0], START)) {
+        onMatches(suffix, getBit(node[0], INCLUDE_ALL_SUBDOMAIN), node[3]);
       }
     } while (nodeStack.length);
   };
@@ -302,7 +305,7 @@ abstract class Triebase<Meta = any> {
 
       // Even if the node size is 1, but the single child is ".", we should retain the branch
       // Since the "." could be special if it is the leaf-est node
-      const onlyChild = node[3].size === 0 && !node[2];
+      const onlyChild = node[2].size === 0 && !node[1];
 
       if (toPrune != null) { // the top-est branch that could potentially being pruned
         if (!onlyChild) {
@@ -368,15 +371,15 @@ abstract class Triebase<Meta = any> {
     const res = this.getSingleChildLeaf(hostnameToTokens(suffix, 0));
     if (res === null) return false;
 
-    if (!res.node[0]) return false;
+    if (missingBit(res.node[0], START)) return false;
 
     this.$size--;
     const { node, toPrune, tokenToPrune } = res;
 
     if (tokenToPrune && toPrune) {
-      toPrune[3].delete(tokenToPrune);
+      toPrune[2].delete(tokenToPrune);
     } else {
-      node[0] = false;
+      node[0] = deleteBit(node[0], START);
     }
 
     return true;
@@ -394,8 +397,8 @@ abstract class Triebase<Meta = any> {
     const res = this.walkIntoLeafWithSuffix(suffix, hostnameFromIndex);
 
     if (res === null) return false;
-    if (!res.node[0]) return false;
-    if (includeAllSubdomain) return res.node[1];
+    if (missingBit(res.node[0], START)) return false;
+    if (includeAllSubdomain) return getBit(res.node[0], INCLUDE_ALL_SUBDOMAIN);
     return true;
   };
 
@@ -494,19 +497,19 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
 
   add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = suffix[0] === '.' ? 1 : 0): void {
     let node: TrieNode<Meta> = this.$root;
-    let curNodeChildren: Map<string, TrieNode<Meta>> = node[3];
+    let curNodeChildren: Map<string, TrieNode<Meta>> = node[2];
 
     const onToken = (token: string) => {
-      curNodeChildren = node[3];
+      curNodeChildren = node[2];
       if (curNodeChildren.has(token)) {
         node = curNodeChildren.get(token)!;
 
         // During the adding of `[start]blog|.skk.moe` and find out that there is a `[start].skk.moe` in the trie, skip adding the rest of the node
-        if (node[1]) {
+        if (getBit(node[0], INCLUDE_ALL_SUBDOMAIN)) {
           return true;
         }
       } else {
-        const newNode = createNode(false, node);
+        const newNode = createNode(node);
         curNodeChildren.set(token, newNode);
         node = newNode;
       }
@@ -527,19 +530,23 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
       // (/** parent */ node[2]!)[0] = false;
 
       // Removing the rest of the parent's child nodes
-      node[3].clear();
+      node[2].clear();
       // The SENTINEL of this node will be set to true at the end of the function, so we don't need to set it here
 
       // we can use else-if here, because the children is now empty, we don't need to check the leading "."
-    } else if (node[1]) {
+    } else if (getBit(node[0], INCLUDE_ALL_SUBDOMAIN)) {
       // Trying to add `example.com` when there is already a `.example.com` in the trie
       // No need to increment size and set SENTINEL to true (skip this "new" item)
       return;
     }
 
-    node[0] = true;
-    node[1] = includeAllSubdomain;
-    node[4] = meta!;
+    node[0] = setBit(node[0], START);
+    if (includeAllSubdomain) {
+      node[0] = setBit(node[0], INCLUDE_ALL_SUBDOMAIN);
+    } else {
+      node[0] = deleteBit(node[0], INCLUDE_ALL_SUBDOMAIN);
+    }
+    node[3] = meta!;
   }
 
   public whitelist(suffix: string, includeAllSubdomain = suffix[0] === '.', hostnameFromIndex = suffix[0] === '.' ? 1 : 0) {
@@ -553,22 +560,22 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     // Trying to whitelist `[start].sub.example.com` where there might already be a `[start]blog.sub.example.com` in the trie
     if (includeAllSubdomain) {
       // If there is a `[start]sub.example.com` here, remove it
-      node[0] = false;
-      node[1] = false;
+      node[0] = deleteBit(node[0], INCLUDE_ALL_SUBDOMAIN);
+      node[0] = deleteBit(node[0], START);
       // Removing all the child nodes by empty the children
-      node[3].clear();
+      node[2].clear();
     } else {
       // Trying to whitelist `example.com` when there is already a `.example.com` in the trie
-      node[1] = false;
+      node[0] = deleteBit(node[0], INCLUDE_ALL_SUBDOMAIN);
     }
 
     // return early if not found
-    if (!node[0]) return;
+    if (missingBit(node[0], START)) return;
 
     if (tokenToPrune && toPrune) {
-      toPrune[3].delete(tokenToPrune);
+      toPrune[2].delete(tokenToPrune);
     } else {
-      node[0] = false;
+      node[0] = deleteBit(node[0], START);
     }
   };
 }
@@ -582,11 +589,11 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
     let node: TrieNode<Meta> = this.$root;
 
     const onToken = (token: string) => {
-      if (node[3].has(token)) {
-        node = node[3].get(token)!;
+      if (node[2].has(token)) {
+        node = node[2].get(token)!;
       } else {
-        const newNode = createNode(false, node);
-        node[3].set(token, newNode);
+        const newNode = createNode(node);
+        node[2].set(token, newNode);
         node = newNode;
       }
 
@@ -599,14 +606,19 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
     }
 
     // if same entry has been added before, skip
-    if (node[0]) {
+    if (getBit(node[0], START)) {
       return;
     }
 
     this.$size++;
-    node[0] = true;
-    node[1] = includeAllSubdomain;
-    node[4] = meta!;
+
+    node[0] = setBit(node[0], START);
+    if (includeAllSubdomain) {
+      node[0] = setBit(node[0], INCLUDE_ALL_SUBDOMAIN);
+    } else {
+      node[0] = deleteBit(node[0], INCLUDE_ALL_SUBDOMAIN);
+    }
+    node[3] = meta!;
   }
 }
 
