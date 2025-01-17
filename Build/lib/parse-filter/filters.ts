@@ -1,6 +1,6 @@
 import picocolors from 'picocolors';
 import type { Span } from '../../trace';
-import { fetchAssetsWithout304 } from '../fetch-assets';
+import { fetchAssets } from '../fetch-assets';
 import { onBlackFound, onWhiteFound } from './shared';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { fastNormalizeDomain } from '../normalize-domain';
@@ -27,7 +27,7 @@ export async function processFilterRules(
   allowThirdParty = false
 ): Promise<{ white: string[], black: string[] }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn(async (span) => {
-    const text = await span.traceChildAsync('download', () => fetchAssetsWithout304(filterRulesUrl, fallbackUrls));
+    const text = await span.traceChildAsync('download', () => fetchAssets(filterRulesUrl, fallbackUrls));
 
     const whitelistDomainSets = new Set<string>();
     const blacklistDomainSets = new Set<string>();

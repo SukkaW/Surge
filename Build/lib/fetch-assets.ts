@@ -1,6 +1,6 @@
 import picocolors from 'picocolors';
 import { $$fetch, defaultRequestInit, ResponseError } from './fetch-retry';
-import { wait } from 'foxts/wait';
+import { waitWithAbort } from 'foxts/wait';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 export class CustomAbortError extends Error {
@@ -26,29 +26,14 @@ export class CustomNoETagFallbackError extends Error {
   }
 }
 
-export function sleepWithAbort(ms: number, signal: AbortSignal) {
-  return new Promise<void>((resolve, reject) => {
-    if (signal.aborted) {
-      reject(signal.reason as Error);
-      return;
-    }
-
-    signal.addEventListener('abort', stop, { once: true });
-
-    wait(ms).then(resolve).catch(reject).finally(() => signal.removeEventListener('abort', stop));
-
-    function stop(this: AbortSignal) { reject(this.reason as Error); }
-  });
-}
-
-export async function fetchAssetsWithout304(url: string, fallbackUrls: null | undefined | string[] | readonly string[]) {
+export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[]) {
   const controller = new AbortController();
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
     if (index >= 0) {
     // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
       try {
-        await sleepWithAbort(50 + (index + 1) * 100, controller.signal);
+        await waitWithAbort(50 + (index + 1) * 100, controller.signal);
       } catch {
         console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
         throw new CustomAbortError();

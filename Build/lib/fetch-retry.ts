@@ -95,10 +95,9 @@ setGlobalDispatcher(agent.compose(
           : retryAfter * 1e3; // Retry-After is in seconds
       }
 
-      const retryTimeout
-        = retryAfter > 0
-          ? Math.min(retryAfter, maxTimeout)
-          : Math.min(minTimeout * (timeoutFactor ** (counter - 1)), maxTimeout);
+      const retryTimeout = retryAfter > 0
+        ? Math.min(retryAfter, maxTimeout)
+        : Math.min(minTimeout * (timeoutFactor ** (counter - 1)), maxTimeout);
 
       console.log('[fetch retry]', 'schedule retry', { statusCode, retryTimeout, errorCode, url: opts.origin });
       // eslint-disable-next-line sukka/prefer-timer-id -- won't leak

@@ -1,5 +1,5 @@
 import type { Span } from '../../trace';
-import { fetchAssetsWithout304 } from '../fetch-assets';
+import { fetchAssets } from '../fetch-assets';
 import { fastNormalizeDomain } from '../normalize-domain';
 import { processLine } from '../process-line';
 import { onBlackFound } from './shared';
@@ -29,7 +29,7 @@ export function processHosts(
   hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
 ) {
   return span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
-    const text = await span.traceChild('download').traceAsyncFn(() => fetchAssetsWithout304(hostsUrl, mirrors));
+    const text = await span.traceChild('download').traceAsyncFn(() => fetchAssets(hostsUrl, mirrors));
 
     const domainSets: string[] = [];
 

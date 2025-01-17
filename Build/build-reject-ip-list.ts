@@ -8,7 +8,7 @@ import { processLine } from './lib/process-line';
 import { RulesetOutput } from './lib/create-file';
 import { SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
-import { fetchAssetsWithout304 } from './lib/fetch-assets';
+import { fetchAssets } from './lib/fetch-assets';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
@@ -37,7 +37,7 @@ const BOTNET_FILTER_MIRROR_URL = [
   // https://curbengh.github.io/malware-filter/botnet-filter-dnscrypt-blocked-ips.txt
 ];
 
-const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssetsWithout304(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL).then(text => text.split('\n').reduce<[ipv4: string[], ipv6: string[]]>((acc, cur) => {
+const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL).then(text => text.split('\n').reduce<[ipv4: string[], ipv6: string[]]>((acc, cur) => {
   const ip = processLine(cur);
   if (ip) {
     if (isProbablyIpv4(ip)) {
