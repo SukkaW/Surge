@@ -1,5 +1,6 @@
 import { dirname } from 'node:path';
 import fs from 'node:fs';
+import type { PathLike } from 'node:fs';
 import fsp from 'node:fs/promises';
 
 export function fastStringCompare(a: string, b: string) {
@@ -79,3 +80,13 @@ export function withBannerArray(title: string, description: string[] | readonly 
     '################## EOF ##################'
   ];
 };
+
+export function isDirectoryEmptySync(path: PathLike) {
+  const directoryHandle = fs.opendirSync(path);
+
+  try {
+    return directoryHandle.readSync() === null;
+  } finally {
+    directoryHandle.closeSync();
+  }
+}

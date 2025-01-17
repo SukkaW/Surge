@@ -1,4 +1,7 @@
 import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs';
+import { isCI } from 'ci-info';
 
 export const ROOT_DIR = path.resolve(__dirname, '../..');
 
@@ -6,7 +9,10 @@ export const CACHE_DIR = path.resolve(ROOT_DIR, '.cache');
 
 export const SOURCE_DIR = path.join(ROOT_DIR, 'Source');
 
-export const PUBLIC_DIR = path.resolve(ROOT_DIR, 'public');
+export const PUBLIC_DIR = isCI
+  ? fs.mkdtempSync(path.join(os.tmpdir(), 'sukkaw-surge-public-'))
+  : path.resolve(ROOT_DIR, 'public');
+
 export const OUTPUT_SURGE_DIR = path.join(PUBLIC_DIR, 'List');
 export const OUTPUT_CLASH_DIR = path.resolve(PUBLIC_DIR, 'Clash');
 export const OUTPUT_SINGBOX_DIR = path.resolve(PUBLIC_DIR, 'sing-box');

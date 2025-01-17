@@ -9,12 +9,13 @@ import undici from 'undici';
 import picocolors from 'picocolors';
 import { PUBLIC_DIR } from './constants/dir';
 import { requestWithLog } from './lib/fetch-retry';
+import { isDirectoryEmptySync } from './lib/misc';
 
 const GITHUB_CODELOAD_URL = 'https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master';
 const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive/master/ruleset.skk.moe-master.tar.gz';
 
 export const downloadPreviousBuild = task(require.main === module, __filename)(async (span) => {
-  if (fs.existsSync(PUBLIC_DIR)) {
+  if (fs.existsSync(PUBLIC_DIR) && !isDirectoryEmptySync(PUBLIC_DIR)) {
     console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
     return;
   }

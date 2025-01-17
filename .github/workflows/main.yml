@@ -56,15 +56,16 @@ jobs:
             ${{ runner.os }}-v3-
       - run: pnpm install
       - run: pnpm run build
+        id: build
       - name: Pre-deploy check
         # If the public directory doesn't exist, the build should fail.
         # If the public directory is empty, the build should fail.
         run: |
-          if [ ! -d public ]; then
+          if [ ! -d ${{ steps.build.outputs.public_dir }} ]; then
             echo "public directory not found"
             exit 1
           fi
-          if [ ! "$(ls -A public)" ]; then
+          if [ ! "$(ls -A ${{ steps.build.outputs.public_dir }})" ]; then
             echo "public directory is empty"
             exit 1
           fi
@@ -72,10 +73,11 @@ jobs:
             echo ".BUILD_FINISHED not found"
             exit 1
           fi
+          echo "public directory is ready: ${{ steps.build.outputs.public_dir }}"
       - uses: actions/upload-artifact@v4
         with:
           name: build-artifact-${{ github. ref_name }}
-          path: public
+          path: ${{ steps.build.outputs.public_dir }}
           if-no-files-found: error
           retention-days: 1
           compression-level: 4
