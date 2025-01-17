@@ -381,32 +381,39 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   abstract mitmSgmodule?(): string[] | null;
 }
 
-export async function fileEqual(linesA: string[], source: AsyncIterable<string>): Promise<boolean> {
+export async function fileEqual(linesA: string[], source: AsyncIterable<string> | Iterable<string>): Promise<boolean> {
   if (linesA.length === 0) {
     return false;
   }
+
+  const linesABound = linesA.length - 1;
 
   let index = -1;
   for await (const lineB of source) {
     index++;
 
-    if (index > linesA.length - 1) {
-      return (index === linesA.length && lineB === '');
+    if (index > linesABound) {
+      return (index === linesA.length && lineB.length === 0);
     }
 
     const lineA = linesA[index];
 
-    if (lineA[0] === '#' && lineB[0] === '#') {
+    const firstCharA = lineA.charCodeAt(0);
+    const firstCharB = lineB.charCodeAt(0);
+
+    if (firstCharA === 35 /* # */ && firstCharB === 35 /* # */) {
       continue;
     }
     // adguard conf
-    if (lineA[0] === '!' && lineB[0] === '!') {
+    if (firstCharA === 33 /* ! */ && firstCharB === 33 /* ! */) {
       continue;
     }
+
     if (
-      lineA[0] === '/'
+      firstCharA === 47 /* / */
+      && firstCharB === 47 /* / */
+
       && lineA[1] === '/'
-      && lineB[0] === '/'
       && lineB[1] === '/'
       && lineA[3] === '#'
       && lineB[3] === '#'
@@ -420,7 +427,7 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string>)
   }
 
   // The file becomes larger
-  return !(index < linesA.length - 1);
+  return !(index < linesABound);
 }
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
