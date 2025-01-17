@@ -104,7 +104,7 @@ jobs:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
             node_modules
-          key: ${{ runner.os }}-deploy-to-cloudflare-npm
+          key: ${{ runner.os }}-${{ runner.arch }}-deploy-to-cloudflare-npm
       - uses: actions/download-artifact@v4
         with:
           name: build-artifact-${{ github.ref_name }}
