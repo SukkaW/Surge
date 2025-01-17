@@ -401,6 +401,10 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
     const firstCharA = lineA.charCodeAt(0);
     const firstCharB = lineB.charCodeAt(0);
 
+    if (firstCharA !== firstCharB) {
+      return false;
+    }
+
     if (firstCharA === 35 /* # */ && firstCharB === 35 /* # */) {
       continue;
     }
@@ -410,13 +414,9 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
     }
 
     if (
-      firstCharA === 47 /* / */
-      && firstCharB === 47 /* / */
-
-      && lineA[1] === '/'
-      && lineB[1] === '/'
-      && lineA[3] === '#'
-      && lineB[3] === '#'
+      firstCharA === 47 /* / */ && firstCharB === 47 /* / */
+      && lineA[1] === '/' && lineB[1] === '/'
+      && lineA[3] === '#' && lineB[3] === '#'
     ) {
       continue;
     }
