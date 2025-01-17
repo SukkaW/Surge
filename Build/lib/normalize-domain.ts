@@ -3,14 +3,21 @@
 // import tldts from 'tldts-experimental';
 import tldts from 'tldts';
 import { normalizeTldtsOpt } from '../constants/loose-tldts-opt';
+import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 
 type TldTsParsed = ReturnType<typeof tldts.parse>;
 
 /**
  * Skipped the input non-empty check, the `domain` should not be empty.
  */
-export function fastNormalizeDomain(domain: string, parsed: TldTsParsed = tldts.parse(domain, normalizeTldtsOpt)) {
-  if (parsed.isIp) return null;
+export function fastNormalizeDomain(domain: string, parsed: TldTsParsed | null = null) {
+  // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
+  // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
+  if (isProbablyIpv4(domain) || isProbablyIpv6(domain)) {
+    return null;
+  }
+
+  parsed ??= tldts.parse(domain, normalizeTldtsOpt);
   // Private invalid domain (things like .tor, .dn42, etc)
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
@@ -20,9 +27,11 @@ export function fastNormalizeDomain(domain: string, parsed: TldTsParsed = tldts.
 export function normalizeDomain(domain: string, parsed: TldTsParsed | null = null) {
   if (domain.length === 0) return null;
 
-  parsed ??= tldts.parse(domain, normalizeTldtsOpt);
+  if (isProbablyIpv4(domain) || isProbablyIpv6(domain)) {
+    return null;
+  }
 
-  if (parsed.isIp) return null;
+  parsed ??= tldts.parse(domain, normalizeTldtsOpt);
   // Private invalid domain (things like .tor, .dn42, etc)
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
