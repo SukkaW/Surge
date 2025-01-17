@@ -398,6 +398,15 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
 
     const lineA = linesA[index];
 
+    if (lineA.length === 0 && lineB.length === 0) {
+      continue;
+    }
+
+    // not both line are empty
+    if (lineA.length === 0 || lineB.length === 0) {
+      return false;
+    }
+
     const firstCharA = lineA.charCodeAt(0);
     const firstCharB = lineB.charCodeAt(0);
 
