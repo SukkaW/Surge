@@ -28,7 +28,6 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
 import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
-import { cacheGc } from './lib/make-fetch-happen';
 import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
 
@@ -97,10 +96,8 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       downloadMockAssets(rootSpan)
     ]);
 
-    await Promise.all([
-      buildDeprecateFiles(rootSpan).then(() => buildPublic(rootSpan)),
-      cacheGc(rootSpan)
-    ]);
+    await buildDeprecateFiles(rootSpan);
+    await buildPublic(rootSpan);
 
     rootSpan.stop();
 
