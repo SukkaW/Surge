@@ -6,28 +6,28 @@ import { normalizeTldtsOpt } from '../constants/loose-tldts-opt';
 
 type TldTsParsed = ReturnType<typeof tldts.parse>;
 
+/**
+ * Skipped the input non-empty check, the `domain` should not be empty.
+ */
+export function fastNormalizeDomain(domain: string, parsed: TldTsParsed = tldts.parse(domain, normalizeTldtsOpt)) {
+  if (parsed.isIp) return null;
+  // Private invalid domain (things like .tor, .dn42, etc)
+  if (!parsed.isIcann && !parsed.isPrivate) return null;
+
+  return parsed.hostname;
+}
+
 export function normalizeDomain(domain: string, parsed: TldTsParsed | null = null) {
   if (domain.length === 0) return null;
 
   parsed ??= tldts.parse(domain, normalizeTldtsOpt);
 
   if (parsed.isIp) return null;
-
-  let h = parsed.hostname;
-  if (h === null) return null;
   // Private invalid domain (things like .tor, .dn42, etc)
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
-  let sliceStart = 0;
-  let sliceEnd = 0;
+  // const h = parsed.hostname;
+  // if (h === null) return null;
 
-  if (h[0] === '.') sliceStart = 1;
-  // eslint-disable-next-line sukka/string/prefer-string-starts-ends-with -- performance
-  if (h[h.length - 1] === '.') sliceEnd = -1;
-
-  if (sliceStart !== 0 || sliceEnd !== 0) {
-    h = h.slice(sliceStart, sliceEnd);
-  }
-
-  return h.length > 0 ? h : null;
+  return parsed.hostname;
 }

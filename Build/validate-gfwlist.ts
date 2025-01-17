@@ -1,5 +1,5 @@
 import { processLine } from './lib/process-line';
-import { normalizeDomain } from './lib/normalize-domain';
+import { fastNormalizeDomain } from './lib/normalize-domain';
 import { HostnameSmolTrie } from './lib/trie';
 // import { Readable } from 'stream';
 import { parse } from 'csv-parse/sync';
@@ -54,7 +54,7 @@ export async function parseGfwList() {
       trie.add(line);
       continue;
     }
-    const d = normalizeDomain(line);
+    const d = fastNormalizeDomain(line);
     if (d) {
       trie.add(d);
       continue;

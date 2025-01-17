@@ -879,7 +879,7 @@ export const HK: StreamService[] = [
   NOW_E,
   VIUTV,
   MYTV_SUPER,
-  HBO_ASIA,
+  HBO_ASIA
   // BILIBILI_INTL
 ];
 

@@ -1,6 +1,6 @@
 import type { Span } from '../../trace';
 import { fetchAssetsWithout304 } from '../fetch-assets';
-import { normalizeDomain } from '../normalize-domain';
+import { fastNormalizeDomain } from '../normalize-domain';
 import { processLine } from '../process-line';
 import { onBlackFound } from './shared';
 
@@ -14,7 +14,7 @@ function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, met
   if (!_domain) {
     return;
   }
-  const domain = normalizeDomain(_domain);
+  const domain = fastNormalizeDomain(_domain);
   if (!domain) {
     return;
   }

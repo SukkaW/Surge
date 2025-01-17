@@ -3,7 +3,7 @@ import type { Span } from '../../trace';
 import { fetchAssetsWithout304 } from '../fetch-assets';
 import { onBlackFound, onWhiteFound } from './shared';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
-import { normalizeDomain } from '../normalize-domain';
+import { fastNormalizeDomain } from '../normalize-domain';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import tldts from 'tldts-experimental';
 import { NetworkFilter } from '@ghostery/adblocker';
@@ -227,7 +227,7 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
       && filter.isPlain() // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
-      const hostname = normalizeDomain(filter.hostname);
+      const hostname = fastNormalizeDomain(filter.hostname);
       if (!hostname) {
         result[1] = ParseType.Null;
         return result;
@@ -421,6 +421,11 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
   }
 
   const sliced = (sliceStart > 0 || sliceEnd < 0) ? line.slice(sliceStart, sliceEnd === 0 ? undefined : sliceEnd) : line;
+  if (sliced.length === 0) {
+    result[1] = ParseType.Null;
+    return result;
+  }
+
   if (sliced.charCodeAt(0) === 45 /* - */) {
     // line.startsWith('-') is not a valid domain
     result[1] = ParseType.ErrorMessage;
@@ -437,7 +442,7 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
     return result;
   }
 
-  const domain = normalizeDomain(sliced);
+  const domain = fastNormalizeDomain(sliced);
 
   if (domain && domain === sliced) {
     result[0] = domain;

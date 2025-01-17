@@ -1,5 +1,5 @@
 import picocolors from 'picocolors';
-import { normalizeDomain } from '../normalize-domain';
+import { fastNormalizeDomain } from '../normalize-domain';
 import { processLine } from '../process-line';
 import { onBlackFound } from './shared';
 import { fetchAssetsWithout304 } from '../fetch-assets';
@@ -9,7 +9,7 @@ function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean
   const line = processLine(l);
   if (!line) return;
 
-  const domain = normalizeDomain(line);
+  const domain = fastNormalizeDomain(line);
   if (!domain) return;
   if (domain !== line) {
     console.log(
