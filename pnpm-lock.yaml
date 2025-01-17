@@ -68,7 +68,7 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       tar-fs:
-        specifier: ^3.0.6
+        specifier: 3.0.6
         version: 3.0.6
       tinyexec:
         specifier: ^0.3.2
