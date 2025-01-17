@@ -2,8 +2,8 @@
 import path from 'node:path';
 import process from 'node:process';
 
-import { processHosts } from './lib/parse-filter/hosts';
-import { processDomainLists } from './lib/parse-filter/domainlists';
+import { processHostsWithPreload } from './lib/parse-filter/hosts';
+import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
 import { processFilterRules } from './lib/parse-filter/filters';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
@@ -28,6 +28,11 @@ const readLocalRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURC
 const readLocalRejectDropRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-drop.conf'));
 const readLocalRejectNoDropRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-no-drop.conf'));
 const readLocalMyRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/my_reject.conf'));
+
+const hostsDownloads = HOSTS.map(entry => processHostsWithPreload(...entry));
+const hostsExtraDownloads = HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry));
+const domainListsDownloads = DOMAIN_LISTS.map(entry => processDomainListsWithPreload(...entry));
+const domainListsExtraDownloads = DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectBaseDescription = [
@@ -70,11 +75,11 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .traceChild('download and process hosts / adblock filter rules')
     .traceAsyncFn((childSpan) => Promise.all([
       // Parse from remote hosts & domain lists
-      HOSTS.map(entry => processHosts(childSpan, ...entry).then(appendArrayToRejectOutput)),
-      HOSTS_EXTRA.map(entry => processHosts(childSpan, ...entry).then(appendArrayToRejectExtraOutput)),
+      hostsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
+      hostsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
-      DOMAIN_LISTS.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToRejectOutput)),
-      DOMAIN_LISTS_EXTRA.map(entry => processDomainLists(childSpan, ...entry).then(appendArrayToRejectExtraOutput)),
+      domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
+      domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
       ADGUARD_FILTERS.map(
         entry => processFilterRules(childSpan, ...entry)
