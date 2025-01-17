@@ -1,11 +1,7 @@
-import { invariant } from 'foxts/guard';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { RuleOutput } from './base';
 import type { SingboxSourceFormat } from '../singbox';
 
-import * as tldts from 'tldts-experimental';
-import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
-import { fastStringCompare } from '../misc';
 import { escapeStringRegexp } from 'foxts/escape-string-regexp';
 
 export class DomainsetOutput extends RuleOutput<string[]> {
@@ -53,42 +49,6 @@ export class DomainsetOutput extends RuleOutput<string[]> {
         domain_suffix: this.$singbox_domains_suffixes
       }]
     } satisfies SingboxSourceFormat);
-  }
-
-  protected apexDomainMap: Map<string, string> | null = null;
-  getStatMap() {
-    this.runPreprocess();
-
-    invariant(this.$preprocessed, 'Non dumped yet');
-
-    if (!this.apexDomainMap) {
-      const domainMap = new Map<string, string>();
-
-      for (let i = 0, len = this.$preprocessed.length; i < len; i++) {
-        const cur = this.$preprocessed[i];
-        if (!domainMap.has(cur)) {
-          const domain = tldts.getDomain(cur, looseTldtsOpt);
-          domainMap.set(cur, domain ?? cur);
-        }
-      }
-      this.apexDomainMap = domainMap;
-    }
-
-    return Array.from(this.$preprocessed
-      .reduce<Map<string, number>>(
-        (acc, cur) => {
-          const suffix = this.apexDomainMap!.get(cur);
-          if (suffix) {
-            acc.set(suffix, (acc.get(suffix) ?? 0) + 1);
-          }
-          return acc;
-        },
-        new Map()
-      )
-      .entries())
-      .filter(a => a[1] > 9)
-      .sort((a, b) => (b[1] - a[1]) || fastStringCompare(a[0], b[0]))
-      .map(([domain, count]) => `${domain}${' '.repeat(100 - domain.length)}${count}`);
   }
 
   mitmSgmodule = undefined;

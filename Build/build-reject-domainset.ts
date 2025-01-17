@@ -129,26 +129,9 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
   });
 
-  // Create reject stats
-  const rejectDomainsStats: string[] = span
-    .traceChild('create reject stats')
-    .traceSyncFn(() => {
-      const results = [];
-      results.push('=== base ===');
-      appendArrayInPlace(results, rejectOutput.getStatMap());
-      results.push('=== extra ===');
-      appendArrayInPlace(results, rejectExtraOutput.getStatMap());
-      return results;
-    });
-
   return Promise.all([
     rejectOutput.write(),
     rejectExtraOutput.write(),
-    compareAndWriteFile(
-      span,
-      rejectDomainsStats,
-      path.join(OUTPUT_INTERNAL_DIR, 'reject-stats.txt')
-    ),
     compareAndWriteFile(
       span,
       appendArrayInPlace(

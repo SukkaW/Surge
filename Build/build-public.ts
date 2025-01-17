@@ -6,7 +6,7 @@ import { task } from './trace';
 import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
-import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
+import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
 import { fastStringCompare, mkdirp, writeFile } from './lib/misc';
 import picocolors from 'picocolors';
 import { tagged as html } from 'foxts/tagged';
@@ -34,7 +34,8 @@ async function copyDirContents(srcDir: string, destDir: string) {
 export const buildPublic = task(require.main === module, __filename)(async (span) => {
   await span.traceChildAsync('copy rest of the files', async () => {
     await Promise.all([
-      mkdirp(OUTPUT_MODULES_DIR),
+      // mkdirp(OUTPUT_MODULES_DIR),
+      mkdirp(OUTPUT_MODULES_RULES_DIR),
       mkdirp(OUTPUT_MOCK_DIR)
     ]);
 
