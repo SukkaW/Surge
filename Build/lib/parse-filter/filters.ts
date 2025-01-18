@@ -517,7 +517,7 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
   }
 
   const sliced = (sliceStart > 0 || sliceEnd < 0) ? line.slice(sliceStart, sliceEnd === 0 ? undefined : sliceEnd) : line;
-  if (sliced.length === 0) {
+  if (sliced.length === 0 || sliced.includes('/')) {
     result[1] = ParseType.Null;
     return result;
   }
