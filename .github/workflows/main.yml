@@ -30,6 +30,33 @@ jobs:
         with:
           node-version-file: ".node-version"
           cache: "pnpm"
+      - name: Create RAM Disk for building
+        id: ramdisk
+        run: |
+          BUILD_DIR=$(mktemp -d -p /dev/shm/ -t sukka-surge-public.XXXXXXXXXX)
+          echo "Build dir created at $BUILD_DIR"
+          echo "build_dir=$BUILD_DIR" >> $GITHUB_OUTPUT
+      - name: Download Previous Build
+        uses: actions/checkout@v4
+        with:
+          repository: SukkaLab/ruleset.skk.moe
+          persist-credentials: false
+          path: previous-build-${{ github.run_id }}-${{ github.run_number }}
+      - run: mv previous-build-${{ github.run_id }}-${{ github.run_number }}/{.,}* ${{ steps.ramdisk.outputs.build_dir }}/
+      - name: build folder check
+        # If the public directory doesn't exist, the build should fail.
+        # If the public directory is empty, the build should fail.
+        run: |
+          if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/.git ]; then
+            echo ".git not found"
+            exit 1
+          fi
+          if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/List ]; then
+            echo "List not found"
+            exit 1
+          fi
+          echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
+      - run: rm -rf "${{ steps.ramdisk.outputs.build_dir }}/.git"
       - name: Get current date
         id: date
         run: |
@@ -57,16 +84,17 @@ jobs:
             ${{ runner.os }}-v3-
       - run: pnpm install
       - run: pnpm run build
-        id: build
+        env:
+          PUBLIC_DIR: ${{ steps.ramdisk.outputs.build_dir }}
       - name: Pre-deploy check
         # If the public directory doesn't exist, the build should fail.
         # If the public directory is empty, the build should fail.
         run: |
-          if [ ! -d ${{ steps.build.outputs.public_dir }} ]; then
+          if [ ! -d ${{ steps.ramdisk.outputs.build_dir }} ]; then
             echo "public directory not found"
             exit 1
           fi
-          if [ ! "$(ls -A ${{ steps.build.outputs.public_dir }})" ]; then
+          if [ ! "$(ls -A ${{ steps.ramdisk.outputs.build_dir }})" ]; then
             echo "public directory is empty"
             exit 1
           fi
@@ -74,11 +102,11 @@ jobs:
             echo ".BUILD_FINISHED not found"
             exit 1
           fi
-          echo "public directory is ready: ${{ steps.build.outputs.public_dir }}"
+          echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
       - uses: actions/upload-artifact@v4
         with:
           name: build-artifact-${{ github. ref_name }}
-          path: ${{ steps.build.outputs.public_dir }}
+          path: ${{ steps.ramdisk.outputs.build_dir }}
           if-no-files-found: error
           retention-days: 1
           compression-level: 4

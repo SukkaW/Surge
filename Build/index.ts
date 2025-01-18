@@ -29,9 +29,7 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 import path from 'node:path';
-import { PUBLIC_DIR, ROOT_DIR } from './constants/dir';
-
-import { setOutput } from '@actions/core';
+import { ROOT_DIR } from './constants/dir';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -107,10 +105,6 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
 
     // write a file to demonstrate that the build is finished
     fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
-
-    if (process.env.GITHUB_OUTPUT) {
-      setOutput('public_dir', PUBLIC_DIR);
-    }
 
     // Finish the build to avoid leaking timer/fetch ref
     await whyIsNodeRunning();

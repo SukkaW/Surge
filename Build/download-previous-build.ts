@@ -10,6 +10,7 @@ import picocolors from 'picocolors';
 import { PUBLIC_DIR } from './constants/dir';
 import { requestWithLog } from './lib/fetch-retry';
 import { isDirectoryEmptySync } from './lib/misc';
+import { isCI } from 'ci-info';
 
 const GITHUB_CODELOAD_URL = 'https://codeload.github.com/sukkalab/ruleset.skk.moe/tar.gz/master';
 const GITLAB_CODELOAD_URL = 'https://gitlab.com/SukkaW/ruleset.skk.moe/-/archive/master/ruleset.skk.moe-master.tar.gz';
@@ -18,6 +19,11 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
   if (fs.existsSync(PUBLIC_DIR) && !isDirectoryEmptySync(PUBLIC_DIR)) {
     console.log(picocolors.blue('Public directory exists, skip downloading previous build'));
     return;
+  }
+
+  // we uses actions/checkout to download the previous build now, so we should throw if the directory is empty
+  if (isCI) {
+    throw new Error('CI environment detected, but public directory is empty');
   }
 
   const tarGzUrl = await span.traceChildAsync('get tar.gz url', async () => {
