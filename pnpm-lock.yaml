@@ -29,8 +29,8 @@ importers:
         specifier: ^1.3.3
         version: 1.3.3
       better-sqlite3:
-        specifier: ^11.8.0
-        version: 11.8.0
+        specifier: ^11.8.1
+        version: 11.8.1
       cacache:
         specifier: ^19.0.1
         version: 19.0.1
@@ -65,17 +65,17 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       tar-fs:
-        specifier: 3.0.6
-        version: 3.0.6
+        specifier: ^3.0.8
+        version: 3.0.8
       tinyexec:
         specifier: ^0.3.2
         version: 0.3.2
       tldts:
-        specifier: ^6.1.72
-        version: 6.1.72
+        specifier: ^6.1.73
+        version: 6.1.73
       tldts-experimental:
-        specifier: ^6.1.72
-        version: 6.1.72
+        specifier: ^6.1.73
+        version: 6.1.73
       undici:
         specifier: ^7.2.3
         version: 7.2.3(patch_hash=eyidnukwfhrd7exzoydz2h5cfq)
@@ -150,8 +150,8 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0
       mitata:
-        specifier: ^1.0.30
-        version: 1.0.30
+        specifier: ^1.0.31
+        version: 1.0.31
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -703,14 +703,16 @@ packages:
   bare-events@2.5.0:
     resolution: {integrity: sha512-/E8dDe9dsbLyh2qrZ64PEPadOQ0F4gbl1sUJOrmph7xOiIxfY8vwab/4bFLh4Y88/Hk/ujKcrQKc+ps0mv873A==}
 
-  bare-fs@2.3.5:
-    resolution: {integrity: sha512-SlE9eTxifPDJrT6YgemQ1WGFleevzwY+XAP1Xqgl56HtcrisC2CHCZ2tq6dBpcH2TnNxwUEUGhweo+lrQtYuiw==}
+  bare-fs@4.0.1:
+    resolution: {integrity: sha512-ilQs4fm/l9eMfWY2dY0WCIUplSUp7U0CT1vrqMg1MUdeZl4fypu5UP0XcDBK5WBQPJAKP1b7XEodISmekH/CEg==}
+    engines: {bare: '>=1.7.0'}
 
-  bare-os@2.4.4:
-    resolution: {integrity: sha512-z3UiI2yi1mK0sXeRdc4O1Kk8aOa/e+FNWZcTiPB/dfTWyLypuE99LibgRaQki914Jq//yAWylcAt+mknKdixRQ==}
+  bare-os@3.4.0:
+    resolution: {integrity: sha512-9Ous7UlnKbe3fMi7Y+qh0DwAup6A1JkYgPnjvMDNOlmnxNRQvQ/7Nst+OnUQKzk0iAT0m9BisbDVp9gCv8+ETA==}
+    engines: {bare: '>=1.6.0'}
 
-  bare-path@2.1.3:
-    resolution: {integrity: sha512-lh/eITfU8hrj9Ru5quUp0Io1kJWIk1bTjzo7JH1P5dWmQ2EL4hFUlfI8FonAhSlgIfhn63p84CDY/x+PisgcXA==}
+  bare-path@3.0.0:
+    resolution: {integrity: sha512-tyfW2cQcB5NN8Saijrhqn0Zh7AnFNsnczRcuWODH0eYAXBsJ5gVxAUuNr7tsHSC6IZ77cA0SitzT+s47kot8Mw==}
 
   bare-stream@2.3.2:
     resolution: {integrity: sha512-EFZHSIBkDgSHIwj2l2QZfP4U5OcD4xFAOwhSb/vlr9PIqyGJGvB/nfClJbcnh3EY4jtPE4zsb5ztae96bVF79A==}
@@ -718,8 +720,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  better-sqlite3@11.8.0:
-    resolution: {integrity: sha512-aKv9s2dir7bsEX5RIjL9HHWB9uQ+f6Vch5B4qmeAOop4Y9OYHX+PNKLr+mpv6+d8L/ZYh4l7H8zPuVMbWkVMLw==}
+  better-sqlite3@11.8.1:
+    resolution: {integrity: sha512-9BxNaBkblMjhJW8sMRZxnxVTRgbRmssZW0Oxc1MPBTfiR+WW21e2Mk4qu8CzrcZb1LwPCnFsfDEzq+SNcBU8eg==}
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -1391,8 +1393,8 @@ packages:
     resolution: {integrity: sha512-umcy022ILvb5/3Djuu8LWeqUa8D68JaBzlttKeMWen48SjabqS3iY5w/vzeMzMUNhLDifyhbOwKDSznB1vvrwg==}
     engines: {node: '>= 18'}
 
-  mitata@1.0.30:
-    resolution: {integrity: sha512-zefhVHdXznlD92aojkn7sZ+ZUzvbG8vmFvLllIHZZoUwGlO+YMqMbnA3tcutwe/yAVdkL5/3z65isEfvdomoJQ==}
+  mitata@1.0.31:
+    resolution: {integrity: sha512-WHQaVvR1zQlAhYQhsGcXdlVMqzgvgscMQeXg7pxLh7t8kAH0BI4uD3MU3gVfJT+6jrQS37YhviXq1CAnhUl6Fg==}
 
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
@@ -1680,8 +1682,8 @@ packages:
   tar-fs@2.1.1:
     resolution: {integrity: sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng==}
 
-  tar-fs@3.0.6:
-    resolution: {integrity: sha512-iokBDQQkUyeXhgPYaZxmczGPhnhXZ0CmrqI+MOb/WFGS9DW5wnfrLgtjUJBvz50vQ3qfRwJ62QVoCFu8mPVu5w==}
+  tar-fs@3.0.8:
+    resolution: {integrity: sha512-ZoROL70jptorGAlgAYiLoBLItEKw/fUxg9BSYK/dF/GAGYFJOJJJMvjPAKDJraCXFwadD456FCuvLWgfhMsPwg==}
 
   tar-stream@2.2.0:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
@@ -1700,14 +1702,14 @@ packages:
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
-  tldts-core@6.1.72:
-    resolution: {integrity: sha512-FW3H9aCaGTJ8l8RVCR3EX8GxsxDbQXuwetwwgXA2chYdsX+NY1ytCBl61narjjehWmCw92tc1AxlcY3668CU8g==}
+  tldts-core@6.1.73:
+    resolution: {integrity: sha512-k1g5eX87vxu3g//6XMn62y4qjayu4cYby/PF7Ksnh4F4uUK1Z1ze/mJ4a+y5OjdJ+cXRp+YTInZhH+FGdUWy1w==}
 
-  tldts-experimental@6.1.72:
-    resolution: {integrity: sha512-mfPL+Pzn3nJ0JeI9AHuO4l0NbxldZhpWUYokb8HdK8gbZ2k0/qEqs5E/FqcOjVr4vzTZpbRtiwMPXv77VwXpyQ==}
+  tldts-experimental@6.1.73:
+    resolution: {integrity: sha512-5rljzPNMgdbjGs3WGvQIUi9oV93JaMsZKSslCe6qK62RGqRv+DIuiCkKsj8n+tw9v8Q9bSgRbB4iNwa1/yfd3g==}
 
-  tldts@6.1.72:
-    resolution: {integrity: sha512-QNtgIqSUb9o2CoUjX9T5TwaIvUUJFU1+12PJkgt42DFV2yf9J6549yTF2uGloQsJ/JOC8X+gIB81ind97hRiIQ==}
+  tldts@6.1.73:
+    resolution: {integrity: sha512-/h4bVmuEMm57c2uCiAf1Q9mlQk7cA22m+1Bu0K92vUUtTVT9D4mOFWD9r4WQuTULcG9eeZtNKhLl0Il1LdKGog==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -1955,7 +1957,7 @@ snapshots:
       '@remusao/guess-url-type': 1.3.0
       '@remusao/small': 1.3.0
       '@remusao/smaz': 1.10.0
-      tldts-experimental: 6.1.72
+      tldts-experimental: 6.1.73
 
   '@henrygd/queue@1.0.7': {}
 
@@ -2420,19 +2422,19 @@ snapshots:
   bare-events@2.5.0:
     optional: true
 
-  bare-fs@2.3.5:
+  bare-fs@4.0.1:
     dependencies:
       bare-events: 2.5.0
-      bare-path: 2.1.3
+      bare-path: 3.0.0
       bare-stream: 2.3.2
     optional: true
 
-  bare-os@2.4.4:
+  bare-os@3.4.0:
     optional: true
 
-  bare-path@2.1.3:
+  bare-path@3.0.0:
     dependencies:
-      bare-os: 2.4.4
+      bare-os: 3.4.0
     optional: true
 
   bare-stream@2.3.2:
@@ -2442,7 +2444,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  better-sqlite3@11.8.0:
+  better-sqlite3@11.8.1:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.2
@@ -3171,7 +3173,7 @@ snapshots:
       minipass: 7.1.2
       rimraf: 5.0.10
 
-  mitata@1.0.30: {}
+  mitata@1.0.31: {}
 
   mkdirp-classic@0.5.3: {}
 
@@ -3477,13 +3479,13 @@ snapshots:
       pump: 3.0.2
       tar-stream: 2.2.0
 
-  tar-fs@3.0.6:
+  tar-fs@3.0.8:
     dependencies:
       pump: 3.0.2
       tar-stream: 3.1.7
     optionalDependencies:
-      bare-fs: 2.3.5
-      bare-path: 2.1.3
+      bare-fs: 4.0.1
+      bare-path: 3.0.0
 
   tar-stream@2.2.0:
     dependencies:
@@ -3512,15 +3514,15 @@ snapshots:
 
   tinyexec@0.3.2: {}
 
-  tldts-core@6.1.72: {}
+  tldts-core@6.1.73: {}
 
-  tldts-experimental@6.1.72:
+  tldts-experimental@6.1.73:
     dependencies:
-      tldts-core: 6.1.72
+      tldts-core: 6.1.73
 
-  tldts@6.1.72:
+  tldts@6.1.73:
     dependencies:
-      tldts-core: 6.1.72
+      tldts-core: 6.1.73
 
   to-regex-range@5.0.1:
     dependencies:
@@ -3554,7 +3556,7 @@ snapshots:
 
   undici-cache-store-better-sqlite3@0.1.1(undici@7.2.3(patch_hash=eyidnukwfhrd7exzoydz2h5cfq)):
     dependencies:
-      better-sqlite3: 11.8.0
+      better-sqlite3: 11.8.1
       undici: 7.2.3(patch_hash=eyidnukwfhrd7exzoydz2h5cfq)
 
   undici-types@6.20.0: {}
