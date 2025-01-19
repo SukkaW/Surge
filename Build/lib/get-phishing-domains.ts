@@ -208,7 +208,7 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
 });
 
 const downloads = [
-  ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
+  ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry, true)),
   ...PHISHING_HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry))
 ];
 
