@@ -108,7 +108,7 @@ export const LAN = {
   LAN: {
     dns: 'system',
     hosts: {
-      localhost: ['127.0.0.1']
+      // localhost: ['127.0.0.1']
     },
     realip: true,
     ruleset: true,
