@@ -4,24 +4,28 @@ import { onBlackFound } from './shared';
 import { fetchAssets } from '../fetch-assets';
 import type { Span } from '../../trace';
 
-function domainListLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string, normalizeDomain = fastNormalizeDomain) {
+function domainListLineCb(l: string, set: string[], meta: string, normalizeDomain = fastNormalizeDomain) {
   const line = processLine(l);
   if (!line) return;
 
   const domain = normalizeDomain(line);
-  if (!domain) {
-    // console.log(
-    //   picocolors.red('[process domain list]'),
-    //   picocolors.gray(`line: ${line}`),
-    //   picocolors.gray(`domain: ${domain}`),
-    //   picocolors.gray(meta)
-    // );
-    return;
-  }
+  if (!domain) return;
 
   onBlackFound(domain, meta);
 
-  set.push(includeAllSubDomain ? `.${domain}` : domain);
+  set.push(domain);
+}
+
+function domainListLineCbIncludeAllSubdomain(l: string, set: string[], meta: string, normalizeDomain = fastNormalizeDomain) {
+  const line = processLine(l);
+  if (!line) return;
+
+  const domain = normalizeDomain(line);
+  if (!domain) return;
+
+  onBlackFound(domain, meta);
+
+  set.push('.' + domain);
 }
 
 export function processDomainLists(
@@ -29,6 +33,7 @@ export function processDomainLists(
   domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, wwwToApex = false
 ) {
   const domainNormalizer = wwwToApex ? fastNormalizeDomainIgnoreWww : fastNormalizeDomain;
+  const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
     const text = await span.traceChildAsync('download', () => fetchAssets(
@@ -40,7 +45,7 @@ export function processDomainLists(
 
     span.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
-        domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl, domainNormalizer);
+        lineCb(filterRules[i], domainSets, domainListsUrl, domainNormalizer);
       }
     });
 
@@ -55,6 +60,7 @@ export function processDomainListsWithPreload(
   const domainNormalizer = wwwToApex ? fastNormalizeDomainIgnoreWww : fastNormalizeDomain;
 
   const downloadPromise = fetchAssets(domainListsUrl, mirrors);
+  const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
     const text = await span.traceChildPromise('download', downloadPromise);
@@ -63,7 +69,7 @@ export function processDomainListsWithPreload(
 
     span.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
-        domainListLineCb(filterRules[i], domainSets, includeAllSubDomain, domainListsUrl, domainNormalizer);
+        lineCb(filterRules[i], domainSets, domainListsUrl, domainNormalizer);
       }
     });
 
