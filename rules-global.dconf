@@ -1,0 +1,109 @@
+[Rule]
+# --------------------------------------------------------------------
+# Overseas -> Access Mainland China & other streaming
+# Reference: https://github.com/SukkaW/Surge
+# --------------------------------------------------------------------
+
+# 1) Ads Block/Privacy Protection/Malware & Phiishing 
+# Non IP
+# 基础的 12 万拦截域名
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching,pre-matching
+# 额外 20 万拦截域名，作为基础的补充，启用时需要搭配基础一起使用
+# 在 Surge 5 for Mac（或更新版本），即使同时启用基础和额外的拦截域名也不会导致匹配性能下降或内存占用过高
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_extra.conf,REJECT,pre-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching,pre-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching,pre-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
+# URL-REGEX
+# 需搭配 Surge 模块 https://ruleset.skk.moe/Modules/sukka_mitm_hostnames.sgmodule 使用
+# MITM 和 URL-REGEX 性能开销极大，不推荐使用
+# RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-url-regex.conf,REJECT
+
+# IP
+RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
+
+# 2) Statics CDN - https://github.com/SukkaW/Surge?tab=readme-ov-file#%E5%B8%B8%E8%A7%81%E9%9D%99%E6%80%81-cdn
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,StaticsCDN
+RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,StaticsCDN
+
+# 3) Mainland streaming -> PL_Proxy
+# If you are overseas but want to watch Bilibili, iQiyi, etc.
+RULE-SET,https://share.wxs.st/niz/1%20Profiles/Surge/Rule/ruleset-bilibili.conf,Bilibili
+
+# 4) Netease Music
+RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,Netease
+RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,Netease
+
+# 5) International streaming -> DIRECT or Global
+# 北美相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_us.conf,NA_Proxy
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_us.conf,NA_Proxy
+# 欧洲相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_eu.conf,EU_Proxy
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_eu.conf,EU_Proxy
+# 日本相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_jp.conf,JP_Proxy
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_jp.conf,JP_Proxy
+# 韩国相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_kr.conf,KR_Proxy
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_kr.conf,KR_Proxy
+# 香港相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_hk.conf,HK_Proxy
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_hk.conf,HK_Proxy
+# 台湾相关流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream_tw.conf,TPE_Proxy
+RULE-SET,https://ruleset.skk.moe/List/ip/stream_tw.conf,TPE_Proxy
+# 所有流媒体（包括上述所有流媒体）
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Global
+RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,Global
+
+# 6) AIGC
+RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,AIGC
+
+# 7) Telegram or other foreign messaging -> Global 
+RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Global 
+RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Global 
+RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Global
+PROCESS-NAME,Telegram,REJECT-DROP
+
+# 8) Apple CN CDN
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
+
+# 9) Apple Services -> DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,AppleServices
+
+# 10) Apple CN Services
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
+
+# 11) Microsoft CDN
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
+
+# 12) Microsoft
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,DIRECT
+
+# 13) System Update
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,DIRECT
+
+# 14) Speedtest
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/speedtest.conf,Speedtest,extended-matching
+
+# 15) (Optional) Additional sets
+# Global
+RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Global,extended-matching
+
+# Mainland domain -> PL_Proxy (if you want all .cn or certain domestic sites proxied)
+# Domestic CN
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DomesticCN,extended-matching
+# Domestic CN IP
+RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,DomesticCN
+RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,DomesticCN
+
+# 16) Local LAN traffic -> DIRECT
+# Non IP
+RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
+# IP
+RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
+
+# Final fallback
+FINAL, DIRECT, dns-failed
