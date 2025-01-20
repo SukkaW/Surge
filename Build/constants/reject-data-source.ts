@@ -341,6 +341,7 @@ export const CRASHLYTICS_WHITELIST = [
   // Sentry
   '.ingest.sentry.io',
   '.ingest.us.sentry.io',
+  '.ingest.de.sentry.io',
   // bugsnag
   '.sessions.bugsnag.com',
   '.notify.bugsnag.com',
