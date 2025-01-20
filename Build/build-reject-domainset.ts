@@ -85,21 +85,29 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
       adguardFiltersDownloads.map(
-        task => task(childSpan).then(({ white, black }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-          appendArrayToRejectOutput(black);
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+
+          rejectOutput.bulkAddDomain(blackDomains);
+          rejectOutput.bulkAddDomainSuffix(blackDomainSuffixes);
         })
       ),
       adguardFiltersExtraDownloads.map(
-        task => task(childSpan).then(({ white, black }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-          appendArrayToRejectExtraOutput(black);
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+
+          rejectOutput.bulkAddDomain(blackDomains);
+          rejectOutput.bulkAddDomainSuffix(blackDomainSuffixes);
         })
       ),
       adguardFiltersWhitelistsDownloads.map(
-        task => task(childSpan).then(({ white, black }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, white);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, black);
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
+          addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
         })
       ),
       getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput),
