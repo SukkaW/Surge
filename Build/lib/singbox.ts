@@ -1,12 +1,3 @@
-// const unsupported = Symbol('unsupported');
-
-// https://sing-box.sagernet.org/configuration/rule-set/source-format/
-// export const PROCESSOR: Record<string, ((raw: string, type: string, value: string) => [key: keyof SingboxHeadlessRule, value: Required<SingboxHeadlessRule>[keyof SingboxHeadlessRule][number]] | null) | typeof unsupported> = {
-//   'IP-ASN': unsupported,
-//   'URL-REGEX': unsupported,
-//   'USER-AGENT': unsupported
-// };
-
 interface SingboxHeadlessRule {
   domain?: string[],
   domain_suffix?: string[],

@@ -1,33 +1,29 @@
 import { TransformStream } from 'node:stream/web';
 
 export function processLine(line: string): string | null {
-  if (!line) {
-    return null;
-  }
-
   const trimmed: string = line.trim();
   if (trimmed.length === 0) {
     return null;
   }
 
-  const line_0: string = trimmed[0];
+  const line_0 = trimmed.charCodeAt(0);
 
   if (
-    line_0 === ' '
-    || line_0 === '\r'
-    || line_0 === '\n'
-    || line_0 === '!'
-    || (line_0 === '/' && trimmed[1] === '/')
+    // line_0 === 32 /** [space] */
+    // || line_0 === 13 /** \r */
+    // || line_0 === 10 /** \n */
+    line_0 === 33 /** ! */
+    || (line_0 === 47 /** / */ && trimmed.charCodeAt(1) === 47 /** / */)
   ) {
     return null;
   }
 
-  if (line_0 === '#') {
-    if (trimmed[1] !== '#') {
+  if (line_0 === 35 /** # */) {
+    if (trimmed.charCodeAt(1) !== 35 /** # */) {
       // # Comment
       return null;
     }
-    if (trimmed[2] === '#' && trimmed[3] === '#') {
+    if (trimmed.charCodeAt(2) === 35 /** # */ && trimmed.charCodeAt(3) === 35) {
       // ################## EOF ##################
       return null;
     }
