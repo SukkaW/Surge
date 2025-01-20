@@ -47,27 +47,6 @@ export const writeFile: Write = async (destination: string, input, dir = dirname
 
 export const removeFiles = async (files: string[]) => Promise.all(files.map((file) => fsp.rm(file, { force: true })));
 
-export function domainWildCardToRegex(domain: string) {
-  let result = '^';
-  for (let i = 0, len = domain.length; i < len; i++) {
-    switch (domain[i]) {
-      case '.':
-        result += String.raw`\.`;
-        break;
-      case '*':
-        result += '[a-zA-Z0-9-_.]*?';
-        break;
-      case '?':
-        result += '[a-zA-Z0-9-_.]';
-        break;
-      default:
-        result += domain[i];
-    }
-  }
-  result += '$';
-  return result;
-}
-
 export function withBannerArray(title: string, description: string[] | readonly string[], date: Date, content: string[]) {
   return [
     '#########################################',

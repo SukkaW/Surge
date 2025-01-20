@@ -23,7 +23,7 @@ export { type ParseType };
 export function processFilterRulesWithPreload(
   filterRulesUrl: string,
   fallbackUrls?: string[] | null,
-  allowThirdParty = false
+  includeThirdParty = false
 ) {
   const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
 
@@ -40,7 +40,7 @@ export function processFilterRulesWithPreload(
        * @param {string} line
        */
     const lineCb = (line: string) => {
-      const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
+      const result = parse(line, MUTABLE_PARSE_LINE_RESULT, includeThirdParty);
       const flag = result[1];
 
       if (flag === ParseType.NotParsed) {
@@ -120,7 +120,7 @@ export async function processFilterRules(
   parentSpan: Span,
   filterRulesUrl: string,
   fallbackUrls?: string[] | null,
-  allowThirdParty = false
+  includeThirdParty = false
 ): Promise<{ white: string[], black: string[] }> {
   const [white, black, warningMessages] = await parentSpan.traceChild(`process filter rules: ${filterRulesUrl}`).traceAsyncFn(async (span) => {
     const text = await span.traceChildAsync('download', () => fetchAssets(filterRulesUrl, fallbackUrls));
@@ -135,7 +135,7 @@ export async function processFilterRules(
        * @param {string} line
        */
     const lineCb = (line: string) => {
-      const result = parse(line, MUTABLE_PARSE_LINE_RESULT, allowThirdParty);
+      const result = parse(line, MUTABLE_PARSE_LINE_RESULT, includeThirdParty);
       const flag = result[1];
 
       if (flag === ParseType.NotParsed) {
@@ -246,7 +246,7 @@ const kwfilter = createKeywordFilter([
   '^popup'
 ]);
 
-export function parse($line: string, result: [string, ParseType], allowThirdParty: boolean): [hostname: string, flag: ParseType] {
+export function parse($line: string, result: [string, ParseType], includeThirdParty: boolean): [hostname: string, flag: ParseType] {
   if (
     // doesn't include
     !$line.includes('.') // rule with out dot can not be a domain
@@ -354,7 +354,7 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
         return result;
       }
       if (_3p) {
-        if (allowThirdParty) {
+        if (includeThirdParty) {
           result[0] = hostname;
           result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
           return result;
@@ -474,7 +474,7 @@ export function parse($line: string, result: [string, ParseType], allowThirdPart
    * `.1.1.1.l80.js^$third-party`
    */
   if (
-    !allowThirdParty
+    !includeThirdParty
     && (
       line.includes('third-party', indexOfDollar + 1)
       || line.includes('3p', indexOfDollar + 1)
