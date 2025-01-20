@@ -243,7 +243,9 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   ' is free',
   'no object found',
   'nothing found',
-  'status: free'
+  'status: free',
+  'pendingdelete',
+  ' has been blocked by '
 ]);
 
 // whois server can redirect, so whoiser might/will get info from multiple whois servers
