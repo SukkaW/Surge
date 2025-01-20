@@ -42,21 +42,20 @@ jobs:
           repository: SukkaLab/ruleset.skk.moe
           persist-credentials: false
           path: previous-build-${{ github.run_id }}-${{ github.run_number }}
-      - run: mv previous-build-${{ github.run_id }}-${{ github.run_number }}/{.,}* ${{ steps.ramdisk.outputs.build_dir }}/
-      - name: build folder check
-        # If the public directory doesn't exist, the build should fail.
-        # If the public directory is empty, the build should fail.
+      - name: Setup build folder
         run: |
+          mv previous-build-${{ github.run_id }}-${{ github.run_number }}/{.,}* ${{ steps.ramdisk.outputs.build_dir }}/
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/.git ]; then
             echo ".git not found"
             exit 1
           fi
+          rm -rf "${{ steps.ramdisk.outputs.build_dir }}/.git"
+
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/List ]; then
             echo "List not found"
             exit 1
           fi
           echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
-      - run: rm -rf "${{ steps.ramdisk.outputs.build_dir }}/.git"
       - name: Get current date
         id: date
         run: |
