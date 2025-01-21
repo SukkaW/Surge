@@ -450,6 +450,8 @@ export const PREDEFINED_WHITELIST = [
   '.lon.llnw.net', // There is no point in adding these, many subdomains are dead anyway
   '.lcy.llnw.net', // There is no point in adding these, many subdomains are dead anyway
   'repo.huaweicloud.com', // urlhaus
+  'juejin.cn', // juejin Front-end community
+  'juejin.im', // juejin Front-end community
 
   // Expired domains
   '.expobarrio.com',
