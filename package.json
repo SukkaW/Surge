@@ -22,6 +22,7 @@
   "dependencies": {
     "@ghostery/adblocker": "^2.3.1",
     "@henrygd/queue": "^1.0.7",
+    "@mitata/counters": "^0.0.8",
     "async-retry": "^1.3.3",
     "better-sqlite3": "^11.8.1",
     "cacache": "^19.0.1",

@@ -799,6 +799,3 @@ The `List/ip/china_ip.conf` file is licensed under [CC BY-SA 2.0](https://creati
   </a>
 </p>
 
-<a href="https://api.gitsponsors.com/api/badge/link?p=6S+bnjregZ7KydXomsFzcPnzQbRNVb1XBxBmLK/i19l1Bi5Uh2WRZ4W12lbIzgrHRiP4ZnUi2T53QmxPojr+38otmzAe8WA7KTVELmmPmES7Dko7w34WphSJnz1FAz/RbQuGfDLHTWxDhnOEBuCwLw==" style="display: none">
-  <img src="https://api.gitsponsors.com/api/badge/img?id=323379491" height="0">
-</a>

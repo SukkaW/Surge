@@ -25,6 +25,9 @@ importers:
       '@henrygd/queue':
         specifier: ^1.0.7
         version: 1.0.7
+      '@mitata/counters':
+        specifier: ^0.0.8
+        version: 0.0.8
       async-retry:
         specifier: ^1.3.3
         version: 1.3.3
@@ -285,6 +288,9 @@ packages:
   '@jest/types@29.6.3':
     resolution: {integrity: sha512-u3UPsIilWKOM3F9CXtrG8LEJmNxwoCQC/XVj4IKYXvvpx7QIi/Kg1LI5uDmDpKlac62NUtX7eLjRh+jVZcLOzw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+
+  '@mitata/counters@0.0.8':
+    resolution: {integrity: sha512-f11w0Y1ETFlarDP7CePj8Z+y8Gv5Ax4gMxWsEwrqh0kH/YIY030Ezx5SUJeQg0YPTZ2OHKGcLG1oGJbIqHzaJA==}
 
   '@napi-rs/wasm-runtime@0.2.5':
     resolution: {integrity: sha512-kwUxR7J9WLutBbulqg1dfOrMTwhMdXLdcGUhcbCcGwnPLt3gz19uHVdwH1syKVDbE022ZS2vZxOWflFLS0YTjw==}
@@ -2003,6 +2009,8 @@ snapshots:
       '@types/node': 22.10.7
       '@types/yargs': 17.0.33
       chalk: 4.1.2
+
+  '@mitata/counters@0.0.8': {}
 
   '@napi-rs/wasm-runtime@0.2.5':
     dependencies:

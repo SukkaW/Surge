@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 
 import { processLine } from './process-line';
-import expect from 'expect';
+import { expect } from 'expect';
 
 describe('processLine', () => {
   ([
