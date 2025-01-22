@@ -16,8 +16,6 @@ const MAGIC_COMMAND_TITLE = '# $ meta_title ';
 const MAGIC_COMMAND_DESCRIPTION = '# $ meta_description ';
 const MAGIC_COMMAND_SGMODULE_MITM_HOSTNAMES = '# $ sgmodule_mitm_hostnames ';
 
-const domainsetSrcFolder = 'domainset' + path.sep;
-
 const clawSourceDirPromise = new Fdir()
   .withRelativePaths()
   .filter((filepath, isDirectory) => {
@@ -39,15 +37,11 @@ export const buildCommon = task(require.main === module, __filename)(async (span
     const relativePath = paths[i];
     const fullPath = SOURCE_DIR + path.sep + relativePath;
 
-    if (relativePath.startsWith(domainsetSrcFolder)) {
-      promises.push(transformDomainset(span, fullPath));
-      continue;
-    }
     // if (
     //   relativePath.startsWith('ip/')
     //   || relativePath.startsWith('non_ip/')
     // ) {
-    promises.push(transformRuleset(span, fullPath, relativePath));
+    promises.push(transform(span, fullPath, relativePath));
     // continue;
     // }
 
@@ -102,71 +96,44 @@ function processFile(span: Span, sourcePath: string) {
   });
 }
 
-function transformDomainset(parentSpan: Span, sourcePath: string) {
+async function transform(parentSpan: Span, sourcePath: string, relativePath: string) {
   const extname = path.extname(sourcePath);
-  const basename = path.basename(sourcePath, extname);
+  const id = path.basename(sourcePath, extname);
+
   return parentSpan
-    .traceChildAsync(
-      `transform domainset: ${basename}`,
-      async (span) => {
-        const res = await processFile(span, sourcePath);
-        if (res === $skip) return;
+    .traceChild(`transform ruleset: ${id}`)
+    .traceAsyncFn(async (span) => {
+      const type = relativePath.split(path.sep)[0];
 
-        const id = basename;
-        const [title, incomingDescriptions, lines] = res;
+      if (type !== 'ip' && type !== 'non_ip' && type !== 'domainset') {
+        throw new TypeError(`Invalid type: ${type}`);
+      }
 
-        let finalDescriptions: string[];
-        if (incomingDescriptions.length) {
-          finalDescriptions = SHARED_DESCRIPTION.slice();
-          finalDescriptions.push('');
-          appendArrayInPlace(finalDescriptions, incomingDescriptions);
-        } else {
-          finalDescriptions = SHARED_DESCRIPTION;
-        }
+      const res = await processFile(span, sourcePath);
+      if (res === $skip) return;
 
+      const [title, descriptions, lines, sgmodulePathname] = res;
+
+      let finalDescriptions: string[];
+      if (descriptions.length) {
+        finalDescriptions = SHARED_DESCRIPTION.slice();
+        finalDescriptions.push('');
+        appendArrayInPlace(finalDescriptions, descriptions);
+      } else {
+        finalDescriptions = SHARED_DESCRIPTION;
+      }
+
+      if (type === 'domainset') {
         return new DomainsetOutput(span, id)
           .withTitle(title)
           .withDescription(finalDescriptions)
           .addFromDomainset(lines)
           .write();
       }
-    );
-}
-
-/**
- * Output Surge RULE-SET and Clash classical text format
- */
-async function transformRuleset(parentSpan: Span, sourcePath: string, relativePath: string) {
-  const extname = path.extname(sourcePath);
-  const basename = path.basename(sourcePath, extname);
-
-  return parentSpan
-    .traceChild(`transform ruleset: ${basename}`)
-    .traceAsyncFn(async (span) => {
-      const res = await processFile(span, sourcePath);
-      if (res === $skip) return;
-
-      const id = basename;
-      const type = relativePath.split(path.sep)[0];
-
-      if (type !== 'ip' && type !== 'non_ip') {
-        throw new TypeError(`Invalid type: ${type}`);
-      }
-
-      const [title, descriptions, lines, sgmodulePathname] = res;
-
-      let description: string[];
-      if (descriptions.length) {
-        description = SHARED_DESCRIPTION.slice();
-        description.push('');
-        appendArrayInPlace(description, descriptions);
-      } else {
-        description = SHARED_DESCRIPTION;
-      }
 
       return new RulesetOutput(span, id, type)
         .withTitle(title)
-        .withDescription(description)
+        .withDescription(finalDescriptions)
         .withMitmSgmodulePath(sgmodulePathname)
         .addFromRuleset(lines)
         .write();

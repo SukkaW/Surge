@@ -34,11 +34,7 @@ setGlobalDispatcher(agent.compose(
     // TODO: this part of code is only for allow more errors to be retried by default
     // This should be removed once https://github.com/nodejs/undici/issues/3728 is implemented
     retry(err, { state, opts }, cb) {
-      const statusCode = 'statusCode' in err && typeof err.statusCode === 'number' ? err.statusCode : null;
       const errorCode = 'code' in err ? (err as NodeJS.ErrnoException).code : undefined;
-      const headers = ('headers' in err && typeof err.headers === 'object') ? err.headers : undefined;
-
-      const { counter } = state;
 
       // Any code that is not a Undici's originated and allowed to retry
       if (
@@ -49,29 +45,7 @@ setGlobalDispatcher(agent.compose(
         return cb(err);
       }
 
-      // if (errorCode === 'UND_ERR_REQ_RETRY') {
-      //   return cb(err);
-      // }
-
-      const { method, retryOptions = {} } = opts;
-
-      const {
-        maxRetries = 5,
-        minTimeout = 500,
-        maxTimeout = 10 * 1000,
-        timeoutFactor = 2,
-        methods = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE', 'TRACE']
-      } = retryOptions;
-
-      // If we reached the max number of retries
-      if (counter > maxRetries) {
-        return cb(err);
-      }
-
-      // If a set of method are provided and the current method is not in the list
-      if (Array.isArray(methods) && !methods.includes(method)) {
-        return cb(err);
-      }
+      const statusCode = 'statusCode' in err && typeof err.statusCode === 'number' ? err.statusCode : null;
 
       // bail out if the status code matches one of the following
       if (
@@ -86,6 +60,30 @@ setGlobalDispatcher(agent.compose(
         return cb(err);
       }
 
+      // if (errorCode === 'UND_ERR_REQ_RETRY') {
+      //   return cb(err);
+      // }
+
+      const {
+        maxRetries = 5,
+        minTimeout = 500,
+        maxTimeout = 10 * 1000,
+        timeoutFactor = 2,
+        methods = ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE', 'TRACE']
+      } = opts.retryOptions || {};
+
+      // If we reached the max number of retries
+      if (state.counter > maxRetries) {
+        return cb(err);
+      }
+
+      // If a set of method are provided and the current method is not in the list
+      if (Array.isArray(methods) && !methods.includes(opts.method)) {
+        return cb(err);
+      }
+
+      const headers = ('headers' in err && typeof err.headers === 'object') ? err.headers : undefined;
+
       const retryAfterHeader = (headers as Record<string, string> | null | undefined)?.['retry-after'];
       let retryAfter = -1;
       if (retryAfterHeader) {
@@ -97,7 +95,7 @@ setGlobalDispatcher(agent.compose(
 
       const retryTimeout = retryAfter > 0
         ? Math.min(retryAfter, maxTimeout)
-        : Math.min(minTimeout * (timeoutFactor ** (counter - 1)), maxTimeout);
+        : Math.min(minTimeout * (timeoutFactor ** (state.counter - 1)), maxTimeout);
 
       console.log('[fetch retry]', 'schedule retry', { statusCode, retryTimeout, errorCode, url: opts.origin });
       // eslint-disable-next-line sukka/prefer-timer-id -- won't leak

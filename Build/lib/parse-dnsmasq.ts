@@ -1,16 +1,8 @@
 import { createReadlineInterfaceFromResponse } from './fetch-text-by-line';
 
-// https://github.com/remusao/tldts/issues/2121
-// In short, single label domain suffix is ignored due to the size optimization, so no isIcann
-// import tldts from 'tldts-experimental';
-import tldts from 'tldts';
 import type { UndiciResponseData } from './fetch-retry';
 import type { Response } from 'undici';
-
-function isDomainLoose(domain: string): boolean {
-  const r = tldts.parse(domain);
-  return !!(!r.isIp && (r.isIcann || r.isPrivate));
-}
+import { fastNormalizeDomainIgnoreWww } from './normalize-domain';
 
 export function extractDomainsFromFelixDnsmasq(line: string): string | null {
   if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
@@ -24,7 +16,7 @@ export async function parseFelixDnsmasqFromResp(resp: UndiciResponseData | Respo
 
   for await (const line of createReadlineInterfaceFromResponse(resp, true)) {
     const domain = extractDomainsFromFelixDnsmasq(line);
-    if (domain && isDomainLoose(domain)) {
+    if (domain && fastNormalizeDomainIgnoreWww(domain)) {
       results.push(domain);
     }
   }

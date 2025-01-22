@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import { Readable } from 'node:stream';
 import fsp from 'node:fs/promises';
 import type { FileHandle } from 'node:fs/promises';
 import readline from 'node:readline';
@@ -11,19 +10,7 @@ import { processLine, ProcessLineStream } from './process-line';
 import { $$fetch } from './fetch-retry';
 import type { UndiciResponseData } from './fetch-retry';
 import type { Response as UnidiciWebResponse } from 'undici';
-
-function getReadableStream(file: string | FileHandle): ReadableStream {
-  if (typeof file === 'string') {
-    // return fs.openAsBlob(file).then(blob => blob.stream())
-    return Readable.toWeb(fs.createReadStream(file/* , { encoding: 'utf-8' } */));
-  }
-  return file.readableWebStream();
-}
-
-// TODO: use FileHandle.readLine()
-export const readFileByLineLegacy: ((file: string /* | FileHandle */) => AsyncIterable<string>) = (file: string | FileHandle) => getReadableStream(file)
-  .pipeThrough(new TextDecoderStream())
-  .pipeThrough(new TextLineStream());
+import { invariant } from 'foxts/guard';
 
 export function readFileByLine(file: string): AsyncIterable<string> {
   return readline.createInterface({
@@ -37,26 +24,17 @@ export async function readFileByLineNew(file: string): Promise<AsyncIterable<str
   return fsp.open(file, 'r').then(fdReadLines);
 }
 
-function ensureResponseBody<T extends UndiciResponseData | UnidiciWebResponse>(resp: T): NonNullable<T['body']> {
-  if (resp.body == null) {
-    throw new Error('Failed to fetch remote text');
-  }
+export const createReadlineInterfaceFromResponse: ((resp: UndiciResponseData | UnidiciWebResponse, processLine?: boolean) => ReadableStream<string>) = (resp, processLine = false) => {
+  invariant(resp.body, 'Failed to fetch remote text');
   if ('bodyUsed' in resp && resp.bodyUsed) {
     throw new Error('Body has already been consumed.');
   }
-  return resp.body;
-}
-
-export const createReadlineInterfaceFromResponse: ((resp: UndiciResponseData | UnidiciWebResponse, processLine?: boolean) => ReadableStream<string>) = (resp, processLine = false) => {
-  const stream = ensureResponseBody(resp);
-
-  const webStream: ReadableStream<Uint8Array> = 'getReader' in stream
-    ? stream
-    : (
-      'text' in stream
-        ? stream.body as any
-        : Readable.toWeb(new Readable().wrap(stream))
-    );
+  let webStream: ReadableStream<Uint8Array>;
+  if ('pipeThrough' in resp.body) {
+    webStream = resp.body;
+  } else {
+    throw new TypeError('Invalid response body!');
+  }
 
   const resultStream = webStream
     .pipeThrough(new TextDecoderStream())

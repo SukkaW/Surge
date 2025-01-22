@@ -11,23 +11,7 @@ export class CustomAbortError extends Error {
   public readonly digest = 'AbortError';
 }
 
-export class Custom304NotModifiedError extends Error {
-  public readonly name = 'Custom304NotModifiedError';
-  public readonly digest = 'Custom304NotModifiedError';
-
-  constructor(public readonly url: string, public readonly data: string) {
-    super('304 Not Modified');
-  }
-}
-
-export class CustomNoETagFallbackError extends Error {
-  public readonly name = 'CustomNoETagFallbackError';
-  public readonly digest = 'CustomNoETagFallbackError';
-
-  constructor(public readonly data: string) {
-    super('No ETag Fallback');
-  }
-}
+const reusedCustomAbortError = new CustomAbortError();
 
 export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[], processLine = false) {
   const controller = new AbortController();
@@ -39,12 +23,12 @@ export async function fetchAssets(url: string, fallbackUrls: null | undefined | 
         await waitWithAbort(50 + (index + 1) * 100, controller.signal);
       } catch {
         console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
-        throw new CustomAbortError();
+        throw reusedCustomAbortError;
       }
     }
     if (controller.signal.aborted) {
       console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
-      throw new CustomAbortError();
+      throw reusedCustomAbortError;
     }
     const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
 
