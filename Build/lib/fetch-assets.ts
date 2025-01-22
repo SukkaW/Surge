@@ -1,6 +1,9 @@
 import picocolors from 'picocolors';
 import { $$fetch, defaultRequestInit, ResponseError } from './fetch-retry';
 import { waitWithAbort } from 'foxts/wait';
+import { nullthrow } from 'foxts/guard';
+import { TextLineStream } from './text-line-transform-stream';
+import { ProcessLineStream } from './process-line';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 export class CustomAbortError extends Error {
@@ -26,7 +29,7 @@ export class CustomNoETagFallbackError extends Error {
   }
 }
 
-export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[]) {
+export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[], processLine = false) {
   const controller = new AbortController();
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
@@ -44,14 +47,19 @@ export async function fetchAssets(url: string, fallbackUrls: null | undefined | 
       throw new CustomAbortError();
     }
     const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
-    const text = await res.text();
 
-    if (text.length < 2) {
+    let stream = nullthrow(res.body).pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream());
+    if (processLine) {
+      stream = stream.pipeThrough(new ProcessLineStream());
+    }
+    const arr = await Array.fromAsync(stream);
+
+    if (arr.length < 1) {
       throw new ResponseError(res, url, 'empty response w/o 304');
     }
 
     controller.abort();
-    return text;
+    return arr;
   };
 
   if (!fallbackUrls || fallbackUrls.length === 0) {

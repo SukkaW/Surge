@@ -4,7 +4,6 @@ import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from 
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
-import { processLine } from './lib/process-line';
 import { RulesetOutput } from './lib/create-file';
 import { SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
@@ -37,14 +36,11 @@ const BOTNET_FILTER_MIRROR_URL = [
   // https://curbengh.github.io/malware-filter/botnet-filter-dnscrypt-blocked-ips.txt
 ];
 
-const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL).then(text => text.split('\n').reduce<[ipv4: string[], ipv6: string[]]>((acc, cur) => {
-  const ip = processLine(cur);
-  if (ip) {
-    if (isProbablyIpv4(ip)) {
-      acc[0].push(ip);
-    } else if (isProbablyIpv6(ip)) {
-      acc[1].push(ip);
-    }
+const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL, true).then(arr => arr.reduce<[ipv4: string[], ipv6: string[]]>((acc, ip) => {
+  if (isProbablyIpv4(ip)) {
+    acc[0].push(ip);
+  } else if (isProbablyIpv6(ip)) {
+    acc[1].push(ip);
   }
   return acc;
 }, [[], []]));

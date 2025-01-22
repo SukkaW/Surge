@@ -1,15 +1,9 @@
 import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
 import { fastNormalizeDomain } from '../normalize-domain';
-import { processLine } from '../process-line';
 import { onBlackFound } from './shared';
 
-function hostsLineCb(l: string, set: string[], includeAllSubDomain: boolean, meta: string) {
-  const line = processLine(l);
-  if (!line) {
-    return;
-  }
-
+function hostsLineCb(line: string, set: string[], includeAllSubDomain: boolean, meta: string) {
   const _domain = line.split(/\s/)[1]?.trim();
   if (!_domain) {
     return;
@@ -29,11 +23,9 @@ export function processHosts(
   hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
 ) {
   return span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
-    const text = await span.traceChild('download').traceAsyncFn(() => fetchAssets(hostsUrl, mirrors));
+    const filterRules = await span.traceChild('download').traceAsyncFn(() => fetchAssets(hostsUrl, mirrors, true));
 
     const domainSets: string[] = [];
-
-    const filterRules = text.split('\n');
 
     span.traceChild('parse hosts').traceSyncFn(() => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
@@ -46,14 +38,12 @@ export function processHosts(
 }
 
 export function processHostsWithPreload(hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false) {
-  const downloadPromise = fetchAssets(hostsUrl, mirrors);
+  const downloadPromise = fetchAssets(hostsUrl, mirrors, true);
 
   return (span: Span) => span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
-    const text = await span.traceChild('download').tracePromise(downloadPromise);
+    const filterRules = await span.traceChild('download').tracePromise(downloadPromise);
 
     const domainSets: string[] = [];
-
-    const filterRules = text.split('\n');
 
     span.traceChild('parse hosts').traceSyncFn(() => {
       for (let i = 0, len = filterRules.length; i < len; i++) {

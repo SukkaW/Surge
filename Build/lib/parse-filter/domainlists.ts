@@ -16,10 +16,7 @@ function domainListLineCb(l: string, set: string[], meta: string, normalizeDomai
   set.push(domain);
 }
 
-function domainListLineCbIncludeAllSubdomain(l: string, set: string[], meta: string, normalizeDomain = fastNormalizeDomain) {
-  const line = processLine(l);
-  if (!line) return;
-
+function domainListLineCbIncludeAllSubdomain(line: string, set: string[], meta: string, normalizeDomain = fastNormalizeDomain) {
   const domain = normalizeDomain(line);
   if (!domain) return;
 
@@ -36,12 +33,12 @@ export function processDomainLists(
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
-    const text = await span.traceChildAsync('download', () => fetchAssets(
+    const filterRules = await span.traceChildAsync('download', () => fetchAssets(
       domainListsUrl,
-      mirrors
+      mirrors,
+      true
     ));
     const domainSets: string[] = [];
-    const filterRules = text.split('\n');
 
     span.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
@@ -59,13 +56,12 @@ export function processDomainListsWithPreload(
 ) {
   const domainNormalizer = wwwToApex ? fastNormalizeDomainIgnoreWww : fastNormalizeDomain;
 
-  const downloadPromise = fetchAssets(domainListsUrl, mirrors);
+  const downloadPromise = fetchAssets(domainListsUrl, mirrors, true);
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
-    const text = await span.traceChildPromise('download', downloadPromise);
+    const filterRules = await span.traceChildPromise('download', downloadPromise);
     const domainSets: string[] = [];
-    const filterRules = text.split('\n');
 
     span.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {

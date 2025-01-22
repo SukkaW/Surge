@@ -28,7 +28,7 @@ export function processFilterRulesWithPreload(
   const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
 
   return (span: Span) => span.traceChildAsync<Record<'whiteDomains' | 'whiteDomainSuffixes' | 'blackDomains' | 'blackDomainSuffixes', string[]>>(`process filter rules: ${filterRulesUrl}`, async (span) => {
-    const text = await span.traceChildPromise('download', downloadPromise);
+    const filterRules = await span.traceChildPromise('download', downloadPromise);
 
     const whiteDomains = new Set<string>();
     const whiteDomainSuffixes = new Set<string>();
@@ -81,8 +81,6 @@ export function processFilterRulesWithPreload(
           break;
       }
     };
-
-    const filterRules = text.split('\n');
 
     span.traceChild('parse adguard filter').traceSyncFn(() => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
