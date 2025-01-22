@@ -1,11 +1,11 @@
 // @ts-check
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
-import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { RulesetOutput } from './lib/create-file';
 import { $$fetch } from './lib/fetch-retry';
+import { fastIpVersion } from './lib/misc';
 
 export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
@@ -20,11 +20,10 @@ export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
   const ipcidr6: string[] = [];
 
   for await (const cidr of createReadlineInterfaceFromResponse(resp, true)) {
-    const [subnet] = cidr.split('/');
-    if (isProbablyIpv4(subnet)) {
+    const v = fastIpVersion(cidr);
+    if (v === 4) {
       ipcidr.push(cidr);
-    }
-    if (isProbablyIpv6(subnet)) {
+    } else if (v === 6) {
       ipcidr6.push(cidr);
     }
   }

@@ -3,11 +3,11 @@ import path from 'node:path';
 import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 import { RulesetOutput } from './lib/create-file';
 import { SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
 import { fetchAssets } from './lib/fetch-assets';
+import { fastIpVersion } from './lib/misc';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
@@ -17,9 +17,10 @@ const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$
   for await (const line of createReadlineInterfaceFromResponse(resp, true)) {
     if (line.startsWith('bogus-nxdomain=')) {
       const ip = line.slice(15).trim();
-      if (isProbablyIpv4(ip)) {
+      const v = fastIpVersion(ip);
+      if (v === 4) {
         ipv4.push(ip);
-      } else if (isProbablyIpv6(ip)) {
+      } else if (v === 6) {
         ipv6.push(ip);
       }
     }
@@ -37,9 +38,10 @@ const BOTNET_FILTER_MIRROR_URL = [
 ];
 
 const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL, true).then(arr => arr.reduce<[ipv4: string[], ipv6: string[]]>((acc, ip) => {
-  if (isProbablyIpv4(ip)) {
+  const v = fastIpVersion(ip);
+  if (v === 4) {
     acc[0].push(ip);
-  } else if (isProbablyIpv6(ip)) {
+  } else if (v === 6) {
     acc[1].push(ip);
   }
   return acc;

@@ -199,7 +199,7 @@ export const deserializeSet = (str: string) => new Set(str.split(separator));
 export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separator);
 export const deserializeArray = (str: string) => str.split(separator);
 
-export const getFileContentHash = (filename: string) => simpleStringHash(fs.readFileSync(filename, 'utf-8'));
+const getFileContentHash = (filename: string) => simpleStringHash(fs.readFileSync(filename, 'utf-8'));
 export function createCacheKey(filename: string) {
   const fileHash = getFileContentHash(filename);
   return (key: string) => key + '$' + fileHash + '$';

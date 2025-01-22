@@ -7,7 +7,8 @@ import type { SingboxSourceFormat } from '../singbox';
 import { RuleOutput } from './base';
 import picocolors from 'picocolors';
 import { normalizeDomain } from '../normalize-domain';
-import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
+import { isProbablyIpv4 } from 'foxts/is-probably-ip';
+import { fastIpVersion } from '../misc';
 
 type Preprocessed = [domain: string[], domainSuffix: string[], sortedDomainRules: string[]];
 
@@ -93,10 +94,11 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
       if (value.includes('/')) {
         return `SRC-IP-CIDR,${value}`;
       }
-      if (isProbablyIpv4(value)) {
+      const v = fastIpVersion(value);
+      if (v === 4) {
         return `SRC-IP-CIDR,${value}/32`;
       }
-      if (isProbablyIpv6(value)) {
+      if (v === 6) {
         return `SRC-IP-CIDR6,${value}/128`;
       }
       return '';
@@ -148,10 +150,14 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
         source_ip_cidr: [...this.sourceIpOrCidr].reduce<string[]>((acc, cur) => {
           if (cur.includes('/')) {
             acc.push(cur);
-          } else if (isProbablyIpv4(cur)) {
-            acc.push(cur + '/32');
-          } else if (isProbablyIpv6(cur)) {
-            acc.push(cur + '/128');
+          } else {
+            const v = fastIpVersion(cur);
+
+            if (v === 4) {
+              acc.push(cur + '/32');
+            } else if (v === 6) {
+              acc.push(cur + '/128');
+            }
           }
 
           return acc;
@@ -245,11 +251,13 @@ export class RulesetOutput extends RuleOutput<Preprocessed> {
 
     for (const i of urlRegexResults) {
       for (const processed of i.processed) {
-        if (normalizeDomain(
-          processed
-            .replaceAll('*', 'a')
-            .replaceAll('?', 'b')
-        )) {
+        if (
+          normalizeDomain(
+            processed
+              .replaceAll('*', 'a')
+              .replaceAll('?', 'b')
+          )
+        ) {
           parsed.push([i.origin, processed]);
         } else if (!isProbablyIpv4(processed)) {
           parsedFailures.push([i.origin, processed]);
