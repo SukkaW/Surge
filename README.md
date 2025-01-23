@@ -16,7 +16,7 @@
 
 > Surge 和 Clash 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免不必要的 DNS 解析。
 
-#### 广告拦截 / 隐私保护 / Malware 拦截 / Phiishing 拦截
+#### 广告拦截 / 隐私保护 / Malware 拦截 / Phishing 拦截
 
 - 自动生成
 - 数据来源、白名单域名列表和生成方式，请参考 [`build-reject-domainset.ts`](Build/build-reject-domainset.ts)
