@@ -390,7 +390,6 @@ export const PREDEFINED_WHITELIST = [
   'ae01.alicdn.com',
   '.whoami.akamai.net',
   '.whoami.ds.akahelp.net',
-  'pxlk9.net.', // This one is malformed from EasyList, which I will manually add instead
   '.instant.page', // No, it doesn't violate anyone's privacy. I will whitelist it
   '.piwik.pro',
   'mixpanel.com',
