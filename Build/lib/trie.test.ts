@@ -91,8 +91,7 @@ describe('Trie', () => {
     trie.add('example.com');
     trie.add('moe.sb');
 
-    expect(trie.delete('')).toBe(false);
-    expect(trie.delete('')).toBe(false);
+    expect(trie.delete('no-match.com')).toBe(false);
     expect(trie.delete('example.org')).toBe(false);
 
     expect(trie.delete('skk.moe')).toBe(true);
@@ -131,7 +130,7 @@ describe('Trie', () => {
     expect(trie.find('.example.com')).toStrictEqual(['blog.example.com', 'cdn.example.com']);
     expect(trie.find('org')).toStrictEqual(['example.org']);
     expect(trie.find('example.net')).toStrictEqual([]);
-    expect(trie.find('')).toStrictEqual(['example.com', 'example.org', 'blog.example.com', 'cdn.example.com']);
+    expect(trie.dump()).toStrictEqual(['example.com', 'example.org', 'blog.example.com', 'cdn.example.com']);
   });
 
   it('should be possible to retrieve items matching the given prefix even with a smol trie', () => {
@@ -148,7 +147,7 @@ describe('Trie', () => {
     expect(trie.find('.example.com')).toStrictEqual(['.example.com']);
     expect(trie.find('org')).toStrictEqual(['example.org']);
     expect(trie.find('example.net')).toStrictEqual([]);
-    expect(trie.find('')).toStrictEqual(['.example.com', 'example.org']);
+    expect(trie.dump()).toStrictEqual(['.example.com', 'example.org']);
   });
 
   it('should be possible to create a trie from an arbitrary iterable.', () => {
@@ -192,6 +191,28 @@ describe('surge domainset dedupe', () => {
 });
 
 describe('smol tree', () => {
+  it('should init tree', () => {
+    const trie = createTrie([
+      'skk.moe',
+      'anotherskk.moe',
+      'blog.anotherskk.moe',
+      'blog.skk.moe',
+      '.cdn.local',
+      'blog.img.skk.local',
+      'img.skk.local'
+    ], true);
+
+    expect(trie.dump()).toStrictEqual([
+      'skk.moe',
+      'anotherskk.moe',
+      '.cdn.local',
+      'blog.skk.moe',
+      'blog.anotherskk.moe',
+      'img.skk.local',
+      'blog.img.skk.local'
+    ]);
+  });
+
   it('should create simple tree - 1', () => {
     const trie = createTrie([
       '.skk.moe', 'blog.skk.moe', '.cdn.skk.moe', 'skk.moe',
@@ -264,7 +285,7 @@ describe('smol tree', () => {
     ]);
   });
 
-  it('should efficiently whitelist domains', () => {
+  it('should effctly whitelist domains', () => {
     const trie = createTrie([
       'skk.moe',
       'anotherskk.moe',
@@ -274,16 +295,6 @@ describe('smol tree', () => {
       'blog.img.skk.local',
       'img.skk.local'
     ], true);
-
-    expect(trie.dump()).toStrictEqual([
-      'skk.moe',
-      'anotherskk.moe',
-      '.cdn.local',
-      'blog.skk.moe',
-      'blog.anotherskk.moe',
-      'img.skk.local',
-      'blog.img.skk.local'
-    ]);
 
     trie.whitelist('.skk.moe');
 

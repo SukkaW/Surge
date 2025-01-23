@@ -41,7 +41,7 @@ function deepTrieNodeToJSON(node: TrieNode,
 
 const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => [1, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 
-export function hostnameToTokens(hostname: string, hostnameFromIndex: number): string[] {
+function hostnameToTokens(hostname: string, hostnameFromIndex: number): string[] {
   const tokens = hostname.split('.');
   const results: string[] = [];
   let token = '';
@@ -50,6 +50,8 @@ export function hostnameToTokens(hostname: string, hostnameFromIndex: number): s
     token = tokens[i];
     if (token.length > 0) {
       results.push(token);
+    } else {
+      throw new TypeError(JSON.stringify({ hostname, hostnameFromIndex }, null, 2));
     }
   }
 
@@ -117,7 +119,9 @@ abstract class Triebase<Meta = any> {
     let parent: TrieNode = node;
 
     let token: string;
+    let child: Map<string, TrieNode<Meta>> = node[2];
 
+    // reverse lookup from end to start
     for (let i = tokens.length - 1; i >= 0; i--) {
       token = tokens[i];
 
@@ -127,8 +131,10 @@ abstract class Triebase<Meta = any> {
 
       parent = node;
 
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+      child = node[2];
+      // cache node index access is 20% faster than direct access when doing twice
+      if (child.has(token)) {
+        node = child.get(token)!;
       } else {
         return null;
       }
@@ -147,6 +153,8 @@ abstract class Triebase<Meta = any> {
     let node: TrieNode = this.$root;
     let parent: TrieNode = node;
 
+    let child: Map<string, TrieNode<Meta>> = node[2];
+
     const onToken = (token: string) => {
       // if (token === '') {
       //   return true;
@@ -154,8 +162,10 @@ abstract class Triebase<Meta = any> {
 
       parent = node;
 
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+      child = node[2];
+
+      if (child.has(token)) {
+        node = child.get(token)!;
       } else {
         return null;
       }
@@ -204,12 +214,14 @@ abstract class Triebase<Meta = any> {
     const node = nodeStack.shift()!;
     const suffix = suffixStack.shift()!;
 
-    if (node[2].size) {
-      const keys = Array.from(node[2].keys()).sort(Triebase.compare);
+    const child = node[2];
+
+    if (child.size) {
+      const keys = Array.from(child.keys()).sort(Triebase.compare);
 
       for (let i = 0, l = keys.length; i < l; i++) {
         const key = keys[i];
-        const childNode = node[2].get(key)!;
+        const childNode = child.get(key)!;
 
         // Pushing the child node to the stack for next iteration of DFS
         nodeStack.push(childNode);
@@ -271,17 +283,18 @@ abstract class Triebase<Meta = any> {
     suffixStack.push(initialSuffix);
 
     let node: TrieNode<Meta> = initialNode;
+    let child: Map<string, TrieNode<Meta>> = node[2];
 
     do {
       node = nodeStack.shift()!;
       const suffix = suffixStack.shift()!;
-
-      if (node[2].size) {
-        const keys = Array.from(node[2].keys()).sort(Triebase.compare);
+      child = node[2];
+      if (child.size) {
+        const keys = Array.from(child.keys()).sort(Triebase.compare);
 
         for (let i = 0, l = keys.length; i < l; i++) {
           const key = keys[i];
-          const childNode = node[2].get(key)!;
+          const childNode = child.get(key)!;
 
           // Pushing the child node to the stack for next iteration of DFS
           nodeStack.push(childNode);
@@ -303,18 +316,21 @@ abstract class Triebase<Meta = any> {
     const onLoop = (node: TrieNode, parent: TrieNode, token: string) => {
       // Keeping track of a potential branch to prune
 
-      // Even if the node size is 1, but the single child is ".", we should retain the branch
-      // Since the "." could be special if it is the leaf-est node
-      const onlyChild = node[2].size === 0 && !node[1];
+      const child = node[2];
 
-      if (toPrune != null) { // the top-est branch that could potentially being pruned
-        if (!onlyChild) {
-          // The branch has moew than single child, retain the branch.
-          // And we need to abort prune the parent, so we set it to null
+      // console.log({
+      //   child, parent, token
+      // });
+      // console.log(this.inspect(0));
+
+      if (toPrune !== null) { // the most near branch that could potentially being pruned
+        if (child.size > 1) {
+          // The branch has some children, the branch need retain.
+          // And we need to abort prune that parent branch, so we set it to null
           toPrune = null;
           tokenToPrune = null;
         }
-      } else if (onlyChild) {
+      } else if (child.size < 1) {
         // There is only one token child, or no child at all, we can prune it safely
         // It is now the top-est branch that could potentially being pruned
         toPrune = parent;
@@ -552,7 +568,6 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
   public whitelist(suffix: string, includeAllSubdomain = suffix[0] === '.', hostnameFromIndex = suffix[0] === '.' ? 1 : 0) {
     const tokens = hostnameToTokens(suffix, hostnameFromIndex);
     const res = this.getSingleChildLeaf(tokens);
-
     if (res === null) return;
 
     const { node, toPrune, tokenToPrune } = res;
@@ -572,7 +587,7 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
     // return early if not found
     if (missingBit(node[0], START)) return;
 
-    if (tokenToPrune && toPrune) {
+    if (toPrune && tokenToPrune) {
       toPrune[2].delete(tokenToPrune);
     } else {
       node[0] = deleteBit(node[0], START);
@@ -587,13 +602,15 @@ export class HostnameTrie<Meta = any> extends Triebase<Meta> {
 
   add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = suffix[0] === '.' ? 1 : 0): void {
     let node: TrieNode<Meta> = this.$root;
+    let child: Map<string, TrieNode<Meta>> = node[2];
 
     const onToken = (token: string) => {
-      if (node[2].has(token)) {
-        node = node[2].get(token)!;
+      child = node[2];
+      if (child.has(token)) {
+        node = child.get(token)!;
       } else {
         const newNode = createNode(node);
-        node[2].set(token, newNode);
+        child.set(token, newNode);
         node = newNode;
       }
 

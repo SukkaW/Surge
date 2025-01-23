@@ -120,7 +120,7 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
       dummySpan.traceChildAsync('dummy', (childSpan) => fn(childSpan, onCleanup)).finally(() => {
         dummySpan.stop();
         printTraceResult(dummySpan.traceResult);
-        whyIsNodeRunning();
+        process.nextTick(whyIsNodeRunning);
       });
     }
 

@@ -111,10 +111,8 @@ export function processFilterRulesWithPreload(
   });
 }
 
-// const R_KNOWN_NOT_NETWORK_FILTER_PATTERN_2 = /(\$popup|\$removeparam|\$popunder|\$cname)/;
-// cname exceptional filter can not be parsed by NetworkFilter
-// Surge / Clash can't handle CNAME either, so we just ignore them
-
+// many filter that has modifiers can not work on Surge/Clash because browser context is required
+// we can early bail out those rules
 const kwfilter = createKeywordFilter([
   '!',
   '?',
@@ -132,10 +130,16 @@ const kwfilter = createKeywordFilter([
   // special modifier
   '$popup',
   '$removeparam',
+  '$redirect',
   '$popunder',
   '$cname',
   '$frame',
   '$domain',
+  '$from',
+  '$to',
+  '$csp',
+  '$replace',
+  '$urlskip',
   // some bad syntax
   '^popup'
 ]);
