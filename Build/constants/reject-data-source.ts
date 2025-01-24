@@ -3,7 +3,6 @@ export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean];
 
 export const HOSTS: HostsSource[] = [
-  // have not been updated for more than a year, so we set a 14 days cache ttl
   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', null, true],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false]
@@ -187,6 +186,20 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://ublockorigin.pages.dev/filters/unbreak.min.txt'
     ]
   ]
+  //
+  // [
+  //   'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt',
+  //   [
+  //     'https://adguardteam.github.io/HostlistsRegistry/assets/filter_12.txt'
+  //   ]
+  // ]
+  // Stalkerware
+  // [
+  //   'https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts',
+  //   [
+  //     'https://adguardteam.github.io/HostlistsRegistry/assets/filter_31.txt'
+  //   ]
+  // ]
 ];
 
 export const ADGUARD_FILTERS_WHITELIST: AdGuardFilterSource[] = [
@@ -450,6 +463,7 @@ export const PREDEFINED_WHITELIST = [
   '.lcy.llnw.net', // There is no point in adding these, many subdomains are dead anyway
   'repo.huaweicloud.com', // urlhaus
   '.hubspotlinks.com', // Peter Lowe Hosts
+  '.data.microsoft.com.akadns.net', // window blocker
 
   // Expired domains
   '.expobarrio.com',
