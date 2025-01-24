@@ -140,14 +140,6 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt'
     ]
   ],
-  // AdGuard DNS Filter
-  [
-    'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
-    [
-      'https://filters.adtidy.org/extension/ublock/filters/15_optimized.txt',
-      'https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt'
-    ]
-  ],
   // AdGuard Base Filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
@@ -218,6 +210,16 @@ export const ADGUARD_FILTERS_WHITELIST: AdGuardFilterSource[] = [
 ];
 
 export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
+  // AdGuard DNS Filter
+  // way too many other countries' domains (JP, Spanish, RU, VN, Turkish, Ukarainian, Dutch, etc.)
+  // EasyList, EasyPrivacy, Chinese and general filters are already included in base data source
+  [
+    'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
+    [
+      'https://filters.adtidy.org/extension/ublock/filters/15_optimized.txt',
+      'https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt'
+    ]
+  ],
   // no coin list adguard list is more maintained than its hosts
   ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt', [], true],
   // AdGuard Annoyances filter

@@ -2,7 +2,7 @@ import { createReadlineInterfaceFromResponse } from './fetch-text-by-line';
 
 import type { UndiciResponseData } from './fetch-retry';
 import type { Response } from 'undici';
-import { fastNormalizeDomainIgnoreWww } from './normalize-domain';
+import { fastNormalizeDomain } from './normalize-domain';
 
 export function extractDomainsFromFelixDnsmasq(line: string): string | null {
   if (line.startsWith('server=/') && line.endsWith('/114.114.114.114')) {
@@ -16,7 +16,7 @@ export async function parseFelixDnsmasqFromResp(resp: UndiciResponseData | Respo
 
   for await (const line of createReadlineInterfaceFromResponse(resp, true)) {
     const domain = extractDomainsFromFelixDnsmasq(line);
-    if (domain && fastNormalizeDomainIgnoreWww(domain)) {
+    if (domain && fastNormalizeDomain(domain)) {
       results.push(domain);
     }
   }
