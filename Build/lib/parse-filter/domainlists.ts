@@ -1,4 +1,4 @@
-import { fastNormalizeDomain, fastNormalizeDomainIgnoreWww } from '../normalize-domain';
+import { fastNormalizeDomain, fastNormalizeDomainWithoutWww } from '../normalize-domain';
 import { processLine } from '../process-line';
 import { onBlackFound } from './shared';
 import { fetchAssets } from '../fetch-assets';
@@ -27,9 +27,8 @@ function domainListLineCbIncludeAllSubdomain(line: string, set: string[], meta: 
 
 export function processDomainLists(
   span: Span,
-  domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, wwwToApex = false
+  domainListsUrl: string, mirrors: string[] | null, includeAllSubDomain = false
 ) {
-  const domainNormalizer = wwwToApex ? fastNormalizeDomainIgnoreWww : fastNormalizeDomain;
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
@@ -42,7 +41,7 @@ export function processDomainLists(
 
     span.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
-        lineCb(filterRules[i], domainSets, domainListsUrl, domainNormalizer);
+        lineCb(filterRules[i], domainSets, domainListsUrl, fastNormalizeDomainWithoutWww);
       }
     });
 
@@ -52,10 +51,8 @@ export function processDomainLists(
 
 export function processDomainListsWithPreload(
   domainListsUrl: string, mirrors: string[] | null,
-  includeAllSubDomain = false, wwwToApex = false
+  includeAllSubDomain = false
 ) {
-  const domainNormalizer = wwwToApex ? fastNormalizeDomainIgnoreWww : fastNormalizeDomain;
-
   const downloadPromise = fetchAssets(domainListsUrl, mirrors, true);
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
@@ -65,7 +62,7 @@ export function processDomainListsWithPreload(
 
     span.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
-        lineCb(filterRules[i], domainSets, domainListsUrl, domainNormalizer);
+        lineCb(filterRules[i], domainSets, domainListsUrl, fastNormalizeDomainWithoutWww);
       }
     });
 

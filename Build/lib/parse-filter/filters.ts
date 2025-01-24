@@ -3,10 +3,10 @@ import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
 import { onBlackFound, onWhiteFound } from './shared';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
-import { fastNormalizeDomain } from '../normalize-domain';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import tldts from 'tldts-experimental';
 import { NetworkFilter } from '@ghostery/adblocker';
+import { fastNormalizeDomainWithoutWww } from '../normalize-domain';
 
 const enum ParseType {
   WhiteIncludeSubdomain = 0,
@@ -221,7 +221,7 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
       && filter.isPlain() // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
-      const hostname = fastNormalizeDomain(filter.hostname);
+      const hostname = fastNormalizeDomainWithoutWww(filter.hostname);
       if (!hostname) {
         result[1] = ParseType.Null;
         return result;
@@ -436,7 +436,7 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     return result;
   }
 
-  const domain = fastNormalizeDomain(sliced);
+  const domain = fastNormalizeDomainWithoutWww(sliced);
 
   if (domain && domain === sliced) {
     result[0] = domain;

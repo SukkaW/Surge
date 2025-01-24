@@ -1,6 +1,6 @@
 import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
-import { fastNormalizeDomain } from '../normalize-domain';
+import { fastNormalizeDomainWithoutWww } from '../normalize-domain';
 import { onBlackFound } from './shared';
 
 function hostsLineCb(line: string, set: string[], includeAllSubDomain: boolean, meta: string) {
@@ -8,7 +8,7 @@ function hostsLineCb(line: string, set: string[], includeAllSubDomain: boolean, 
   if (!_domain) {
     return;
   }
-  const domain = fastNormalizeDomain(_domain);
+  const domain = fastNormalizeDomainWithoutWww(_domain);
   if (!domain) {
     return;
   }
