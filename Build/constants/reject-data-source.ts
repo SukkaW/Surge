@@ -399,7 +399,6 @@ export const PREDEFINED_WHITELIST = [
   '.ip6-allhosts',
   '.mcastprefix',
   '.skk.moe',
-  '.cdn.cloudflare.net', // Surge/Clash doesn't support CNAME
   'analytics.google.com',
   '.cloud.answerhub.com',
   'ae01.alicdn.com',
@@ -465,7 +464,12 @@ export const PREDEFINED_WHITELIST = [
   '.lcy.llnw.net', // There is no point in adding these, many subdomains are dead anyway
   'repo.huaweicloud.com', // urlhaus
   '.hubspotlinks.com', // Peter Lowe Hosts
-  '.data.microsoft.com.akadns.net', // window blocker
+  'cldup.com', // OSINT
+
+  // Doesn't make sense: CNAME domains
+  '.cdn.cloudflare.net',
+  '.apple-dns.net',
+  '.data.microsoft.com.akadns.net',
 
   // Expired domains
   '.expobarrio.com',
