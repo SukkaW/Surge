@@ -3,11 +3,12 @@ import path from 'node:path';
 import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { RulesetOutput } from './lib/create-file';
-import { SOURCE_DIR } from './constants/dir';
+import { compareAndWriteFile, RulesetOutput } from './lib/create-file';
+import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
 import { fetchAssets } from './lib/fetch-assets';
 import { fastIpVersion } from './lib/misc';
+import { AUGUST_ASN } from '../Source/ip/august';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
@@ -55,21 +56,25 @@ export const buildRejectIPList = task(require.main === module, __filename)(async
     span.traceChildPromise('get botnet ips', getBotNetFilterIPsPromise)
   ]);
 
-  return new RulesetOutput(span, 'reject', 'ip')
-    .withTitle('Sukka\'s Ruleset - Anti Bogus Domain')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
-      '',
-      'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers, and botnet controller IPs.',
-      '',
-      'Data from:',
-      ' - https://github.com/felixonmars/dnsmasq-china-list',
-      ' - https://github.com/curbengh/botnet-filter'
-    ])
-    .addFromRuleset(readLocalRejectIpListPromise)
-    .bulkAddCIDR4NoResolve(bogusNxDomainIPs[0])
-    .bulkAddCIDR6NoResolve(bogusNxDomainIPs[1])
-    .bulkAddCIDR4NoResolve(botNetIPs[0])
-    .bulkAddCIDR6NoResolve(botNetIPs[1])
-    .write();
+  return Promise.all([
+    new RulesetOutput(span, 'reject', 'ip')
+      .withTitle('Sukka\'s Ruleset - Anti Bogus Domain')
+      .withDescription([
+        ...SHARED_DESCRIPTION,
+        '',
+        'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers, and botnet controller IPs.',
+        '',
+        'Data from:',
+        ' - https://github.com/felixonmars/dnsmasq-china-list',
+        ' - https://github.com/curbengh/botnet-filter'
+      ])
+      .addFromRuleset(readLocalRejectIpListPromise)
+      .bulkAddCIDR4NoResolve(bogusNxDomainIPs[0])
+      .bulkAddCIDR6NoResolve(bogusNxDomainIPs[1])
+      .bulkAddCIDR4NoResolve(botNetIPs[0])
+      .bulkAddCIDR6NoResolve(botNetIPs[1])
+      .bulkAddIPASN(AUGUST_ASN)
+      .write(),
+    compareAndWriteFile(span, [AUGUST_ASN.join(' ')], path.join(OUTPUT_INTERNAL_DIR, 'august_asn.txt'))
+  ]);
 });

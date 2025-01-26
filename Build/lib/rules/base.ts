@@ -123,6 +123,18 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
+  addIPASN(asn: string) {
+    this.ipasn.add(asn);
+    return this;
+  }
+
+  bulkAddIPASN(asns: string[]) {
+    for (let i = 0, len = asns.length; i < len; i++) {
+      this.ipasn.add(asns[i]);
+    }
+    return this;
+  }
+
   private async addFromDomainsetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
     for await (const line of source) {
       if (line[0] === '.') {
