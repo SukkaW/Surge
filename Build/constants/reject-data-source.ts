@@ -3,7 +3,12 @@ export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean];
 
 export const HOSTS: HostsSource[] = [
-  ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt', null, true],
+  [
+    // WindowsSpyBlocker hasn't been updated since 2022-06-16, let's use jsDelivr as primary URL
+    'https://cdn.jsdelivr.net/gh/crazy-max/WindowsSpyBlocker@master/data/hosts/spy.txt',
+    ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt'],
+    true
+  ],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt', null, false],
   ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt', null, false]
 ];
@@ -20,12 +25,16 @@ export const HOSTS_EXTRA: HostsSource[] = [
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
   [
     'https://someonewhocares.org/hosts/zero/hosts',
-    ['https://proxy.cdn.skk.moe/?https://someonewhocares.org/hosts/zero/hosts'],
+    ['https://proxy.cdn.skk.moe/https/someonewhocares.org/hosts/zero/hosts'],
     true
 
   ],
-  // ad-wars is not actively maintained, so we set a 7 days cache ttl
-  ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts', null, false]
+  // ad-wars is not actively maintained since 2023.11, so we use jsDelivr as primary URL
+  [
+    'https://cdn.jsdelivr.net/gh/jdlingyu/ad-wars@master/hosts',
+    ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts'],
+    false
+  ]
 ];
 
 export const DOMAIN_LISTS: HostsSource[] = [
@@ -50,17 +59,40 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
     'https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt',
     ['https://raw.githubusercontent.com/paulgb/BarbBlock/refs/heads/main/blacklists/domain-list.txt'],
     true
-
   ],
   // DigitalSide Threat-Intel - OSINT Hub
   // Update once per day
   ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true],
   // AdGuard CNAME Filter Combined
-  // Update on a 7 days basis, so we add a 3 hours cache ttl
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt', [], true],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt', [], true],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt', [], true],
-  ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt', [], true],
+  // Update on a 7 days basis, so we can also use jsDelivr as primary URL
+  [
+    'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_ads_justdomains.txt',
+    [
+      'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads_justdomains.txt'
+    ],
+    true
+  ],
+  [
+    'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_trackers_justdomains.txt',
+    [
+      'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers_justdomains.txt'
+    ],
+    true
+  ],
+  [
+    'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_clickthroughs_justdomains.txt',
+    [
+      'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt'
+    ],
+    true
+  ],
+  [
+    'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_microsites_justdomains.txt',
+    [
+      'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites_justdomains.txt'
+    ],
+    true
+  ],
   // ['https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers_justdomains.txt', [], true],
   // Curben's PUP Domains Blocklist
   // The PUP filter has paused the update since 2023-05, so we set a 14 days cache ttl, and move it to extra
@@ -87,8 +119,14 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
     true
   ],
   // Spam404
-  // Not actively maintained, let's use a 10 days cache ttl
-  ['https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt', [], true]
+  // Not actively maintained, let's use jsDelivr as primary URL
+  [
+    'https://cdn.jsdelivr.net/gh/Spam404/lists@master/main-blacklist.txt',
+    [
+      'https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt'
+    ],
+    true
+  ]
 ];
 
 export const PHISHING_HOSTS_EXTRA: HostsSource[] = [
@@ -143,22 +181,22 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // AdGuard Base Filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
   ],
   // AdGuard Mobile AD
   [
     'https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
   ],
   // AdGuard Tracking Protection
   [
     'https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt']
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/3_optimized.txt']
   ],
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
   [
     'https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/224_optimized.txt']
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/224_optimized.txt']
   ],
   // GameConsoleAdblockList
   // Update almost once per 1 to 3 months, let's set a 10 days cache ttl
@@ -225,7 +263,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Annoyances filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/14_optimized.txt'],
     true
   ],
   // AdGuard Cookie Notices, included in Annoyances filter
@@ -241,7 +279,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard Japanese filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt']
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/7_optimized.txt']
 
   ],
   // uBlock Origin Filter List
@@ -306,7 +344,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // Dandelion Sprout's Annoyances
   [
     'https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt',
-    ['https://proxy.cdn.skk.moe/?https://filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/250_optimized.txt'],
     true
   ],
   // Adblock Warning Removal List
