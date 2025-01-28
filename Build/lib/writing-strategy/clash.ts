@@ -47,7 +47,7 @@ export class ClashIPSet extends BaseWriteStrategy {
   readonly fileExtension = 'txt';
   readonly type = 'ip';
 
-  protected result: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  protected result: string[] = [];
 
   constructor(protected outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
