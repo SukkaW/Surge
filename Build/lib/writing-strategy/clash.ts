@@ -127,9 +127,7 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
     appendSetElementsToArray(this.result, wildcard, i => `DOMAIN-REGEX,${ClashClassicRuleSet.domainWildCardToRegex(i)}`);
   }
 
-  writeUserAgents(userAgent: Set<string>): void {
-    appendSetElementsToArray(this.result, userAgent, i => `USER-AGENT,${i}`);
-  }
+  writeUserAgents = noop;
 
   writeProcessNames(processName: Set<string>): void {
     appendSetElementsToArray(this.result, processName, i => `PROCESS-NAME,${i}`);
