@@ -336,7 +336,7 @@ export class FileOutput {
     }
 
     if (this.sourceIpOrCidr.size) {
-      const sourceIpOrCidr = merge(Array.from(this.sourceIpOrCidr));
+      const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
       for (let i = 0, len = this.strategies.length; i < len; i++) {
         const strategy = this.strategies[i];
         if (strategy) {
@@ -375,10 +375,10 @@ export class FileOutput {
       ipcidrNoResolve = merge(Array.from(this.ipcidrNoResolve));
     }
     if (this.ipcidr6.size) {
-      ipcidr6 = merge(Array.from(this.ipcidr6));
+      ipcidr6 = Array.from(this.ipcidr6);
     }
     if (this.ipcidr6NoResolve.size) {
-      ipcidr6NoResolve = merge(Array.from(this.ipcidr6NoResolve));
+      ipcidr6NoResolve = Array.from(this.ipcidr6NoResolve);
     }
 
     for (let i = 0, len = this.strategies.length; i < len; i++) {
