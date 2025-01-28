@@ -53,7 +53,7 @@ export class SingboxSource extends BaseWriteStrategy {
   }
 
   writeDomainSuffix(domain: string): void {
-    (this.singbox.domain_suffix ??= []).push(domain);
+    this.singbox.domain_suffix.push(domain);
   }
 
   writeDomainKeywords(keyword: Set<string>): void {
