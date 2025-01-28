@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+  pull_request:
   schedule:
     - cron: "0 12 * * *"
 
@@ -104,7 +105,7 @@ jobs:
           echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: build-artifact-${{ github. ref_name }}
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: ${{ steps.ramdisk.outputs.build_dir }}
           if-no-files-found: error
           retention-days: 1
@@ -117,6 +118,26 @@ jobs:
           path: |
             .cache
           key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+  diff_deployment_on_pr:
+    if: github.ref != 'refs/heads/master'
+    needs:
+      - build
+    name: Diff output
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
+          path: public
+      - name: Diff
+        run: |
+          git clone --filter=tree:0 --no-tags https://github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git >/dev/null 2>&1
+          cd ./deploy-git
+          git fetch origin master >/dev/null 2>&1
+          rm -rf ./*
+          cp -rf ../public/* ./
+          git --no-pager diff --minimal
+
   deploy_to_cloudflare_pages:
     needs:
       - build
@@ -137,7 +158,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-deploy-to-cloudflare-npm
       - uses: actions/download-artifact@v4
         with:
-          name: build-artifact-${{ github.ref_name }}
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -155,14 +176,14 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: build-artifact-${{ github.ref_name }}
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
       - name: Upload Dist to GitLab
         continue-on-error: true
         run: |
           git clone --filter=tree:0 --no-tags https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git ./deploy-git
           cd ./deploy-git
-          git config --global push.default matching
+          git config --global push.dgefault matching
           git config --global user.email "${GITLAB_EMAIL}"
           git config --global user.name "${GITLAB_USER}"
           rm -rf ./*
