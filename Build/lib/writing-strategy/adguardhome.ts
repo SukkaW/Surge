@@ -1,12 +1,7 @@
 import { escapeStringRegexp } from 'foxts/escape-string-regexp';
 import { BaseWriteStrategy } from './base';
 import { noop } from 'foxts/noop';
-
-function notSupported(name: string) {
-  return () => {
-    throw new Error(`${name}: not implemented.`);
-  };
-}
+import { notSupported } from '../misc';
 
 export class AdGuardHome extends BaseWriteStrategy {
   // readonly type = 'domainset';
@@ -23,7 +18,7 @@ export class AdGuardHome extends BaseWriteStrategy {
       '! Expires: 6 hours',
       '! License: https://github.com/SukkaW/Surge/blob/master/LICENSE',
       '! Homepage: https://github.com/SukkaW/Surge',
-      ...description.map(line => `! ${line}`),
+      `! Description: ${description.join(' ')}`,
       '!',
       ...content,
       '! EOF'
