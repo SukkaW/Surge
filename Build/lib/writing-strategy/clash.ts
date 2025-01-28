@@ -84,27 +84,6 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
 
   protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-  static readonly domainWildCardToRegex = (domain: string) => {
-    let result = '^';
-    for (let i = 0, len = domain.length; i < len; i++) {
-      switch (domain[i]) {
-        case '.':
-          result += String.raw`\.`;
-          break;
-        case '*':
-          result += String.raw`[\w.-]*?`;
-          break;
-        case '?':
-          result += String.raw`[\w.-]`;
-          break;
-        default:
-          result += domain[i];
-      }
-    }
-    result += '$';
-    return result;
-  };
-
   constructor(public readonly type: string, protected outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
   }

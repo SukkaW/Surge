@@ -440,53 +440,6 @@ export class FileOutput {
         }
       }
 
-      // if (surge) {
-      //   promises.push(compareAndWriteFile(
-      //     this.span,
-      //     withBannerArray(
-      //       this.title,
-      //       this.description,
-      //       this.date,
-      //       this.surge()
-      //     ),
-      //     path.join(surgeDir, this.type, this.id + '.conf')
-      //   ));
-      // }
-      // if (clash) {
-      //   promises.push(compareAndWriteFile(
-      //     this.span,
-      //     withBannerArray(
-      //       this.title,
-      //       this.description,
-      //       this.date,
-      //       this.clash()
-      //     ),
-      //     path.join(clashDir, this.type, this.id + '.txt')
-      //   ));
-      // }
-      // if (singbox) {
-      //   promises.push(compareAndWriteFile(
-      //     this.span,
-      //     this.singbox(),
-      //     path.join(singboxDir, this.type, this.id + '.json')
-      //   ));
-      // }
-
-      // if (this.mitmSgmodule) {
-      //   const sgmodule = this.mitmSgmodule();
-      //   const sgModulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
-
-      //   if (sgmodule) {
-      //     promises.push(
-      //       compareAndWriteFile(
-      //         this.span,
-      //         sgmodule,
-      //         path.join(OUTPUT_MODULES_DIR, sgModulePath)
-      //       )
-      //     );
-      //   }
-      // }
-
       await Promise.all(promises);
     });
   }
