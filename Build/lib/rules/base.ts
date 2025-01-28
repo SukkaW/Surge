@@ -369,10 +369,10 @@ export class FileOutput {
     let ipcidr6NoResolve: string[] | null = null;
 
     if (this.ipcidr.size) {
-      ipcidr = merge(Array.from(this.ipcidr));
+      ipcidr = merge(Array.from(this.ipcidr), true);
     }
     if (this.ipcidrNoResolve.size) {
-      ipcidrNoResolve = merge(Array.from(this.ipcidrNoResolve));
+      ipcidrNoResolve = merge(Array.from(this.ipcidrNoResolve), true);
     }
     if (this.ipcidr6.size) {
       ipcidr6 = Array.from(this.ipcidr6);
