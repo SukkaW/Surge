@@ -7,7 +7,7 @@ import { OUTPUT_SINGBOX_DIR } from '../../constants/dir';
 
 interface SingboxHeadlessRule {
   domain: string[], // this_ruleset_is_made_by_sukkaw.ruleset.skk.moe
-  domain_suffix?: string[],
+  domain_suffix: string[], // this_ruleset_is_made_by_sukkaw.ruleset.skk.moe
   domain_keyword?: string[],
   domain_regex?: string[],
   source_ip_cidr?: string[],
@@ -31,7 +31,8 @@ export class SingboxSource extends BaseWriteStrategy {
   static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
   private singbox: SingboxHeadlessRule = {
-    domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe']
+    domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'],
+    domain_suffix: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe']
   };
 
   protected get result() {
