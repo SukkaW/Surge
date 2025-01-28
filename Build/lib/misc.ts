@@ -60,6 +60,17 @@ export function withBannerArray(title: string, description: string[] | readonly 
   ];
 };
 
+export function notSupported(name: string) {
+  return (...args: unknown[]) => {
+    console.error(`${name}: not supported.`, args);
+    throw new Error(`${name}: not implemented.`);
+  };
+}
+
+export function withIdentityContent(title: string, description: string[] | readonly string[], date: Date, content: string[]) {
+  return content;
+};
+
 export function isDirectoryEmptySync(path: PathLike) {
   const directoryHandle = fs.opendirSync(path);
 

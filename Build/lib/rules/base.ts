@@ -1,19 +1,22 @@
-import { OUTPUT_CLASH_DIR, OUTPUT_MODULES_DIR, OUTPUT_SINGBOX_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
 import type { Span } from '../../trace';
 import { HostnameSmolTrie } from '../trie';
-import stringify from 'json-stringify-pretty-compact';
-import path from 'node:path';
-import { withBannerArray } from '../misc';
-import { invariant } from 'foxts/guard';
+import { invariant, not } from 'foxts/guard';
 import picocolors from 'picocolors';
 import fs from 'node:fs';
 import { writeFile } from '../misc';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { readFileByLine } from '../fetch-text-by-line';
 import { asyncWriteToStream } from 'foxts/async-write-to-stream';
+import type { BaseWriteStrategy } from '../writing-strategy/base';
+import { merge } from 'fast-cidr-tools';
+import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
+import path from 'node:path';
+import { SurgeMitmSgmodule } from '../writing-strategy/surge';
 
-export abstract class RuleOutput<TPreprocessed = unknown> {
-  protected domainTrie = new HostnameSmolTrie(null);
+export class FileOutput {
+  protected strategies: Array<BaseWriteStrategy | false> = [];
+
+  public domainTrie = new HostnameSmolTrie(null);
   protected domainKeywords = new Set<string>();
   protected domainWildcard = new Set<string>();
   protected userAgent = new Set<string>();
@@ -34,36 +37,12 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   protected destPort = new Set<string>();
 
   protected otherRules: string[] = [];
-  protected abstract type: 'domainset' | 'non_ip' | 'ip' | (string & {});
 
   private pendingPromise: Promise<any> | null = null;
-
-  static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
   whitelistDomain = (domain: string) => {
     this.domainTrie.whitelist(domain);
     return this;
-  };
-
-  static readonly domainWildCardToRegex = (domain: string) => {
-    let result = '^';
-    for (let i = 0, len = domain.length; i < len; i++) {
-      switch (domain[i]) {
-        case '.':
-          result += String.raw`\.`;
-          break;
-        case '*':
-          result += String.raw`[\w.-]*?`;
-          break;
-        case '?':
-          result += String.raw`[\w.-]`;
-          break;
-        default:
-          result += domain[i];
-      }
-    }
-    result += '$';
-    return result;
   };
 
   protected readonly span: Span;
@@ -76,6 +55,17 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
   withTitle(title: string) {
     this.title = title;
     return this;
+  }
+
+  replaceStrategies(strategies: Array<BaseWriteStrategy | false>) {
+    this.strategies = strategies;
+    return this;
+  }
+
+  withExtraStrategies(strategy: BaseWriteStrategy | false) {
+    if (strategy) {
+      this.strategies.push(strategy);
+    }
   }
 
   protected description: string[] | readonly string[] | null = null;
@@ -233,33 +223,31 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
 
   bulkAddCIDR4(cidrs: string[]) {
     for (let i = 0, len = cidrs.length; i < len; i++) {
-      this.ipcidr.add(RuleOutput.ipToCidr(cidrs[i], 4));
+      this.ipcidr.add(FileOutput.ipToCidr(cidrs[i], 4));
     }
     return this;
   }
 
   bulkAddCIDR4NoResolve(cidrs: string[]) {
     for (let i = 0, len = cidrs.length; i < len; i++) {
-      this.ipcidrNoResolve.add(RuleOutput.ipToCidr(cidrs[i], 4));
+      this.ipcidrNoResolve.add(FileOutput.ipToCidr(cidrs[i], 4));
     }
     return this;
   }
 
   bulkAddCIDR6(cidrs: string[]) {
     for (let i = 0, len = cidrs.length; i < len; i++) {
-      this.ipcidr6.add(RuleOutput.ipToCidr(cidrs[i], 6));
+      this.ipcidr6.add(FileOutput.ipToCidr(cidrs[i], 6));
     }
     return this;
   }
 
   bulkAddCIDR6NoResolve(cidrs: string[]) {
     for (let i = 0, len = cidrs.length; i < len; i++) {
-      this.ipcidr6NoResolve.add(RuleOutput.ipToCidr(cidrs[i], 6));
+      this.ipcidr6NoResolve.add(FileOutput.ipToCidr(cidrs[i], 6));
     }
     return this;
   }
-
-  protected abstract preprocess(): TPreprocessed extends null ? null : NonNullable<TPreprocessed>;
 
   async done() {
     await this.pendingPromise;
@@ -267,130 +255,214 @@ export abstract class RuleOutput<TPreprocessed = unknown> {
     return this;
   }
 
-  private guardPendingPromise() {
-    // reverse invariant
-    if (this.pendingPromise !== null) {
-      console.trace('Pending promise:', this.pendingPromise);
-      throw new Error('You should call done() before calling this method');
+  // private guardPendingPromise() {
+  //   // reverse invariant
+  //   if (this.pendingPromise !== null) {
+  //     console.trace('Pending promise:', this.pendingPromise);
+  //     throw new Error('You should call done() before calling this method');
+  //   }
+  // }
+
+  // async writeClash(outputDir?: null | string) {
+  //   await this.done();
+
+  //   invariant(this.title, 'Missing title');
+  //   invariant(this.description, 'Missing description');
+
+  //   return compareAndWriteFile(
+  //     this.span,
+  //     withBannerArray(
+  //       this.title,
+  //       this.description,
+  //       this.date,
+  //       this.clash()
+  //     ),
+  //     path.join(outputDir ?? OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
+  //   );
+  // }
+  private strategiesWritten = false;
+
+  private async writeToStrategies() {
+    if (this.strategiesWritten) {
+      throw new Error('Strategies already written');
     }
-  }
 
-  private $$preprocessed: TPreprocessed | null = null;
-  protected runPreprocess() {
-    if (this.$$preprocessed === null) {
-      this.guardPendingPromise();
+    this.strategiesWritten = true;
 
-      this.$$preprocessed = this.span.traceChildSync('preprocess', () => this.preprocess());
-    }
-  }
-
-  get $preprocessed(): TPreprocessed extends null ? null : NonNullable<TPreprocessed> {
-    this.runPreprocess();
-    return this.$$preprocessed as any;
-  }
-
-  async writeClash(outputDir?: null | string) {
     await this.done();
 
-    invariant(this.title, 'Missing title');
-    invariant(this.description, 'Missing description');
+    const kwfilter = createKeywordFilter(Array.from(this.domainKeywords));
 
-    return compareAndWriteFile(
-      this.span,
-      withBannerArray(
-        this.title,
-        this.description,
-        this.date,
-        this.clash()
-      ),
-      path.join(outputDir ?? OUTPUT_CLASH_DIR, this.type, this.id + '.txt')
-    );
+    if (this.strategies.filter(not(false)).length === 0) {
+      throw new Error('No strategies to write ' + this.id);
+    }
+
+    this.domainTrie.dumpWithoutDot((domain, includeAllSubdomain) => {
+      if (kwfilter(domain)) {
+        return;
+      }
+
+      for (let i = 0, len = this.strategies.length; i < len; i++) {
+        const strategy = this.strategies[i];
+        if (strategy) {
+          if (includeAllSubdomain) {
+            strategy.writeDomainSuffix(domain);
+          } else {
+            strategy.writeDomain(domain);
+          }
+        }
+      }
+    }, true);
+
+    for (let i = 0, len = this.strategies.length; i < len; i++) {
+      const strategy = this.strategies[i];
+      if (!strategy) continue;
+
+      if (this.domainKeywords.size) {
+        strategy.writeDomainKeywords(this.domainKeywords);
+      }
+      if (this.domainWildcard.size) {
+        strategy.writeDomainWildcards(this.domainWildcard);
+      }
+      if (this.userAgent.size) {
+        strategy.writeUserAgents(this.userAgent);
+      }
+      if (this.processName.size) {
+        strategy.writeProcessNames(this.processName);
+      }
+      if (this.processPath.size) {
+        strategy.writeProcessPaths(this.processPath);
+      }
+    }
+
+    if (this.sourceIpOrCidr.size) {
+      const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
+      for (let i = 0, len = this.strategies.length; i < len; i++) {
+        const strategy = this.strategies[i];
+        if (strategy) {
+          strategy.writeSourceIpCidrs(sourceIpOrCidr);
+        }
+      }
+    }
+
+    for (let i = 0, len = this.strategies.length; i < len; i++) {
+      const strategy = this.strategies[i];
+      if (strategy) {
+        if (this.sourcePort.size) {
+          strategy.writeSourcePorts(this.sourcePort);
+        }
+        if (this.destPort.size) {
+          strategy.writeDestinationPorts(this.destPort);
+        }
+        if (this.otherRules.length) {
+          strategy.writeOtherRules(this.otherRules);
+        }
+        if (this.urlRegex.size) {
+          strategy.writeUrlRegexes(this.urlRegex);
+        }
+      }
+    }
+
+    let ipcidr: string[] | null = null;
+    let ipcidrNoResolve: string[] | null = null;
+    let ipcidr6: string[] | null = null;
+    let ipcidr6NoResolve: string[] | null = null;
+
+    if (this.ipcidr.size) {
+      ipcidr = merge(Array.from(this.ipcidr));
+    }
+    if (this.ipcidrNoResolve.size) {
+      ipcidrNoResolve = merge(Array.from(this.ipcidrNoResolve));
+    }
+    if (this.ipcidr6.size) {
+      ipcidr6 = Array.from(this.ipcidr6);
+    }
+    if (this.ipcidr6NoResolve.size) {
+      ipcidr6NoResolve = Array.from(this.ipcidr6NoResolve);
+    }
+
+    for (let i = 0, len = this.strategies.length; i < len; i++) {
+      const strategy = this.strategies[i];
+      if (strategy) {
+        // no-resolve
+        if (ipcidrNoResolve?.length) {
+          strategy.writeIpCidrs(ipcidrNoResolve, true);
+        }
+        if (ipcidr6NoResolve?.length) {
+          strategy.writeIpCidr6s(ipcidr6NoResolve, true);
+        }
+        if (this.ipasnNoResolve.size) {
+          strategy.writeIpAsns(this.ipasnNoResolve, true);
+        }
+        if (this.groipNoResolve.size) {
+          strategy.writeGeoip(this.groipNoResolve, true);
+        }
+
+        // triggers DNS resolution
+        if (ipcidr?.length) {
+          strategy.writeIpCidrs(ipcidr, false);
+        }
+        if (ipcidr6?.length) {
+          strategy.writeIpCidr6s(ipcidr6, false);
+        }
+        if (this.ipasn.size) {
+          strategy.writeIpAsns(this.ipasn, false);
+        }
+        if (this.geoip.size) {
+          strategy.writeGeoip(this.geoip, false);
+        }
+      }
+    }
   }
 
-  write({
-    surge = true,
-    clash = true,
-    singbox = true,
-    surgeDir = OUTPUT_SURGE_DIR,
-    clashDir = OUTPUT_CLASH_DIR,
-    singboxDir = OUTPUT_SINGBOX_DIR
-  }: {
-    surge?: boolean,
-    clash?: boolean,
-    singbox?: boolean,
-    surgeDir?: string,
-    clashDir?: string,
-    singboxDir?: string
-  } = {}): Promise<void> {
-    return this.done().then(() => this.span.traceChildAsync('write all', async () => {
+  write(): Promise<void> {
+    return this.span.traceChildAsync('write all', async () => {
+      const promises: Array<Promise<void> | void> = [];
+
+      await this.writeToStrategies();
+
       invariant(this.title, 'Missing title');
       invariant(this.description, 'Missing description');
 
-      const promises: Array<Promise<void>> = [];
-
-      if (surge) {
-        promises.push(compareAndWriteFile(
-          this.span,
-          withBannerArray(
+      for (let i = 0, len = this.strategies.length; i < len; i++) {
+        const strategy = this.strategies[i];
+        if (strategy) {
+          const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
+          promises.push(strategy.output(
+            this.span,
             this.title,
             this.description,
             this.date,
-            this.surge()
-          ),
-          path.join(surgeDir, this.type, this.id + '.conf')
-        ));
-      }
-      if (clash) {
-        promises.push(compareAndWriteFile(
-          this.span,
-          withBannerArray(
-            this.title,
-            this.description,
-            this.date,
-            this.clash()
-          ),
-          path.join(clashDir, this.type, this.id + '.txt')
-        ));
-      }
-      if (singbox) {
-        promises.push(compareAndWriteFile(
-          this.span,
-          this.singbox(),
-          path.join(singboxDir, this.type, this.id + '.json')
-        ));
-      }
-
-      if (this.mitmSgmodule) {
-        const sgmodule = this.mitmSgmodule();
-        const sgModulePath = this.mitmSgmodulePath ?? path.join(this.type, this.id + '.sgmodule');
-
-        if (sgmodule) {
-          promises.push(
-            compareAndWriteFile(
-              this.span,
-              sgmodule,
-              path.join(OUTPUT_MODULES_DIR, sgModulePath)
-            )
-          );
+            strategy.type
+              ? path.join(strategy.type, basename)
+              : basename
+          ));
         }
       }
 
       await Promise.all(promises);
-    }));
+    });
   }
 
-  abstract surge(): string[];
-  abstract clash(): string[];
-  abstract singbox(): string[];
+  async output(): Promise<Array<string[] | null>> {
+    await this.writeToStrategies();
 
-  protected mitmSgmodulePath: string | null = null;
-  withMitmSgmodulePath(path: string | null) {
-    if (path) {
-      this.mitmSgmodulePath = path;
+    return this.strategies.reduce<Array<string[] | null>>((acc, strategy) => {
+      if (strategy) {
+        acc.push(strategy.content);
+      } else {
+        acc.push(null);
+      }
+      return acc;
+    }, []);
+  }
+
+  withMitmSgmodulePath(moduleName: string | null) {
+    if (moduleName) {
+      this.withExtraStrategies(new SurgeMitmSgmodule(moduleName));
     }
     return this;
   }
-  abstract mitmSgmodule?(): string[] | null;
 }
 
 export async function fileEqual(linesA: string[], source: AsyncIterable<string> | Iterable<string>): Promise<boolean> {

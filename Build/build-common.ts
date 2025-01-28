@@ -112,7 +112,7 @@ async function transform(parentSpan: Span, sourcePath: string, relativePath: str
       const res = await processFile(span, sourcePath);
       if (res === $skip) return;
 
-      const [title, descriptions, lines, sgmodulePathname] = res;
+      const [title, descriptions, lines, sgmoduleName] = res;
 
       let finalDescriptions: string[];
       if (descriptions.length) {
@@ -134,7 +134,7 @@ async function transform(parentSpan: Span, sourcePath: string, relativePath: str
       return new RulesetOutput(span, id, type)
         .withTitle(title)
         .withDescription(finalDescriptions)
-        .withMitmSgmodulePath(sgmodulePathname)
+        .withMitmSgmodulePath(sgmoduleName)
         .addFromRuleset(lines)
         .write();
     });

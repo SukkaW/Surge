@@ -7,7 +7,6 @@ import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
-import { compareAndWriteFile } from './lib/create-file';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
@@ -17,10 +16,11 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
-import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
 import { foundDebugDomain } from './lib/parse-filter/shared';
+import { AdGuardHome } from './lib/writing-strategy/adguardhome';
+import { FileOutput } from './lib/rules/base';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
@@ -125,6 +125,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     ].flat()));
 
   if (foundDebugDomain.value) {
+    // eslint-disable-next-line sukka/unicorn/no-process-exit -- cli App
     process.exit(1);
   }
 
@@ -140,39 +141,29 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectExtraOutput.whitelistDomain(domain);
     }
 
-    for (let i = 0, len = rejectOutput.$preprocessed.length; i < len; i++) {
-      rejectExtraOutput.whitelistDomain(rejectOutput.$preprocessed[i]);
-    }
+    rejectOutput.domainTrie.dump(rejectExtraOutput.whitelistDomain.bind(rejectExtraOutput));
   });
 
-  return Promise.all([
+  await Promise.all([
     rejectOutput.write(),
-    rejectExtraOutput.write(),
-    compareAndWriteFile(
-      span,
-      appendArrayInPlace(
-        [
-          '! Title: Sukka\'s Ruleset - Blocklist for AdGuardHome',
-          '! Last modified: ' + new Date().toUTCString(),
-          '! Expires: 6 hours',
-          '! License: https://github.com/SukkaW/Surge/blob/master/LICENSE',
-          '! Homepage: https://github.com/SukkaW/Surge',
-          '! Description: The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
-          '!'
-        ],
-        appendArrayInPlace(
-          rejectOutput.adguardhome(),
-          (
-            await new DomainsetOutput(span, 'my_reject')
-              .addFromRuleset(readLocalMyRejectRulesetPromise)
-              .addFromRuleset(readLocalRejectRulesetPromise)
-              .addFromRuleset(readLocalRejectDropRulesetPromise)
-              .addFromRuleset(readLocalRejectNoDropRulesetPromise)
-              .done()
-          ).adguardhome()
-        )
-      ),
-      path.join(OUTPUT_INTERNAL_DIR, 'reject-adguardhome.txt')
-    )
+    rejectExtraOutput.write()
   ]);
+
+  // we are going to re-use rejectOutput's domainTrie and mutate it
+  // so we must wait until we write rejectOutput to disk after we can mutate its trie
+  const rejectOutputAdGuardHome = new FileOutput(span, 'reject-adguardhome')
+    .withTitle('Sukka\'s Ruleset - Blocklist for AdGuardHome')
+    .withDescription([
+      'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining'
+    ])
+    .replaceStrategies([new AdGuardHome(OUTPUT_INTERNAL_DIR)]);
+
+  rejectOutputAdGuardHome.domainTrie = rejectOutput.domainTrie;
+
+  await rejectOutputAdGuardHome
+    .addFromRuleset(readLocalMyRejectRulesetPromise)
+    .addFromRuleset(readLocalRejectRulesetPromise)
+    .addFromRuleset(readLocalRejectDropRulesetPromise)
+    .addFromRuleset(readLocalRejectNoDropRulesetPromise)
+    .write();
 });
