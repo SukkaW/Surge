@@ -9,6 +9,7 @@ import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createGetDnsMappingRule } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
+import { ClashDomainSet } from './lib/writing-strategy/clash';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
@@ -44,6 +45,9 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
       ...SHARED_DESCRIPTION,
       '',
       'Clash.Meta fake-ip-filter as ruleset'
+    ])
+    .replaceStrategies([
+      new ClashDomainSet('domainset')
     ]);
 
   // Intranet, Router Setup, and mant more
@@ -75,7 +79,6 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
       ],
       path.resolve(OUTPUT_MODULES_DIR, 'sukka_common_always_realip.sgmodule')
     ),
-    clashFakeIpFilter.writeClash(),
     compareAndWriteFile(
       span,
       yaml.stringify(
