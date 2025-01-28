@@ -144,22 +144,26 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     rejectOutput.domainTrie.dump(rejectExtraOutput.whitelistDomain.bind(rejectExtraOutput));
   });
 
+  await Promise.all([
+    rejectOutput.write(),
+    rejectExtraOutput.write()
+  ]);
+
+  // we are going to re-use rejectOutput's domainTrie and mutate it
+  // so we must wait until we write rejectOutput to disk after we can mutate its trie
   const rejectOutputAdGuardHome = new FileOutput(span, 'reject-adguardhome')
     .withTitle('Sukka\'s Ruleset - Blocklist for AdGuardHome')
     .withDescription([
       'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining'
     ])
     .replaceStrategies([new AdGuardHome(OUTPUT_INTERNAL_DIR)]);
+
   rejectOutputAdGuardHome.domainTrie = rejectOutput.domainTrie;
-  rejectOutputAdGuardHome
+
+  await rejectOutputAdGuardHome
     .addFromRuleset(readLocalMyRejectRulesetPromise)
     .addFromRuleset(readLocalRejectRulesetPromise)
     .addFromRuleset(readLocalRejectDropRulesetPromise)
-    .addFromRuleset(readLocalRejectNoDropRulesetPromise);
-
-  return Promise.all([
-    rejectOutput.write(),
-    rejectExtraOutput.write(),
-    rejectOutputAdGuardHome.write()
-  ]);
+    .addFromRuleset(readLocalRejectNoDropRulesetPromise)
+    .write();
 });
