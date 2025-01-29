@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - run: df -h
       # - name: Tune GitHub-hosted runner network
       #   # https://github.com/actions/runner-images/issues/1187
       #   uses: smorimoto/tune-github-hosted-runner-network@v1
@@ -83,6 +82,9 @@ jobs:
             ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
             ${{ runner.os }}-v3-
       - run: pnpm install
+      - uses: catchpoint/workflow-telemetry-action@v2
+        with:
+          comment_on_pr: false
       - run: pnpm run build
         env:
           PUBLIC_DIR: ${{ steps.ramdisk.outputs.build_dir }}
