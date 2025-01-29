@@ -15,3 +15,32 @@ export class RulesetOutput extends FileOutput {
     ];
   }
 }
+
+export class SurgeOnlyRulesetOutput extends FileOutput {
+  constructor(
+    span: Span,
+    id: string,
+    protected type: 'non_ip' | 'ip' | (string & {}),
+    overrideOutputDir?: string
+  ) {
+    super(span, id);
+
+    this.strategies = [
+      new SurgeRuleSet(this.type, overrideOutputDir)
+    ];
+  }
+}
+
+export class ClashOnlyRulesetOutput extends FileOutput {
+  constructor(
+    span: Span,
+    id: string,
+    protected type: 'non_ip' | 'ip' | (string & {})
+  ) {
+    super(span, id);
+
+    this.strategies = [
+      new ClashClassicRuleSet(this.type)
+    ];
+  }
+}

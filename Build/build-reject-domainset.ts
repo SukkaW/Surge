@@ -19,8 +19,7 @@ import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/create-file';
 import { foundDebugDomain } from './lib/parse-filter/shared';
-import { AdGuardHome } from './lib/writing-strategy/adguardhome';
-import { FileOutput } from './lib/rules/base';
+import { AdGuardHomeOutput } from './lib/rules/domainset';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_sukka_extra.conf'));
@@ -151,12 +150,11 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
 
   // we are going to re-use rejectOutput's domainTrie and mutate it
   // so we must wait until we write rejectOutput to disk after we can mutate its trie
-  const rejectOutputAdGuardHome = new FileOutput(span, 'reject-adguardhome')
+  const rejectOutputAdGuardHome = new AdGuardHomeOutput(span, 'reject-adguardhome', OUTPUT_INTERNAL_DIR)
     .withTitle('Sukka\'s Ruleset - Blocklist for AdGuardHome')
     .withDescription([
       'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining'
-    ])
-    .replaceStrategies([new AdGuardHome(OUTPUT_INTERNAL_DIR)]);
+    ]);
 
   rejectOutputAdGuardHome.domainTrie = rejectOutput.domainTrie;
 

@@ -12,7 +12,7 @@ import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, SOURCE_DIR } from './constants/dir';
 import { RulesetOutput } from './lib/create-file';
-import { SurgeRuleSet } from './lib/writing-strategy/surge';
+import { SurgeOnlyRulesetOutput } from './lib/rules/ruleset';
 
 export function createGetDnsMappingRule(allowWildcard: boolean) {
   const hasWildcard = (domain: string) => {
@@ -115,16 +115,13 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         return;
       }
 
-      const output = new RulesetOutput(span, name.toLowerCase(), 'sukka_local_dns_mapping')
+      const output = new SurgeOnlyRulesetOutput(span, name.toLowerCase(), 'sukka_local_dns_mapping', OUTPUT_MODULES_RULES_DIR)
         .withTitle(`Sukka's Ruleset - Local DNS Mapping (${name})`)
         .withDescription([
           ...SHARED_DESCRIPTION,
           '',
           'This is an internal rule that is only referenced by sukka_local_dns_mapping.sgmodule',
           'Do not use this file in your Rule section, all rules are included in non_ip/domestic.conf already.'
-        ])
-        .replaceStrategies([
-          new SurgeRuleSet('sukka_local_dns_mapping', OUTPUT_MODULES_RULES_DIR)
         ]);
 
       domains.forEach((domain) => {

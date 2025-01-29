@@ -7,12 +7,12 @@ import path from 'node:path';
 import { ALL as AllStreamServices } from '../Source/stream';
 import { getChnCidrPromise } from './build-chn-cidr';
 import { getTelegramCIDRPromise } from './build-telegram-cidr';
-import { compareAndWriteFile, RulesetOutput } from './lib/create-file';
+import { compareAndWriteFile } from './lib/create-file';
 import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
 import { isTruthy, nullthrow } from 'foxts/guard';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
-import { ClashClassicRuleSet } from './lib/writing-strategy/clash';
+import { ClashOnlyRulesetOutput } from './lib/rules/ruleset';
 
 const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: boolean]> = [
   ['Default Proxy', true, false],
@@ -79,8 +79,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'ip/lan.conf'))
   ] as const);
 
-  const domestic = new RulesetOutput(span, '_', 'non_ip')
-    .replaceStrategies([new ClashClassicRuleSet('non_ip')])
+  const domestic = new ClashOnlyRulesetOutput(span, '_', 'non_ip')
     .addFromRuleset(domesticRules)
     .bulkAddDomainSuffix(appleCdnDomains)
     .bulkAddDomain(microsoftCdnDomains)
@@ -88,61 +87,52 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     .addFromRuleset(appleCnRules)
     .addFromRuleset(neteaseMusicRules);
 
-  const microsoftApple = new RulesetOutput(span, '_', 'non_ip')
-    .replaceStrategies([new ClashClassicRuleSet('non_ip')])
+  const microsoftApple = new ClashOnlyRulesetOutput(span, '_', 'non_ip')
     .addFromRuleset(microsoftRules)
     .addFromRuleset(appleRules);
 
-  const stream = new RulesetOutput(span, '_', 'non_ip')
-    .replaceStrategies([new ClashClassicRuleSet('non_ip')])
+  const stream = new ClashOnlyRulesetOutput(span, '_', 'non_ip')
     .addFromRuleset(streamRules);
 
-  const steam = new RulesetOutput(span, '_', 'non_ip')
-    .replaceStrategies([new ClashClassicRuleSet('non_ip')])
+  const steam = new ClashOnlyRulesetOutput(span, '_', 'non_ip')
     .addFromDomainset(steamDomainset);
 
-  const global = new RulesetOutput(span, '_', 'non_ip')
-    .replaceStrategies([new ClashClassicRuleSet('non_ip')])
+  const global = new ClashOnlyRulesetOutput(span, '_', 'non_ip')
     .addFromRuleset(globalRules)
     .addFromRuleset(telegramRules);
 
-  const direct = new RulesetOutput(span, '_', 'non_ip')
-    .replaceStrategies([new ClashClassicRuleSet('non_ip')])
+  const direct = new ClashOnlyRulesetOutput(span, '_', 'non_ip')
     .addFromRuleset(directRules)
     .addFromRuleset(lanRules);
 
-  const domesticCidr = new RulesetOutput(span, '_', 'ip')
-    .replaceStrategies([new ClashClassicRuleSet('ip')])
+  const domesticCidr = new ClashOnlyRulesetOutput(span, '_', 'ip')
     .bulkAddCIDR4(domesticCidrs4)
     .bulkAddCIDR6(domesticCidrs6);
 
-  const streamCidr = new RulesetOutput(span, '_', 'ip')
-    .replaceStrategies([new ClashClassicRuleSet('ip')])
+  const streamCidr = new ClashOnlyRulesetOutput(span, '_', 'ip')
     .bulkAddCIDR4(streamCidrs4)
     .bulkAddCIDR6(streamCidrs6);
 
-  const telegramCidr = new RulesetOutput(span, '_', 'ip')
-    .replaceStrategies([new ClashClassicRuleSet('ip')])
+  const telegramCidr = new ClashOnlyRulesetOutput(span, '_', 'ip')
     .bulkAddCIDR4(telegramCidrs4)
     .bulkAddCIDR6(telegramCidrs6);
 
-  const lanCidrs = new RulesetOutput(span, '_', 'ip')
-    .replaceStrategies([new ClashClassicRuleSet('ip')])
+  const lanCidrs = new ClashOnlyRulesetOutput(span, '_', 'ip')
     .addFromRuleset(rawLanCidrs);
 
   const output = generateAppProfile(
     ...(
       (await Promise.all([
-        domestic.output(),
-        microsoftApple.output(),
-        stream.output(),
-        steam.output(),
-        global.output(),
-        direct.output(),
-        domesticCidr.output(),
-        streamCidr.output(),
-        telegramCidr.output(),
-        lanCidrs.output()
+        domestic.compile(),
+        microsoftApple.compile(),
+        stream.compile(),
+        steam.compile(),
+        global.compile(),
+        direct.compile(),
+        domesticCidr.compile(),
+        streamCidr.compile(),
+        telegramCidr.compile(),
+        lanCidrs.compile()
       ])).map(output => nullthrow(output[0]))
     ) as [
       string[], string[], string[], string[], string[],

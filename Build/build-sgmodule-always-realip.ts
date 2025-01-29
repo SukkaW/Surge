@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { task } from './trace';
-import { compareAndWriteFile, DomainsetOutput } from './lib/create-file';
+import { compareAndWriteFile } from './lib/create-file';
 import { DIRECTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
 import { DOMESTICS, DOH_BOOTSTRAP } from '../Source/non_ip/domestic';
@@ -10,6 +10,7 @@ import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createGetDnsMappingRule } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
 import { ClashDomainSet } from './lib/writing-strategy/clash';
+import { FileOutput } from './lib/rules/base';
 
 const HOSTNAMES = [
   // Network Detection, Captive Portal
@@ -39,14 +40,14 @@ const HOSTNAMES = [
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {
   const surge: string[] = [];
-  const clashFakeIpFilter = new DomainsetOutput(span, 'clash_fake_ip_filter')
+  const clashFakeIpFilter = new FileOutput(span, 'clash_fake_ip_filter')
     .withTitle('Sukka\'s Ruleset - Always Real IP Plus')
     .withDescription([
       ...SHARED_DESCRIPTION,
       '',
       'Clash.Meta fake-ip-filter as ruleset'
     ])
-    .replaceStrategies([
+    .withStrategies([
       new ClashDomainSet('domainset')
     ]);
 

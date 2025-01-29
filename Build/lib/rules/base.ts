@@ -57,7 +57,7 @@ export class FileOutput {
     return this;
   }
 
-  replaceStrategies(strategies: Array<BaseWriteStrategy | false>) {
+  public withStrategies(strategies: Array<BaseWriteStrategy | false>) {
     this.strategies = strategies;
     return this;
   }
@@ -444,7 +444,7 @@ export class FileOutput {
     });
   }
 
-  async output(): Promise<Array<string[] | null>> {
+  async compile(): Promise<Array<string[] | null>> {
     await this.writeToStrategies();
 
     return this.strategies.reduce<Array<string[] | null>>((acc, strategy) => {
