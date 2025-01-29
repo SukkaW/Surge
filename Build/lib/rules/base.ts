@@ -416,10 +416,10 @@ export class FileOutput {
   }
 
   write(): Promise<void> {
-    return this.span.traceChildAsync('write all', async () => {
+    return this.span.traceChildAsync('write all', async (childSpan) => {
       const promises: Array<Promise<void> | void> = [];
 
-      await this.writeToStrategies();
+      await childSpan.traceChildAsync('write to strategies', this.writeToStrategies.bind(this));
 
       invariant(this.title, 'Missing title');
       invariant(this.description, 'Missing description');
@@ -429,7 +429,7 @@ export class FileOutput {
         if (strategy) {
           const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
           promises.push(strategy.output(
-            this.span,
+            childSpan,
             this.title,
             this.description,
             this.date,
