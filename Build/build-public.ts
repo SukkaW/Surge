@@ -53,7 +53,7 @@ export const buildPublic = task(require.main === module, __filename)(async (span
     span,
     [
       '/*',
-      '  cache-control: public, max-age=180, stale-while-revalidate=60, stale-if-error=30',
+      '  cache-control: public, max-age=240, stale-while-revalidate=60, stale-if-error=15',
       'https://:project.pages.dev/*',
       '  X-Robots-Tag: noindex',
       '/Modules/*',
