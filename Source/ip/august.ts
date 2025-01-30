@@ -1,3 +1,4 @@
+// Internet Neutrality doesn't apply to those who are actively breaking it.
 export const AUGUST_ASN = [
   '1012', // Moe BGP, peers with both AS40111 and AS945
   '945', // hkgo LLC, peers with AS1012
@@ -8,5 +9,7 @@ export const AUGUST_ASN = [
   '54625', // peers with AS945
   '7257', // only upstream is AS945
   '18044', // only upstream is AS945
-  '62489' // only upstream is AS945 and AS1012
+  '62489', // only upstream is AS945 and AS1012
+  '5111', // exists in AS-WAKUWAKU
+  '14651' // only upstream is AS945
 ];
