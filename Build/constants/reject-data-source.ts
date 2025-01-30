@@ -200,7 +200,10 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   ],
   // GameConsoleAdblockList
   // Update almost once per 1 to 3 months, let's set a 10 days cache ttl
-  ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt', null],
+  [
+    'https://cdn.jsdelivr.net/gh/DandelionSprout/adfilt@master/GameConsoleAdblockList.txt',
+    ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt']
+  ],
   // PiHoleBlocklist
   // Update almost once per 3 months, let's set a 10 days cache ttl
   [

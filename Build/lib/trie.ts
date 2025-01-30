@@ -506,6 +506,16 @@ abstract class Triebase<Meta = any> {
   public [util.inspect.custom](depth: number) {
     return this.inspect(depth);
   };
+
+  public merge(trie: Triebase<Meta>) {
+    const handleSuffix = (suffix: string[], subdomain: boolean, meta: Meta) => {
+      this.add(fastStringArrayJoin(suffix, '.'), subdomain, meta);
+    };
+
+    trie.walk(handleSuffix);
+
+    return this;
+  }
 }
 
 export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
