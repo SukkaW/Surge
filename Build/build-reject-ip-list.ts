@@ -8,7 +8,7 @@ import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
 import { fetchAssets } from './lib/fetch-assets';
 import { fastIpVersion } from './lib/misc';
-import { AUGUST_ASN } from '../Source/ip/august';
+import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
@@ -74,7 +74,9 @@ export const buildRejectIPList = task(require.main === module, __filename)(async
       .bulkAddCIDR4NoResolve(botNetIPs[0])
       .bulkAddCIDR6NoResolve(botNetIPs[1])
       .bulkAddIPASN(AUGUST_ASN)
+      .bulkAddIPASN(HUIZE_ASN)
       .write(),
-    compareAndWriteFile(span, [AUGUST_ASN.join(' ')], path.join(OUTPUT_INTERNAL_DIR, 'august_asn.txt'))
+    compareAndWriteFile(span, [AUGUST_ASN.join(' ')], path.join(OUTPUT_INTERNAL_DIR, 'august_asn.txt')),
+    compareAndWriteFile(span, [HUIZE_ASN.join(' ')], path.join(OUTPUT_INTERNAL_DIR, 'huize_asn.txt'))
   ]);
 });

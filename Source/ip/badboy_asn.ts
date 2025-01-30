@@ -11,5 +11,17 @@ export const AUGUST_ASN = [
   '18044', // only upstream is AS945
   '62489', // only upstream is AS945 and AS1012
   '5111', // exists in AS-WAKUWAKU
-  '14651' // only upstream is AS945
+  '14651', // only upstream is AS945
+
+  '7480' // Friend of August, stealing others' XC at STUIX
+];
+
+export const HUIZE_ASN = [
+  '61302',
+  '44324', // MoeDove
+  '53808', // MoeDove
+  '60539',
+  '60842',
+  '140915',
+  '40115' // MoeDove
 ];
