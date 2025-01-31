@@ -42,7 +42,11 @@ export class SingboxSource extends BaseWriteStrategy {
     });
   }
 
-  constructor(public type: string, protected outputDir = OUTPUT_SINGBOX_DIR) {
+  constructor(
+    /** Since sing-box only have one format that does not reflect type, we need to specify it */
+    public type: 'domainset' | 'non_ip' | 'ip' /* | (string & {}) */,
+    public readonly outputDir = OUTPUT_SINGBOX_DIR
+  ) {
     super(outputDir);
   }
 

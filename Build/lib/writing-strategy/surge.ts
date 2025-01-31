@@ -50,7 +50,11 @@ export class SurgeRuleSet extends BaseWriteStrategy {
 
   protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-  constructor(public readonly type: string, outputDir = OUTPUT_SURGE_DIR) {
+  constructor(
+    /** Surge RULE-SET can be both ip or non_ip, so this needs to be specified */
+    public readonly type: 'ip' | 'non_ip' | (string & {}),
+    public readonly outputDir = OUTPUT_SURGE_DIR
+  ) {
     super(outputDir);
   }
 
@@ -130,7 +134,7 @@ export class SurgeRuleSet extends BaseWriteStrategy {
 export class SurgeMitmSgmodule extends BaseWriteStrategy {
   // readonly type = 'domainset';
   readonly fileExtension = 'sgmodule';
-  type = '';
+  readonly type = '';
 
   private rules = new Set<string>();
 

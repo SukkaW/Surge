@@ -6,16 +6,15 @@ import { SurgeRuleSet } from '../writing-strategy/surge';
 import { FileOutput } from './base';
 
 export class IPListOutput extends FileOutput {
-  protected type = 'ip' as const;
   strategies: Array<false | BaseWriteStrategy>;
 
   constructor(span: Span, id: string, private readonly clashUseRule = true) {
     super(span, id);
 
     this.strategies = [
-      new SurgeRuleSet(this.type),
-      this.clashUseRule ? new ClashClassicRuleSet(this.type) : new ClashIPSet(),
-      new SingboxSource(this.type)
+      new SurgeRuleSet('ip'),
+      this.clashUseRule ? new ClashClassicRuleSet('ip') : new ClashIPSet(),
+      new SingboxSource('ip')
     ];
   }
 }

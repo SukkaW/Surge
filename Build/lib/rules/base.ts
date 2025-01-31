@@ -8,7 +8,7 @@ import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { readFileByLine } from '../fetch-text-by-line';
 import { asyncWriteToStream } from 'foxts/async-write-to-stream';
 import type { BaseWriteStrategy } from '../writing-strategy/base';
-import { merge } from 'fast-cidr-tools';
+import { merge as mergeCidr } from 'fast-cidr-tools';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import path from 'node:path';
 import { SurgeMitmSgmodule } from '../writing-strategy/surge';
@@ -369,10 +369,10 @@ export class FileOutput {
     let ipcidr6NoResolve: string[] | null = null;
 
     if (this.ipcidr.size) {
-      ipcidr = merge(Array.from(this.ipcidr), true);
+      ipcidr = mergeCidr(Array.from(this.ipcidr), true);
     }
     if (this.ipcidrNoResolve.size) {
-      ipcidrNoResolve = merge(Array.from(this.ipcidrNoResolve), true);
+      ipcidrNoResolve = mergeCidr(Array.from(this.ipcidrNoResolve), true);
     }
     if (this.ipcidr6.size) {
       ipcidr6 = Array.from(this.ipcidr6);
@@ -433,9 +433,12 @@ export class FileOutput {
             this.title,
             this.description,
             this.date,
-            strategy.type
-              ? path.join(strategy.type, basename)
-              : basename
+            path.join(
+              strategy.outputDir,
+              strategy.type
+                ? path.join(strategy.type, basename)
+                : basename
+            )
           ));
         }
       }

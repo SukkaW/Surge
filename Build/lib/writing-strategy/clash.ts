@@ -12,7 +12,7 @@ export class ClashDomainSet extends BaseWriteStrategy {
 
   protected result: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-  constructor(protected outputDir = OUTPUT_CLASH_DIR) {
+  constructor(public readonly outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
   }
 
@@ -49,7 +49,7 @@ export class ClashIPSet extends BaseWriteStrategy {
 
   protected result: string[] = [];
 
-  constructor(protected outputDir = OUTPUT_CLASH_DIR) {
+  constructor(public readonly outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
   }
 
@@ -84,7 +84,7 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
 
   protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
 
-  constructor(public readonly type: string, protected outputDir = OUTPUT_CLASH_DIR) {
+  constructor(public readonly type: 'ip' | 'non_ip' /* | (string & {}) */, public readonly outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
   }
 

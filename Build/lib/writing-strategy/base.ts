@@ -1,15 +1,13 @@
-import path from 'node:path';
 import type { Span } from '../../trace';
 import { compareAndWriteFile } from '../create-file';
 
 export abstract class BaseWriteStrategy {
-  // abstract readonly type: 'domainset' | 'non_ip' | 'ip' | (string & {});
   public overwriteFilename: string | null = null;
   public abstract readonly type: 'domainset' | 'non_ip' | 'ip' | (string & {});
 
   abstract readonly fileExtension: 'conf' | 'txt' | 'json' | (string & {});
 
-  constructor(protected outputDir: string) {}
+  constructor(public readonly outputDir: string) {}
 
   protected abstract result: string[] | null;
 
@@ -51,14 +49,14 @@ export abstract class BaseWriteStrategy {
     return result;
   };
 
-  abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
+  protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
 
-  output(
+  public output(
     span: Span,
     title: string,
     description: string[] | readonly string[],
     date: Date,
-    relativePath: string
+    filePath: string
   ): void | Promise<void> {
     if (!this.result) {
       return;
@@ -71,11 +69,11 @@ export abstract class BaseWriteStrategy {
         date,
         this.result
       ),
-      path.join(this.outputDir, relativePath)
+      filePath
     );
   };
 
-  get content() {
+  public get content() {
     return this.result;
   }
 }

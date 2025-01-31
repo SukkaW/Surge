@@ -5,13 +5,13 @@ import { SurgeRuleSet } from '../writing-strategy/surge';
 import { FileOutput } from './base';
 
 export class RulesetOutput extends FileOutput {
-  constructor(span: Span, id: string, protected type: 'non_ip' | 'ip' | (string & {})) {
+  constructor(span: Span, id: string, type: 'non_ip' | 'ip') {
     super(span, id);
 
     this.strategies = [
-      new SurgeRuleSet(this.type),
-      new ClashClassicRuleSet(this.type),
-      new SingboxSource(this.type)
+      new SurgeRuleSet(type),
+      new ClashClassicRuleSet(type),
+      new SingboxSource(type)
     ];
   }
 }
@@ -20,13 +20,13 @@ export class SurgeOnlyRulesetOutput extends FileOutput {
   constructor(
     span: Span,
     id: string,
-    protected type: 'non_ip' | 'ip' | (string & {}),
+    type: 'non_ip' | 'ip' | (string & {}),
     overrideOutputDir?: string
   ) {
     super(span, id);
 
     this.strategies = [
-      new SurgeRuleSet(this.type, overrideOutputDir)
+      new SurgeRuleSet(type, overrideOutputDir)
     ];
   }
 }
@@ -35,12 +35,12 @@ export class ClashOnlyRulesetOutput extends FileOutput {
   constructor(
     span: Span,
     id: string,
-    protected type: 'non_ip' | 'ip' | (string & {})
+    type: 'non_ip' | 'ip'
   ) {
     super(span, id);
 
     this.strategies = [
-      new ClashClassicRuleSet(this.type)
+      new ClashClassicRuleSet(type)
     ];
   }
 }
