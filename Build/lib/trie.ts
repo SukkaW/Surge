@@ -20,9 +20,9 @@ type TrieNode<Meta = any> = [
   Meta /** meta */
 ];
 
-function deepTrieNodeToJSON(node: TrieNode,
-  unpackMeta: ((meta?: any) => string) | undefined) {
-  const obj: Record<string, any> = {};
+function deepTrieNodeToJSON<Meta = unknown>(node: TrieNode,
+  unpackMeta: ((meta?: Meta) => string) | undefined) {
+  const obj: Record<string, unknown> = {};
 
   obj['[start]'] = getBit(node[0], START);
   obj['[subdomain]'] = getBit(node[0], INCLUDE_ALL_SUBDOMAIN);
@@ -39,7 +39,7 @@ function deepTrieNodeToJSON(node: TrieNode,
   return obj;
 }
 
-const createNode = <Meta = any>(parent: TrieNode | null = null): TrieNode => [1, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
+const createNode = <Meta = unknown>(parent: TrieNode | null = null): TrieNode => [1, parent, new Map<string, TrieNode>(), null] as TrieNode<Meta>;
 
 function hostnameToTokens(hostname: string, hostnameFromIndex: number): string[] {
   const tokens = hostname.split('.');
@@ -90,7 +90,7 @@ interface FindSingleChildLeafResult<Meta> {
   parent: TrieNode<Meta>
 }
 
-abstract class Triebase<Meta = any> {
+abstract class Triebase<Meta = unknown> {
   protected readonly $root: TrieNode<Meta> = createNode();
   protected $size = 0;
 
@@ -518,7 +518,7 @@ abstract class Triebase<Meta = any> {
   }
 }
 
-export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
+export class HostnameSmolTrie<Meta = unknown> extends Triebase<Meta> {
   public smolTree = true;
 
   add(suffix: string, includeAllSubdomain = suffix[0] === '.', meta?: Meta, hostnameFromIndex = suffix[0] === '.' ? 1 : 0): void {
@@ -605,7 +605,7 @@ export class HostnameSmolTrie<Meta = any> extends Triebase<Meta> {
   };
 }
 
-export class HostnameTrie<Meta = any> extends Triebase<Meta> {
+export class HostnameTrie<Meta = unknown> extends Triebase<Meta> {
   get size() {
     return this.$size;
   }
