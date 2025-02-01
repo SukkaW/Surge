@@ -514,14 +514,21 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
 
     const lineA = linesA[index];
 
-    if (lineA.length === 0 && lineB.length === 0) {
-      continue;
-    }
-
-    // not both line are empty
-    if (lineA.length === 0 || lineB.length === 0) {
+    if (lineA.length === 0) {
+      if (lineB.length === 0) {
+        // both lines are empty, check next line
+        continue;
+      }
+      // lineA is empty but lineB is not
       return false;
     }
+    // now lineA can not be empty
+    if (lineB.length === 0) {
+      // lineB is empty but lineA is not
+      return false;
+    }
+
+    // now both lines can not be empty
 
     const firstCharA = lineA.charCodeAt(0);
     const firstCharB = lineB.charCodeAt(0);
@@ -530,16 +537,17 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
       return false;
     }
 
-    if (firstCharA === 35 /* # */ && firstCharB === 35 /* # */) {
+    // now firstCharA is equal to firstCharB, we only need to check the first char
+    if (firstCharA === 35 /* # */) {
       continue;
     }
     // adguard conf
-    if (firstCharA === 33 /* ! */ && firstCharB === 33 /* ! */) {
+    if (firstCharA === 33 /* ! */) {
       continue;
     }
 
     if (
-      firstCharA === 47 /* / */ && firstCharB === 47 /* / */
+      firstCharA === 47 /* / */
       && lineA[1] === '/' && lineB[1] === '/'
       && lineA[3] === '#' && lineB[3] === '#'
     ) {
