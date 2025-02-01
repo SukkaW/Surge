@@ -26,6 +26,12 @@ if (!fs.existsSync(CACHE_DIR)) {
 const agent = new Agent({ allowH2: true });
 
 setGlobalDispatcher(agent.compose(
+  interceptors.dns({
+    // disable IPv6
+    dualStack: false,
+    affinity: 4
+    // TODO: proper cacheable-lookup, or even DoH
+  }),
   interceptors.retry({
     maxRetries: 5,
     minTimeout: 500, // The initial retry delay in milliseconds
