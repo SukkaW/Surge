@@ -57,22 +57,12 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
       '',
       'This file contains common speedtest endpoints.'
     ])
-    .addFromDomainset(await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'domainset/speedtest.conf')))
-    .addFromDomainset(
-      (await readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')))
-        .reduce<string[]>((acc, cur) => {
-          const hn = tldts.getHostname(cur, { detectIp: false, validateHostname: true });
-          if (hn) {
-            acc.push(hn);
-          }
-          return acc;
-        }, [])
-    );
+    .addFromDomainset(readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'domainset/speedtest.conf')))
+    .addFromDomainset(readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')));
 
   const hostnameGroup = await span.traceChildPromise('get speedtest hosts groups', getSpeedtestHostsGroupsPromise);
 
-  hostnameGroup.forEach(hostname => output.bulkAddDomain(hostname));
-  await output.done();
+  hostnameGroup.forEach(output.bulkAddDomain.bind(output));
 
   return output.write();
 });

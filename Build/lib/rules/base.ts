@@ -4,6 +4,7 @@ import { invariant, not } from 'foxts/guard';
 import picocolors from 'picocolors';
 import fs from 'node:fs';
 import { writeFile } from '../misc';
+import type { MaybePromise } from '../misc';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { readFileByLine } from '../fetch-text-by-line';
 import { asyncWriteToStream } from 'foxts/async-write-to-stream';
@@ -13,6 +14,10 @@ import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import path from 'node:path';
 import { SurgeMitmSgmodule } from '../writing-strategy/surge';
 
+/**
+ * Holds the universal rule data (domain, ip, url-regex, etc. etc.)
+ * This class is not about format, instead it will call the class that does
+ */
 export class FileOutput {
   protected strategies: Array<BaseWriteStrategy | false> = [];
 
@@ -135,12 +140,24 @@ export class FileOutput {
     }
   }
 
-  addFromDomainset(source: AsyncIterable<string> | Iterable<string> | string[]) {
-    this.pendingPromise = (this.pendingPromise ||= Promise.resolve()).then(() => this.addFromDomainsetPromise(source));
+  addFromDomainset(source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) {
+    if (this.pendingPromise) {
+      if ('then' in source) {
+        this.pendingPromise = this.pendingPromise.then(() => source).then(src => this.addFromDomainsetPromise(src));
+        return this;
+      }
+      this.pendingPromise = this.pendingPromise.then(() => this.addFromDomainsetPromise(source));
+      return this;
+    }
+    if ('then' in source) {
+      this.pendingPromise = source.then(src => this.addFromDomainsetPromise(src));
+      return this;
+    }
+    this.pendingPromise = this.addFromDomainsetPromise(source);
     return this;
   }
 
-  private async addFromRulesetPromise(source: AsyncIterable<string> | Iterable<string>) {
+  private async addFromRulesetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
     for await (const line of source) {
       const splitted = line.split(',');
       const type = splitted[0];
@@ -203,13 +220,20 @@ export class FileOutput {
     }
   }
 
-  addFromRuleset(source: AsyncIterable<string> | Iterable<string> | Promise<Iterable<string>>) {
+  addFromRuleset(source: MaybePromise<AsyncIterable<string> | Iterable<string>>) {
     if (this.pendingPromise) {
-      this.pendingPromise = this.pendingPromise.then(() => source);
-    } else {
-      this.pendingPromise = Promise.resolve(source);
+      if ('then' in source) {
+        this.pendingPromise = this.pendingPromise.then(() => source).then(src => this.addFromRulesetPromise(src));
+        return this;
+      }
+      this.pendingPromise = this.pendingPromise.then(() => this.addFromRulesetPromise(source));
+      return this;
     }
-    this.pendingPromise = this.pendingPromise.then((source) => this.addFromRulesetPromise(source));
+    if ('then' in source) {
+      this.pendingPromise = source.then(src => this.addFromRulesetPromise(src));
+      return this;
+    }
+    this.pendingPromise = this.addFromRulesetPromise(source);
     return this;
   }
 
@@ -282,14 +306,15 @@ export class FileOutput {
   // }
   private strategiesWritten = false;
 
-  private async writeToStrategies() {
+  private writeToStrategies() {
+    if (this.pendingPromise) {
+      throw new Error('You should call done() before calling writeToStrategies()');
+    }
     if (this.strategiesWritten) {
       throw new Error('Strategies already written');
     }
 
     this.strategiesWritten = true;
-
-    await this.done();
 
     const kwfilter = createKeywordFilter(Array.from(this.domainKeywords));
 
@@ -415,40 +440,44 @@ export class FileOutput {
     }
   }
 
-  write(): Promise<void> {
+  write(): Promise<unknown> {
     return this.span.traceChildAsync('write all', async (childSpan) => {
-      const promises: Array<Promise<void> | void> = [];
+      await this.done();
+      childSpan.traceChildSync('write to strategies', this.writeToStrategies.bind(this));
 
-      await childSpan.traceChildAsync('write to strategies', this.writeToStrategies.bind(this));
+      return childSpan.traceChildAsync('output to disk', (childSpan) => {
+        const promises: Array<Promise<void> | void> = [];
 
-      invariant(this.title, 'Missing title');
-      invariant(this.description, 'Missing description');
+        invariant(this.title, 'Missing title');
+        invariant(this.description, 'Missing description');
 
-      for (let i = 0, len = this.strategies.length; i < len; i++) {
-        const strategy = this.strategies[i];
-        if (strategy) {
-          const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
-          promises.push(strategy.output(
-            childSpan,
-            this.title,
-            this.description,
-            this.date,
-            path.join(
-              strategy.outputDir,
-              strategy.type
-                ? path.join(strategy.type, basename)
-                : basename
-            )
-          ));
+        for (let i = 0, len = this.strategies.length; i < len; i++) {
+          const strategy = this.strategies[i];
+          if (strategy) {
+            const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
+            promises.push(strategy.output(
+              childSpan,
+              this.title,
+              this.description,
+              this.date,
+              path.join(
+                strategy.outputDir,
+                strategy.type
+                  ? path.join(strategy.type, basename)
+                  : basename
+              )
+            ));
+          }
         }
-      }
 
-      await Promise.all(promises);
+        return Promise.all(promises);
+      });
     });
   }
 
   async compile(): Promise<Array<string[] | null>> {
-    await this.writeToStrategies();
+    await this.done();
+    this.writeToStrategies();
 
     return this.strategies.reduce<Array<string[] | null>>((acc, strategy) => {
       if (strategy) {

@@ -193,16 +193,19 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         }>((acc, cur) => {
           const { domains, dns, ...rest } = cur[1];
           domains.forEach((domain) => {
-            let domainWildcard = domain;
-            if (domain[0] === '$') {
-              domainWildcard = domain.slice(1);
-            } else if (domain[0] === '+') {
-              domainWildcard = `*.${domain.slice(1)}`;
-            } else {
-              domainWildcard = `+.${domain}`;
+            switch (domain[0]) {
+              case '$':
+                domain = domain.slice(1);
+                break;
+              case '+':
+                domain = `*.${domain.slice(1)}`;
+                break;
+              default:
+                domain = `+.${domain}`;
+                break;
             }
 
-            acc.dns['nameserver-policy'][domainWildcard] = dns === 'system'
+            acc.dns['nameserver-policy'][domain] = dns === 'system'
               ? ['system://', 'system', 'dhcp://system']
               : dns;
           });

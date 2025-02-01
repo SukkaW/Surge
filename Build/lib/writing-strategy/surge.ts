@@ -156,7 +156,7 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
 
   constructor(moduleName: string, outputDir = OUTPUT_MODULES_DIR) {
     super(outputDir);
-    this.overwriteFilename = moduleName;
+    this.withFilename(moduleName);
   }
 
   writeDomain = noop;

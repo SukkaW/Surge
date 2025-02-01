@@ -1,11 +1,24 @@
 import type { Span } from '../../trace';
 import { compareAndWriteFile } from '../create-file';
 
+/**
+ * The class is not about holding rule data, instead it determines how the
+ * date is written to a file.
+ */
 export abstract class BaseWriteStrategy {
+  /**
+   * Sometimes a ruleset will create extra files (e.g. reject-url-regex w/ mitm.sgmodule),
+   * and doesn't share the same filename and id. This property is used to overwrite the filename.
+   */
   public overwriteFilename: string | null = null;
+  public withFilename(filename: string) {
+    this.overwriteFilename = filename;
+    return this;
+  }
+
   public abstract readonly type: 'domainset' | 'non_ip' | 'ip' | (string & {});
 
-  abstract readonly fileExtension: 'conf' | 'txt' | 'json' | (string & {});
+  abstract readonly fileExtension: 'conf' | 'txt' | 'json' | 'sgmodule' /* | (string & {}) */;
 
   constructor(public readonly outputDir: string) {}
 
@@ -28,6 +41,8 @@ export abstract class BaseWriteStrategy {
   abstract writeDestinationPorts(port: Set<string>): void;
   abstract writeOtherRules(rule: string[]): void;
 
+  protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
+
   static readonly domainWildCardToRegex = (domain: string) => {
     let result = '^';
     for (let i = 0, len = domain.length; i < len; i++) {
@@ -48,8 +63,6 @@ export abstract class BaseWriteStrategy {
     result += '$';
     return result;
   };
-
-  protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
 
   public output(
     span: Span,

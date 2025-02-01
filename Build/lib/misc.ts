@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import type { PathLike } from 'node:fs';
 import fsp from 'node:fs/promises';
 
+export type MaybePromise<T> = T | Promise<T>;
+
 export function fastStringCompare(a: string, b: string) {
   const lenA = a.length;
   const lenB = b.length;
