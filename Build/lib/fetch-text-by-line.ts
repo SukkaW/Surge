@@ -1,6 +1,4 @@
 import fs from 'node:fs';
-import fsp from 'node:fs/promises';
-import type { FileHandle } from 'node:fs/promises';
 import readline from 'node:readline';
 
 import { TextLineStream } from './text-line-transform-stream';
@@ -17,11 +15,6 @@ export function readFileByLine(file: string): AsyncIterable<string> {
     input: fs.createReadStream(file/* , { encoding: 'utf-8' } */),
     crlfDelay: Infinity
   });
-}
-
-const fdReadLines = (fd: FileHandle) => fd.readLines();
-export async function readFileByLineNew(file: string): Promise<AsyncIterable<string>> {
-  return fsp.open(file, 'r').then(fdReadLines);
 }
 
 export const createReadlineInterfaceFromResponse: ((resp: UndiciResponseData | UnidiciWebResponse, processLine?: boolean) => ReadableStream<string>) = (resp, processLine = false) => {

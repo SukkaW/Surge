@@ -6,11 +6,7 @@ import { mkdirSync } from 'node:fs';
 import picocolors from 'picocolors';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { performance } from 'node:perf_hooks';
-import fs from 'node:fs';
-import { simpleStringHash } from 'foxts/simple-string-hash';
 // import type { UndiciResponseData } from './fetch-retry';
-
-import { CACHE_DIR } from '../constants/dir';
 
 export interface CacheOptions<S = string> {
   /** Path to sqlite file dir */
@@ -34,32 +30,6 @@ interface CacheApplyNonRawOption<T, S> extends CacheApplyRawOption {
 }
 
 export type CacheApplyOption<T, S> = T extends S ? CacheApplyRawOption : CacheApplyNonRawOption<T, S>;
-
-const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-const ONE_HOUR = 60 * 60 * 1000;
-const ONE_DAY = 24 * ONE_HOUR;
-// Add some randomness to the cache ttl to avoid thundering herd
-export const TTL = {
-  useHttp304: Symbol('useHttp304'),
-  humanReadable(ttl: number) {
-    if (ttl >= ONE_DAY) {
-      return `${Math.round(ttl / 24 / 60 / 60 / 1000)}d`;
-    }
-    if (ttl >= 60 * 60 * 1000) {
-      return `${Math.round(ttl / 60 / 60 / 1000)}h`;
-    }
-    return `${Math.round(ttl / 1000)}s`;
-  },
-  THREE_HOURS: () => randomInt(1, 3) * ONE_HOUR,
-  TWLVE_HOURS: () => randomInt(8, 12) * ONE_HOUR,
-  ONE_DAY: () => randomInt(23, 25) * ONE_HOUR,
-  ONE_WEEK_STATIC: ONE_DAY * 7,
-  THREE_DAYS: () => randomInt(1, 3) * ONE_DAY,
-  ONE_WEEK: () => randomInt(4, 7) * ONE_DAY,
-  TEN_DAYS: () => randomInt(7, 10) * ONE_DAY,
-  TWO_WEEKS: () => randomInt(10, 14) * ONE_DAY
-};
 
 export class Cache<S = string> {
   private db: Database;
@@ -186,21 +156,11 @@ export class Cache<S = string> {
   }
 }
 
-// drop deprecated cache
-new Cache({ cachePath: CACHE_DIR }).deleteTable('cache');
-
 // process.on('exit', () => {
 //   fsFetchCache.destroy();
 // });
 
 const separator = '\u0000';
-export const serializeSet = (set: Set<string>) => fastStringArrayJoin(Array.from(set), separator);
-export const deserializeSet = (str: string) => new Set(str.split(separator));
+
 export const serializeArray = (arr: string[]) => fastStringArrayJoin(arr, separator);
 export const deserializeArray = (str: string) => str.split(separator);
-
-const getFileContentHash = (filename: string) => simpleStringHash(fs.readFileSync(filename, 'utf-8'));
-export function createCacheKey(filename: string) {
-  const fileHash = getFileContentHash(filename);
-  return (key: string) => key + '$' + fileHash + '$';
-}
