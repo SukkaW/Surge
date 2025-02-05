@@ -69,6 +69,8 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
   }
 
   try {
+    await import('why-is-node-running');
+
     const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
 
