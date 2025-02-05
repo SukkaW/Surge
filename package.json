@@ -71,7 +71,11 @@
     "patchedDependencies": {
       "undici": "patches/undici.patch",
       "whoiser": "patches/whoiser.patch"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "better-sqlite3"
+    ]
   },
   "resolutions": {
     "has": "npm:@nolyfill/has@latest"
