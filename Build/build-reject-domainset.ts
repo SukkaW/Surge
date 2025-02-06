@@ -97,8 +97,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
 
-          rejectOutput.bulkAddDomain(blackDomains);
-          rejectOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+          rejectExtraOutput.bulkAddDomain(blackDomains);
+          rejectExtraOutput.bulkAddDomainSuffix(blackDomainSuffixes);
         })
       ),
       adguardFiltersWhitelistsDownloads.map(
