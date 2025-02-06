@@ -6,7 +6,6 @@ import { fastStringCompare } from './misc';
 import util from 'node:util';
 import { noop } from 'foxts/noop';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
-import FIFO from 'fast-fifo';
 
 import { deleteBit, getBit, missingBit, setBit } from 'foxts/bitwise';
 
@@ -193,9 +192,9 @@ abstract class Triebase<Meta = unknown> {
 
   private static bfsResults: [node: TrieNode | null, suffix: string[]] = [null, []];
 
-  private static bfs<Meta>(this: void, nodeStack: FIFO<TrieNode<Meta>>, suffixStack: FIFO<string[]>) {
-    const node = nodeStack.shift()!;
-    const suffix = suffixStack.shift()!;
+  private static dfs<Meta>(this: void, nodeStack: Array<TrieNode<Meta>>, suffixStack: string[][]) {
+    const node = nodeStack.pop()!;
+    const suffix = suffixStack.pop()!;
 
     node[2].forEach((childNode, k) => {
       // Pushing the child node to the stack for next iteration of DFS
@@ -210,9 +209,9 @@ abstract class Triebase<Meta = unknown> {
     return Triebase.bfsResults;
   }
 
-  private static bfsWithSort<Meta>(this: void, nodeStack: FIFO<TrieNode<Meta>>, suffixStack: FIFO<string[]>) {
-    const node = nodeStack.shift()!;
-    const suffix = suffixStack.shift()!;
+  private static dfsWithSort<Meta>(this: void, nodeStack: Array<TrieNode<Meta>>, suffixStack: string[][]) {
+    const node = nodeStack.pop()!;
+    const suffix = suffixStack.pop()!;
 
     const child = node[2];
 
@@ -241,13 +240,13 @@ abstract class Triebase<Meta = unknown> {
     initialSuffix: string[] = [],
     withSort = false
   ) {
-    const bfsImpl = withSort ? Triebase.bfsWithSort : Triebase.bfs;
+    const bfsImpl = withSort ? Triebase.dfsWithSort : Triebase.dfs;
 
-    const nodeStack = new FIFO<TrieNode<Meta>>();
+    const nodeStack: Array<TrieNode<Meta>> = [];
     nodeStack.push(initialNode);
 
     // Resolving initial string (begin the start of the stack)
-    const suffixStack = new FIFO<string[]>();
+    const suffixStack: string[][] = [];
     suffixStack.push(initialSuffix);
 
     let node: TrieNode<Meta> = initialNode;
@@ -275,19 +274,19 @@ abstract class Triebase<Meta = unknown> {
     initialNode = this.$root,
     initialSuffix: string[] = []
   ) {
-    const nodeStack = new FIFO<TrieNode<Meta>>();
+    const nodeStack: Array<TrieNode<Meta>> = [];
     nodeStack.push(initialNode);
 
     // Resolving initial string (begin the start of the stack)
-    const suffixStack = new FIFO<string[]>();
+    const suffixStack: string[][] = [];
     suffixStack.push(initialSuffix);
 
     let node: TrieNode<Meta> = initialNode;
     let child: Map<string, TrieNode<Meta>> = node[2];
 
     do {
-      node = nodeStack.shift()!;
-      const suffix = suffixStack.shift()!;
+      node = nodeStack.pop()!;
+      const suffix = suffixStack.pop()!;
       child = node[2];
       if (child.size) {
         const keys = Array.from(child.keys()).sort(Triebase.compare);
