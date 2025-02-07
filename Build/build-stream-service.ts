@@ -4,7 +4,7 @@ import { task } from './trace';
 
 import { ALL, NORTH_AMERICA, EU, HK, TW, JP, KR } from '../Source/stream';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { RulesetOutput } from './lib/create-file';
+import { RulesetOutput } from './lib/rules/ruleset';
 
 function createRulesetForStreamService(
   span: Span,

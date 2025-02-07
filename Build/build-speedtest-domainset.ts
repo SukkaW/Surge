@@ -5,7 +5,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 
-import { DomainsetOutput } from './lib/create-file';
+import { DomainsetOutput } from './lib/rules/domainset';
 import { OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { newQueue } from '@henrygd/queue';
 import { $$fetch } from './lib/fetch-retry';

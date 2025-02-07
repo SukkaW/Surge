@@ -3,7 +3,7 @@ import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { RulesetOutput } from './lib/create-file';
+import { RulesetOutput } from './lib/rules/ruleset';
 import { $$fetch } from './lib/fetch-retry';
 import { fastIpVersion } from './lib/misc';
 

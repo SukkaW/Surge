@@ -17,7 +17,7 @@ import { getPhishingDomains } from './lib/get-phishing-domains';
 
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
-import { DomainsetOutput } from './lib/create-file';
+import { DomainsetOutput } from './lib/rules/domainset';
 import { foundDebugDomain } from './lib/parse-filter/shared';
 import { AdGuardHomeOutput } from './lib/rules/domainset';
 

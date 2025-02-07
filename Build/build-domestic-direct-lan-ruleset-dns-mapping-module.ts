@@ -11,7 +11,7 @@ import { createMemoizedPromise } from './lib/memo-promise';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, SOURCE_DIR } from './constants/dir';
-import { RulesetOutput } from './lib/create-file';
+import { RulesetOutput } from './lib/rules/ruleset';
 import { SurgeOnlyRulesetOutput } from './lib/rules/ruleset';
 
 export function createGetDnsMappingRule(allowWildcard: boolean) {

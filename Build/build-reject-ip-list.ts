@@ -3,12 +3,13 @@ import path from 'node:path';
 import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { compareAndWriteFile, RulesetOutput } from './lib/create-file';
+import { compareAndWriteFile } from './lib/create-file';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
 import { fetchAssets } from './lib/fetch-assets';
 import { fastIpVersion } from './lib/misc';
 import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
+import { RulesetOutput } from './lib/rules/ruleset';
 
 const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
 const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {

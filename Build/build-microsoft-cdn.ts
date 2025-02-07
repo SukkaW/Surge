@@ -4,7 +4,7 @@ import { HostnameSmolTrie } from './lib/trie';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
-import { RulesetOutput } from './lib/create-file';
+import { RulesetOutput } from './lib/rules/ruleset';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 
 const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];

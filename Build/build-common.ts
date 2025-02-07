@@ -9,7 +9,8 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { fdir as Fdir } from 'fdir';
 import { appendArrayInPlace } from './lib/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
-import { DomainsetOutput, RulesetOutput } from './lib/create-file';
+import { DomainsetOutput } from './lib/rules/domainset';
+import { RulesetOutput } from './lib/rules/ruleset';
 
 const MAGIC_COMMAND_SKIP = '# $ custom_build_script';
 const MAGIC_COMMAND_TITLE = '# $ meta_title ';

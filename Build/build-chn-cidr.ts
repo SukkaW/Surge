@@ -5,7 +5,7 @@ import { contains as containsCidr, exclude as excludeCidr } from 'fast-cidr-tool
 import { createMemoizedPromise } from './lib/memo-promise';
 import { CN_CIDR_MISSING_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
 import { appendArrayInPlace } from './lib/append-array-in-place';
-import { IPListOutput } from './lib/create-file';
+import { IPListOutput } from './lib/rules/ip';
 import { cachedOnlyFail } from './lib/fs-memo';
 import { createFileDescription } from './constants/description';
 

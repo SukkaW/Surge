@@ -2,7 +2,7 @@ import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { createMemoizedPromise } from './lib/memo-promise';
-import { DomainsetOutput } from './lib/create-file';
+import { DomainsetOutput } from './lib/rules/domainset';
 import { $$fetch } from './lib/fetch-retry';
 
 export const getAppleCdnDomainsPromise = createMemoizedPromise(() => $$fetch('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/apple.china.conf').then(parseFelixDnsmasqFromResp));
