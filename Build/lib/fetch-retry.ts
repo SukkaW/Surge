@@ -42,6 +42,10 @@ setGlobalDispatcher(agent.compose(
     retry(err, { state, opts }, cb) {
       const errorCode = 'code' in err ? (err as NodeJS.ErrnoException).code : undefined;
 
+      Object.defineProperty(err, '_url', {
+        value: opts.method + ' ' + opts.origin?.toString() + opts.path
+      });
+
       // Any code that is not a Undici's originated and allowed to retry
       if (
         errorCode === 'ERR_UNESCAPED_CHARACTERS'
@@ -151,7 +155,7 @@ export const defaultRequestInit = {
   }
 };
 
-export async function $$fetch(url: string, init?: RequestInit) {
+export async function $$fetch(url: string, init: RequestInit = defaultRequestInit) {
   try {
     const res = await undici.fetch(url, init);
     if (res.status >= 400) {
