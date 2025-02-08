@@ -27,9 +27,18 @@ interface SpeedTestServer {
 const getSpeedtestHostsGroupsPromise = $$fetch('https://speedtest-net-servers.cdn.skk.moe/servers.json')
   .then(res => res.json() as Promise<SpeedTestServer[]>)
   .then((data) => data.reduce<string[]>((prev, cur) => {
-    const hn = tldts.getHostname(cur.host || cur.url, { detectIp: false, validateHostname: true });
-    if (hn) {
-      prev.push(hn);
+    let hn: string | null = null;
+    if (cur.host) {
+      hn = tldts.getHostname(cur.host, { detectIp: false, validateHostname: true });
+      if (hn) {
+        prev.push(hn);
+      }
+    }
+    if (cur.url) {
+      hn = tldts.getHostname(cur.url, { detectIp: false, validateHostname: true });
+      if (hn) {
+        prev.push(hn);
+      }
     }
     return prev;
   }, []));
