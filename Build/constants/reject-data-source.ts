@@ -154,17 +154,22 @@ export const PHISHING_DOMAIN_LISTS_EXTRA: HostsSource[] = [
 type AdGuardFilterSource = [main: string, mirrors: string[] | null, includeThirdParty?: boolean];
 
 export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
-  // EasyList
+  // EasyList -- Use AdGuard Base Filter w/ EasyList
+  // [
+  //   'https://easylist.to/easylist/easylist.txt',
+  //   [
+  //     'https://easylist-downloads.adblockplus.org/easylist.txt',
+  //     'https://secure.fanboy.co.nz/easylist.txt',
+  //     'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
+  //     'https://ublockorigin.pages.dev/thirdparties/easylist.txt',
+  //     'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
+  //     'https://filters.adtidy.org/extension/ublock/filters/101_optimized.txt'
+  //   ]
+  // ],
+  // AdGuard Base Filter -- Use AdGuard Base Filter w/ EasyList
   [
-    'https://easylist.to/easylist/easylist.txt',
-    [
-      'https://easylist-downloads.adblockplus.org/easylist.txt',
-      'https://secure.fanboy.co.nz/easylist.txt',
-      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist.txt',
-      'https://ublockorigin.pages.dev/thirdparties/easylist.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easylist.txt',
-      'https://filters.adtidy.org/extension/ublock/filters/101_optimized.txt'
-    ]
+    'https://filters.adtidy.org/extension/ublock/filters/2_optimized.txt',
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/2_optimized.txt']
   ],
   // EasyPrivacy
   [
@@ -178,11 +183,11 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt'
     ]
   ],
-  // AdGuard Base Filter
-  [
-    'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
-    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
-  ],
+  // AdGuard Base Filter: Use AdGuard Base Filter w/ EasyList
+  // [
+  //   'https://filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt',
+  //   ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
+  // ],
   // AdGuard Mobile AD
   [
     'https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt',
