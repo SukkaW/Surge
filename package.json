@@ -31,7 +31,7 @@
     "fast-cidr-tools": "^0.3.1",
     "fast-fifo": "^1.3.2",
     "fdir": "^6.4.3",
-    "foxts": "^1.1.7",
+    "foxts": "^1.2.0",
     "hash-wasm": "^4.12.0",
     "json-stringify-pretty-compact": "3.0.0",
     "picocolors": "^1.1.1",
@@ -48,7 +48,7 @@
     "yaml": "^2.7.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^6.13.3",
+    "@eslint-sukka/node": "^6.14.0",
     "@swc-node/register": "^1.10.9",
     "@swc/core": "^1.10.15",
     "@types/async-retry": "^1.4.9",
@@ -59,8 +59,8 @@
     "@types/node": "^22.13.1",
     "@types/tar-fs": "^2.0.4",
     "eslint": "^9.20.1",
-    "eslint-config-sukka": "^6.13.3",
-    "eslint-formatter-sukka": "^6.13.3",
+    "eslint-config-sukka": "^6.14.0",
+    "eslint-formatter-sukka": "^6.14.0",
     "expect": "^29.7.0",
     "mitata": "^1.0.34",
     "mocha": "^11.1.0",

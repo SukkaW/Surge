@@ -24,7 +24,7 @@ const clawSourceDirPromise = new Fdir()
 
     const extname = path.extname(filepath);
 
-    return !(extname === '.js' || extname === '.ts');
+    return extname !== '.js' && extname !== '.ts';
   })
   .crawl(SOURCE_DIR)
   .withPromise();

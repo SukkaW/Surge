@@ -162,7 +162,7 @@ export async function $$fetch(url: string, init: RequestInit = defaultRequestIni
       throw new ResponseError(res, url);
     }
 
-    if (!(res.status >= 200 && res.status <= 299) && res.status !== 304) {
+    if ((res.status < 200 || res.status > 299) && res.status !== 304) {
       throw new ResponseError(res, url);
     }
 
@@ -191,7 +191,7 @@ export async function requestWithLog(url: string, opt?: Parameters<typeof undici
       throw new ResponseError(res, url);
     }
 
-    if (!(res.statusCode >= 200 && res.statusCode <= 299) && res.statusCode !== 304) {
+    if ((res.statusCode < 200 || res.statusCode > 299) && res.statusCode !== 304) {
       throw new ResponseError(res, url);
     }
 
