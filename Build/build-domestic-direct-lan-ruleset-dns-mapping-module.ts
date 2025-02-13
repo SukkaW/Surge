@@ -1,7 +1,7 @@
 // @ts-check
 import path from 'node:path';
 import { DOMESTICS, DOH_BOOTSTRAP, AdGuardHomeDNSMapping } from '../Source/non_ip/domestic';
-import { DIRECTS, LAN } from '../Source/non_ip/direct';
+import { DIRECTS, HOSTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
@@ -79,7 +79,7 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
 export const buildDomesticRuleset = task(require.main === module, __filename)(async (span) => {
   const [domestics, directs, lans] = await getDomesticAndDirectDomainsRulesetPromise();
 
-  const dataset: Array<[name: string, DNSMapping]> = ([DOH_BOOTSTRAP, DOMESTICS, DIRECTS, LAN] as const).flatMap(Object.entries);
+  const dataset: Array<[name: string, DNSMapping]> = ([DOH_BOOTSTRAP, DOMESTICS, DIRECTS, LAN, HOSTS] as const).flatMap(Object.entries);
 
   return Promise.all([
     new RulesetOutput(span, 'domestic', 'non_ip')
@@ -232,7 +232,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         'https://1.12.12.12/dns-query',
         'https://120.53.53.53/dns-query',
         '[//]udp://10.10.1.1:53',
-        ...(([DOMESTICS, DIRECTS, LAN] as const).flatMap(Object.values) as DNSMapping[]).flatMap(({ domains, dns: _dns }) => domains.flatMap((domain) => {
+        ...(([DOMESTICS, DIRECTS, LAN, HOSTS] as const).flatMap(Object.values) as DNSMapping[]).flatMap(({ domains, dns: _dns }) => domains.flatMap((domain) => {
           let dns;
           if (_dns in AdGuardHomeDNSMapping) {
             dns = AdGuardHomeDNSMapping[_dns as keyof typeof AdGuardHomeDNSMapping].join(' ');

@@ -142,3 +142,16 @@ export const LAN = {
     ]
   }
 } as const satisfies Record<string, DNSMapping>;
+
+export const HOSTS = {
+  HOSTS: {
+    // not actually used, only for a placeholder
+    dns: 'quic://dns.alidns.com:853',
+    hosts: {
+      'cdn.jsdelivr.net': ['cdn.jsdelivr.net.cdn.cloudflare.net']
+    },
+    realip: false,
+    ruleset: false,
+    domains: []
+  }
+} as const satisfies Record<string, DNSMapping>;
