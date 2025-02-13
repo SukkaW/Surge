@@ -54,6 +54,7 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   'dns.nextdns.io',
   'anycast.dns.nextdns.io',
   'wikimedia-dns.org',
+  'puredns.org',
   // 'ordns.he.net',
   // 'dns.mullvad.net',
   'basic.rethinkdns.com',
