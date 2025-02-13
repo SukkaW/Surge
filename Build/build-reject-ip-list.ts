@@ -1,22 +1,25 @@
 // @ts-check
 import path from 'node:path';
-import { createReadlineInterfaceFromResponse, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { compareAndWriteFile } from './lib/create-file';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
-import { $$fetch } from './lib/fetch-retry';
 import { fetchAssets } from './lib/fetch-assets';
 import { fastIpVersion } from './lib/misc';
 import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
 import { RulesetOutput } from './lib/rules/ruleset';
 
-const BOGUS_NXDOMAIN_URL = 'https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf';
-const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$fetch(BOGUS_NXDOMAIN_URL).then(async (resp) => {
+const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(
+  'https://cdn.jsdelivr.net/gh/felixonmars/dnsmasq-china-list@master/bogus-nxdomain.china.conf',
+  ['https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf'],
+  true
+).then((arr) => {
   const ipv4: string[] = [];
   const ipv6: string[] = [];
 
-  for await (const line of createReadlineInterfaceFromResponse(resp, true)) {
+  for (let i = 0, len = arr.length; i < len; i++) {
+    const line = arr[i];
     if (line.startsWith('bogus-nxdomain=')) {
       const ip = line.slice(15).trim();
       const v = fastIpVersion(ip);
@@ -27,6 +30,7 @@ const getBogusNxDomainIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = $$
       }
     }
   }
+
   return [ipv4, ipv6] as const;
 });
 
