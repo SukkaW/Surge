@@ -53,8 +53,8 @@ importers:
         specifier: ^6.4.3
         version: 6.4.3(picomatch@4.0.2)
       foxts:
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.3.0
+        version: 1.3.0
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -1094,8 +1094,8 @@ packages:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
 
-  foxts@1.2.0:
-    resolution: {integrity: sha512-GQp91VeREH/fglR4KY5479nATcqnDLBWqEMhPFCD8qd48hA7DB9TD5Q9czC54j9ez9WGHjjTcbjokNWZsSI2Nw==}
+  foxts@1.3.0:
+    resolution: {integrity: sha512-TaqRKSTN6uQNFXma3jZQfH2fBqNoePlHJtEGWuaFGWI0lSpe/7UnugEpcZzKy2m5J8EVKdxJl+uPZbHGFNLntQ==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -1646,6 +1646,9 @@ packages:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  uncrypto@0.1.3:
+    resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
 
   undici-cache-store-better-sqlite3@0.1.1:
     resolution: {integrity: sha512-F/PxGx+QY3oScnFQ/YGbN7AYtqKLTzps0izFi8LddDaobso3SYXyQORuPcnUd2JbqpdxmLLkvS2zSvG6VPPMpw==}
@@ -2780,7 +2783,9 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  foxts@1.2.0: {}
+  foxts@1.3.0:
+    dependencies:
+      uncrypto: 0.1.3
 
   fs-constants@1.0.0: {}
 
@@ -3348,6 +3353,8 @@ snapshots:
       - supports-color
 
   typescript@5.7.3: {}
+
+  uncrypto@0.1.3: {}
 
   undici-cache-store-better-sqlite3@0.1.1(undici@7.3.0(patch_hash=594ba65c371ae78d02b8402fbad8cdc3617510f9ee2390a258e0ce5742a93926)):
     dependencies:
