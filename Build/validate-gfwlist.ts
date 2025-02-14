@@ -3,7 +3,7 @@ import { fastNormalizeDomain } from './lib/normalize-domain';
 import { HostnameSmolTrie } from './lib/trie';
 // import { Readable } from 'stream';
 import { parse } from 'csv-parse/sync';
-import { readFileByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
@@ -60,11 +60,14 @@ export async function parseGfwList() {
       continue;
     }
   }
-  for (const l of (await (await $$fetch('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt')).text()).split('\n')) {
+  for await (const l of await fetchRemoteTextByLine('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt', true)) {
+    trie.add(l);
+  }
+  for await (const l of await fetchRemoteTextByLine('https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/gfw.txt', true)) {
     trie.add(l);
   }
 
-  const res = await (await $$fetch('https://litter.catbox.moe/sqmgyn.csv', {
+  const res = await (await $$fetch('https://litter.catbox.moe/gv0bw6.csv', {
     headers: {
       accept: '*/*',
       'user-agent': 'curl/8.9.1'
