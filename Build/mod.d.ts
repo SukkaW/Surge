@@ -8,9 +8,7 @@ declare module 'dns2' {
       /** @example dns.google.com */
       dns: string,
       /** @description whether to use HTTP or HTTPS */
-      http: boolean,
-
-      get?: (url: string) => any
+      http: boolean
     }
 
     export type PacketQuestion = keyof typeof Packet.TYPE;

@@ -143,7 +143,7 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
   const aaaaDns: string[] = [];
 
   // test 2 times before make sure record is empty
-  const servers = pickRandom(dohServers, 3);
+  const servers = pickRandom(dohServers, 2);
   for (let i = 0; i < 2; i++) {
     // eslint-disable-next-line no-await-in-loop -- sequential
     const aRecords = (await $resolve($domain, 'A', servers[i]));
@@ -180,23 +180,36 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
   return onDomainDead($domain);
 }
 
-const apexDomainNsResolvePromiseMap = new Map<string, Promise<DnsResponse>>();
+const apexDomainNsResolvePromiseMap = new Map<string, Promise<boolean>>();
+
+async function getNS(domain: string) {
+  const servers = pickRandom(dohServers, 2);
+  for (let i = 0, len = servers.length; i < len; i++) {
+    const server = servers[i];
+    // eslint-disable-next-line no-await-in-loop -- one by one
+    const resp = await $resolve(domain, 'NS', server);
+    if (resp.answers.length > 0) {
+      return true;
+    }
+  }
+  return false;
+}
 
 async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]> {
   if (domainAliveMap.has(apexDomain)) {
     return [apexDomain, domainAliveMap.get(apexDomain)!];
   }
 
-  let resp: DnsResponse;
+  let hasNS: boolean;
   if (apexDomainNsResolvePromiseMap.has(apexDomain)) {
-    resp = await apexDomainNsResolvePromiseMap.get(apexDomain)!;
+    hasNS = await apexDomainNsResolvePromiseMap.get(apexDomain)!;
   } else {
-    const promise = $resolve(apexDomain, 'NS', pickOne(dohServers));
+    const promise = getNS(apexDomain);
     apexDomainNsResolvePromiseMap.set(apexDomain, promise);
-    resp = await promise;
+    hasNS = await promise;
   }
 
-  if (resp.answers.length > 0) {
+  if (hasNS) {
     return onDomainAlive(apexDomain);
   }
 
