@@ -59,6 +59,8 @@ export const buildPublic = task(require.main === module, __filename)(async (span
       '/Modules/*',
       '  content-type: text/plain; charset=utf-8',
       '/List/*',
+      '  content-type: text/plain; charset=utf-8',
+      '/Internal/*',
       '  content-type: text/plain; charset=utf-8'
     ],
     path.join(PUBLIC_DIR, '_headers')
