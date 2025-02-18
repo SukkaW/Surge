@@ -87,7 +87,10 @@ export const DOMESTICS: Record<string, DNSMapping> = {
 
       // Bilibili Aliyun CDN
       '$upos-sz-mirrorali.bilivideo.com',
-      '$upos-sz-estgoss.bilivideo.com'
+      '$upos-sz-estgoss.bilivideo.com',
+
+      // AcFun CDN
+      '$ali-safety-video.acfun.cn'
     ]
   },
   TENCENT: {
@@ -147,7 +150,10 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+dnsv1.com',
       '+smtcdns.net',
       'coding.net',
-      '+codehub.cn'
+      '+codehub.cn',
+
+      // AcFun QCloud CDN
+      '$tx-safety-video.acfun.cn'
     ]
   },
   BILIBILI: {
