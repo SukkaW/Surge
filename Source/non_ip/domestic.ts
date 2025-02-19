@@ -84,6 +84,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'hellobike.com',
       '+hichina.com',
       '+yunos.com',
+      '+nlark.com',
+      '+yuque.com',
 
       // Bilibili Aliyun CDN
       '$upos-sz-mirrorali.bilivideo.com',
