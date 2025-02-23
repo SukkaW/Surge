@@ -5,5 +5,6 @@ module.exports = require('eslint-config-sukka').sukka({
     disableNoConsoleInCLI: ['Build/**']
   },
   node: true,
-  ts: true
+  ts: true,
+  yaml: false
 });

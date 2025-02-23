@@ -18,7 +18,7 @@ export abstract class BaseWriteStrategy {
 
   public abstract readonly type: 'domainset' | 'non_ip' | 'ip' | (string & {});
 
-  abstract readonly fileExtension: 'conf' | 'txt' | 'json' | 'sgmodule' /* | (string & {}) */;
+  abstract readonly fileExtension: 'conf' | 'txt' | 'json' | 'sgmodule'; /* | (string & {}) */
 
   constructor(public readonly outputDir: string) {}
 
