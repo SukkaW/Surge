@@ -3,8 +3,10 @@ import { fetchAssets } from '../fetch-assets';
 import { fastNormalizeDomainWithoutWww } from '../normalize-domain';
 import { onBlackFound } from './shared';
 
+const rSpace = /\s+/;
+
 function hostsLineCb(line: string, set: string[], includeAllSubDomain: boolean, meta: string) {
-  const _domain = line.split(/\s/)[1]?.trim();
+  const _domain = line.split(rSpace, 3)[1]?.trim();
   if (!_domain) {
     return;
   }
