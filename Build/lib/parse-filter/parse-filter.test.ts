@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 
-import { parse } from './parse-filter/filters';
-import type { ParseType } from './parse-filter/filters';
+import { parse } from './filters';
+import type { ParseType } from './filters';
 
 describe('parse', () => {
   const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', 1000];

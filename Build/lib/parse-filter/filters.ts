@@ -129,7 +129,11 @@ const kwfilter = createKeywordFilter([
   '~',
   // special modifier
   '$popup',
+  '$denlyallow',
   '$removeparam',
+  '$uritransform',
+  '$urlskip',
+  '$replace',
   '$redirect',
   '$popunder',
   '$cname',
@@ -140,6 +144,12 @@ const kwfilter = createKeywordFilter([
   '$csp',
   '$replace',
   '$urlskip',
+  '$elemhide',
+  '$generichide',
+  '$genericblock',
+  '$header',
+  '$permissions',
+  '$ping',
   // some bad syntax
   '^popup'
 ]);
@@ -150,6 +160,8 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     !$line.includes('.') // rule with out dot can not be a domain
     // includes
     || kwfilter($line)
+    // note that this can only excludes $redirect but not $4-,redirect, so we still need to parse it
+    // this is only an early bail out
   ) {
     result[1] = ParseType.Null;
     return result;
@@ -174,9 +186,6 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     || lastCharCode === 46 // 46 `.`, line.endsWith('.')
     || lastCharCode === 45 // 45 `-`, line.endsWith('-')
     || lastCharCode === 95 // 95 `_`, line.endsWith('_')
-    // || line.includes('$popup')
-    // || line.includes('$removeparam')
-    // || line.includes('$popunder')
   ) {
     result[1] = ParseType.Null;
     return result;

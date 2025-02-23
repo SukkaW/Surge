@@ -32,7 +32,7 @@ export async function fetchAssets(url: string, fallbackUrls: null | undefined | 
     }
     const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
 
-    let stream = nullthrow(res.body).pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream());
+    let stream = nullthrow(res.body, url + ' has an empty body').pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream());
     if (processLine) {
       stream = stream.pipeThrough(new ProcessLineStream());
     }
