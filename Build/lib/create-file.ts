@@ -14,6 +14,10 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
   const linesABound = linesA.length - 1;
 
   let index = -1;
+
+  let aLen = 0;
+  let bLen = 0;
+
   for await (const lineB of source) {
     index++;
 
@@ -22,9 +26,11 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
     }
 
     const lineA = linesA[index];
+    aLen = lineA.length;
+    bLen = lineB.length;
 
-    if (lineA.length === 0) {
-      if (lineB.length === 0) {
+    if (aLen === 0) {
+      if (bLen === 0) {
         // both lines are empty, check next line
         continue;
       }
@@ -32,7 +38,7 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
       return false;
     }
     // now lineA can not be empty
-    if (lineB.length === 0) {
+    if (bLen === 0) {
       // lineB is empty but lineA is not
       return false;
     }
@@ -61,6 +67,10 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
       && lineA[3] === '#' && lineB[3] === '#'
     ) {
       continue;
+    }
+
+    if (aLen !== bLen) {
+      return false;
     }
 
     if (lineA !== lineB) {
