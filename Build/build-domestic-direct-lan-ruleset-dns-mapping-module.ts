@@ -73,6 +73,11 @@ export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(a
     appendArrayInPlace(directs, domains.flatMap(getDnsMappingRuleWithWildcard));
   });
 
+  // backward compatible, add lan.conf
+  Object.values(LAN).forEach(({ domains }) => {
+    appendArrayInPlace(lans, domains.flatMap(getDnsMappingRuleWithWildcard));
+  });
+
   return [domestics, directs, lans] as const;
 });
 
