@@ -66,33 +66,30 @@ export const downloadPreviousBuild = task(require.main === module, __filename)(a
 
     const pathPrefix = 'ruleset.skk.moe-master/';
 
-    const gunzip = zlib.createGunzip();
-    const extract = tarExtract(
-      PUBLIC_DIR,
-      {
-        ignore(_: string, header?: TarEntryHeaders) {
-          if (header) {
-            if (header.type !== 'file' && header.type !== 'directory') {
-              return true;
-            }
-            if (header.type === 'file' && path.extname(header.name) === '.ts') {
-              return true;
-            }
-          }
-
-          return false;
-        },
-        map(header) {
-          header.name = header.name.replace(pathPrefix, '');
-          return header;
-        }
-      }
-    );
-
     return pipeline(
       respBody,
-      gunzip,
-      extract
+      zlib.createGunzip(),
+      tarExtract(
+        PUBLIC_DIR,
+        {
+          ignore(_: string, header?: TarEntryHeaders) {
+            if (header) {
+              if (header.type !== 'file' && header.type !== 'directory') {
+                return true;
+              }
+              if (header.type === 'file' && path.extname(header.name) === '.ts') {
+                return true;
+              }
+            }
+
+            return false;
+          },
+          map(header) {
+            header.name = header.name.replace(pathPrefix, '');
+            return header;
+          }
+        }
+      )
     );
   });
 });
