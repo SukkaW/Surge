@@ -18,33 +18,26 @@ export const RESERVED_IPV4_CIDR = [
   '240.0.0.0/4'
 ];
 
-// https://github.com/misakaio/chnroutes2/issues/25
 export const NON_CN_CIDR_INCLUDED_IN_CHNROUTE = [
+  // https://github.com/misakaio/chnroutes2/issues/25
   '223.118.0.0/15',
-  '223.120.0.0/15'
+  '223.120.0.0/15',
+  // https://github.com/misakaio/chnroutes2/issues/50
+  '123.254.104.0/21',
+  // https://github.com/misakaio/chnroutes2/issues/49
+  '45.147.48.0/23',
+  '45.80.188.0/24',
+  '45.80.190.0/24',
+  // https://github.com/misakaio/chnroutes2/issues/52
+  '137.220.128.0/17',
+
+  '45.199.166.0/24',
+  '45.199.167.0/24'
 ];
 
 // https://github.com/misakaio/chnroutes2/issues/46
 // https://github.com/misakaio/chnroutes2/issues/48
 export const CN_CIDR_MISSING_IN_CHNROUTE = [
-  // Baidu Public DNS
-  '180.76.76.0/24',
-  // Ali Public DNS
-  '223.5.5.0/24',
-  '223.6.6.0/24',
-  // Tencent DNSPod Public DNS
-  '119.29.29.0/24',
-  '119.28.28.0/24',
-  '120.53.53.0/24',
-  '1.12.12.0/24',
-  '1.12.34.0/24',
-  // ByteDance Public DNS
-  '180.184.1.0/24',
-  '180.184.2.0/24',
-  // 360 Public DNS
-  '101.198.198.0/24',
-  '101.198.199.0/24',
-
   // ChinaTelecom
   '103.7.141.0/24', // Hubei
 
@@ -71,5 +64,23 @@ export const CN_CIDR_MISSING_IN_CHNROUTE = [
   '223.252.196.0/24',
 
   // Xiamen Kuaikuai
-  '180.188.36.0/22' // no route globally
+  '180.188.36.0/22', // no route globally
+
+  // Baidu Public DNS
+  '180.76.76.0/24',
+  // Ali Public DNS
+  '223.5.5.0/24',
+  '223.6.6.0/24',
+  // Tencent DNSPod Public DNS
+  '119.29.29.0/24',
+  '119.28.28.0/24',
+  '120.53.53.0/24',
+  '1.12.12.0/24',
+  '1.12.34.0/24',
+  // ByteDance Public DNS
+  '180.184.1.0/24',
+  '180.184.2.0/24',
+  // 360 Public DNS
+  '101.198.198.0/24',
+  '101.198.199.0/24'
 ];
