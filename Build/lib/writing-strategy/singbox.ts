@@ -26,6 +26,8 @@ export interface SingboxSourceFormat {
 }
 
 export class SingboxSource extends BaseWriteStrategy {
+  public readonly name = 'singbox';
+
   readonly fileExtension = 'json';
 
   static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');

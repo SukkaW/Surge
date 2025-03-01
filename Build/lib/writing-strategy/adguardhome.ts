@@ -4,6 +4,8 @@ import { noop } from 'foxts/noop';
 import { notSupported } from '../misc';
 
 export class AdGuardHome extends BaseWriteStrategy {
+  public readonly name = 'adguardhome';
+
   // readonly type = 'domainset';
   readonly fileExtension = 'txt';
   readonly type = '';

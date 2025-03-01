@@ -9,6 +9,8 @@ import { OUTPUT_MODULES_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
 import { withBannerArray, withIdentityContent } from '../misc';
 
 export class SurgeDomainSet extends BaseWriteStrategy {
+  public readonly name = 'surge domainset';
+
   // readonly type = 'domainset';
   readonly fileExtension = 'conf';
   type = 'domainset';
@@ -46,6 +48,8 @@ export class SurgeDomainSet extends BaseWriteStrategy {
 }
 
 export class SurgeRuleSet extends BaseWriteStrategy {
+  public readonly name = 'surge ruleset';
+
   readonly fileExtension = 'conf';
 
   protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
@@ -132,6 +136,8 @@ export class SurgeRuleSet extends BaseWriteStrategy {
 }
 
 export class SurgeMitmSgmodule extends BaseWriteStrategy {
+  public readonly name = 'surge sgmodule';
+
   // readonly type = 'domainset';
   readonly fileExtension = 'sgmodule';
   readonly type = '';

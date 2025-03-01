@@ -6,6 +6,8 @@ import { compareAndWriteFile } from '../create-file';
  * date is written to a file.
  */
 export abstract class BaseWriteStrategy {
+  public abstract readonly name: string;
+
   /**
    * Sometimes a ruleset will create extra files (e.g. reject-url-regex w/ mitm.sgmodule),
    * and doesn't share the same filename and id. This property is used to overwrite the filename.

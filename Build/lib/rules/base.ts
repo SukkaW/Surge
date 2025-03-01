@@ -1,6 +1,6 @@
 import type { Span } from '../../trace';
 import { HostnameSmolTrie } from '../trie';
-import { invariant, not } from 'foxts/guard';
+import { not, nullthrow } from 'foxts/guard';
 import type { MaybePromise } from '../misc';
 import type { BaseWriteStrategy } from '../writing-strategy/base';
 import { merge as mergeCidr } from 'fast-cidr-tools';
@@ -442,25 +442,24 @@ export class FileOutput {
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
         const promises: Array<Promise<void> | void> = [];
 
-        invariant(this.title, 'Missing title');
-        invariant(this.description, 'Missing description');
-
         for (let i = 0, len = this.strategies.length; i < len; i++) {
           const strategy = this.strategies[i];
           if (strategy) {
             const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
-            promises.push(strategy.output(
-              childSpan,
-              this.title,
-              this.description,
-              this.date,
-              path.join(
-                strategy.outputDir,
-                strategy.type
-                  ? path.join(strategy.type, basename)
-                  : basename
-              )
-            ));
+            promises.push(
+              childSpan.traceChildAsync('write ' + strategy.name, (childSpan) => Promise.resolve(strategy.output(
+                childSpan,
+                nullthrow(this.title, 'Missing title'),
+                nullthrow(this.description, 'Missing description'),
+                this.date,
+                path.join(
+                  strategy.outputDir,
+                  strategy.type
+                    ? path.join(strategy.type, basename)
+                    : basename
+                )
+              )))
+            );
           }
         }
 

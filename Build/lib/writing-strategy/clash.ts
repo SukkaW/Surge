@@ -6,6 +6,8 @@ import { OUTPUT_CLASH_DIR } from '../../constants/dir';
 import { appendArrayInPlace } from '../append-array-in-place';
 
 export class ClashDomainSet extends BaseWriteStrategy {
+  public readonly name = 'clash domainset';
+
   // readonly type = 'domainset';
   readonly fileExtension = 'txt';
   readonly type = 'domainset';
@@ -43,6 +45,8 @@ export class ClashDomainSet extends BaseWriteStrategy {
 }
 
 export class ClashIPSet extends BaseWriteStrategy {
+  public readonly name = 'clash ipcidr';
+
   // readonly type = 'domainset';
   readonly fileExtension = 'txt';
   readonly type = 'ip';
@@ -80,6 +84,8 @@ export class ClashIPSet extends BaseWriteStrategy {
 }
 
 export class ClashClassicRuleSet extends BaseWriteStrategy {
+  public readonly name = 'clash classic ruleset';
+
   readonly fileExtension = 'txt';
 
   protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
