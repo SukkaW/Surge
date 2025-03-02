@@ -34,7 +34,7 @@ const pool = new Worktank({
       const tldts = __require('tldts-experimental') as typeof import('tldts-experimental');
 
       const { loosTldOptWithPrivateDomains } = __require('../constants/loose-tldts-opt') as typeof import('../constants/loose-tldts-opt');
-      const { BLACK_TLD, WHITELIST_MAIN_DOMAINS, leathalKeywords, lowKeywords, fakeTldKeywords, sensitiveKeywords } = __require('../constants/phishing-score-source') as typeof import('../constants/phishing-score-source');
+      const { BLACK_TLD, WHITELIST_MAIN_DOMAINS, leathalKeywords, lowKeywords, sensitiveKeywords } = __require('../constants/phishing-score-source') as typeof import('../constants/phishing-score-source');
 
       const domainCountMap = new Map<string, number>();
       const domainScoreMap: Record<string, number> = {};
@@ -119,8 +119,8 @@ const pool = new Worktank({
       if (isDebug) {
         console.log({
           v: 1,
-          score: domainScoreMap['com-paytollbydv.world'],
-          count: domainCountMap.get('com-paytollbydv.worldx'),
+          score: domainScoreMap['com-ticketry.world'],
+          count: domainCountMap.get('com-ticketry.world'),
           domainArrLen: domainArr.length
         });
       }
@@ -136,25 +136,14 @@ const pool = new Worktank({
 
         const hitLowKeywords = lowKeywords(fullDomain);
         const sensitiveKeywordsHit = sensitiveKeywords(fullDomain);
-        const fakeTldKeywordsHit = fakeTldKeywords(fullDomain);
 
         if (sensitiveKeywordsHit) {
           weight += 15;
           if (hitLowKeywords) {
             weight += 10;
-            if (fakeTldKeywordsHit) {
-              weight += 8;
-            }
-          }
-          // besides add for low hit, always add extra here
-          if (fakeTldKeywordsHit) {
-            weight += 10;
           }
         } else if (hitLowKeywords) {
-          weight += 1.8;
-          if (fakeTldKeywordsHit) {
-            weight += 5;
-          }
+          weight += 2;
         }
 
         const subdomainLength = subdomain.length;

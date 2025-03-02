@@ -45,7 +45,15 @@ export const leathalKeywords = createKeywordFilter([
   'inpost-pl',
   'vlnted-',
   'allegrolokalnie',
-  'thetollroads'
+  'thetollroads',
+  'getipass',
+
+  // Fake TLD
+  '.pl-',
+  '.com-',
+  '.net-',
+  '.org-',
+  '.gov-'
 ]);
 
 export const sensitiveKeywords = createKeywordFilter([
@@ -72,13 +80,8 @@ export const sensitiveKeywords = createKeywordFilter([
   'google.com-',
   'minecraft',
   'staemco',
-  'oferta'
-]);
-
-export const fakeTldKeywords = createKeywordFilter([
-  '.pl-',
-  '.com-',
-  '.net-'
+  'oferta',
+  'txtag'
 ]);
 
 export const lowKeywords = createKeywordFilter([
