@@ -194,7 +194,7 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
         urlRegex = urlRegex.slice(9);
       }
 
-      const potentialHostname = urlRegex.split('/')[0]
+      const potentialHostname = urlRegex.slice(0, urlRegex.indexOf('/'))
         // pre process regex
         .replaceAll(String.raw`\.`, '.')
         .replaceAll('.+', '*')

@@ -104,7 +104,7 @@ async function transform(parentSpan: Span, sourcePath: string, relativePath: str
   return parentSpan
     .traceChild(`transform ruleset: ${id}`)
     .traceAsyncFn(async (span) => {
-      const type = relativePath.split(path.sep)[0];
+      const type = relativePath.slice(0, relativePath.indexOf(path.sep));
 
       if (type !== 'ip' && type !== 'non_ip' && type !== 'domainset') {
         throw new TypeError(`Invalid type: ${type}`);
