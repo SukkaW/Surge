@@ -84,7 +84,9 @@ const sensitiveKeywords = createKeywordFilter([
   'google.com-',
   'minecraft',
   'staemco',
-  'oferta'
+  'oferta',
+  'allegrolokalnie',
+  'thetollroads'
 ]);
 const lowKeywords = createKeywordFilter([
   'transactions-',
