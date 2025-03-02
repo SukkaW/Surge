@@ -18,7 +18,7 @@ const pool = new Worktank({
   warmup: true,
   autoterminate: 30000, // The interval of milliseconds at which to check if the pool can be automatically terminated, to free up resources, workers will be spawned up again if needed
   env: {},
-  methods: { // An object mapping function names to functions objects to serialize and deserialize into each worker thread, only functions that don't depend on their closure can be serialized
+  methods: {
     // eslint-disable-next-line object-shorthand -- workertank
     getreversedCidr: async function (cidr: string[], importMetaUrl: string): Promise<string[]> {
       // TODO: createRequire is a temporary workaround for https://github.com/nodejs/node/issues/51956

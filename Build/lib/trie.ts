@@ -603,20 +603,25 @@ export class HostnameSmolTrie<Meta = unknown> extends Triebase<Meta> {
       node[0] = deleteBit(node[0], START);
     }
 
-    cleanUpEmptyNode(node);
+    cleanUpEmptyTrailNode(node);
   };
 }
 
-function cleanUpEmptyNode(node: TrieNode<unknown>) {
+function cleanUpEmptyTrailNode(node: TrieNode<unknown>) {
   if (
+    // the current node is not an "end node", a.k.a. not the start of a domain
     missingBit(node[0], START)
-    && node[2].size === 0
+    // also no leading "." (no subdomain)
     && missingBit(node[0], INCLUDE_ALL_SUBDOMAIN)
+    // child is empty
+    && node[2].size === 0
+    // has parent: we need to detele the cureent node from the parent
+    // we also need to recursively clean up the parent node
     && node[1]
   ) {
     node[1][2].delete(node[3]);
-
-    cleanUpEmptyNode(node[1]);
+    // finish of the current stack
+    return cleanUpEmptyTrailNode(node[1]);
   }
 }
 
