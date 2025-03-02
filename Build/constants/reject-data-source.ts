@@ -511,6 +511,7 @@ export const PREDEFINED_WHITELIST = [
   'repo.huaweicloud.com', // urlhaus
   '.hubspotlinks.com', // Peter Lowe Hosts
   'cldup.com', // OSINT
+  'cuty.io', // short domain like bitly, blocked by phishing army
 
   // Doesn't make sense: CNAME domains
   '.cdn.cloudflare.net',
