@@ -88,6 +88,11 @@ const sensitiveKeywords = createKeywordFilter([
   'allegrolokalnie',
   'thetollroads'
 ]);
+const fakeTldKeywords = createKeywordFilter([
+  '.pl-',
+  '.com-',
+  '.net-'
+]);
 const lowKeywords = createKeywordFilter([
   'transactions-',
   'payment',
@@ -111,7 +116,8 @@ const lowKeywords = createKeywordFilter([
   'passwordreset',
   '.google-',
   'recover',
-  'banking'
+  'banking',
+  'shop'
 ]);
 
 const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: string[]): string[] {
@@ -195,12 +201,14 @@ const processPhihsingDomains = cache(function processPhihsingDomains(domainArr: 
     }
   });
 
-  // console.log({
-  //   score: domainScoreMap['awicksin.com'],
-  //   count: domainCountMap.get('awicksin.com')
-  // });
-
-  // console.log({ duplicateCount, domainArrLen: domainArr.length });
+  if (require.main === module) {
+    console.log({
+      v: 1,
+      score: domainScoreMap['com-paytollbydv.world'],
+      count: domainCountMap.get('com-paytollbydv.worldx'),
+      domainArrLen: domainArr.length
+    });
+  }
 
   return domainArr;
 }, {
@@ -241,14 +249,25 @@ export function calcDomainAbuseScore(subdomain: string, fullDomain: string = sub
 
   const hitLowKeywords = lowKeywords(fullDomain);
   const sensitiveKeywordsHit = sensitiveKeywords(fullDomain);
+  const fakeTldKeywordsHit = fakeTldKeywords(fullDomain);
 
   if (sensitiveKeywordsHit) {
-    weight += 10;
+    weight += 15;
     if (hitLowKeywords) {
-      weight += 6;
+      weight += 10;
+      if (fakeTldKeywordsHit) {
+        weight += 8;
+      }
+    }
+    // besides add for low hit, always add extra here
+    if (fakeTldKeywordsHit) {
+      weight += 10;
     }
   } else if (hitLowKeywords) {
-    weight += 1.7;
+    weight += 1.8;
+    if (fakeTldKeywordsHit) {
+      weight += 5;
+    }
   }
 
   const subdomainLength = subdomain.length;
