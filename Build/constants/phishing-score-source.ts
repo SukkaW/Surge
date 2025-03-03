@@ -16,7 +16,7 @@ export const BLACK_TLD = new Set([
   'one', 'online',
   'party', 'pro', 'pl', 'pw',
   'racing', 'rest', 'review', 'rf.gd',
-  'sa.com', 'sbs', 'science', 'shop', 'site', 'skin', 'space', 'store', 'stream', 'su', 'surf',
+  'sa.com', 'sbs', 'science', 'shop', 'site', 'skin', 'space', 'store', 'stream', 'su', 'support', 'surf',
   'tech', 'tk', 'tokyo', 'top', 'trade',
   'vip', 'vn',
   'webcam', 'website', 'win',
@@ -32,7 +32,7 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'flk-ipfs.xyz', // ipfs gateway
   'business.site', // Drag'n'Drop site building platform
   'page.link', // Firebase URL Shortener
-  // 'notion.site',
+  // 'notion.site', d
   // 'vercel.app',
   'gitbook.io',
   'zendesk.com',
@@ -51,38 +51,42 @@ export const leathalKeywords = createKeywordFilter([
 
   // Fake TLD
   '.pl-',
+  '-pl.',
   '.com-',
+  '-com.',
   '.net-',
   '.org-',
-  '.gov-'
+  '.gov-',
+  '-gov.',
+  '.au-',
+  '.co.uk-',
+  '.de-',
+  '.eu-',
+  '.us-',
+  '.ru-'
 ]);
 
 export const sensitiveKeywords = createKeywordFilter([
-  '.amazon-',
-  '-amazon',
+  'amazon',
   'fb-com',
-  'facebook-com',
-  '-facebook',
-  'facebook-',
   'focebaak',
-  '.facebook.',
+  'facebook',
   'metamask',
-  'www.apple',
-  '-coinbase',
-  'coinbase-',
-  'booking-com',
-  'booking.com-',
-  'booking-eu',
+  'apple',
+  'icloud',
+  'coinbase',
+  'booking.',
+  'booking-',
+  'vinted.',
   'vinted-',
   'inpost-pl',
-  'login.microsoft',
-  'login-microsoft',
-  'microsoftonline',
-  'google.com-',
+  'microsoft',
+  'google',
   'minecraft',
   'staemco',
   'oferta',
-  'txtag'
+  'txtag',
+  'paypal'
 ]);
 
 export const lowKeywords = createKeywordFilter([
@@ -94,7 +98,6 @@ export const lowKeywords = createKeywordFilter([
   '.faceb', // facebook fake
   'facebook',
   'virus-',
-  'icloud-',
   'apple-',
   '-roblox',
   '-co-jp',
