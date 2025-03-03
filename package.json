@@ -48,7 +48,7 @@
     "yaml": "^2.7.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^6.15.2",
+    "@eslint-sukka/node": "^6.16.0",
     "@swc-node/register": "^1.10.9",
     "@swc/core": "^1.11.5",
     "@types/async-retry": "^1.4.9",
@@ -59,8 +59,8 @@
     "@types/node": "^22.13.8",
     "@types/tar-fs": "^2.0.4",
     "eslint": "^9.21.0",
-    "eslint-config-sukka": "^6.15.2",
-    "eslint-formatter-sukka": "^6.15.2",
+    "eslint-config-sukka": "^6.16.0",
+    "eslint-formatter-sukka": "^6.16.0",
     "expect": "^29.7.0",
     "mitata": "^1.0.34",
     "mocha": "^11.1.0",
