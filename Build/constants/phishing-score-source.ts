@@ -47,6 +47,7 @@ export const leathalKeywords = createKeywordFilter([
   'allegrolokalnie',
   'thetollroads',
   'getipass',
+  '.secure.txtag',
 
   // Fake TLD
   '.pl-',
