@@ -63,6 +63,7 @@ export const leathalKeywords = createKeywordFilter([
   '.de-',
   '.eu-',
   '.us-',
+  '.uk-',
   '.ru-'
 ]);
 
@@ -86,19 +87,18 @@ export const sensitiveKeywords = createKeywordFilter([
   'staemco',
   'oferta',
   'txtag',
-  'paypal'
+  'paypal',
+  'dropbox',
+  'payment',
+  'instagram'
 ]);
 
 export const lowKeywords = createKeywordFilter([
-  'transactions-',
-  'payment',
+  'transactions',
   'wallet',
-  '-transactions',
   '-faceb', // facebook fake
   '.faceb', // facebook fake
-  'facebook',
   'virus-',
-  'apple-',
   '-roblox',
   '-co-jp',
   'customer.',
@@ -106,10 +106,8 @@ export const lowKeywords = createKeywordFilter([
   '.www-',
   '.www.',
   '.www2',
-  'instagram',
   'microsof',
-  'passwordreset',
-  '.google-',
+  'password',
   'recover',
   'banking',
   'shop'
