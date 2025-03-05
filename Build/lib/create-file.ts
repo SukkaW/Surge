@@ -11,66 +11,29 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
     return false;
   }
 
-  const linesABound = linesA.length - 1;
-
+  const maxIndexA = linesA.length - 1;
   let index = -1;
-
-  let aLen = 0;
-  let bLen = 0;
 
   for await (const lineB of source) {
     index++;
 
-    if (index > linesABound) {
-      return (index === linesA.length && lineB.length === 0);
+    if (index > maxIndexA) {
+      return false;
     }
 
     const lineA = linesA[index];
-    aLen = lineA.length;
-    bLen = lineB.length;
 
-    if (aLen === 0) {
-      if (bLen === 0) {
-        // both lines are empty, check next line
-        continue;
-      }
-      // lineA is empty but lineB is not
-      return false;
-    }
-    // now lineA can not be empty
-    if (bLen === 0) {
-      // lineB is empty but lineA is not
+    const lineAIsComment = isCommentLine(lineA);
+    const lineBIsComment = isCommentLine(lineB);
+
+    if (lineAIsComment !== lineBIsComment) {
       return false;
     }
 
-    // now both lines can not be empty
-
-    const firstCharA = lineA.charCodeAt(0);
-    const firstCharB = lineB.charCodeAt(0);
-
-    if (firstCharA !== firstCharB) {
-      return false;
-    }
-
-    // now firstCharA is equal to firstCharB, we only need to check the first char
-    if (firstCharA === 35 /* # */) {
+    // Now both line are either both comment or both not comment
+    // We only need to compare one of them
+    if (lineAIsComment) {
       continue;
-    }
-    // adguard conf
-    if (firstCharA === 33 /* ! */) {
-      continue;
-    }
-
-    if (
-      firstCharA === 47 /* / */
-      && lineA[1] === '/' && lineB[1] === '/'
-      && lineA[3] === '#' && lineB[3] === '#'
-    ) {
-      continue;
-    }
-
-    if (aLen !== bLen) {
-      return false;
     }
 
     if (lineA !== lineB) {
@@ -78,8 +41,16 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
     }
   }
 
-  // The file becomes larger
-  return !(index < linesABound);
+  return index === maxIndexA;
+}
+
+export function isCommentLine(line: string): boolean {
+  const firstChar = line.charCodeAt(0);
+  return (
+    firstChar === 35 // #
+    || firstChar === 33 // !
+    || (firstChar === 47 && line[1] === '/' && line[3] === '#') // //##
+  );
 }
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {

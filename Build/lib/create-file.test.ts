@@ -39,6 +39,12 @@ describe('fileEqual', () => {
     false
   ));
 
+  it('comment less', () => test(
+    ['# A', '# B', 'B'],
+    ['# A', 'B'],
+    false
+  ));
+
   it('larger', () => test(
     ['A', 'B'],
     ['A', 'B', 'C'],
@@ -51,9 +57,15 @@ describe('fileEqual', () => {
     false
   ));
 
-  it('eol', () => test(
+  it('eol more', () => test(
     ['A', 'B'],
     ['A', 'B', ''],
-    true
+    false
+  ));
+
+  it('eol less', () => test(
+    ['A', 'B', ''],
+    ['A', 'B'],
+    false
   ));
 });
