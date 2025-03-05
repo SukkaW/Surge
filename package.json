@@ -50,7 +50,7 @@
   "devDependencies": {
     "@eslint-sukka/node": "^6.16.1",
     "@swc-node/register": "^1.10.9",
-    "@swc/core": "^1.11.6",
+    "@swc/core": "^1.11.7",
     "@types/async-retry": "^1.4.9",
     "@types/better-sqlite3": "^7.6.12",
     "@types/dns2": "^2.0.9",
