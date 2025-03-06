@@ -6,7 +6,7 @@ import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import tldts from 'tldts-experimental';
 import { NetworkFilter } from '@ghostery/adblocker';
-import { fastNormalizeDomainWithoutWww } from '../normalize-domain';
+import { fastNormalizeDomain, fastNormalizeDomainWithoutWww } from '../normalize-domain';
 
 const enum ParseType {
   WhiteIncludeSubdomain = 0,
@@ -445,9 +445,10 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     return result;
   }
 
-  const domain = fastNormalizeDomainWithoutWww(sliced);
+  const normalizer = white ? fastNormalizeDomain : fastNormalizeDomainWithoutWww;
+  const domain = normalizer(sliced);
 
-  if (domain && domain === sliced) {
+  if (domain) {
     result[0] = domain;
 
     if (white) {
