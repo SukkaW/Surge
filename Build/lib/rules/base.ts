@@ -124,8 +124,8 @@ export class FileOutput {
     return this;
   }
 
-  private async addFromDomainsetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
-    for await (const line of source) {
+  private async addFromDomainsetPromise(source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) {
+    for await (const line of await source) {
       if (line[0] === '.') {
         this.addDomainSuffix(line, true);
       } else {
@@ -136,23 +136,15 @@ export class FileOutput {
 
   addFromDomainset(source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) {
     if (this.pendingPromise) {
-      if ('then' in source) {
-        this.pendingPromise = this.pendingPromise.then(() => source).then(src => this.addFromDomainsetPromise(src));
-        return this;
-      }
       this.pendingPromise = this.pendingPromise.then(() => this.addFromDomainsetPromise(source));
-      return this;
-    }
-    if ('then' in source) {
-      this.pendingPromise = source.then(src => this.addFromDomainsetPromise(src));
       return this;
     }
     this.pendingPromise = this.addFromDomainsetPromise(source);
     return this;
   }
 
-  private async addFromRulesetPromise(source: AsyncIterable<string> | Iterable<string> | string[]) {
-    for await (const line of source) {
+  private async addFromRulesetPromise(source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) {
+    for await (const line of await source) {
       const splitted = line.split(',');
       const type = splitted[0];
       const value = splitted[1];
@@ -216,15 +208,7 @@ export class FileOutput {
 
   addFromRuleset(source: MaybePromise<AsyncIterable<string> | Iterable<string>>) {
     if (this.pendingPromise) {
-      if ('then' in source) {
-        this.pendingPromise = this.pendingPromise.then(() => source).then(src => this.addFromRulesetPromise(src));
-        return this;
-      }
       this.pendingPromise = this.pendingPromise.then(() => this.addFromRulesetPromise(source));
-      return this;
-    }
-    if ('then' in source) {
-      this.pendingPromise = source.then(src => this.addFromRulesetPromise(src));
       return this;
     }
     this.pendingPromise = this.addFromRulesetPromise(source);
