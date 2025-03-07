@@ -68,11 +68,11 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2
       tldts:
-        specifier: ^6.1.82
-        version: 6.1.82
+        specifier: ^6.1.83
+        version: 6.1.83
       tldts-experimental:
-        specifier: ^6.1.82
-        version: 6.1.82
+        specifier: ^6.1.83
+        version: 6.1.83
       undici:
         specifier: ^7.4.0
         version: 7.4.0
@@ -1626,14 +1626,14 @@ packages:
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
-  tldts-core@6.1.82:
-    resolution: {integrity: sha512-Jabl32m21tt/d/PbDO88R43F8aY98Piiz6BVH9ShUlOAiiAELhEqwrAmBocjAqnCfoUeIsRU+h3IEzZd318F3w==}
+  tldts-core@6.1.83:
+    resolution: {integrity: sha512-I2wb9OJc6rXyh9d4aInhSNWChNI+ra6qDnFEGEwe9OoA68lE4Temw29bOkf1Uvwt8VZS079t1BFZdXVBmmB4dw==}
 
-  tldts-experimental@6.1.82:
-    resolution: {integrity: sha512-0u+zRKQwEfLm9TYJQ16S6GFgzuFK/pn95sg0m81IUR7tzD8iDvy2YxSPR8Ycsu718tfhu+Lbn9BU8dlaTYjXUA==}
+  tldts-experimental@6.1.83:
+    resolution: {integrity: sha512-nPNJOsVqQmfGcNW9QK90zKKmNZN2aPZWLnVqTemV7QSqaQai/fxQr9uD81hZazI+62A9BxvMa5i4R2+OLUdbrg==}
 
-  tldts@6.1.82:
-    resolution: {integrity: sha512-KCTjNL9F7j8MzxgfTgjT+v21oYH38OidFty7dH00maWANAI2IsLw2AnThtTJi9HKALHZKQQWnNebYheadacD+g==}
+  tldts@6.1.83:
+    resolution: {integrity: sha512-FHxxNJJ0WNsEBPHyC1oesQb3rRoxpuho/z2g3zIIAhw1WHJeQsUzK1jYK8TI1/iClaa4fS3Z2TCA9mtxXsENSg==}
     hasBin: true
 
   to-regex-range@5.0.1:
@@ -1869,7 +1869,7 @@ snapshots:
       '@remusao/guess-url-type': 1.3.0
       '@remusao/small': 1.3.0
       '@remusao/smaz': 1.10.0
-      tldts-experimental: 6.1.82
+      tldts-experimental: 6.1.83
 
   '@henrygd/queue@1.0.7': {}
 
@@ -3319,15 +3319,15 @@ snapshots:
 
   tinyexec@0.3.2: {}
 
-  tldts-core@6.1.82: {}
+  tldts-core@6.1.83: {}
 
-  tldts-experimental@6.1.82:
+  tldts-experimental@6.1.83:
     dependencies:
-      tldts-core: 6.1.82
+      tldts-core: 6.1.83
 
-  tldts@6.1.82:
+  tldts@6.1.83:
     dependencies:
-      tldts-core: 6.1.82
+      tldts-core: 6.1.83
 
   to-regex-range@5.0.1:
     dependencies:
