@@ -168,7 +168,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-          wranglerVersion: '3.81.0'
+          wranglerVersion: '3.90.0'
   deploy_to_github_gitlab:
     needs:
       - build
