@@ -86,5 +86,6 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     }
 
     writeStream.end();
+    writeStream.close();
   });
 }
