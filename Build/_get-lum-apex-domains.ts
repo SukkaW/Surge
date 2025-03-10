@@ -24,7 +24,7 @@ import { processLine } from './lib/process-line';
     }
   });
 
-  for await (const line of readFileByLine(path.join(SOURCE_DIR, 'domainset', 'reject_sukka.conf'))) {
+  for await (const line of readFileByLine(path.join(SOURCE_DIR, 'domainset', 'reject.conf'))) {
     const l = processLine(line);
     if (l) {
       trie.whitelist(l);
