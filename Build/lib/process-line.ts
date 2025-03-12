@@ -23,7 +23,7 @@ export function processLine(line: string): string | null {
       // # Comment
       return null;
     }
-    if (trimmed.charCodeAt(2) === 35 /** # */ && trimmed.charCodeAt(3) === 35) {
+    if (trimmed.charCodeAt(2) === 35 /** # */ && trimmed.charCodeAt(3) === 35 /** # */) {
       // ################## EOF ##################
       return null;
     }

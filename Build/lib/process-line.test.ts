@@ -12,7 +12,8 @@ describe('processLine', () => {
     ['   # comment', null],
     ['###id', '###id'],
     ['##.class', '##.class'],
-    ['## EOF', '## EOF']
+    ['## EOF', '## EOF'],
+    ['##### EOF', null]
   ] as const).forEach(([input, expected]) => {
     it(input, () => {
       expect(processLine(input)).toBe(expected);
