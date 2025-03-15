@@ -1,4 +1,4 @@
-export const DEBUG_DOMAIN_TO_FIND: string | null = 'links.strava.com'; // example.com | null
+export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean];
 
