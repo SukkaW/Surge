@@ -37,7 +37,8 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'gitbook.io',
   'zendesk.com',
   'ipfs.eth.aragon.network',
-  'wordpress.com'
+  'wordpress.com',
+  'cloud.microsoft' // actually owned by Microsoft
 ]);
 
 export const leathalKeywords = createKeywordFilter([
