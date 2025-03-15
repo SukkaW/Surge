@@ -1,4 +1,4 @@
-export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
+export const DEBUG_DOMAIN_TO_FIND: string | null = 'links.strava.com'; // example.com | null
 
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean];
 
@@ -77,13 +77,15 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
     ],
     true
   ],
-  [
-    'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_clickthroughs_justdomains.txt',
-    [
-      'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt'
-    ],
-    true
-  ],
+  // Disable clickthrough set. Many mail SaaS uses this kind of technique on their links (even normal links)
+  // E.g. links.strava.com
+  // [
+  //   'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_clickthroughs_justdomains.txt',
+  //   [
+  //     'https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs_justdomains.txt'
+  //   ],
+  //   true
+  // ],
   [
     'https://cdn.jsdelivr.net/gh/AdguardTeam/cname-trackers@master/data/combined_disguised_microsites_justdomains.txt',
     [
@@ -510,6 +512,7 @@ export const PREDEFINED_WHITELIST = [
   '.hubspotlinks.com', // Peter Lowe Hosts
   'cldup.com', // OSINT
   'cuty.io', // short domain like bitly, blocked by phishing army
+  'links.strava.com', // AdGuard CNAME Clickthrough Filters
 
   // Doesn't make sense: CNAME domains
   '.cdn.cloudflare.net',
