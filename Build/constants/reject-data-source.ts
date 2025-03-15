@@ -20,14 +20,12 @@ export const HOSTS_EXTRA: HostsSource[] = [
     'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext',
     ['https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/pgl.yoyo.org/as/serverlist'],
     true
-
   ],
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
   [
     'https://someonewhocares.org/hosts/zero/hosts',
     ['https://proxy.cdn.skk.moe/https/someonewhocares.org/hosts/zero/hosts'],
     true
-
   ],
   // ad-wars is not actively maintained since 2023.11, so we use jsDelivr as primary URL
   [
