@@ -7,11 +7,11 @@ import { mkdirp } from './lib/misc';
 import { $$fetch } from './lib/fetch-retry';
 
 const ASSETS_LIST = {
-  'www-google-analytics-com_ga.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/google-analytics-ga.js',
-  'www-googletagservices-com_gpt.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/googletagservices-gpt.js',
-  'www-google-analytics-com_analytics.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/google-analytics.js',
-  'www-googlesyndication-com_adsbygoogle.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/googlesyndication-adsbygoogle.js',
-  'amazon-adsystem-com_amazon-apstag.js': 'https://unpkg.com/@adguard/scriptlets@latest/dist/redirect-files/amazon-apstag.js'
+  'www-google-analytics-com_ga.js': 'https://cdn.jsdelivr.net/npm/@adguard/scriptlets@latest/dist/redirect-files/google-analytics-ga.js',
+  'www-googletagservices-com_gpt.js': 'https://cdn.jsdelivr.net/npm/@adguard/scriptlets@latest/dist/redirect-files/googletagservices-gpt.js',
+  'www-google-analytics-com_analytics.js': 'https://cdn.jsdelivr.net/npm/@adguard/scriptlets@latest/dist/redirect-files/google-analytics.js',
+  'www-googlesyndication-com_adsbygoogle.js': 'https://cdn.jsdelivr.net/npm/@adguard/scriptlets@latest/dist/redirect-files/googlesyndication-adsbygoogle.js',
+  'amazon-adsystem-com_amazon-apstag.js': 'https://cdn.jsdelivr.net/npm/@adguard/scriptlets@latest/dist/redirect-files/amazon-apstag.js'
 } as const;
 
 export const downloadMockAssets = task(require.main === module, __filename)(async (span) => {

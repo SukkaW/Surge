@@ -58,7 +58,7 @@ const REDIRECT_MIRROR_HEADER = [
   ['cdn.jsdmirror.cn/', 'https://cdn.jsdelivr.net/'],
   // onmicrosoft.cn
   ['jsd.onmicrosoft.cn/', 'https://cdn.jsdelivr.net/'],
-  ['npm.onmicrosoft.cn/', 'https://unpkg.com/'],
+  ['npm.onmicrosoft.cn/', 'https://cdn.jsdelivr.net/npm/'],
   ['cdnjs.onmicrosoft.cn/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
   // KGitHub
   ['raw.kgithub.com/', 'https://raw.githubusercontent.com/'],
