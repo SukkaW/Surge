@@ -32,7 +32,9 @@ export const HOSTS_EXTRA: HostsSource[] = [
     'https://cdn.jsdelivr.net/gh/jdlingyu/ad-wars@master/hosts',
     ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts'],
     false
-  ]
+  ],
+  // hoshsadiq adblock-nocoin-list extra
+  ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt', [], true]
 ];
 
 export const DOMAIN_LISTS: HostsSource[] = [
