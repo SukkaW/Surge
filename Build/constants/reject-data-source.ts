@@ -395,6 +395,7 @@ export const CRASHLYTICS_WHITELIST = [
   '.metric.gstatic.com',
   // Misc
   'telemetry.1passwordservices.com',
+  'b5x-sentry.1passwordservices.com',
   'events.tableplus.com',
   'telemetry.nextjs.org',
   'telemetry.vercel.com',
