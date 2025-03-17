@@ -8,6 +8,7 @@ import { noop } from 'foxts/noop';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 
 import { deleteBit, getBit, missingBit, setBit } from 'foxts/bitwise';
+import { toASCII } from 'punycode/';
 
 const START = 1 << 1;
 const INCLUDE_ALL_SUBDOMAIN = 1 << 2;
@@ -358,13 +359,13 @@ abstract class Triebase<Meta = unknown> {
 
     const onMatches = subdomainOnly
       ? (suffix: string[], subdomain: boolean) => { // fast path (default option)
-        const d = fastStringArrayJoin(suffix, '.');
+        const d = toASCII(fastStringArrayJoin(suffix, '.'));
         if (!subdomain && subStringEqual(inputSuffix, d, 1)) return;
 
         results.push(subdomain ? '.' + d : d);
       }
       : (suffix: string[], subdomain: boolean) => { // fast path (default option)
-        const d = fastStringArrayJoin(suffix, '.');
+        const d = toASCII(fastStringArrayJoin(suffix, '.'));
         results.push(subdomain ? '.' + d : d);
       };
 
@@ -417,7 +418,7 @@ abstract class Triebase<Meta = unknown> {
 
   public dumpWithoutDot(onSuffix: (suffix: string, subdomain: boolean) => void, withSort = false) {
     const handleSuffix = (suffix: string[], subdomain: boolean) => {
-      onSuffix(fastStringArrayJoin(suffix, '.'), subdomain);
+      onSuffix(toASCII(fastStringArrayJoin(suffix, '.')), subdomain);
     };
 
     if (withSort) {
@@ -434,11 +435,11 @@ abstract class Triebase<Meta = unknown> {
 
     const handleSuffix = onSuffix
       ? (suffix: string[], subdomain: boolean) => {
-        const d = fastStringArrayJoin(suffix, '.');
+        const d = toASCII(fastStringArrayJoin(suffix, '.'));
         onSuffix(subdomain ? '.' + d : d);
       }
       : (suffix: string[], subdomain: boolean) => {
-        const d = fastStringArrayJoin(suffix, '.');
+        const d = toASCII(fastStringArrayJoin(suffix, '.'));
         results.push(subdomain ? '.' + d : d);
       };
 
@@ -476,11 +477,11 @@ abstract class Triebase<Meta = unknown> {
 
     const handleSuffix = onSuffix
       ? (suffix: string[], subdomain: boolean, meta: Meta | undefined) => {
-        const d = fastStringArrayJoin(suffix, '.');
+        const d = toASCII(fastStringArrayJoin(suffix, '.'));
         return onSuffix(subdomain ? '.' + d : d, meta);
       }
       : (suffix: string[], subdomain: boolean, meta: Meta | undefined) => {
-        const d = fastStringArrayJoin(suffix, '.');
+        const d = toASCII(fastStringArrayJoin(suffix, '.'));
         results.push([subdomain ? '.' + d : d, meta]);
       };
 

@@ -70,7 +70,7 @@ export async function parseGfwList() {
   const res = await (await $$fetch('https://litter.catbox.moe/gv0bw6.csv', {
     headers: {
       accept: '*/*',
-      'user-agent': 'curl/8.9.1'
+      'user-agent': 'curl/8.12.1'
     }
   })).text();
   const topDomains = parse(res);

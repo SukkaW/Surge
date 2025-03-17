@@ -152,7 +152,7 @@ export class ResponseError<T extends UndiciResponseData | Response> extends Erro
 
 export const defaultRequestInit = {
   headers: {
-    'User-Agent': 'curl/8.9.1 (https://github.com/SukkaW/Surge)'
+    'User-Agent': 'curl/8.12.1 (https://github.com/SukkaW/Surge)'
   }
 };
 
