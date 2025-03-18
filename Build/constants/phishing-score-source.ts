@@ -38,7 +38,8 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'zendesk.com',
   'ipfs.eth.aragon.network',
   'wordpress.com',
-  'cloud.microsoft' // actually owned by Microsoft
+  'cloud.microsoft', // actually owned by Microsoft
+  'windows.net' // Microsoft refuses to add web.core.windows.net to the Public Suffix List
 ]);
 
 export const leathalKeywords = createKeywordFilter([
