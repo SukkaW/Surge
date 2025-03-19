@@ -148,8 +148,7 @@ jobs:
         id: npm_cache_path
         shell: sh
         run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
-      - name: Cache NPM cache
-        uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         with:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
@@ -166,6 +165,12 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
           wranglerVersion: '3.90.0'
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ steps.npm_cache_path.outputs.dir }}
+            node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-deploy-to-cloudflare-npm
   deploy_to_github_gitlab:
     needs:
       - build
