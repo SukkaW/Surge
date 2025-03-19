@@ -15,11 +15,12 @@ const mihomoBinaryPath = path.join(mihomoBinaryDir, 'mihomo');
 
 const mihomoBinaryUrl: Partial<Record<NodeJS.Platform, Partial<Record<NodeJS.Architecture, string>>>> = {
   linux: {
-    x64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.18.7/mihomo-linux-amd64-compatible-v1.18.7.gz'
+    x64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.19.3/mihomo-linux-amd64-compatible-v1.19.3.gz',
+    arm64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.19.3/mihomo-linux-arm64-v1.19.3.gz'
   },
   darwin: {
-    x64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.18.7/mihomo-darwin-amd64-v1.18.7.gz',
-    arm64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.18.7/mihomo-darwin-arm64-v1.18.7.gz'
+    x64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.19.3/mihomo-darwin-amd64-v1.19.3.gz',
+    arm64: 'https://github.com/MetaCubeX/mihomo/releases/download/v1.19.3/mihomo-darwin-arm64-v1.19.3.gz'
   }
 };
 
