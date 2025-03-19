@@ -17,22 +17,24 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
   for await (const lineB of source) {
     index++;
 
+    // b become bigger
     if (index > maxIndexA) {
       return false;
     }
 
     const lineA = linesA[index];
 
-    const lineAIsComment = isCommentLine(lineA);
-    const lineBIsComment = isCommentLine(lineB);
-
-    if (lineAIsComment !== lineBIsComment) {
+    const aFirstChar = lineA.charCodeAt(0);
+    if (aFirstChar !== lineB.charCodeAt(0)) {
       return false;
     }
 
-    // Now both line are either both comment or both not comment
+    // Now both line has the same first char
     // We only need to compare one of them
-    if (lineAIsComment) {
+    if (
+      aFirstChar === 35 // #
+      || aFirstChar === 33 // !
+    ) {
       continue;
     }
 
@@ -41,16 +43,8 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
     }
   }
 
+  // b is not smaller than a
   return index === maxIndexA;
-}
-
-export function isCommentLine(line: string): boolean {
-  const firstChar = line.charCodeAt(0);
-  return (
-    firstChar === 35 // #
-    || firstChar === 33 // !
-    || (firstChar === 47 && line[1] === '/' && line[3] === '#') // //##
-  );
 }
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {

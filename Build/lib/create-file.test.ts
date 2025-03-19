@@ -57,15 +57,27 @@ describe('fileEqual', () => {
     false
   ));
 
-  it('eol more', () => test(
+  it('eol more #1', () => test(
     ['A', 'B'],
     ['A', 'B', ''],
     false
   ));
 
-  it('eol less', () => test(
+  it('eol more #2', () => test(
+    ['A', 'B', ''],
+    ['A', 'B', '', ''],
+    false
+  ));
+
+  it('eol less #1', () => test(
     ['A', 'B', ''],
     ['A', 'B'],
+    false
+  ));
+
+  it('eol less #2', () => test(
+    ['A', 'B', '', ''],
+    ['A', 'B', ''],
     false
   ));
 });
