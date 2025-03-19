@@ -33,7 +33,7 @@ jobs:
       - name: Create RAM Disk for building
         id: ramdisk
         run: |
-          BUILD_DIR=$(mktemp -d -p /dev/shm/ -t sukka-surge-public.XXXXXXXXXX)
+          BUILD_DIR=$(mktemp -d -p "$TMPDIR" -t "sukka-surge-public.XXXXXXXXXX")
           echo "Build dir created at $BUILD_DIR"
           echo "build_dir=$BUILD_DIR" >> $GITHUB_OUTPUT
       - name: Download Previous Build
