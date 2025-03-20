@@ -50,8 +50,8 @@ importers:
         specifier: ^6.4.3
         version: 6.4.3(picomatch@4.0.2)
       foxts:
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^3.0.0
+        version: 3.0.0
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -1072,8 +1072,8 @@ packages:
   foxts@1.7.0:
     resolution: {integrity: sha512-mWyH/Fmh7TrUSuLgQpm2y3EieseR/v1g1Hp2cG5g5XBpQjuXLzhxMMiIND6egrDu0xkh28tYd4fp3dxam2/VAA==}
 
-  foxts@2.0.1:
-    resolution: {integrity: sha512-p032Uy9DFQEyWa0CjtK+KBlwujoRVzUUO9Z0OUAWLsK01pGQ2oqGX8XipzaVyR2i5yV4wAsQrjLoe7BWEhxH6A==}
+  foxts@3.0.0:
+    resolution: {integrity: sha512-h87E4IwITlcqmANBZdsywfINSKrx3pYo3KjXGI1dylZ1o7/UV4gh2PTNIo5xIB3Tn5M3iIGLiKsq+Q+zdktP7g==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -2696,7 +2696,7 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  foxts@2.0.1: {}
+  foxts@3.0.0: {}
 
   fs-constants@1.0.0: {}
 
