@@ -42,6 +42,7 @@ jobs:
           repository: SukkaLab/ruleset.skk.moe
           persist-credentials: false
           path: previous-build-${{ github.run_id }}-${{ github.run_number }}
+          token: ${{ secrets.GIT_TOKEN }}
       - name: Setup build folder
         run: |
           mv previous-build-${{ github.run_id }}-${{ github.run_number }}/{.,}* ${{ steps.ramdisk.outputs.build_dir }}/
