@@ -238,11 +238,11 @@ abstract class Triebase<Meta = unknown> {
 
   private walk(
     onMatches: (suffix: string[], subdomain: boolean, meta: Meta) => void,
+    withSort = false,
     initialNode = this.$root,
-    initialSuffix: string[] = [],
-    withSort = false
+    initialSuffix: string[] = []
   ) {
-    const bfsImpl = withSort ? Triebase.dfsWithSort : Triebase.dfs;
+    const dfsImpl = withSort ? Triebase.dfsWithSort : Triebase.dfs;
 
     const nodeStack: Array<TrieNode<Meta>> = [];
     nodeStack.push(initialNode);
@@ -255,7 +255,7 @@ abstract class Triebase<Meta = unknown> {
     let r;
 
     do {
-      r = bfsImpl(nodeStack, suffixStack);
+      r = dfsImpl(nodeStack, suffixStack);
       node = r[0]!;
       const suffix = r[1];
 
@@ -270,45 +270,6 @@ abstract class Triebase<Meta = unknown> {
     if (a === b) return 0;
     return (a.length - b.length) || fastStringCompare(a, b);
   }
-
-  private walkWithSort(
-    onMatches: (suffix: string[], subdomain: boolean, meta: Meta) => void,
-    initialNode = this.$root,
-    initialSuffix: string[] = []
-  ) {
-    const nodeStack: Array<TrieNode<Meta>> = [];
-    nodeStack.push(initialNode);
-
-    // Resolving initial string (begin the start of the stack)
-    const suffixStack: string[][] = [];
-    suffixStack.push(initialSuffix);
-
-    let node: TrieNode<Meta> = initialNode;
-    let child: Map<string, TrieNode<Meta>> = node[2];
-
-    do {
-      node = nodeStack.pop()!;
-      const suffix = suffixStack.pop()!;
-      child = node[2];
-      if (child.size) {
-        const keys = Array.from(child.keys()).sort(Triebase.compare);
-
-        for (let i = 0, l = keys.length; i < l; i++) {
-          const key = keys[i];
-          const childNode = child.get(key)!;
-
-          // Pushing the child node to the stack for next iteration of DFS
-          nodeStack.push(childNode);
-          suffixStack.push([key, ...suffix]);
-        }
-      }
-
-      // If the node is a sentinel, we push the suffix to the results
-      if (getBit(node[0], START)) {
-        onMatches(suffix, getBit(node[0], INCLUDE_ALL_SUBDOMAIN), node[4]);
-      }
-    } while (nodeStack.length);
-  };
 
   protected getSingleChildLeaf(tokens: string[]): FindSingleChildLeafResult<Meta> | null {
     let toPrune: TrieNode | null = null;
@@ -371,6 +332,7 @@ abstract class Triebase<Meta = unknown> {
 
     this.walk(
       onMatches,
+      false,
       res.node, // Performing DFS from prefix
       inputTokens
     );
@@ -421,11 +383,7 @@ abstract class Triebase<Meta = unknown> {
       onSuffix(toASCII(fastStringArrayJoin(suffix, '.')), subdomain);
     };
 
-    if (withSort) {
-      this.walkWithSort(handleSuffix);
-    } else {
-      this.walk(handleSuffix);
-    }
+    this.walk(handleSuffix, withSort);
   }
 
   public dump(onSuffix: (suffix: string) => void, withSort?: boolean): void;
@@ -443,11 +401,7 @@ abstract class Triebase<Meta = unknown> {
         results.push(subdomain ? '.' + d : d);
       };
 
-    if (withSort) {
-      this.walkWithSort(handleSuffix);
-    } else {
-      this.walk(handleSuffix);
-    }
+    this.walk(handleSuffix, withSort);
 
     return results;
   };
@@ -461,11 +415,7 @@ abstract class Triebase<Meta = unknown> {
       ? (_suffix: string[], _subdomain: boolean, meta: Meta) => onMeta(meta)
       : (_suffix: string[], _subdomain: boolean, meta: Meta) => results.push(meta);
 
-    if (withSort) {
-      this.walkWithSort(handleMeta);
-    } else {
-      this.walk(handleMeta);
-    }
+    this.walk(handleMeta, withSort);
 
     return results;
   };
@@ -485,11 +435,7 @@ abstract class Triebase<Meta = unknown> {
         results.push([subdomain ? '.' + d : d, meta]);
       };
 
-    if (withSort) {
-      this.walkWithSort(handleSuffix);
-    } else {
-      this.walk(handleSuffix);
-    }
+    this.walk(handleSuffix, withSort);
 
     return results;
   };
