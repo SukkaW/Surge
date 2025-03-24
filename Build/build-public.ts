@@ -49,33 +49,41 @@ export const buildPublic = task(require.main === module, __filename)(async (span
     .traceChild('generate index.html')
     .traceAsyncFn(() => treeDir(PUBLIC_DIR).then(generateHtml));
 
-  await compareAndWriteFile(
-    span,
-    [
-      '/*',
-      '  cache-control: public, max-age=240, stale-while-revalidate=60, stale-if-error=15',
-      'https://:project.pages.dev/*',
-      '  X-Robots-Tag: noindex',
-      '/Modules/*',
-      '  content-type: text/plain; charset=utf-8',
-      '/List/*',
-      '  content-type: text/plain; charset=utf-8',
-      '/Internal/*',
-      '  content-type: text/plain; charset=utf-8'
-    ],
-    path.join(PUBLIC_DIR, '_headers')
-  );
-
-  await compareAndWriteFile(
-    span,
-    [
-      '# <pre>',
-      '#########################################',
-      '# Sukka\'s Ruleset - 404 Not Found',
-      '################## EOF ##################</pre>'
-    ],
-    path.join(PUBLIC_DIR, '404.html')
-  );
+  await Promise.all([
+    compareAndWriteFile(
+      span,
+      [
+        '/*',
+        '  cache-control: public, max-age=240, stale-while-revalidate=60, stale-if-error=15',
+        'https://:project.pages.dev/*',
+        '  X-Robots-Tag: noindex',
+        '/Modules/*',
+        '  content-type: text/plain; charset=utf-8',
+        '/List/*',
+        '  content-type: text/plain; charset=utf-8',
+        '/Internal/*',
+        '  content-type: text/plain; charset=utf-8'
+      ],
+      path.join(PUBLIC_DIR, '_headers')
+    ),
+    compareAndWriteFile(
+      span,
+      [
+        '# <pre>',
+        '#########################################',
+        '# Sukka\'s Ruleset - 404 Not Found',
+        '################## EOF ##################</pre>'
+      ],
+      path.join(PUBLIC_DIR, '404.html')
+    ),
+    compareAndWriteFile(
+      span,
+      [
+        '# The source code is located at [Sukkaw/Surge](https://github.com/Sukkaw/Surge)'
+      ],
+      path.join(PUBLIC_DIR, 'README.md')
+    )
+  ]);
 
   return writeFile(path.join(PUBLIC_DIR, 'index.html'), html);
 });
