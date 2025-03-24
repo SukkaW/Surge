@@ -206,6 +206,7 @@ jobs:
       - name: Upload Dist to GitHub
         continue-on-error: true
         run: |
+          gh repo unarchive SukkaLab/ruleset.skk.moe --yes
           git clone --filter=tree:0 --no-tags https://${GH_USER}:${GH_TOKEN}@github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git
           cd ./deploy-git
           git config --global push.default matching
@@ -219,6 +220,7 @@ jobs:
           git push --quiet --force origin HEAD:master
           cd ..
           rm -rf ./deploy-git
+          gh repo archive SukkaLab/ruleset.skk.moe --yes
         env:
           GH_EMAIL: ${{ secrets.GIT_EMAIL }}
           GH_USER: ${{ secrets.GIT_USER }}
