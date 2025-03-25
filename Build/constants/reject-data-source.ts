@@ -39,12 +39,13 @@ export const HOSTS_EXTRA: HostsSource[] = [
     ['https://someonewhocares.org/hosts/zero/hosts'],
     true
   ],
-  // ad-wars is not actively maintained since 2023.11, so we use jsDelivr as primary URL
-  [
-    'https://cdn.jsdelivr.net/gh/jdlingyu/ad-wars@master/hosts',
-    ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts'],
-    false
-  ],
+  // ad-wars is not actively maintained since 2023.11 due to Tencent's Legal Notice
+  // All contents has been intergrated into the reject.conf file
+  // [
+  //   'https://cdn.jsdelivr.net/gh/jdlingyu/ad-wars@master/hosts',
+  //   ['https://raw.githubusercontent.com/jdlingyu/ad-wars/master/hosts'],
+  //   false
+  // ],
   // hoshsadiq adblock-nocoin-list extra
   [
     'https://cdn.jsdelivr.net/gh/hoshsadiq/adblock-nocoin-list@master/hosts.txt',
@@ -509,7 +510,6 @@ export const PREDEFINED_WHITELIST = [
   'ab.chatgpt.com', // EasyPrivacy blocks this
   'jnn-pa.googleapis.com', // ad-wars
   'imasdk.googleapis.com', // ad-wars
-  '.l.qq.com', // ad-wars
   '.in-addr.arpa', // rDNS
   '.ip6.arpa', // rDNS
   '.clients.your-server.de', // rDNS .static.183.213.201.138.clients.your-server.de
