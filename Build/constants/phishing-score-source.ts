@@ -52,6 +52,13 @@ export const leathalKeywords = createKeywordFilter([
   'getipass',
   '.secure.txtag',
 
+  '00lx.',
+  '0-lx.',
+  '01-x',
+  '0llx',
+  '0lx.',
+  'olx.o',
+
   // Fake TLD
   '.pl-',
   '-pl.',
