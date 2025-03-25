@@ -163,18 +163,24 @@ export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<
     aaaaDns.push(aaaaRecords.dns);
   }
 
-  // only then, let's test once with domesticDohServers
-  const aRecords = (await $resolve($domain, 'A', pickOne(domesticDohServers)));
-  if (aRecords.answers.length > 0) {
-    return onDomainAlive(domain);
+  // only then, let's test twice with domesticDohServers
+  for (let i = 0; i < 2; i++) {
+    // eslint-disable-next-line no-await-in-loop -- sequential
+    const aRecords = (await $resolve($domain, 'A', pickOne(domesticDohServers)));
+    if (aRecords.answers.length > 0) {
+      return onDomainAlive(domain);
+    }
+    aDns.push(aRecords.dns);
   }
-  aDns.push(aRecords.dns);
 
-  const aaaaRecords = (await $resolve($domain, 'AAAA', pickOne(domesticDohServers)));
-  if (aaaaRecords.answers.length > 0) {
-    return onDomainAlive(domain);
+  for (let i = 0; i < 2; i++) {
+    // eslint-disable-next-line no-await-in-loop -- sequential
+    const aaaaRecords = (await $resolve($domain, 'AAAA', pickOne(domesticDohServers)));
+    if (aaaaRecords.answers.length > 0) {
+      return onDomainAlive(domain);
+    }
+    aaaaDns.push(aaaaRecords.dns);
   }
-  aaaaDns.push(aaaaRecords.dns);
 
   console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
   return onDomainDead($domain);
