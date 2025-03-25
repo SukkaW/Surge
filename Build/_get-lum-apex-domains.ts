@@ -24,6 +24,13 @@ import { processLine } from './lib/process-line';
     }
   });
 
+  const dataFromDuckDuckGo = await fetch('https://raw.githubusercontent.com/duckduckgo/tracker-radar/92e086ce38a8a88c964ed0184e5277ec1d5c8038/entities/Bright%20Data%20Ltd..json').then((res) => res.json());
+  if (typeof dataFromDuckDuckGo === 'object' && dataFromDuckDuckGo !== null && 'properties' in dataFromDuckDuckGo && Array.isArray(dataFromDuckDuckGo.properties)) {
+    dataFromDuckDuckGo.properties.forEach((prop) => {
+      trie.add(prop);
+    });
+  }
+
   for await (const line of readFileByLine(path.join(SOURCE_DIR, 'domainset', 'reject.conf'))) {
     const l = processLine(line);
     if (l) {
@@ -31,5 +38,5 @@ import { processLine } from './lib/process-line';
     }
   }
 
-  console.log(trie.dump().join('\n'));
+  console.log(trie.dump().map(i => '.' + i).join('\n'));
 })();
