@@ -32,7 +32,7 @@ const getS3OSSDomainsPromise = (async (): Promise<Set<string>> => {
   trie.find('.scw.cloud').forEach((line: string) => {
     if (
       (line.startsWith('s3-') || line.startsWith('s3.'))
-      && !line.includes('cn-')
+      // && !line.includes('cn-')
     ) {
       S3OSSDomains.add('.' + line);
     }
