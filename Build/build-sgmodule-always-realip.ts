@@ -26,7 +26,7 @@ const HOSTNAMES = [
   '*.turn.twilio.com',
   '*.stun.twilio.com',
   'stun.syncthing.net',
-  'stun.*'
+  'stun.*',
   // 'controlplane.tailscale.com',
   // NTP
   // 'time.*.com', 'time.*.gov', 'time.*.edu.cn', 'time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org'
@@ -36,6 +36,8 @@ const HOSTNAMES = [
   // 'localhost.ptlogin2.qq.com
   // 'localhost.sec.qq.com',
   // 'localhost.work.weixin.qq.com',
+  '*.sslip.io',
+  '*.nip.io'
 ];
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {

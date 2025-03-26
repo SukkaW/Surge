@@ -105,19 +105,12 @@ export const LAN = {
       // 'web.setup'
     ]
   },
-  LAN: {
+  LAN_WITHOUT_REAL_IP: {
     dns: 'system',
-    hosts: {
-      // localhost: ['127.0.0.1']
-    },
-    realip: true,
+    hosts: {},
+    realip: false,
     ruleset: true,
     domains: [
-      '+lan',
-      // 'amplifi.lan',
-      // '$localhost',
-      '+localdomain',
-      'home.arpa',
       // AS112
       '10.in-addr.arpa',
       '16.172.in-addr.arpa',
@@ -139,6 +132,21 @@ export const LAN = {
       '31.172.in-addr.arpa',
       '168.192.in-addr.arpa',
       '254.169.in-addr.arpa'
+    ]
+  },
+  LAN_WITH_REALIP: {
+    dns: 'system',
+    hosts: {
+      // localhost: ['127.0.0.1']
+    },
+    realip: true,
+    ruleset: true,
+    domains: [
+      '+lan',
+      // 'amplifi.lan',
+      // '$localhost',
+      '+localdomain',
+      'home.arpa'
     ]
   }
 } as const satisfies Record<string, DNSMapping>;
