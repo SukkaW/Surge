@@ -341,6 +341,41 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'baomitu.com',
       'qiku.com'
     ]
+  },
+  NETEASE: {
+    hosts: {},
+    dns: 'https://doh.pub/dns-query',
+    realip: false,
+    ruleset: true,
+    domains: [
+      '126.com',
+      '126.net',
+      '127.com',
+      '127.net',
+      '+163.com',
+      '163yun.com',
+      '+163.com.cn',
+      '163jiasu.com',
+      '166.com',
+      '166.net',
+      '188.com',
+      'netease.com',
+      '+neteasecloudmusic.com',
+      '+neteasegame.com',
+      '+netease.im',
+      'netstatic.net',
+      'lofter.com',
+      'yeah.net',
+      'ydstatic.com',
+      'youdao.com',
+      'youdao.cn',
+      'yoozoo.com',
+      'yqkk.link',
+      'haowu.link',
+      'laiqukankan.com',
+      'zhuanzfx.com',
+      '321fenx.com'
+    ]
   }
 };
 
