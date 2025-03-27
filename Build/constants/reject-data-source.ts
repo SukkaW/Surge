@@ -533,6 +533,7 @@ export const PREDEFINED_WHITELIST = [
   'cuty.io', // short domain like bitly, blocked by phishing army
   'links.strava.com', // AdGuard CNAME Clickthrough Filters
   'email.strava.com', // EasyList
+  'insideruser.microsoft.com', // WindowsSpyBlocker
 
   // Doesn't make sense: CNAME domains
   '.cdn.cloudflare.net',
