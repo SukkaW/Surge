@@ -96,7 +96,7 @@ export class FileOutput {
   }
 
   addDomainSuffix(domain: string, lineFromDot = domain[0] === '.') {
-    this.domainTrie.add(domain, true, lineFromDot ? 1 : 0);
+    this.domainTrie.add(domain, true, null, lineFromDot ? 1 : 0);
     return this;
   }
 
