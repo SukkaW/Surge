@@ -37,7 +37,7 @@ const pool = new Worktank({
       const { BLACK_TLD, WHITELIST_MAIN_DOMAINS, leathalKeywords, lowKeywords, sensitiveKeywords } = __require('../constants/phishing-score-source') as typeof import('../constants/phishing-score-source');
 
       const domainCountMap = new Map<string, number>();
-      const domainScoreMap: Record<string, number> = {};
+      const domainScoreMap: Record<string, number> = Object.create(null);
 
       let line = '';
       let tld: string | null = '';
@@ -72,6 +72,9 @@ const pool = new Worktank({
           console.log(picocolors.yellow('[phishing domains] E0002'), 'missing domain', { line, apexDomain });
           continue;
         }
+        if (WHITELIST_MAIN_DOMAINS.has(apexDomain)) {
+          continue;
+        }
 
         domainCountMap.set(
           apexDomain,
@@ -80,37 +83,38 @@ const pool = new Worktank({
             : 1
         );
 
+        let score = apexDomain in domainScoreMap ? domainScoreMap[apexDomain] : 0;
+
         if (!(apexDomain in domainScoreMap)) {
-          domainScoreMap[apexDomain] = 0;
           if (BLACK_TLD.has(tld)) {
-            domainScoreMap[apexDomain] += 3;
+            score += 3;
           } else if (tld.length > 6) {
-            domainScoreMap[apexDomain] += 2;
+            score += 2;
           }
           if (apexDomain.length >= 18) {
-            domainScoreMap[apexDomain] += 0.5;
+            score += 0.5;
           }
         }
 
         subdomain = parsed.subdomain;
 
-        if (
-          subdomain
-          && !WHITELIST_MAIN_DOMAINS.has(apexDomain)
-        ) {
-          domainScoreMap[apexDomain] += calcDomainAbuseScore(subdomain, line);
+        if (subdomain) {
+          score += calcDomainAbuseScore(subdomain, line);
         }
+
+        domainScoreMap[apexDomain] = score;
       }
 
       domainCountMap.forEach((count, apexDomain) => {
+        const score = domainScoreMap[apexDomain];
         if (
         // !WHITELIST_MAIN_DOMAINS.has(apexDomain)
-          (domainScoreMap[apexDomain] >= 24)
-          || (domainScoreMap[apexDomain] >= 16 && count >= 7)
-          || (domainScoreMap[apexDomain] >= 13 && count >= 11)
-          || (domainScoreMap[apexDomain] >= 5 && count >= 14)
-          || (domainScoreMap[apexDomain] >= 3 && count >= 21)
-          || (domainScoreMap[apexDomain] >= 1 && count >= 60)
+          (score >= 24)
+          || (score >= 16 && count >= 7)
+          || (score >= 13 && count >= 11)
+          || (score >= 5 && count >= 14)
+          || (score >= 3 && count >= 21)
+          || (score >= 1 && count >= 60)
         ) {
           domainArr.push('.' + apexDomain);
         }

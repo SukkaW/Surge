@@ -196,7 +196,7 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     return result;
   }
 
-  const filter = NetworkFilter.parse(line);
+  const filter = NetworkFilter.parse(line, false);
   if (filter) {
     if (
       // filter.isCosmeticFilter() // always false

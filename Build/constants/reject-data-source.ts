@@ -286,7 +286,11 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
     ]
   ],
   // no coin list adguard list is more maintained than its hosts
-  ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt', [], true],
+  [
+    'https://cdn.jsdelivr.net/gh/hoshsadiq/adblock-nocoin-list@master/nocoin.txt',
+    ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt'],
+    true
+  ],
   // AdGuard Annoyances filter
   [
     'https://filters.adtidy.org/extension/ublock/filters/14_optimized.txt',
