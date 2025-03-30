@@ -61,6 +61,10 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       .map((key) => `${key} x ${cpus[key]}`)
       .join('\n')
   }`);
+  if ('availableParallelism' in os) {
+    console.log(`Available parallelism: ${os.availableParallelism()}`);
+  }
+
   console.log(`Memory: ${os.totalmem() / (1024 * 1024)} MiB`);
 
   const rootSpan = createSpan('root');
