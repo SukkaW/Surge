@@ -59,7 +59,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     downloadDomainSet,
     steamDomainSet
   ] = await Promise.all([
-    getS3OSSDomainsPromise,
+    span.traceChildPromise('download public suffix list for s3', getS3OSSDomainsPromise),
     cdnDomainsListPromise,
     downloadDomainSetPromise,
     steamDomainSetPromise

@@ -48,8 +48,6 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
 }
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
-  const linesALen = linesA.length;
-
   const isEqual = await span.traceChildAsync(`compare ${filePath}`, async () => {
     if (fs.existsSync(filePath)) {
       return fileEqual(linesA, readFileByLine(filePath));
@@ -65,6 +63,8 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   }
 
   await span.traceChildAsync(`writing ${filePath}`, async () => {
+    const linesALen = linesA.length;
+
     // The default highwater mark is normally 16384,
     // So we make sure direct write to file if the content is
     // most likely less than 500 lines

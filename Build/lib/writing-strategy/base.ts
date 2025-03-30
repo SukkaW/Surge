@@ -1,5 +1,6 @@
 import type { Span } from '../../trace';
 import { compareAndWriteFile } from '../create-file';
+import { compareAndWriteFileInWorker } from '../create-file.worker';
 
 /**
  * The class is not about holding rule data, instead it determines how the
@@ -75,6 +76,19 @@ export abstract class BaseWriteStrategy {
   ): void | Promise<void> {
     if (!this.result) {
       return;
+    }
+
+    if (this.result.length > 1000) {
+      return compareAndWriteFileInWorker(
+        span,
+        this.withPadding(
+          title,
+          description,
+          date,
+          this.result
+        ),
+        filePath
+      );
     }
     return compareAndWriteFile(
       span,
