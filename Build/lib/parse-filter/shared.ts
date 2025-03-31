@@ -1,6 +1,9 @@
 import picocolors from 'picocolors';
 import { DEBUG_DOMAIN_TO_FIND } from '../../constants/reject-data-source';
 import { noop } from 'foxts/noop';
+import { newQueue } from '@henrygd/queue';
+
+export const limit = newQueue(8);
 
 export const foundDebugDomain = { value: false };
 

@@ -1,6 +1,6 @@
 import { fastNormalizeDomain, fastNormalizeDomainWithoutWww } from '../normalize-domain';
 import { processLine } from '../process-line';
-import { onBlackFound } from './shared';
+import { limit, onBlackFound } from './shared';
 import { fetchAssets } from '../fetch-assets';
 import type { Span } from '../../trace';
 
@@ -53,7 +53,7 @@ export function processDomainListsWithPreload(
   domainListsUrl: string, mirrors: string[] | null,
   includeAllSubDomain = false
 ) {
-  const downloadPromise = fetchAssets(domainListsUrl, mirrors, true);
+  const downloadPromise = limit.add(() => fetchAssets(domainListsUrl, mirrors, true));
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {

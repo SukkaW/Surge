@@ -1,7 +1,7 @@
 import picocolors from 'picocolors';
 import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
-import { onBlackFound, onWhiteFound } from './shared';
+import { limit, onBlackFound, onWhiteFound } from './shared';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import tldts from 'tldts-experimental';
@@ -25,7 +25,7 @@ export function processFilterRulesWithPreload(
   fallbackUrls?: string[] | null,
   includeThirdParty = false
 ) {
-  const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
+  const downloadPromise = limit.add(() => fetchAssets(filterRulesUrl, fallbackUrls));
 
   return (span: Span) => span.traceChildAsync<Record<'whiteDomains' | 'whiteDomainSuffixes' | 'blackDomains' | 'blackDomainSuffixes', string[]>>(`process filter rules: ${filterRulesUrl}`, async (span) => {
     const filterRules = await span.traceChildPromise('download', downloadPromise);

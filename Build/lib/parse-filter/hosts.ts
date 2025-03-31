@@ -1,7 +1,7 @@
 import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
 import { fastNormalizeDomainWithoutWww } from '../normalize-domain';
-import { onBlackFound } from './shared';
+import { limit, onBlackFound } from './shared';
 
 const rSpace = /\s+/;
 
@@ -40,7 +40,7 @@ export function processHosts(
 }
 
 export function processHostsWithPreload(hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false) {
-  const downloadPromise = fetchAssets(hostsUrl, mirrors, true);
+  const downloadPromise = limit.add(() => fetchAssets(hostsUrl, mirrors, true));
 
   return (span: Span) => span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
     const filterRules = await span.traceChild('download').tracePromise(downloadPromise);
