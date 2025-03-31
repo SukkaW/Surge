@@ -90,8 +90,20 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       hostsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
       hostsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
-      domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
-      domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
+      domainListsDownloads.map(task => task(childSpan, (domain, includeAllSubDomain) => {
+        if (includeAllSubDomain) {
+          rejectOutput.addDomainSuffix(domain);
+        } else {
+          rejectOutput.addDomain(domain);
+        }
+      })),
+      domainListsExtraDownloads.map(task => task(childSpan, (domain, includeAllSubDomain) => {
+        if (includeAllSubDomain) {
+          rejectExtraOutput.addDomainSuffix(domain);
+        } else {
+          rejectExtraOutput.addDomain(domain);
+        }
+      })),
 
       adguardFiltersDownloads.map(
         task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
