@@ -6,6 +6,7 @@ import { dummySpan, printTraceResult } from '../trace';
 import type { Span } from '../trace';
 import { appendArrayInPlaceCurried } from './append-array-in-place';
 import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
+import type { TldTsParsed } from './normalize-domain';
 
 const downloads = [
   ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
@@ -43,6 +44,7 @@ const pool = new Worktank({
       let tld: string | null = '';
       let apexDomain: string | null = '';
       let subdomain: string | null = '';
+      let parsed: TldTsParsed;
 
       // const set = new Set<string>();
       // let duplicateCount = 0;
@@ -56,7 +58,7 @@ const pool = new Worktank({
         //   set.add(line);
         // }
 
-        const parsed = tldts.parse(line, loosTldOptWithPrivateDomains);
+        parsed = tldts.parse(line, loosTldOptWithPrivateDomains);
         if (parsed.isPrivate) {
           continue;
         }

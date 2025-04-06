@@ -5,7 +5,7 @@ import tldts from 'tldts';
 import { normalizeTldtsOpt } from '../constants/loose-tldts-opt';
 import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 
-type TldTsParsed = ReturnType<typeof tldts.parse>;
+export type TldTsParsed = ReturnType<typeof tldts.parse>;
 
 /**
  * Skipped the input non-empty check, the `domain` should not be empty.
