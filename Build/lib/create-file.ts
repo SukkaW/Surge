@@ -5,20 +5,36 @@ import picocolors from 'picocolors';
 import type { Span } from '../trace';
 import { readFileByLine } from './fetch-text-by-line';
 import { writeFile } from './misc';
+import { invariant } from 'foxts/guard';
 
 export async function fileEqual(linesA: string[], source: AsyncIterable<string> | Iterable<string>): Promise<boolean> {
   if (linesA.length === 0) {
     return false;
   }
 
-  const maxIndexA = linesA.length - 1;
+  const aLen = linesA.length;
+
+  const maxIndexA = aLen - 1;
   let index = -1;
 
-  for await (const lineB of source) {
+  const iterator = Symbol.asyncIterator in source
+    ? source[Symbol.asyncIterator]()
+    : (
+      Symbol.iterator in source
+        ? source[Symbol.iterator]()
+        : null
+    );
+
+  invariant(iterator, 'source must be iterable or async iterable');
+
+  let result = await iterator.next();
+  let lineB: string = result.value;
+
+  while (!result.done) {
     index++;
 
     // b become bigger
-    if (index > maxIndexA) {
+    if (index === aLen) {
       return false;
     }
 
@@ -35,12 +51,19 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
       aFirstChar === 35 // #
       || aFirstChar === 33 // !
     ) {
+      // eslint-disable-next-line no-await-in-loop -- sequential
+      result = await iterator.next();
+      lineB = result.value;
       continue;
     }
 
     if (lineA !== lineB) {
       return false;
     }
+
+    // eslint-disable-next-line no-await-in-loop -- sequential
+    result = await iterator.next();
+    lineB = result.value;
   }
 
   // b is not smaller than a
