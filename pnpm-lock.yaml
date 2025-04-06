@@ -77,8 +77,8 @@ importers:
         specifier: ^7.7.0
         version: 7.7.0
       undici-cache-store-better-sqlite3:
-        specifier: ^0.1.1
-        version: 0.1.1(undici@7.7.0)
+        specifier: ^0.1.2
+        version: 0.1.2(undici@7.7.0)
       whoiser:
         specifier: ^1.18.0
         version: 1.18.0(patch_hash=01fa406613b6f7b55ad41a6e49450f5a6b1b198b837c4f3fe11edc48c779189f)
@@ -1716,8 +1716,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-cache-store-better-sqlite3@0.1.1:
-    resolution: {integrity: sha512-F/PxGx+QY3oScnFQ/YGbN7AYtqKLTzps0izFi8LddDaobso3SYXyQORuPcnUd2JbqpdxmLLkvS2zSvG6VPPMpw==}
+  undici-cache-store-better-sqlite3@0.1.2:
+    resolution: {integrity: sha512-iUk+0I0W0bVPtm7p1bzzAAklLidKSrcX++HqSvmTTNwv2uWpI6DwpvSkcdm2T7GCENEUNHARpwyJdC2NBGiOXw==}
     peerDependencies:
       undici: '>=7.0.0'
 
@@ -3430,9 +3430,10 @@ snapshots:
 
   typescript@5.8.2: {}
 
-  undici-cache-store-better-sqlite3@0.1.1(undici@7.7.0):
+  undici-cache-store-better-sqlite3@0.1.2(undici@7.7.0):
     dependencies:
       better-sqlite3: 11.9.1
+      foxts: 3.0.1
       undici: 7.7.0
 
   undici-types@6.20.0: {}

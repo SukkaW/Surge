@@ -40,7 +40,7 @@
     "tldts": "^6.1.85",
     "tldts-experimental": "^6.1.85",
     "undici": "^7.7.0",
-    "undici-cache-store-better-sqlite3": "^0.1.1",
+    "undici-cache-store-better-sqlite3": "^0.1.2",
     "whoiser": "^1.18.0",
     "why-is-node-running": "^3.2.2",
     "worktank": "^2.7.3",
