@@ -40,7 +40,8 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'wordpress.com',
   'cloud.microsoft', // actually owned by Microsoft
   'windows.net', // Microsoft refuses to add web.core.windows.net to the Public Suffix List
-  'myqcloud.com' // curben phishing-filter contains many entries
+  'myqcloud.com', // curben phishing-filter contains many entries
+  'surge.sh' // caused by phishing-filter, also no public suffix
 ]);
 
 export const leathalKeywords = createKeywordFilter([
