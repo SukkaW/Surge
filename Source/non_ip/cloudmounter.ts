@@ -6,7 +6,8 @@ export const DOMAINS = [
   'DOMAIN-SUFFIX,storage.live.com',
   'DOMAIN-SUFFIX,files.1drv.com',
   'DOMAIN-SUFFIX,my.microsoftpersonalcontent.com',
-  'DOMAIN-WILDCARD,*-medi*.svc.ms'
+  'DOMAIN-WILDCARD,*-medi*.svc.ms',
+  'DOMAIN-SUFFIX,upload.box.com'
 ];
 
 export const PROCESS_NAMES = [
