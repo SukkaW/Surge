@@ -529,8 +529,12 @@ export const PREDEFINED_WHITELIST = [
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
   '.nstool.netease.com', // it is only used to check local dns
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
-  '.lon.llnw.net', // There is no point in adding these, many subdomains are dead anyway
-  '.lcy.llnw.net', // There is no point in adding these, many subdomains are dead anyway
+
+  // There is no point in adding these, many subdomains are dead anyway
+  '.lon.llnw.net',
+  '.lcy.llnw.net',
+  '.ory.llnw.net',
+
   'repo.huaweicloud.com', // urlhaus
   '.hubspotlinks.com', // Peter Lowe Hosts
   'cldup.com', // OSINT
