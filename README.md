@@ -141,7 +141,7 @@ rules:
 **Surge**
 
 ```ini
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/speedtest.conf,[替换你的策略名],extended-matching
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/speedtest.conf,[Replace with your policy],extended-matching
 ```
 
 #### 常见静态 CDN
@@ -665,7 +665,7 @@ rules:
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,[Replace with your policy]
-RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,PROXY
+RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy]
 ```
 
