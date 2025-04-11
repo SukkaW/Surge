@@ -162,5 +162,6 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .addFromRuleset(readLocalRejectRulesetPromise)
     .addFromRuleset(readLocalRejectDropRulesetPromise)
     .addFromRuleset(readLocalRejectNoDropRulesetPromise)
+    .addFromDomainset(readLocalRejectExtraDomainsetPromise)
     .write();
 });
