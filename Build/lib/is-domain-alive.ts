@@ -266,7 +266,7 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   'no object found',
   'nothing found',
   'status: free',
-  'pendingdelete',
+  // 'pendingdelete',
   ' has been blocked by '
 ]);
 
