@@ -144,6 +144,10 @@ jobs:
     name: Deploy to Cloudflare Pages
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04-arm
+    # matrix is a tricky way to define a variable directly in the jon yaml
+    strategy:
+      matrix:
+        wranglerVersion: ['3.114.6']
     steps:
       - name: Get NPM cache directory path
         id: npm_cache_path
@@ -154,7 +158,7 @@ jobs:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
             node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-deploy-to-cloudflare-npm
+          key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ matrix.wranglerVersion }}
       - uses: actions/download-artifact@v4
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
@@ -165,13 +169,13 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-          wranglerVersion: '3.90.0'
+          wranglerVersion: ${{ matrix.wranglerVersion }}
       - uses: actions/cache/save@v4
         with:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
             node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-deploy-to-cloudflare-npm
+          key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ matrix.wranglerVersion }}
   deploy_to_github_gitlab:
     needs:
       - build
