@@ -10,6 +10,17 @@
 
 如果你从 Sukka 提供的 Ruleset Server（[`https://ruleset.skk.moe`](https://ruleset.skk.moe)）获取本项目中的规则组文件，则意味着你已知晓并同意 [隐私政策](https://skk.moe/privacy-policy/) 中的所有条款。如果你不同意，请通过 GitHub 获取本项目中的源码、自行构建规则组文件。
 
+## 镜像
+
+`ruleset.skk.moe` 是由 Sukka 提供的 Ruleset Server，由 Cloudflare 驱动。但是由于众所周知的原因、Cloudflare 的节点在中国大陆的访问速度和稳定性都不理想。目前，Sukka Ruleset 提供了以下官方镜像：
+
+- `ruleset-mirror.skk.moe`：由 Sukka 维护，CDN 服务由「[Gomani CDN](https://cp.gomami.io/dashboard)（内测中）」赞助，提供香港 CN2、9929、CMIN2 节点。
+
+为了改善访问速度和稳定性，欢迎大家搭建镜像、从以下 Git 仓库同步更新：
+
+- https://github.com/SukkaLab/ruleset.skk.moe
+- https://gitlab.com/SukkaW/ruleset.skk.moe
+
 ## 规则组列表
 
 **请务必按照 `domainset`、`non_ip`、`ip`，和 README 中的顺序 将规则组添加到你的配置文件中，确保所有 `domainset` 或 `non_ip` 规则组 位于所有的 `ip` 规则组之前**。
