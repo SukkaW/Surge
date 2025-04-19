@@ -6,8 +6,7 @@ import fsp from 'node:fs/promises';
 
 const DEPRECATED_FILES = [
   ['non_ip/global_plus', 'This file has been merged with non_ip/global'],
-  ['domainset/reject_sukka', 'This file has been merged with domainset/reject'],
-  ['domainset/reject_phishing', 'This file has been merged with domainset/reject']
+  ['domainset/reject_sukka', 'This file has been merged with domainset/reject']
 ];
 
 const REMOVED_FILES = [
