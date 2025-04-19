@@ -6,7 +6,7 @@ import { processHostsWithPreload } from './lib/parse-filter/hosts';
 import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST } from './constants/reject-data-source';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
@@ -62,8 +62,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       'Build from:',
       ...HOSTS_EXTRA.map(host => ` - ${host[0]}`),
       ...DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`),
-      ...ADGUARD_FILTERS_EXTRA.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`),
-      ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
+      ...ADGUARD_FILTERS_EXTRA.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
     ]);
 
   const appendArrayToRejectOutput = rejectOutput.addFromDomainset.bind(rejectOutput);
@@ -118,8 +117,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
         })
-      ),
-      getPhishingDomains(childSpan).then(appendArrayToRejectExtraOutput)
+      )
     ].flat()));
 
   if (foundDebugDomain.value) {
@@ -152,7 +150,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   const rejectOutputAdGuardHome = new AdGuardHomeOutput(span, 'reject-adguardhome', OUTPUT_INTERNAL_DIR)
     .withTitle('Sukka\'s Ruleset - Blocklist for AdGuardHome')
     .withDescription([
-      'The domainset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining'
+      'The AdGuardHome ruleset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining'
     ]);
 
   rejectOutputAdGuardHome.domainTrie = rejectOutput.domainTrie;
@@ -163,5 +161,6 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .addFromRuleset(readLocalRejectDropRulesetPromise)
     .addFromRuleset(readLocalRejectNoDropRulesetPromise)
     .addFromDomainset(readLocalRejectExtraDomainsetPromise)
+    .addFromDomainset(getPhishingDomains(span))
     .write();
 });
