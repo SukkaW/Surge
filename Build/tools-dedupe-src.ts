@@ -3,9 +3,18 @@ import path from 'node:path';
 import fsp from 'node:fs/promises';
 import { SOURCE_DIR } from './constants/dir';
 import { readFileByLine } from './lib/fetch-text-by-line';
+import { processLine } from './lib/process-line';
 
-const WHITELIST: string[] = ['packages.argotunnel.com', 'compass-ssl.xbox.com', 'static.agilebits.com', 'ntp.api.bz', 'softwareupdate.vmware.com', 'ftp.apache.org', 'ftp.cuhk.edu.hk', 'apache.belnet.be', 'mirrors.viethosting.com', 'apache.01link.hk', 'artfiles.org.org', 'mirror.synyx.de', 'apache.mediamirrors.org', 'wwwftp.ciril.fr', 'mirror.dkd.de', 'apache.javapipe.com', 'ftp.heikorichter.name', 'apache.panu.it', 'mirrors.supportex.net', 'apache.forsale.plus', 'apache.spinellicreations.com', 'ftp.itu.edu.tr', 'mirror1.spango.com', 'apache.oshte.net', 'mirrors.koehn.com', 'apache.dattatec.com', 'download.nextag.com', 'mirror.jre655.com', 'mirror.kiu.ac.ug', 'apache.cp.if.ua', 'mirrors.sorengard.com', 'ftp.igh.cnrs.fr', 'mirrors.hostingromania.ro', 'mirror.bhoovd.com', 'download.xs4all.nl', 'cpan.panu.it', 'cpan.nctu.edu.tw', 'mirror.serverbeheren.nl', 'cpan.llarian.net', 'cpan.etla.org', 'mirrors.syringanetworks.net', 'mirror.met.hu', 'cpan.cs.uu.nl', 'mirror.teklinks.com', 'mirror.rasanegar.com', 'ctan.kako-dev.de', 'ctan.ijs.si', 'mirrors.chevalier.io', 'mirror.yongbok.net', '1-mirrors.in.sahilister.net', '2-mirrors.in.sahilister.net', 'cc.uoc.gr', 'mirror.sergal.org', 'mirrors.mi.ras.ru', 'ctan.cs.uu.nl', 'mirrors.tripadvisor.com', 'gnu.spinellicreations.com', 'ftp.neowiz.com', 'mirror.rackdc.com', 'mirror.veriportal.com', 'ftp.pbone.net', 'downloader.cursor.sh', 'redrockdigimark.commirror', 'nimiq.by', 'aaxdetect.com', 'ctan.epst-tlemcen.dz', 'udahce.com', 'rs-staticart.ybcdn.net', 'doumpaq.com', 'c.medialytics.com', 'keybut.com', 'adserver.ubiyoo.com', 'kaspa-classic.com', 'minafacil.com', 'jiandanpool.com', 'xn--blockchan-n5a.com', 'alphax.pro', 'crypto-pool.online', 'bbqpool.org', 'nyxcoin.org', 'lpool.name', 'tsfpool.xyz', 'ltcmaster.xyz', '8282.space', 'myminingpool.uk', 'binance.live', 'mining.garden', 'scaleway.ovh', 'atpool.party', 'nimiq.by', 'binance.directory', 'onyx.run', 'lucky-pool.co.uk', 'ra7.xyz'];
+const ENFORCED_WHITELIST = [
+  'hola.sk',
+  'hola.org',
+  'iadmatapk.nosdn.127.net',
+  'httpdns.bilivideo.com',
+  'httpdns-v6.gslb.yy.com',
+  'twemoji.maxcdn.com'
+];
 
+const WHITELIST: string[] = ['ton.local.twitter.com', 'prod.msocdn.com', 'twemoji.maxcdn.com', 'img.urlnode.com', 'ipfsgate.com', 'googleplay.pro', 'iadmatapk.nosdn.127.net', 'hola-shopping.com', 'brdtest.co', 'mynextphone.io', 'hola.hk', 'holashop.org', 'hola.sk', 'hola.com.sg', 'c.medialytics.com', 'adstats.mgc-games.com', 'search.mgc-games.com', 'kissdoujin.com', 'newminersage.com', 'trossmining.de', 'hashncash.net', 'microsolt.ru', 'moneropool.ru', 'hashforcash.us', 'bitcoinn.biz', 'webmining.co', 'lamba.top', 'httpdns.bilivideo.com', 'httpdns-v6.gslb.yy.com', 'k-cdn.depot.dev', 'li-cdn.com'];
 (async () => {
   const files = await new Fdir()
     .withFullPaths()
@@ -19,37 +28,32 @@ const WHITELIST: string[] = ['packages.argotunnel.com', 'compass-ssl.xbox.com', 
     .crawl(SOURCE_DIR)
     .withPromise();
 
-  await Promise.all(files.map(dedupeFile));
+  const whitelist = WHITELIST.filter((item) => ENFORCED_WHITELIST.every((whitelistItem) => !isDomainSuffix(whitelistItem, item)));
+
+  await Promise.all(files.map(file => dedupeFile(file, whitelist)));
 })();
 
-async function dedupeFile(file: string) {
+async function dedupeFile(file: string, whitelist: string[]) {
   const set = new Set<string>();
   const result: string[] = [];
 
-  for await (const line of readFileByLine(file)) {
-    if (line.length === 0) {
-      result.push(line);
+  for await (const l of readFileByLine(file)) {
+    const line = processLine(l);
+    if (!line) {
+      if (l.startsWith('# $ skip_dedupe_src')) {
+        return;
+      }
+
+      result.push(l);
       continue;
     }
-    if (line[0] === '#') {
-      result.push(line);
-      continue;
-    }
+
     if (set.has(line)) {
       continue;
     }
 
     // We can't use a trie here since we need to keep the order
-    if (WHITELIST.some((item) => {
-      if (item.length > line.length) {
-        return false;
-      }
-
-      return (
-        item === line // exact match
-        || line.endsWith('.' + item) // the whitelist is considered as a domain-suffix
-      );
-    })) {
+    if (whitelist.some((item) => isDomainSuffix(item, line))) {
       continue;
     }
 
@@ -58,4 +62,12 @@ async function dedupeFile(file: string) {
   }
 
   return fsp.writeFile(file, result.join('\n') + '\n');
+}
+
+function isDomainSuffix(suffixRule: string, domain: string) {
+  if (suffixRule.length > domain.length + 1) {
+    return false;
+  }
+
+  return suffixRule === domain || domain.endsWith('.' + suffixRule);
 }
