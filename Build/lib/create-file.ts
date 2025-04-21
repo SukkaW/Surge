@@ -40,6 +40,16 @@ export async function fileEqual(linesA: string[], source: AsyncIterable<string> 
 
     const lineA = linesA[index];
 
+    if (lineA.length === 0) {
+      if (lineB.length === 0) {
+      // eslint-disable-next-line no-await-in-loop -- sequential
+        result = await iterator.next();
+        lineB = result.value;
+        continue;
+      }
+      return false;
+    }
+
     const aFirstChar = lineA.charCodeAt(0);
     if (aFirstChar !== lineB.charCodeAt(0)) {
       return false;
@@ -85,7 +95,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     return;
   }
 
-  await span.traceChildAsync(`writing ${filePath}`, async () => {
+  return span.traceChildAsync(`writing ${filePath}`, async () => {
     const linesALen = linesA.length;
 
     // The default highwater mark is normally 16384,

@@ -86,4 +86,10 @@ describe('fileEqual', () => {
     ['A', 'B', ''],
     false
   ));
+
+  it('sgmodule', () => test(
+    ['#!name=[Sukka] URL Redirect', '#!desc=Last Updated: 2025-04-21T13:01:42.570Z Size: 127', '', 'always-real-ip'],
+    ['#!name=[Sukka] URL Redirect', '#!desc=Last Updated: 2025-04-20T13:01:42.570Z Size: 130', '', 'always-real-ip'],
+    true
+  ));
 });
