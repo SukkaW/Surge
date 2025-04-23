@@ -155,6 +155,14 @@ const BILIBILI_INTL: StreamService = {
   ]
 };
 
+export const CRACKLE = {
+  name: 'Crackle',
+  rules: [
+    // 'DOMAIN,www.crackle.com', Hosted on S3, solely based on API to detect region
+    'DOMAIN,prod-api.crackle.com'
+  ]
+};
+
 const DAZN: StreamService = {
   name: 'DAZN',
   rules: [
@@ -785,6 +793,7 @@ export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
   BAHAMUT, BBC, BILIBILI_INTL,
+  CRACKLE,
   DAZN, DEEZER, DISNEY_PLUS, DISCOVERY_PLUS, DMM,
   ENCORE_TVB,
   ENCORE_TVB_JP_TVER,
@@ -835,7 +844,8 @@ export const NORTH_AMERICA: StreamService[] = [
   // Funimation
   DISCOVERY_PLUS,
   PARAMOUNT,
-  PEACOCK
+  PEACOCK,
+  CRACKLE
   // Popcornflix
   // Crunchyroll
   // ATTNOW
