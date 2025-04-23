@@ -37,6 +37,17 @@ import { processLine } from './lib/process-line';
       trie.whitelist(l);
     }
   }
+  for await (const line of readFileByLine(path.join(SOURCE_DIR, 'non_ip', 'reject.conf'))) {
+    const l = processLine(line);
+    if (l) {
+      const [type, domain] = l.split(',', 3);
+      if (type === 'DOMAIN') {
+        trie.whitelist(domain, false);
+      } else if (type === 'DOMAIN-SUFFIX') {
+        trie.whitelist(domain, true);
+      }
+    }
+  }
 
   console.log(trie.dump().map(i => '.' + i).join('\n'));
 })();

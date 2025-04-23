@@ -67,13 +67,13 @@ export async function parseGfwList() {
     trie.add(l);
   }
 
-  const res = await (await $$fetch('https://litter.catbox.moe/gv0bw6.csv', {
+  const topDomainsRes = await (await $$fetch('https://downloads.majestic.com/majestic_million.csv', {
     headers: {
       accept: '*/*',
       'user-agent': 'curl/8.12.1'
     }
   })).text();
-  const topDomains = parse(res);
+  const topDomains = parse(topDomainsRes);
 
   const keywordSet = new Set<string>();
 
@@ -115,6 +115,7 @@ export async function parseGfwList() {
     runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/ai.conf')),
     runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf')),
     runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf')),
+    runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf')),
     runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'))
   ]);
 
@@ -124,15 +125,14 @@ export async function parseGfwList() {
 
   const missingTop10000Gfwed = new Set<string>();
 
-  console.log(trie.has('.mojim.com'));
-
   for await (const [domain] of topDomains) {
     if (trie.has(domain) && !kwfilter(domain)) {
       missingTop10000Gfwed.add(domain);
     }
   }
 
-  console.log(JSON.stringify(Array.from(missingTop10000Gfwed), null, 2));
+  console.log(missingTop10000Gfwed.size, '');
+  console.log(Array.from(missingTop10000Gfwed).join('\n'));
 
   return [
     whiteSet,
