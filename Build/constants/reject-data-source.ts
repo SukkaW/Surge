@@ -136,16 +136,16 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
       'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt'
     ],
     true
-  ],
-  // Spam404
-  // Not actively maintained, let's use jsDelivr as primary URL
-  [
-    'https://cdn.jsdelivr.net/gh/Spam404/lists@master/main-blacklist.txt',
-    [
-      'https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt'
-    ],
-    true
   ]
+  // Spam404
+  // Not actively maintained, let's consider it is dead
+  // [
+  //   'https://cdn.jsdelivr.net/gh/Spam404/lists@master/main-blacklist.txt',
+  //   [
+  //     'https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt'
+  //   ],
+  //   true
+  // ]
 ];
 
 export const PHISHING_HOSTS_EXTRA: HostsSource[] = [
