@@ -3,12 +3,12 @@ export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean];
 
 export const HOSTS: HostsSource[] = [
-  [
-    // WindowsSpyBlocker hasn't been updated since 2022-06-16, let's use jsDelivr as primary URL
-    'https://cdn.jsdelivr.net/gh/crazy-max/WindowsSpyBlocker@master/data/hosts/spy.txt',
-    ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt'],
-    true
-  ],
+  // WindowsSpyBlocker hasn't been updated since 2022-06-16, its content has been merged into domainset/reject.conf
+  // [
+  //   'https://cdn.jsdelivr.net/gh/crazy-max/WindowsSpyBlocker@master/data/hosts/spy.txt',
+  //   ['https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt'],
+  //   true
+  // ],
   [
     'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt',
     ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt'],
@@ -530,10 +530,7 @@ export const PREDEFINED_WHITELIST = [
   '.nstool.netease.com', // it is only used to check local dns
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
 
-  // There is no point in adding these, many subdomains are dead anyway
-  '.lon.llnw.net',
-  '.lcy.llnw.net',
-  '.ory.llnw.net',
+  '.llnw.net', // entire llnm.net has dead
 
   'repo.huaweicloud.com', // urlhaus
   '.hubspotlinks.com', // Peter Lowe Hosts
