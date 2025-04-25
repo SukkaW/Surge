@@ -6,17 +6,17 @@ import { processLine } from './lib/process-line';
 import { HostnameSmolTrie } from './lib/trie';
 import { dummySpan } from './trace';
 import { SOURCE_DIR } from './constants/dir';
+import { PREDEFINED_WHITELIST } from './constants/reject-data-source';
 
 (async () => {
   const trie = new HostnameSmolTrie();
 
-  writeFiltersToTrie(trie, 'https://cdn.jsdelivr.net/gh/DandelionSprout/adfilt@master/GameConsoleAdblockList.txt', true);
+  await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/crazy-max/WindowsSpyBlocker@master/data/hosts/spy.txt', true);
 
-  for await (const line of readFileByLine(path.join(SOURCE_DIR, 'domainset', 'reject.conf'))) {
-    const l = processLine(line);
-    if (l) {
-      trie.whitelist(l);
-    }
+  await runWhiteOnSource(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), trie);
+
+  for (let i = 0, len = PREDEFINED_WHITELIST.length; i < len; i++) {
+    trie.whitelist(PREDEFINED_WHITELIST[i]);
   }
 
   console.log('---------------------------');
@@ -24,15 +24,24 @@ import { SOURCE_DIR } from './constants/dir';
   console.log('---------------------------');
 })();
 
-// eslint-disable-next-line unused-imports/no-unused-vars -- ready to use function
+async function runWhiteOnSource(sourceFile: string, trie: HostnameSmolTrie) {
+  for await (const line of readFileByLine(sourceFile)) {
+    const l = processLine(line);
+    if (l) {
+      trie.whitelist(l);
+    }
+  }
+}
+
 async function writeHostsToTrie(trie: HostnameSmolTrie, hostsUrl: string, includeAllSubDomain = false) {
-  const hosts = await processHosts(dummySpan, 'https://cdn.jsdelivr.net/gh/DandelionSprout/adfilt@master/GameConsoleAdblockList.txt', [], includeAllSubDomain);
+  const hosts = await processHosts(dummySpan, hostsUrl, [], includeAllSubDomain);
 
   for (let i = 0, len = hosts.length; i < len; i++) {
     trie.add(hosts[i]);
   }
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars -- ready to use function
 async function writeFiltersToTrie(trie: HostnameSmolTrie, filterUrl: string, includeThirdParty = false) {
   const { whiteDomainSuffixes, whiteDomains, blackDomainSuffixes, blackDomains } = await processFilterRulesWithPreload(filterUrl, [], includeThirdParty)(dummySpan);
   for (let i = 0, len = blackDomainSuffixes.length; i < len; i++) {

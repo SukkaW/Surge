@@ -31,7 +31,7 @@ const pool = new Worktank({
         isEqual = await fileEqual(linesA, readFileByLine(filePath));
       } else {
         console.log(`${filePath} does not exists, writing...`);
-        isEqual = false;
+        // isEqual = false; // isEqual is false by default anyway
       }
 
       if (isEqual) {
