@@ -30,12 +30,6 @@ jobs:
         with:
           node-version-file: ".node-version"
           cache: "pnpm"
-      - name: Create RAM Disk for building
-        id: ramdisk
-        run: |
-          BUILD_DIR=$(mktemp -d -p "$TMPDIR" -t "sukka-surge-public.XXXXXXXXXX")
-          echo "Build dir created at $BUILD_DIR"
-          echo "build_dir=$BUILD_DIR" >> $GITHUB_OUTPUT
       - name: Download Previous Build
         uses: actions/checkout@v4
         with:
@@ -43,9 +37,12 @@ jobs:
           persist-credentials: false
           path: previous-build-${{ github.run_id }}-${{ github.run_number }}
           token: ${{ secrets.GIT_TOKEN }}
+      - name: Grab Building Folder
+        id: ramdisk
+        run: |
+          echo "build_dir=previous-build-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
       - name: Setup build folder
         run: |
-          mv previous-build-${{ github.run_id }}-${{ github.run_number }}/{.,}* ${{ steps.ramdisk.outputs.build_dir }}/
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/.git ]; then
             echo ".git not found"
             exit 1
