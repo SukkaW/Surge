@@ -11,7 +11,7 @@ import { PREDEFINED_WHITELIST } from './constants/reject-data-source';
 (async () => {
   const trie = new HostnameSmolTrie();
 
-  await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/crazy-max/WindowsSpyBlocker@master/data/hosts/spy.txt', true);
+  await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt', true);
 
   await runWhiteOnSource(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), trie);
 
