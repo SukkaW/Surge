@@ -1,9 +1,9 @@
-import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import tldts from 'tldts';
 import { HostnameSmolTrie } from './lib/trie';
 import path from 'node:path';
 import { SOURCE_DIR } from './constants/dir';
-import { processLine } from './lib/process-line';
+import runAgainstSourceFile from './lib/run-against-source-file';
 
 (async () => {
   const lines1 = await Array.fromAsync(await fetchRemoteTextByLine('https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true));
@@ -31,23 +31,12 @@ import { processLine } from './lib/process-line';
     });
   }
 
-  for await (const line of readFileByLine(path.join(SOURCE_DIR, 'domainset', 'reject.conf'))) {
-    const l = processLine(line);
-    if (l) {
-      trie.whitelist(l);
-    }
-  }
-  for await (const line of readFileByLine(path.join(SOURCE_DIR, 'non_ip', 'reject.conf'))) {
-    const l = processLine(line);
-    if (l) {
-      const [type, domain] = l.split(',', 3);
-      if (type === 'DOMAIN') {
-        trie.whitelist(domain, false);
-      } else if (type === 'DOMAIN-SUFFIX') {
-        trie.whitelist(domain, true);
-      }
-    }
-  }
+  await runAgainstSourceFile(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), (domain, includeAllSubDomain) => {
+    trie.whitelist(domain, includeAllSubDomain);
+  }, 'domainset');
+  await runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip', 'reject.conf'), (domain, includeAllSubDomain) => {
+    trie.whitelist(domain, includeAllSubDomain);
+  }, 'ruleset');
 
   console.log(trie.dump().map(i => '.' + i).join('\n'));
 })();

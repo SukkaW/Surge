@@ -1,20 +1,23 @@
 import path from 'node:path';
-import { readFileByLine } from './lib/fetch-text-by-line';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 import { processHosts } from './lib/parse-filter/hosts';
-import { processLine } from './lib/process-line';
 import { HostnameSmolTrie } from './lib/trie';
 import { dummySpan } from './trace';
 import { SOURCE_DIR } from './constants/dir';
 import { PREDEFINED_WHITELIST } from './constants/reject-data-source';
+import runAgainstSourceFile from './lib/run-against-source-file';
 
 (async () => {
   const trie = new HostnameSmolTrie();
 
   await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt', true);
 
-  await runWhiteOnSource(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), trie);
-  await runWhiteOnSource(path.join(SOURCE_DIR, 'non_ip', 'reject.conf'), trie);
+  const callback = (domain: string, includeAllSubDomain: boolean) => {
+    trie.whitelist(domain, includeAllSubDomain);
+  };
+
+  await runAgainstSourceFile(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), callback, 'domainset');
+  await runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip', 'reject.conf'), callback, 'ruleset');
 
   for (let i = 0, len = PREDEFINED_WHITELIST.length; i < len; i++) {
     trie.whitelist(PREDEFINED_WHITELIST[i]);
@@ -24,24 +27,6 @@ import { PREDEFINED_WHITELIST } from './constants/reject-data-source';
   console.log(trie.dump().join('\n'));
   console.log('---------------------------');
 })();
-
-async function runWhiteOnSource(sourceFile: string, trie: HostnameSmolTrie) {
-  for await (const line of readFileByLine(sourceFile)) {
-    const l = processLine(line);
-    if (l) {
-      if (l.includes(',')) {
-        const [type, domain] = l.split(',', 3);
-        if (type === 'DOMAIN') {
-          trie.whitelist(domain, false);
-        } else if (type === 'DOMAIN-SUFFIX') {
-          trie.whitelist(domain, true);
-        }
-      } else {
-        trie.whitelist(l);
-      }
-    }
-  }
-}
 
 async function writeHostsToTrie(trie: HostnameSmolTrie, hostsUrl: string, includeAllSubDomain = false) {
   const hosts = await processHosts(dummySpan, hostsUrl, [], includeAllSubDomain);

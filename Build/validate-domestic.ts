@@ -1,11 +1,10 @@
-import { readFileByLine } from './lib/fetch-text-by-line';
 import { parse } from 'csv-parse/sync';
 import { HostnameSmolTrie } from './lib/trie';
 import path from 'node:path';
-import { processLine } from './lib/process-line';
 import { SOURCE_DIR } from './constants/dir';
 import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
 import { $$fetch } from './lib/fetch-retry';
+import runAgainstSourceFile from './lib/run-against-source-file';
 
 export async function parseDomesticList() {
   const trie = new HostnameSmolTrie(await parseFelixDnsmasqFromResp(await $$fetch('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')));
@@ -36,27 +35,24 @@ export async function parseDomesticList() {
 
   const notIncludedDomestic = new Set<string>(top5000);
 
-  const runAgainstRuleset = async (ruleset: string) => {
-    for await (const l of readFileByLine(ruleset)) {
-      const line = processLine(l);
-      if (!line) continue;
-      const [type, domain] = line.split(',');
-      if (type === 'DOMAIN-SUFFIX') {
+  // await Promise.all([
+  await runAgainstSourceFile(
+    path.resolve(SOURCE_DIR, 'non_ip/domestic.conf'),
+    (domain, includeAllSubdomain) => {
+      if (includeAllSubdomain) {
         if (top5000.has(domain)) {
           notIncludedDomestic.delete(domain);
         }
-      } else if (type === 'DOMAIN-KEYWORD') {
-        for (const d of top5000) {
-          if (d.includes(domain)) {
-            notIncludedDomestic.delete(d);
-          }
-        }
+      } else {
+        // noop, DOMAIN-KEYWORD handing
+        // for (const d of top5000) {
+        //   if (d.includes(domain)) {
+        //     notIncludedDomestic.delete(d);
+        //   }
+        // }
       }
     }
-  };
-
-  // await Promise.all([
-  await runAgainstRuleset(path.resolve(SOURCE_DIR, 'non_ip/domestic.conf'));
+  );
   // ]);
 
   console.log(notIncludedDomestic.size, notIncludedDomestic);

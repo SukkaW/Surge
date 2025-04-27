@@ -3,11 +3,12 @@ import { fastNormalizeDomain } from './lib/normalize-domain';
 import { HostnameSmolTrie } from './lib/trie';
 // import { Readable } from 'stream';
 import { parse } from 'csv-parse/sync';
-import { fetchRemoteTextByLine, readFileByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { $$fetch } from './lib/fetch-retry';
+import runAgainstSourceFile from './lib/run-against-source-file';
 
 export async function parseGfwList() {
   const whiteSet = new Set<string>();
@@ -77,46 +78,20 @@ export async function parseGfwList() {
 
   const keywordSet = new Set<string>();
 
-  const runAgainstRuleset = async (ruleset: string) => {
-    for await (const l of readFileByLine(ruleset)) {
-      const line = processLine(l);
-      if (!line) continue;
-      const [type, domain] = line.split(',');
-      switch (type) {
-        case 'DOMAIN-SUFFIX': {
-          trie.whitelist('.' + domain);
-          break;
-        }
-        case 'DOMAIN': {
-          trie.whitelist(domain);
-          break;
-        }
-        case 'DOMAIN-KEYWORD': {
-          keywordSet.add(domain);
-          break;
-        }
-        // no default
-      }
-    }
+  const callback = (domain: string, includeAllSubdomain: boolean) => {
+    trie.whitelist(domain, includeAllSubdomain);
   };
 
-  const runAgainstDomainset = async (ruleset: string) => {
-    for await (const l of readFileByLine(ruleset)) {
-      const line = processLine(l);
-      if (!line) continue;
-      trie.whitelist(line);
-    }
-  };
   await Promise.all([
-    runAgainstRuleset(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf')),
-    runAgainstRuleset(path.join(OUTPUT_SURGE_DIR, 'non_ip/reject.conf')),
-    runAgainstRuleset(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf')),
-    runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf')),
-    runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/ai.conf')),
-    runAgainstRuleset(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf')),
-    runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf')),
-    runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf')),
-    runAgainstDomainset(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'))
+    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/reject.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/ai.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf'), callback, 'domainset'),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf'), callback, 'domainset'),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'), callback, 'domainset')
   ]);
 
   whiteSet.forEach(domain => trie.whitelist(domain));
