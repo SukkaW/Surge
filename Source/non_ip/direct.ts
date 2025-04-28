@@ -143,6 +143,7 @@ export const LAN = {
     ruleset: true,
     domains: [
       '+lan',
+      '+local',
       // 'amplifi.lan',
       // '$localhost',
       '+localdomain',
