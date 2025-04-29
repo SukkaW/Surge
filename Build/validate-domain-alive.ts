@@ -35,39 +35,19 @@ function onDomain(args: [string, boolean]) {
     .withPromise();
 
   await Promise.all([
-    ...domainSets.map(runAgainstDomainset),
-    ...domainRules.map(runAgainstRuleset)
-  ]);
+    ...domainRules,
+    ...domainSets
+  ].map(filepath => runAgainstSourceFile(
+    filepath,
+    (domain: string, includeAllSubdomain: boolean) => queue.add(
+      () => keyedAsyncMutexWithQueue(
+        domain,
+        () => isDomainAlive(domain, includeAllSubdomain)
+      ).then(onDomain)
+    ).then(() => console.log('[done]', filepath))
+  )));
 
   console.log();
   console.log();
   console.log(JSON.stringify(deadDomains));
 })();
-
-export async function runAgainstRuleset(filepath: string) {
-  const promises: Array<Promise<void>> = [];
-  await runAgainstSourceFile(
-    filepath,
-    (domain: string, includeAllSubdomain: boolean) => queue.add(() => keyedAsyncMutexWithQueue(
-      domain,
-      () => isDomainAlive(domain, includeAllSubdomain)
-    ).then(onDomain))
-  );
-
-  await Promise.all(promises);
-  console.log('[done]', filepath);
-}
-
-export async function runAgainstDomainset(filepath: string) {
-  const promises: Array<Promise<void>> = [];
-
-  await runAgainstSourceFile(
-    filepath,
-    (domain: string, includeAllSubdomain: boolean) => queue.add(() => keyedAsyncMutexWithQueue(
-      domain,
-      () => isDomainAlive(domain, includeAllSubdomain)
-    ).then(onDomain))
-  );
-  await Promise.all(promises);
-  console.log('[done]', filepath);
-}
