@@ -1,6 +1,6 @@
 import type { Span } from '../../trace';
 import { ClashClassicRuleSet } from '../writing-strategy/clash';
-import { LegacyClashPremiumRuleSet } from '../writing-strategy/legacy-clash-premium';
+import { LegacyClashPremiumClassicRuleSet } from '../writing-strategy/legacy-clash-premium';
 import { SingboxSource } from '../writing-strategy/singbox';
 import { SurgeRuleSet } from '../writing-strategy/surge';
 import { FileOutput } from './base';
@@ -12,7 +12,7 @@ export class RulesetOutput extends FileOutput {
     this.strategies = [
       new SurgeRuleSet(type),
       new ClashClassicRuleSet(type),
-      new LegacyClashPremiumRuleSet(type),
+      new LegacyClashPremiumClassicRuleSet(type),
       new SingboxSource(type)
     ];
   }
@@ -43,7 +43,7 @@ export class ClashOnlyRulesetOutput extends FileOutput {
 
     this.strategies = [
       new ClashClassicRuleSet(type),
-      new LegacyClashPremiumRuleSet(type)
+      new LegacyClashPremiumClassicRuleSet(type)
     ];
   }
 }
