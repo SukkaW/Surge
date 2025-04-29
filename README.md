@@ -1,6 +1,6 @@
 # Sukka Ruleset
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/) 和 [sing-box](https://sing-box.sagernet.org/) 的 Ruleset Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/)、[Clash Premium (Dreamacro)](https://web.archive.org/web/20230521135419/https://dreamacro.github.io/clash/premium/rule-providers.html) 和 [sing-box](https://sing-box.sagernet.org/) 的 Ruleset Snippet。
 
 ## 条款和协议
 
