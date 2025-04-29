@@ -29,7 +29,7 @@ interface Write {
   (
     destination: string,
     input: NodeJS.TypedArray | string,
-  ): Promise<unknown>
+  ): Promise<void>
 }
 
 export function mkdirp(dir: string) {
@@ -39,7 +39,7 @@ export function mkdirp(dir: string) {
   return fsp.mkdir(dir, { recursive: true });
 }
 
-export const writeFile: Write = async (destination: string, input, dir = dirname(destination)) => {
+export const writeFile: Write = async (destination: string, input, dir = dirname(destination)): Promise<void> => {
   const p = mkdirp(dir);
   if (p) {
     await p;

@@ -95,7 +95,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     return;
   }
 
-  return span.traceChildAsync(`writing ${filePath}`, async () => {
+  return span.traceChildAsync<void>(`writing ${filePath}`, async () => {
     const linesALen = linesA.length;
 
     // The default highwater mark is normally 16384,

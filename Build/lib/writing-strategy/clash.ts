@@ -84,7 +84,7 @@ export class ClashIPSet extends BaseWriteStrategy {
 }
 
 export class ClashClassicRuleSet extends BaseWriteStrategy {
-  public readonly name = 'clash classic ruleset';
+  public readonly name: string = 'clash classic ruleset';
 
   readonly fileExtension = 'txt';
 
