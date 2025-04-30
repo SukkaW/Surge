@@ -22,7 +22,7 @@ const pool = new Worktank({
       const { OUTPUT_INTERNAL_DIR } = __require('./constants/dir') as typeof import('./constants/dir');
       const { exclude, merge } = __require('fast-cidr-tools') as typeof import('fast-cidr-tools');
       const { RESERVED_IPV4_CIDR, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } = __require('./constants/cidr') as typeof import('./constants/cidr');
-      const { appendArrayInPlace } = __require('./lib/append-array-in-place') as typeof import('./lib/append-array-in-place');
+      const { appendArrayInPlace } = __require('foxts/append-array-in-place') as typeof import('foxts/append-array-in-place');
       const { fastStringArrayJoin } = __require('foxts/fast-string-array-join') as typeof import('foxts/fast-string-array-join');
 
       const outputFile = path.join(OUTPUT_INTERNAL_DIR, 'reversed-chn-cidr.txt');

@@ -10,7 +10,7 @@ import { getTelegramCIDRPromise } from './build-telegram-cidr';
 import { compareAndWriteFile } from './lib/create-file';
 import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
 import { isTruthy, nullthrow } from 'foxts/guard';
-import { appendArrayInPlace } from './lib/append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { ClashOnlyRulesetOutput } from './lib/rules/ruleset';
 

@@ -21,7 +21,7 @@ const pool = new Worktank({
       const { HostnameSmolTrie } = __require('./lib/trie');
       const { PROBE_DOMAINS, DOMAINS, DOMAIN_SUFFIXES, BLACKLIST } = __require('./constants/microsoft-cdn') as typeof import('./constants/microsoft-cdn');
       const { fetchRemoteTextByLine } = __require('./lib/fetch-text-by-line') as typeof import('./lib/fetch-text-by-line');
-      const { appendArrayInPlace } = __require('./lib/append-array-in-place') as typeof import('./lib/append-array-in-place');
+      const { appendArrayInPlace } = __require('foxts/append-array-in-place') as typeof import('foxts/append-array-in-place');
       const { extractDomainsFromFelixDnsmasq } = __require('./lib/parse-dnsmasq') as typeof import('./lib/parse-dnsmasq');
 
       const trie = new HostnameSmolTrie();

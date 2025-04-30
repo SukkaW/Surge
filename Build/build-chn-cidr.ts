@@ -4,7 +4,7 @@ import { task } from './trace';
 import { contains as containsCidr, exclude as excludeCidr } from 'fast-cidr-tools';
 import { createMemoizedPromise } from './lib/memo-promise';
 import { CN_CIDR_MISSING_IN_CHNROUTE, NON_CN_CIDR_INCLUDED_IN_CHNROUTE } from './constants/cidr';
-import { appendArrayInPlace } from './lib/append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { IPListOutput } from './lib/rules/ip';
 import { createFileDescription } from './constants/description';
 

@@ -7,7 +7,7 @@ import type { Span } from './trace';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { fdir as Fdir } from 'fdir';
-import { appendArrayInPlace } from './lib/append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/rules/domainset';
 import { RulesetOutput } from './lib/rules/ruleset';

@@ -3,7 +3,7 @@ import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-t
 import { HostnameTrie } from './lib/trie';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { appendArrayInPlace } from './lib/append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/rules/domainset';
 import { CRASHLYTICS_WHITELIST } from './constants/reject-data-source';
