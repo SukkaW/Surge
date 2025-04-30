@@ -31,6 +31,9 @@ export const NON_CN_CIDR_INCLUDED_IN_CHNROUTE = [
   // https://github.com/misakaio/chnroutes2/issues/52
   '137.220.128.0/17',
 
+  // Cloudie.hk commonly used in GFW DNS Poison target
+  '103.246.246.0/23',
+
   '45.199.166.0/24',
   '45.199.167.0/24'
 ];
