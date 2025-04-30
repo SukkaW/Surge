@@ -5,7 +5,9 @@ import { processLine } from './process-line';
 export default async function runAgainstSourceFile(
   filePath: string,
   callback: (domain: string, includeAllSubDomain: boolean) => void,
-  type?: 'ruleset' | 'domainset'
+  type?: 'ruleset' | 'domainset',
+  /** Secret keyword collection, only use for special purpose */
+  keywordSet?: Set<string> | null
 ) {
   for await (const line of readFileByLine(filePath)) {
     const l = processLine(line);
@@ -22,10 +24,22 @@ export default async function runAgainstSourceFile(
 
     if (type === 'ruleset') {
       const [ruleType, domain] = l.split(',', 3);
-      if (ruleType === 'DOMAIN') {
-        callback(domain, false);
-      } else if (ruleType === 'DOMAIN-SUFFIX') {
-        callback(domain, true);
+      switch (ruleType) {
+        case 'DOMAIN': {
+          callback(domain, false);
+          break;
+        }
+        case 'DOMAIN-SUFFIX': {
+          callback(domain, true);
+          break;
+        }
+        case 'DOMAIN-KEYWORD': {
+          if (keywordSet) {
+            keywordSet.add(domain);
+          }
+          break;
+        }
+        // no default
       }
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- exhaus options
     } else if (type === 'domainset') {

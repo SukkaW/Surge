@@ -4,7 +4,7 @@ import { HostnameSmolTrie } from './lib/trie';
 import yauzl from 'yauzl-promise';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import path from 'node:path';
-import { OUTPUT_SURGE_DIR } from './constants/dir';
+import { OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { $$fetch } from './lib/fetch-retry';
 import runAgainstSourceFile from './lib/run-against-source-file';
@@ -112,15 +112,16 @@ export async function parseGfwList() {
 
   const callback = (domain: string, includeAllSubdomain: boolean) => {
     gfwListTrie.whitelist(domain, includeAllSubdomain);
+    topDomainTrie.whitelist(domain, includeAllSubdomain);
   };
-
   await Promise.all([
-    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf'), callback, 'ruleset'),
-    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/reject.conf'), callback, 'ruleset'),
-    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf'), callback, 'ruleset'),
-    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf'), callback, 'ruleset'),
-    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/ai.conf'), callback, 'ruleset'),
-    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf'), callback, 'ruleset'),
+    runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip/global.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/domestic.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip/reject.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip/telegram.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/ai.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/microsoft.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'), callback, 'domainset')
