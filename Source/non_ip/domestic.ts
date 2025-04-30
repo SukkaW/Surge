@@ -209,7 +209,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'xiaomi.cn',
       'xiaomi.net',
       'xiaomiev.com',
-      'xiaomiyoupin.com'
+      'xiaomiyoupin.com',
+      'gorouter.info'
     ]
   },
   BYTEDANCE: {
