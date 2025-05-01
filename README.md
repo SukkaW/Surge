@@ -161,7 +161,7 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/speedtest.conf,[Replace with y
 rule-providers:
   speedtest:
     type: http
-    behavior: classical
+    behavior: domain
     format: text
     interval: 43200
     url: https://ruleset.skk.moe/Clash/domainset/speedtest.txt
