@@ -155,6 +155,22 @@ rules:
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/speedtest.conf,[Replace with your policy],extended-matching
 ```
 
+**Clash Meta**
+
+```yaml
+rule-providers:
+  speedtest:
+    type: http
+    behavior: domain
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/domainset/speedtest.txt
+    path: ./sukkaw_ruleset/speedtest.txt
+
+rules:
+  - RULE-SET,speedtest,[Replace with your policy]
+```
+
 #### 常见静态 CDN
 
 - 自动生成 + 人工维护
