@@ -4,7 +4,7 @@ import { processHostsWithPreload } from './parse-filter/hosts';
 import { processDomainListsWithPreload } from './parse-filter/domainlists';
 import { dummySpan, printTraceResult } from '../trace';
 import type { Span } from '../trace';
-import { appendArrayInPlaceCurried } from './append-array-in-place';
+import { appendArrayInPlaceCurried } from 'foxts/append-array-in-place';
 import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
 import type { TldTsParsed } from './normalize-domain';
 
