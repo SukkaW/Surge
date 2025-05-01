@@ -1,5 +1,5 @@
 import { BaseWriteStrategy } from './base';
-import { appendArrayInPlace } from '../append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { noop } from 'foxts/noop';
 import { fastIpVersion, withIdentityContent } from '../misc';
 import stringify from 'json-stringify-pretty-compact';

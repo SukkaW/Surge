@@ -1,6 +1,6 @@
 import { appendSetElementsToArray } from 'foxts/append-set-elements-to-array';
 import { BaseWriteStrategy } from './base';
-import { appendArrayInPlace } from '../append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { noop } from 'foxts/noop';
 import { isProbablyIpv4 } from 'foxts/is-probably-ip';
 import picocolors from 'picocolors';

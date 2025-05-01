@@ -3,7 +3,7 @@ import { BaseWriteStrategy } from './base';
 import { noop } from 'foxts/noop';
 import { fastIpVersion, notSupported, withBannerArray } from '../misc';
 import { OUTPUT_CLASH_DIR } from '../../constants/dir';
-import { appendArrayInPlace } from '../append-array-in-place';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 export class ClashDomainSet extends BaseWriteStrategy {
   public readonly name = 'clash domainset';
