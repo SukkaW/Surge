@@ -11,7 +11,6 @@ import { buildRejectDomainSet } from './build-reject-domainset';
 import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
-import { buildInternalReverseChnCIDR } from './build-internal-reverse-chn-cidr';
 import { buildDomesticRuleset } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
 import { buildStreamService } from './build-stream-service';
 
@@ -92,7 +91,6 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       downloadPreviousBuildPromise.then(() => buildTelegramCIDR(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan)),
-      buildInternalReverseChnCIDR(rootSpan),
       downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildRedirectModule(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan)),

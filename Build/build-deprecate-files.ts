@@ -6,11 +6,12 @@ import fsp from 'node:fs/promises';
 
 const DEPRECATED_FILES = [
   ['non_ip/global_plus', 'This file has been merged with non_ip/global'],
-  ['domainset/reject_sukka', 'This file has been merged with domainset/reject']
+  ['domainset/reject_sukka', 'This file has been merged with domainset/reject'],
+  ['Internal/reversed-chn-cidr.txt', 'This file has been replaced by https://chnroutes2.cdn.skk.moe/reversed-chnroutes.txt']
 ];
 
 const REMOVED_FILES = [
-  'Internal/cdn.txt',
+  'Internal/chnroutes.txt',
   'List/internal/appprofile.php',
   'Clash/domainset/steam.txt',
   'Clash/non_ip/clash_fake_ip_filter.txt',
