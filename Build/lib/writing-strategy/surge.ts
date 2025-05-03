@@ -48,7 +48,7 @@ export class SurgeDomainSet extends BaseWriteStrategy {
 }
 
 export class SurgeRuleSet extends BaseWriteStrategy {
-  public readonly name = 'surge ruleset';
+  public readonly name: string = 'surge ruleset';
 
   readonly fileExtension = 'conf';
 
