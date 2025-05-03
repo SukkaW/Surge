@@ -34,6 +34,7 @@ export class FileOutput {
   protected sourceIpOrCidr = new Set<string>();
   protected sourcePort = new Set<string>();
   protected destPort = new Set<string>();
+  protected protocol = new Set<string>();
 
   protected otherRules: string[] = [];
 
@@ -199,6 +200,9 @@ export class FileOutput {
         case 'DEST-PORT':
           this.destPort.add(value);
           break;
+        case 'PROTOCOL':
+          this.protocol.add(value.toUpperCase());
+          break;
         default:
           this.otherRules.push(line);
           break;
@@ -326,6 +330,9 @@ export class FileOutput {
       }
       if (this.domainWildcard.size) {
         strategy.writeDomainWildcards(this.domainWildcard);
+      }
+      if (this.protocol.size) {
+        strategy.writeProtocols(this.protocol);
       }
       if (this.userAgent.size) {
         strategy.writeUserAgents(this.userAgent);

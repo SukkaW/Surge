@@ -17,7 +17,8 @@ interface SingboxHeadlessRule {
   port?: number[],
   port_range?: string[],
   process_name?: string[],
-  process_path?: string[]
+  process_path?: string[],
+  network?: string[]
 }
 
 export interface SingboxSourceFormat {
@@ -151,6 +152,17 @@ export class SingboxSource extends BaseWriteStrategy {
       if (!Number.isNaN(tmp)) {
         this.singbox.port.push(tmp);
       }
+    }
+  }
+
+  writeProtocols(protocol: Set<string>): void {
+    this.singbox.network ??= [];
+    // protocol has already be normalized and will only be uppercase
+    if (protocol.has('UDP')) {
+      this.singbox.network.push('udp');
+    }
+    if (protocol.has('TCP')) {
+      this.singbox.network.push('tcp');
     }
   }
 

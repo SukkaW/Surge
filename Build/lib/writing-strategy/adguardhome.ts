@@ -105,5 +105,6 @@ export class AdGuardHome extends BaseWriteStrategy {
   writeSourceIpCidrs = notSupported('writeSourceIpCidrs');
   writeSourcePorts = notSupported('writeSourcePorts');
   writeDestinationPorts = noop;
+  writeProtocols = noop;
   writeOtherRules = noop;
 }

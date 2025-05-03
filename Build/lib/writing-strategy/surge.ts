@@ -44,6 +44,7 @@ export class SurgeDomainSet extends BaseWriteStrategy {
   writeSourceIpCidrs = noop;
   writeSourcePorts = noop;
   writeDestinationPorts = noop;
+  writeProtocols = noop;
   writeOtherRules = noop;
 }
 
@@ -128,6 +129,10 @@ export class SurgeRuleSet extends BaseWriteStrategy {
 
   writeDestinationPorts(port: Set<string>): void {
     appendSetElementsToArray(this.result, port, i => `DEST-PORT,${i}`);
+  }
+
+  writeProtocols(protocol: Set<string>): void {
+    appendSetElementsToArray(this.result, protocol, i => `PROTOCOL,${i}`);
   }
 
   writeOtherRules(rule: string[]): void {
@@ -268,5 +273,6 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
   writeSourceIpCidrs = noop;
   writeSourcePorts = noop;
   writeDestinationPorts = noop;
+  writeProtocols = noop;
   writeOtherRules = noop;
 }

@@ -41,6 +41,7 @@ export class ClashDomainSet extends BaseWriteStrategy {
   writeSourceIpCidrs = noop;
   writeSourcePorts = noop;
   writeDestinationPorts = noop;
+  writeProtocols = noop;
   writeOtherRules = noop;
 }
 
@@ -80,6 +81,7 @@ export class ClashIPSet extends BaseWriteStrategy {
   writeSourceIpCidrs = notSupported('writeSourceIpCidrs');
   writeSourcePorts = notSupported('writeSourcePorts');
   writeDestinationPorts = noop;
+  writeProtocols = noop;
   writeOtherRules = noop;
 }
 
@@ -169,6 +171,18 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
 
   writeDestinationPorts(port: Set<string>): void {
     appendSetElementsToArray(this.result, port, i => `DST-PORT,${i}`);
+  }
+
+  writeProtocols(protocol: Set<string>): void {
+    // Mihomo only matches UDP/TCP: https://wiki.metacubex.one/en/config/rules/#network
+
+    // protocol has already be normalized and will only contain upppercase
+    if (protocol.has('UDP')) {
+      this.result.push('NETWORK,UDP');
+    }
+    if (protocol.has('TCP')) {
+      this.result.push('NETWORK,TCP');
+    }
   }
 
   writeOtherRules = noop;

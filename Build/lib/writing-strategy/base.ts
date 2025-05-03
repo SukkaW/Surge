@@ -42,6 +42,7 @@ export abstract class BaseWriteStrategy {
   abstract writeSourceIpCidrs(sourceIpCidr: string[]): void;
   abstract writeSourcePorts(port: Set<string>): void;
   abstract writeDestinationPorts(port: Set<string>): void;
+  abstract writeProtocols(protocol: Set<string>): void;
   abstract writeOtherRules(rule: string[]): void;
 
   protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
