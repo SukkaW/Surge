@@ -1,6 +1,6 @@
 # Sukka Ruleset
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/)、[Clash Premium (Dreamacro)](https://web.archive.org/web/20230521135419/https://dreamacro.github.io/clash/premium/rule-providers.html) 和 [sing-box](https://sing-box.sagernet.org/) 的 Ruleset Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/)、[Clash Premium (Dreamacro)](https://web.archive.org/web/20230521135419/https://dreamacro.github.io/clash/premium/rule-providers.html)、[sing-box](https://sing-box.sagernet.org/) 和 [Surfboard for Android](https://getsurfboard.com) 的 Ruleset Snippet。
 
 ## 条款和协议
 
@@ -23,9 +23,30 @@
 
 ## 规则组列表
 
+- **Surge (Mac/iOS/tvOS)**，Surge 对所有类型的规则都有不同程度的优化
+  - `/List/domainset/`：`DOMAIN-SET`，不会触发 DNS 解析的、仅包含域名的规则组
+  - `/List/non_ip/`：`RULE-SET`，不会触发 DNS 解析的规则组
+  - `/List/ip/`：`RULE-SET`，会触发 DNS 解析的规则组
+- **Mihomo (Clash.Meta)**
+  - `/Clash/domainset/`：`domain & text`，不会触发 DNS 解析的、仅域名的规则组截至 2025 年 5 月 3 日 UTC+0，Mihomo 仅针对 behavior 为 domain 和 ipcidr 的规则组进行了优化
+  - `/Clash/non_ip/`：`classical & text`，不会触发 DNS 解析的规则组
+  - `/Clash/ip/`：`classical & text` 或 `ipcidr & text`，会触发 DNS 解析的规则组
+- **Clash Premium (Dreamacro)**
+  - 不单独提供 `/LegacyClashPremium/domainset/` 的 DOMAIN SET 的格式，请使用 Mihomo (Clash.Meta) 的 DOMAIN SET 规则组（`/Clash/domainset/`），behavior 和 format 一致。
+  - `/LegacyClashPremium/non_ip/`：`classical & text`，不会触发 DNS 解析的规则组
+  - `/LegacyClashPremium/ip/`：`classical & text` 或 `ipcidr & text`，会触发 DNS 解析的规则组
+- **sing-box**，sing-box 只提供一种规则格式 Headless Rule 且有优化
+  - `/sing-box/domainset/`：不会触发 DNS 解析的、仅包含域名的规则
+  - `/sing-box/non_ip/`：不会触发 DNS 解析的规则
+  - `/sing-box/ip/`：会触发 DNS 解析的规则
+- **Surfboard for Android**
+  - 不单独提供 `/Surfboard/domainset/` 的 DOMAIN-SET，请使用 Surge 的 DOMAIN SET 规则组（`/List/domainset/`）。
+  - `/Surfboard/non_ip/`：`RULE-SET`，不会触发 DNS 解析的规则
+  - `/Surfboard/ip/`：`RULE-SET`，会触发 DNS 解析的规则
+
 **请务必按照 `domainset`、`non_ip`、`ip`，和 README 中的顺序 将规则组添加到你的配置文件中，确保所有 `domainset` 或 `non_ip` 规则组 位于所有的 `ip` 规则组之前**。
 
-> Surge 和 Clash 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免不必要的 DNS 解析。
+> Surge、Clash、Surfboard 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免本地发生不必要的 DNS 解析、从而提供一定程度的所谓「DNS 污染」的保护。
 
 #### 广告拦截 / 隐私保护 / Malware 拦截 / Phishing 拦截
 
