@@ -34,18 +34,24 @@ function onDomain(args: [string, boolean]) {
     .crawl(SOURCE_DIR + path.sep + 'non_ip')
     .withPromise();
 
+  const promises: Array<Promise<void>> = [];
+
   await Promise.all([
     ...domainRules,
     ...domainSets
-  ].map(filepath => runAgainstSourceFile(
-    filepath,
-    (domain: string, includeAllSubdomain: boolean) => queue.add(
-      () => keyedAsyncMutexWithQueue(
-        domain,
-        () => isDomainAlive(domain, includeAllSubdomain)
-      ).then(onDomain)
-    ).then(() => console.log('[done]', filepath))
-  )));
+  ].map(
+    filepath => runAgainstSourceFile(
+      filepath,
+      (domain: string, includeAllSubdomain: boolean) => promises.push(queue.add(
+        () => keyedAsyncMutexWithQueue(
+          domain,
+          () => isDomainAlive(domain, includeAllSubdomain)
+        ).then(onDomain)
+      ))
+    ).then(() => console.log('[crawl]', filepath))
+  ));
+
+  await Promise.all(promises);
 
   console.log();
   console.log();
