@@ -244,7 +244,7 @@ async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]>
   }
 
   console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain, err: whoisError });
-  return onDomainDead(apexDomain);
+  return onDomainDead('.' + apexDomain);
 }
 
 // TODO: this is a workaround for https://github.com/LayeredStudio/whoiser/issues/117
