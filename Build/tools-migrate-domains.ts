@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars -- some unused methods */
 import path from 'node:path';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 import { processHosts } from './lib/parse-filter/hosts';
@@ -10,7 +11,8 @@ import runAgainstSourceFile from './lib/run-against-source-file';
 (async () => {
   const trie = new HostnameSmolTrie();
 
-  await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt', true);
+  // await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt', true);
+  const { whiteDomainSuffixes, whiteDomains } = await writeFiltersToTrie(trie, 'https://cdn.jsdelivr.net/gh/Perflyst/PiHoleBlocklist@master/SmartTV-AGH.txt', true);
 
   const callback = (domain: string, includeAllSubDomain: boolean) => {
     trie.whitelist(domain, includeAllSubDomain);
@@ -26,6 +28,11 @@ import runAgainstSourceFile from './lib/run-against-source-file';
   console.log('---------------------------');
   console.log(trie.dump().join('\n'));
   console.log('---------------------------');
+  console.log('whitelist domain suffixes:');
+  console.log(whiteDomainSuffixes.join('\n'));
+  console.log('---------------------------');
+  console.log('whitelist domains:');
+  console.log(whiteDomains.join('\n'));
 })();
 
 async function writeHostsToTrie(trie: HostnameSmolTrie, hostsUrl: string, includeAllSubDomain = false) {
@@ -36,7 +43,6 @@ async function writeHostsToTrie(trie: HostnameSmolTrie, hostsUrl: string, includ
   }
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars -- ready to use function
 async function writeFiltersToTrie(trie: HostnameSmolTrie, filterUrl: string, includeThirdParty = false) {
   const { whiteDomainSuffixes, whiteDomains, blackDomainSuffixes, blackDomains } = await processFilterRulesWithPreload(filterUrl, [], includeThirdParty)(dummySpan);
   for (let i = 0, len = blackDomainSuffixes.length; i < len; i++) {
@@ -51,4 +57,6 @@ async function writeFiltersToTrie(trie: HostnameSmolTrie, filterUrl: string, inc
   for (let i = 0, len = whiteDomains.length; i < len; i++) {
     trie.whitelist(whiteDomains[i], false);
   }
+
+  return { whiteDomainSuffixes, whiteDomains };
 }

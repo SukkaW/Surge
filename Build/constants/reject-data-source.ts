@@ -141,9 +141,7 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // Not actively maintained, let's consider it is dead
   // [
   //   'https://cdn.jsdelivr.net/gh/Spam404/lists@master/main-blacklist.txt',
-  //   [
-  //     'https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt'
-  //   ],
+  //   ['https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt'],
   //   true
   // ]
 ];
@@ -198,8 +196,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://secure.fanboy.co.nz/easyprivacy.txt',
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
       'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
-      'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt'
+      'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt',
+      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt'
     ]
   ],
   // AdGuard Base Filter: Use AdGuard Base Filter w/ EasyList
@@ -229,13 +227,14 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     ['https://raw.githubusercontent.com/DandelionSprout/adfilt/master/GameConsoleAdblockList.txt']
   ],
   // PiHoleBlocklist
-  // Update almost once per 3 months, let's set a 10 days cache ttl
-  [
-    'https://perflyst.github.io/PiHoleBlocklist/SmartTV-AGH.txt',
-    [
-      'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'
-    ]
-  ],
+  // Hasn't been updated for two years. Merged to reject.conf
+  // [
+  //   'https://cdn.jsdelivr.net/gh/Perflyst/PiHoleBlocklist@master/SmartTV-AGH.txt',
+  //   [
+  //     'https://perflyst.github.io/PiHoleBlocklist/SmartTV-AGH.txt',
+  //     'https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt'
+  //   ]
+  // ],
   // uBlock Origin Unbreak
   [
     'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt',
@@ -548,5 +547,16 @@ export const PREDEFINED_WHITELIST = [
   // Expired domains
   '.expobarrio.com',
   '.hamdandates.com',
-  '.amzone.co.jp'
+  '.amzone.co.jp',
+
+  // Migrate from SmartTV-AGH List
+  'mhc-ajax-eu.myhomescreen.tv',
+  'mhc-ajax-eu-s2.myhomescreen.tv',
+  'mhc-xpana-eu.myhomescreen.tv',
+  'mhc-xpana-eu-s2.myhomescreen.tv',
+  'infolink.pavv.co.kr',
+  'hbbtv.zdf.de',
+  'hbbtv.prosieben.de',
+  'hbbtv.redbutton.de',
+  'hbbtv.kika.de'
 ];
