@@ -11,8 +11,8 @@ import runAgainstSourceFile from './lib/run-against-source-file';
 (async () => {
   const trie = new HostnameSmolTrie();
 
-  // await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt', true);
-  const { whiteDomainSuffixes, whiteDomains } = await writeFiltersToTrie(trie, 'https://cdn.jsdelivr.net/gh/Perflyst/PiHoleBlocklist@master/SmartTV-AGH.txt', true);
+  await writeHostsToTrie(trie, 'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt', true);
+  // const { whiteDomainSuffixes, whiteDomains } = await writeFiltersToTrie(trie, 'https://cdn.jsdelivr.net/gh/Perflyst/PiHoleBlocklist@master/SmartTV-AGH.txt', true);
 
   const callback = (domain: string, includeAllSubDomain: boolean) => {
     trie.whitelist(domain, includeAllSubDomain);
@@ -28,11 +28,11 @@ import runAgainstSourceFile from './lib/run-against-source-file';
   console.log('---------------------------');
   console.log(trie.dump().join('\n'));
   console.log('---------------------------');
-  console.log('whitelist domain suffixes:');
-  console.log(whiteDomainSuffixes.join('\n'));
-  console.log('---------------------------');
-  console.log('whitelist domains:');
-  console.log(whiteDomains.join('\n'));
+  // console.log('whitelist domain suffixes:');
+  // console.log(whiteDomainSuffixes.join('\n'));
+  // console.log('---------------------------');
+  // console.log('whitelist domains:');
+  // console.log(whiteDomains.join('\n'));
 })();
 
 async function writeHostsToTrie(trie: HostnameSmolTrie, hostsUrl: string, includeAllSubDomain = false) {

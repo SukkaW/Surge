@@ -46,6 +46,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'mxhichina.com',
       'soku.com',
       'tb.cn',
+      '+tbcdn.cn',
       'taobao.com',
       '+taobaocdn.com',
       '+tbcache.com',
