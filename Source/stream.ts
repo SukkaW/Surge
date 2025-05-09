@@ -290,7 +290,6 @@ const HBO: StreamService = {
     'DOMAIN-SUFFIX,hbomax.com',
     'DOMAIN-SUFFIX,hbomaxcdn.com',
 
-    // 'USER-AGENT,Max',
     // 'PROCESS-NAME,com.wbd.stream',
     'DOMAIN-SUFFIX,max.com',
     'DOMAIN-SUFFIX,discomax.com'
