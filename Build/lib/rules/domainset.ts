@@ -7,7 +7,7 @@ import { SurgeDomainSet } from '../writing-strategy/surge';
 import { FileOutput } from './base';
 
 export class DomainsetOutput extends FileOutput {
-  strategies: Array<false | BaseWriteStrategy> = [
+  strategies: BaseWriteStrategy[] = [
     new SurgeDomainSet(),
     new ClashDomainSet(),
     new SingboxSource('domainset')
@@ -15,7 +15,7 @@ export class DomainsetOutput extends FileOutput {
 }
 
 export class AdGuardHomeOutput extends FileOutput {
-  strategies: Array<false | BaseWriteStrategy>;
+  strategies: BaseWriteStrategy[];
 
   constructor(
     span: Span,

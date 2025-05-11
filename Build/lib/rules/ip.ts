@@ -6,7 +6,7 @@ import { SurgeRuleSet } from '../writing-strategy/surge';
 import { FileOutput } from './base';
 
 export class IPListOutput extends FileOutput {
-  strategies: Array<false | BaseWriteStrategy>;
+  strategies: BaseWriteStrategy[];
 
   constructor(span: Span, id: string, private readonly clashUseRule = true) {
     super(span, id);

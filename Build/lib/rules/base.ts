@@ -13,7 +13,7 @@ import { SurgeMitmSgmodule } from '../writing-strategy/surge';
  * This class is not about format, instead it will call the class that does
  */
 export class FileOutput {
-  protected strategies: Array<BaseWriteStrategy | false> = [];
+  protected strategies: BaseWriteStrategy[] = [];
 
   public domainTrie = new HostnameSmolTrie(null);
   protected domainKeywords = new Set<string>();
@@ -57,15 +57,13 @@ export class FileOutput {
     return this;
   }
 
-  public withStrategies(strategies: Array<BaseWriteStrategy | false>) {
+  public withStrategies(strategies: BaseWriteStrategy[]) {
     this.strategies = strategies;
     return this;
   }
 
-  withExtraStrategies(strategy: BaseWriteStrategy | false) {
-    if (strategy) {
-      this.strategies.push(strategy);
-    }
+  withExtraStrategies(strategy: BaseWriteStrategy) {
+    this.strategies.push(strategy);
   }
 
   protected description: string[] | readonly string[] | null = null;
@@ -304,27 +302,24 @@ export class FileOutput {
       throw new Error('No strategies to write ' + this.id);
     }
 
+    const strategiesLen = this.strategies.length;
     this.domainTrie.dumpWithoutDot((domain, includeAllSubdomain) => {
       if (kwfilter(domain)) {
         return;
       }
 
-      for (let i = 0, len = this.strategies.length; i < len; i++) {
+      for (let i = 0; i < strategiesLen; i++) {
         const strategy = this.strategies[i];
-        if (strategy) {
-          if (includeAllSubdomain) {
-            strategy.writeDomainSuffix(domain);
-          } else {
-            strategy.writeDomain(domain);
-          }
+        if (includeAllSubdomain) {
+          strategy.writeDomainSuffix(domain);
+        } else {
+          strategy.writeDomain(domain);
         }
       }
     }, true);
 
     for (let i = 0, len = this.strategies.length; i < len; i++) {
       const strategy = this.strategies[i];
-      if (!strategy) continue;
-
       if (this.domainKeywords.size) {
         strategy.writeDomainKeywords(this.domainKeywords);
       }
@@ -348,28 +343,23 @@ export class FileOutput {
     if (this.sourceIpOrCidr.size) {
       const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
       for (let i = 0, len = this.strategies.length; i < len; i++) {
-        const strategy = this.strategies[i];
-        if (strategy) {
-          strategy.writeSourceIpCidrs(sourceIpOrCidr);
-        }
+        this.strategies[i].writeSourceIpCidrs(sourceIpOrCidr);
       }
     }
 
     for (let i = 0, len = this.strategies.length; i < len; i++) {
       const strategy = this.strategies[i];
-      if (strategy) {
-        if (this.sourcePort.size) {
-          strategy.writeSourcePorts(this.sourcePort);
-        }
-        if (this.destPort.size) {
-          strategy.writeDestinationPorts(this.destPort);
-        }
-        if (this.otherRules.length) {
-          strategy.writeOtherRules(this.otherRules);
-        }
-        if (this.urlRegex.size) {
-          strategy.writeUrlRegexes(this.urlRegex);
-        }
+      if (this.sourcePort.size) {
+        strategy.writeSourcePorts(this.sourcePort);
+      }
+      if (this.destPort.size) {
+        strategy.writeDestinationPorts(this.destPort);
+      }
+      if (this.otherRules.length) {
+        strategy.writeOtherRules(this.otherRules);
+      }
+      if (this.urlRegex.size) {
+        strategy.writeUrlRegexes(this.urlRegex);
       }
     }
 
@@ -393,34 +383,32 @@ export class FileOutput {
 
     for (let i = 0, len = this.strategies.length; i < len; i++) {
       const strategy = this.strategies[i];
-      if (strategy) {
-        // no-resolve
-        if (ipcidrNoResolve?.length) {
-          strategy.writeIpCidrs(ipcidrNoResolve, true);
-        }
-        if (ipcidr6NoResolve?.length) {
-          strategy.writeIpCidr6s(ipcidr6NoResolve, true);
-        }
-        if (this.ipasnNoResolve.size) {
-          strategy.writeIpAsns(this.ipasnNoResolve, true);
-        }
-        if (this.groipNoResolve.size) {
-          strategy.writeGeoip(this.groipNoResolve, true);
-        }
+      // no-resolve
+      if (ipcidrNoResolve?.length) {
+        strategy.writeIpCidrs(ipcidrNoResolve, true);
+      }
+      if (ipcidr6NoResolve?.length) {
+        strategy.writeIpCidr6s(ipcidr6NoResolve, true);
+      }
+      if (this.ipasnNoResolve.size) {
+        strategy.writeIpAsns(this.ipasnNoResolve, true);
+      }
+      if (this.groipNoResolve.size) {
+        strategy.writeGeoip(this.groipNoResolve, true);
+      }
 
-        // triggers DNS resolution
-        if (ipcidr?.length) {
-          strategy.writeIpCidrs(ipcidr, false);
-        }
-        if (ipcidr6?.length) {
-          strategy.writeIpCidr6s(ipcidr6, false);
-        }
-        if (this.ipasn.size) {
-          strategy.writeIpAsns(this.ipasn, false);
-        }
-        if (this.geoip.size) {
-          strategy.writeGeoip(this.geoip, false);
-        }
+      // triggers DNS resolution
+      if (ipcidr?.length) {
+        strategy.writeIpCidrs(ipcidr, false);
+      }
+      if (ipcidr6?.length) {
+        strategy.writeIpCidr6s(ipcidr6, false);
+      }
+      if (this.ipasn.size) {
+        strategy.writeIpAsns(this.ipasn, false);
+      }
+      if (this.geoip.size) {
+        strategy.writeGeoip(this.geoip, false);
       }
     }
   }
@@ -435,23 +423,22 @@ export class FileOutput {
 
         for (let i = 0, len = this.strategies.length; i < len; i++) {
           const strategy = this.strategies[i];
-          if (strategy) {
-            const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
-            promises.push(
-              childSpan.traceChildAsync('write ' + strategy.name, (childSpan) => Promise.resolve(strategy.output(
-                childSpan,
-                nullthrow(this.title, 'Missing title'),
-                nullthrow(this.description, 'Missing description'),
-                this.date,
-                path.join(
-                  strategy.outputDir,
-                  strategy.type
-                    ? path.join(strategy.type, basename)
-                    : basename
-                )
-              )))
-            );
-          }
+
+          const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
+          promises.push(
+            childSpan.traceChildAsync('write ' + strategy.name, (childSpan) => Promise.resolve(strategy.output(
+              childSpan,
+              nullthrow(this.title, 'Missing title'),
+              nullthrow(this.description, 'Missing description'),
+              this.date,
+              path.join(
+                strategy.outputDir,
+                strategy.type
+                  ? path.join(strategy.type, basename)
+                  : basename
+              )
+            )))
+          );
         }
 
         return Promise.all(promises);
@@ -464,11 +451,7 @@ export class FileOutput {
     this.writeToStrategies();
 
     return this.strategies.reduce<Array<string[] | null>>((acc, strategy) => {
-      if (strategy) {
-        acc.push(strategy.content);
-      } else {
-        acc.push(null);
-      }
+      acc.push(strategy.content);
       return acc;
     }, []);
   }
