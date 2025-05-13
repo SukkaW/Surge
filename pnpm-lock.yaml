@@ -50,8 +50,8 @@ importers:
         specifier: ^6.4.4
         version: 6.4.4(picomatch@4.0.2)
       foxts:
-        specifier: ^3.1.1
-        version: 3.1.1
+        specifier: ^3.3.1
+        version: 3.3.1
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -74,11 +74,11 @@ importers:
         specifier: ^6.1.86
         version: 6.1.86
       undici:
-        specifier: ^7.8.0
-        version: 7.8.0
+        specifier: ^7.9.0
+        version: 7.9.0
       undici-cache-store-better-sqlite3:
         specifier: ^1.0.0
-        version: 1.0.0(undici@7.8.0)
+        version: 1.0.0(undici@7.9.0)
       whoiser:
         specifier: ^1.18.0
         version: 1.18.0(patch_hash=01fa406613b6f7b55ad41a6e49450f5a6b1b198b837c4f3fe11edc48c779189f)
@@ -1356,8 +1356,8 @@ packages:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
 
-  foxts@3.1.1:
-    resolution: {integrity: sha512-ZPKa4ZA/daMu+V441qGUSaC3WH3lkumQeHGvMVtxFC1iIehNbwZKFNlk3KXIO/4PnOz0xZpTohKP0Y5cBnULMQ==}
+  foxts@3.3.1:
+    resolution: {integrity: sha512-1lgjnxGQBPdCJsjFnUls3YkE2tYTwcrWpeSBu3P8rzCl2qgP+T4WDuwCWnCNprPlAmnEMQD6uydWUyO7gG6HRQ==}
 
   fresh@2.0.0:
     resolution: {integrity: sha512-Rx/WycZ60HOaqLKAi6cHRKKI7zxWbJ31MhntmtwMoaTeF7XFH9hhBp8vITaMidfljRQ6eYWCKkaTK+ykVJHP2A==}
@@ -2094,8 +2094,8 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici@7.8.0:
-    resolution: {integrity: sha512-vFv1GA99b7eKO1HG/4RPu2Is3FBTWBrmzqzO0mz+rLxN3yXkE4mqRcb8g8fHxzX4blEysrNZLqg5RbJLqX5buA==}
+  undici@7.9.0:
+    resolution: {integrity: sha512-e696y354tf5cFZPXsF26Yg+5M63+5H3oE6Vtkh2oqbvsE2Oe7s2nIbcQh5lmG7Lp/eS29vJtTpw9+p6PX0qNSg==}
     engines: {node: '>=20.18.1'}
 
   unpipe@1.0.0:
@@ -3107,7 +3107,7 @@ snapshots:
       eslint-plugin-regexp: 2.7.0(eslint@9.26.0)
       eslint-plugin-sukka: 6.19.0(eslint@9.26.0)(typescript@5.8.3)
       eslint-plugin-unused-imports: 4.1.4(@typescript-eslint/eslint-plugin@8.32.0(@typescript-eslint/parser@8.32.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)
-      foxts: 3.1.1
+      foxts: 3.3.1
       jsonc-eslint-parser: 2.4.0
       picocolors: 1.1.1
       typescript-eslint: 8.32.0(eslint@9.26.0)(typescript@5.8.3)
@@ -3241,7 +3241,7 @@ snapshots:
       '@eslint-sukka/shared': 6.19.0(eslint@9.26.0)(typescript@5.8.3)
       '@typescript-eslint/type-utils': 8.32.0(eslint@9.26.0)(typescript@5.8.3)
       '@typescript-eslint/utils': 8.32.0(eslint@9.26.0)(typescript@5.8.3)
-      foxts: 3.1.1
+      foxts: 3.3.1
     optionalDependencies:
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -3455,7 +3455,7 @@ snapshots:
 
   forwarded@0.2.0: {}
 
-  foxts@3.1.1: {}
+  foxts@3.3.1: {}
 
   fresh@2.0.0: {}
 
@@ -4212,15 +4212,15 @@ snapshots:
 
   typescript@5.8.3: {}
 
-  undici-cache-store-better-sqlite3@1.0.0(undici@7.8.0):
+  undici-cache-store-better-sqlite3@1.0.0(undici@7.9.0):
     dependencies:
       better-sqlite3: 11.10.0
-      foxts: 3.1.1
-      undici: 7.8.0
+      foxts: 3.3.1
+      undici: 7.9.0
 
   undici-types@6.21.0: {}
 
-  undici@7.8.0: {}
+  undici@7.9.0: {}
 
   unpipe@1.0.0: {}
 
