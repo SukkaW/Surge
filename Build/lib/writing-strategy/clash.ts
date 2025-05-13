@@ -4,6 +4,7 @@ import { noop } from 'foxts/noop';
 import { fastIpVersion, notSupported, withBannerArray } from '../misc';
 import { OUTPUT_CLASH_DIR } from '../../constants/dir';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
+import { MARKER_DOMAIN } from '../../constants/description';
 
 export class ClashDomainSet extends BaseWriteStrategy {
   public readonly name = 'clash domainset';
@@ -12,7 +13,7 @@ export class ClashDomainSet extends BaseWriteStrategy {
   readonly fileExtension = 'txt';
   readonly type = 'domainset';
 
-  protected result: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  protected result: string[] = [MARKER_DOMAIN];
 
   constructor(public readonly outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
@@ -90,7 +91,7 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
 
   readonly fileExtension = 'txt';
 
-  protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  protected result: string[] = [`DOMAIN,${MARKER_DOMAIN}`];
 
   constructor(public readonly type: 'ip' | 'non_ip' /* | (string & {}) */, public readonly outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);

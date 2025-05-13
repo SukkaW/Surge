@@ -7,6 +7,7 @@ import picocolors from 'picocolors';
 import { normalizeDomain } from '../normalize-domain';
 import { OUTPUT_MODULES_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
 import { withBannerArray, withIdentityContent } from '../misc';
+import { MARKER_DOMAIN } from '../../constants/description';
 
 export class SurgeDomainSet extends BaseWriteStrategy {
   public readonly name = 'surge domainset';
@@ -15,7 +16,7 @@ export class SurgeDomainSet extends BaseWriteStrategy {
   readonly fileExtension = 'conf';
   type = 'domainset';
 
-  protected result: string[] = ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  protected result: string[] = [MARKER_DOMAIN];
 
   constructor(outputDir = OUTPUT_SURGE_DIR) {
     super(outputDir);
@@ -53,7 +54,7 @@ export class SurgeRuleSet extends BaseWriteStrategy {
 
   readonly fileExtension = 'conf';
 
-  protected result: string[] = ['DOMAIN,this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'];
+  protected result: string[] = [`DOMAIN,${MARKER_DOMAIN}`];
 
   constructor(
     /** Surge RULE-SET can be both ip or non_ip, so this needs to be specified */

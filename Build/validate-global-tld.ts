@@ -5,13 +5,14 @@ import { ICP_TLD } from './constants/domains';
 import tldts from 'tldts-experimental';
 import { looseTldtsOpt } from './constants/loose-tldts-opt';
 import runAgainstSourceFile from './lib/run-against-source-file';
+import { MARKER_DOMAIN } from './constants/description';
 
 (async () => {
   const trie = new HostnameSmolTrie();
   const extraWhiteTLDs = new Set<string>();
 
   await runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip', 'domestic.conf'), (domain) => {
-    if (domain === 'this_ruleset_is_made_by_sukkaw.ruleset.skk.moe') {
+    if (domain === MARKER_DOMAIN) {
       return;
     }
     const tld = tldts.getPublicSuffix(domain, looseTldtsOpt);

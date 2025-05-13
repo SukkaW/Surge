@@ -4,10 +4,11 @@ import { noop } from 'foxts/noop';
 import { fastIpVersion, withIdentityContent } from '../misc';
 import stringify from 'json-stringify-pretty-compact';
 import { OUTPUT_SINGBOX_DIR } from '../../constants/dir';
+import { MARKER_DOMAIN } from '../../constants/description';
 
 interface SingboxHeadlessRule {
-  domain: string[], // this_ruleset_is_made_by_sukkaw.ruleset.skk.moe
-  domain_suffix: string[], // this_ruleset_is_made_by_sukkaw.ruleset.skk.moe
+  domain: string[],
+  domain_suffix: string[],
   domain_keyword?: string[],
   domain_regex?: string[],
   source_ip_cidr?: string[],
@@ -34,8 +35,8 @@ export class SingboxSource extends BaseWriteStrategy {
   static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
   private singbox: SingboxHeadlessRule = {
-    domain: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe'],
-    domain_suffix: ['this_ruleset_is_made_by_sukkaw.ruleset.skk.moe']
+    domain: [MARKER_DOMAIN],
+    domain_suffix: [MARKER_DOMAIN]
   };
 
   protected get result() {
