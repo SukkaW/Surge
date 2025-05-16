@@ -11,7 +11,10 @@ const ENFORCED_WHITELIST = [
   'iadmatapk.nosdn.127.net',
   'httpdns.bilivideo.com',
   'httpdns-v6.gslb.yy.com',
-  'twemoji.maxcdn.com'
+  'twemoji.maxcdn.com',
+  'samsungcloudsolution.com',
+  'samsungcloudsolution.net',
+  'samsungqbe.com'
 ];
 
 const WHITELIST: string[] = ['ton.local.twitter.com', 'prod.msocdn.com', 'twemoji.maxcdn.com', 'img.urlnode.com', 'ipfsgate.com', 'googleplay.pro', 'iadmatapk.nosdn.127.net', 'hola-shopping.com', 'brdtest.co', 'mynextphone.io', 'hola.hk', 'holashop.org', 'hola.sk', 'hola.com.sg', 'c.medialytics.com', 'adstats.mgc-games.com', 'search.mgc-games.com', 'kissdoujin.com', 'newminersage.com', 'trossmining.de', 'hashncash.net', 'microsolt.ru', 'moneropool.ru', 'hashforcash.us', 'bitcoinn.biz', 'webmining.co', 'lamba.top', 'httpdns.bilivideo.com', 'httpdns-v6.gslb.yy.com', 'k-cdn.depot.dev', 'li-cdn.com'];
