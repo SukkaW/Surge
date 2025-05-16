@@ -4,6 +4,7 @@ import fsp from 'node:fs/promises';
 import { SOURCE_DIR } from './constants/dir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
+import { HostnameSmolTrie } from './lib/trie';
 
 const ENFORCED_WHITELIST = [
   'hola.sk',
@@ -17,7 +18,8 @@ const ENFORCED_WHITELIST = [
   'samsungqbe.com'
 ];
 
-const WHITELIST: string[] = ['ton.local.twitter.com', 'prod.msocdn.com', 'twemoji.maxcdn.com', 'img.urlnode.com', 'ipfsgate.com', 'googleplay.pro', 'iadmatapk.nosdn.127.net', 'hola-shopping.com', 'brdtest.co', 'mynextphone.io', 'hola.hk', 'holashop.org', 'hola.sk', 'hola.com.sg', 'c.medialytics.com', 'adstats.mgc-games.com', 'search.mgc-games.com', 'kissdoujin.com', 'newminersage.com', 'trossmining.de', 'hashncash.net', 'microsolt.ru', 'moneropool.ru', 'hashforcash.us', 'bitcoinn.biz', 'webmining.co', 'lamba.top', 'httpdns.bilivideo.com', 'httpdns-v6.gslb.yy.com', 'k-cdn.depot.dev', 'li-cdn.com'];
+const WHITELIST: string[] = ['.us-api.samsungyosemite.com', '.api-hub.samsungyosemite.com', '.holashop.org', '.solopools.net', '.hola-shopping.com', '.100xbtc.com', '.brdtest.co', '.yelts.net', '.axepool.com', '.luxxeeu.com', '.etc-pool.com', '.alph2mine.com', 'samsungcloudsolution.com', 'samsungcloudsolution.net', 'samsungqbe.com', 'lgtvsdp.com', '.apextop.cc', '.p2p-south.xyz', '.r-pool.net', '.celcoin.io', '.gameforxe.eu', '.kipcoin.org', '.cryptonote.club', '.12level.com', '.piratenbucht.eu', '.minersmine.com', '.blockhunter.info', '.hola.com.sg', '.down.my0115.ru', '.js.my0115.ru', '.wmi.my0115.ru', '.statistic.date', '.pawpools.space', '.nimbocoin.com', '.hola.hk', '.hola.sk', '.solopools.org', '.minereasy.com', '.mynextphone.io', '.newzgames.com'];
+
 (async () => {
   const files = await new Fdir()
     .withFullPaths()
@@ -31,7 +33,9 @@ const WHITELIST: string[] = ['ton.local.twitter.com', 'prod.msocdn.com', 'twemoj
     .crawl(SOURCE_DIR)
     .withPromise();
 
-  const whitelist = WHITELIST.filter((item) => ENFORCED_WHITELIST.every((whitelistItem) => !isDomainSuffix(whitelistItem, item)));
+  const whiteTrie = new HostnameSmolTrie(WHITELIST);
+  ENFORCED_WHITELIST.forEach((item) => whiteTrie.whitelist(item));
+  const whitelist = whiteTrie.dump();
 
   await Promise.all(files.map(file => dedupeFile(file, whitelist)));
 })();
@@ -56,7 +60,7 @@ async function dedupeFile(file: string, whitelist: string[]) {
     }
 
     // We can't use a trie here since we need to keep the order
-    if (whitelist.some((item) => isDomainSuffix(item, line))) {
+    if (whitelist.some((whiteItem) => isDomainSuffix(whiteItem, line))) {
       continue;
     }
 
@@ -67,10 +71,15 @@ async function dedupeFile(file: string, whitelist: string[]) {
   return fsp.writeFile(file, result.join('\n') + '\n');
 }
 
-function isDomainSuffix(suffixRule: string, domain: string) {
-  if (suffixRule.length > domain.length + 1) {
-    return false;
-  }
+function isDomainSuffix(whiteItem: string, incomingItem: string) {
+  const whiteIncludeDomain = whiteItem[0] === '.';
+  whiteItem = whiteItem[0] === '.' ? whiteItem.slice(1) : whiteItem;
 
-  return suffixRule === domain || domain.endsWith('.' + suffixRule);
+  if (whiteItem === incomingItem) {
+    return true; // as long as exact match, we don't care if subdomain is included or not
+  }
+  if (whiteIncludeDomain) {
+    return incomingItem.endsWith('.' + whiteItem);
+  }
+  return false;
 }
