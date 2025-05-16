@@ -1,18 +1,10 @@
 import { SOURCE_DIR } from './constants/dir';
 import path from 'node:path';
-import { newQueue } from '@henrygd/queue';
-import { isDomainAlive, keyedAsyncMutexWithQueue } from './lib/is-domain-alive';
+import { isDomainAlive } from './lib/is-domain-alive';
 import { fdir as Fdir } from 'fdir';
 import runAgainstSourceFile from './lib/run-against-source-file';
 
-const queue = newQueue(24);
-
 const deadDomains: string[] = [];
-function onDomain(args: [string, boolean]) {
-  if (!args[1]) {
-    deadDomains.push(args[0]);
-  }
-}
 
 (async () => {
   const domainSets = await new Fdir()
@@ -42,12 +34,14 @@ function onDomain(args: [string, boolean]) {
   ].map(
     filepath => runAgainstSourceFile(
       filepath,
-      (domain: string, includeAllSubdomain: boolean) => promises.push(queue.add(
-        () => keyedAsyncMutexWithQueue(
-          domain,
-          () => isDomainAlive(domain, includeAllSubdomain)
-        ).then(onDomain)
-      ))
+      (domain: string, includeAllSubdomain: boolean) => promises.push(
+        isDomainAlive(domain, includeAllSubdomain).then((alive) => {
+          if (alive) {
+            return;
+          }
+          deadDomains.push(includeAllSubdomain ? '.' + domain : domain);
+        })
+      )
     ).then(() => console.log('[crawl]', filepath))
   ));
 

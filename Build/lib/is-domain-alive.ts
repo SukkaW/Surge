@@ -1,25 +1,15 @@
-import tldts from 'tldts-experimental';
-import { looseTldtsOpt } from '../constants/loose-tldts-opt';
-import picocolors from 'picocolors';
-import { pickRandom, pickOne } from 'foxts/pick-random';
-
 import DNS2 from 'dns2';
 import asyncRetry from 'async-retry';
+import picocolors from 'picocolors';
+import { looseTldtsOpt } from '../constants/loose-tldts-opt';
+import { createKeyedAsyncMutex } from './keyed-async-mutex';
+import { pickRandom, pickOne } from 'foxts/pick-random';
+import tldts from 'tldts-experimental';
 import * as whoiser from 'whoiser';
-
+import process from 'node:process';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 
-import process from 'node:process';
-
-const mutex = new Map<string, Promise<unknown>>();
-export function keyedAsyncMutexWithQueue<T>(key: string, fn: () => Promise<T>) {
-  if (mutex.has(key)) {
-    return mutex.get(key) as Promise<T>;
-  }
-  const promise = fn();
-  mutex.set(key, promise);
-  return promise;
-}
+const domainAliveMap = new Map<string, boolean>();
 
 class DnsError extends Error {
   name = 'DnsError';
@@ -88,6 +78,127 @@ const domesticDohServers: Array<[string, DNS2.DnsResolver]> = ([
   })
 ] as const);
 
+const domainAliveMutex = createKeyedAsyncMutex('isDomainAlive');
+
+export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boolean = domain[0] === '.'): Promise<boolean> {
+  if (domainAliveMap.has(domain)) {
+    return domainAliveMap.get(domain)!;
+  }
+  const apexDomain = tldts.getDomain(domain, looseTldtsOpt);
+  if (!apexDomain) {
+    console.log(picocolors.gray('[domain invalid]'), picocolors.gray('no apex domain'), { domain });
+    domainAliveMap.set('.' + domain, true);
+    return true;
+  }
+
+  const apexDomainAlive = await isApexDomainAlive(apexDomain);
+  if (isIncludeAllSubdomain || domain.length > apexDomain.length) {
+    return apexDomainAlive;
+  }
+  if (!apexDomainAlive) {
+    return false;
+  }
+
+  return domainAliveMutex.acquire(domain, async () => {
+    domain = domain[0] === '.' ? domain.slice(1) : domain;
+
+    const $domain = isIncludeAllSubdomain ? '.' + domain : domain;
+
+    const aDns: string[] = [];
+    const aaaaDns: string[] = [];
+
+    // test 2 times before make sure record is empty
+    const servers = pickRandom(dohServers, 2);
+    for (let i = 0; i < 2; i++) {
+    // eslint-disable-next-line no-await-in-loop -- sequential
+      const aRecords = (await $resolve(domain, 'A', servers[i]));
+      if (aRecords.answers.length > 0) {
+        domainAliveMap.set($domain, true);
+        return true;
+      }
+
+      aDns.push(aRecords.dns);
+    }
+    for (let i = 0; i < 2; i++) {
+    // eslint-disable-next-line no-await-in-loop -- sequential
+      const aaaaRecords = (await $resolve(domain, 'AAAA', servers[i]));
+      if (aaaaRecords.answers.length > 0) {
+        domainAliveMap.set($domain, true);
+        return true;
+      }
+
+      aaaaDns.push(aaaaRecords.dns);
+    }
+
+    // only then, let's test twice with domesticDohServers
+    for (let i = 0; i < 2; i++) {
+    // eslint-disable-next-line no-await-in-loop -- sequential
+      const aRecords = (await $resolve(domain, 'A', pickOne(domesticDohServers)));
+      if (aRecords.answers.length > 0) {
+        domainAliveMap.set($domain, true);
+        return true;
+      }
+      aDns.push(aRecords.dns);
+    }
+    for (let i = 0; i < 2; i++) {
+      // eslint-disable-next-line no-await-in-loop -- sequential
+      const aaaaRecords = (await $resolve(domain, 'AAAA', pickOne(domesticDohServers)));
+      if (aaaaRecords.answers.length > 0) {
+        domainAliveMap.set($domain, true);
+        return true;
+      }
+      aaaaDns.push(aaaaRecords.dns);
+    }
+
+    console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
+
+    domainAliveMap.set($domain, false);
+    return false;
+  });
+}
+
+const apexDomainMap = createKeyedAsyncMutex('isApexDomainAlive');
+
+function isApexDomainAlive(apexDomain: string) {
+  if (domainAliveMap.has(apexDomain)) {
+    return domainAliveMap.get(apexDomain)!;
+  }
+
+  return apexDomainMap.acquire(apexDomain, async () => {
+    const servers = pickRandom(dohServers, 2);
+    for (let i = 0, len = servers.length; i < len; i++) {
+      const server = servers[i];
+      // eslint-disable-next-line no-await-in-loop -- one by one
+      const resp = await $resolve(apexDomain, 'NS', server);
+      if (resp.answers.length > 0) {
+        domainAliveMap.set(apexDomain, true);
+        return true;
+      }
+    }
+
+    let whois;
+    try {
+      whois = await getWhois(apexDomain);
+    } catch (e) {
+      console.log(picocolors.red('[whois error]'), { domain: apexDomain }, e);
+      domainAliveMap.set(apexDomain, true);
+      return true;
+    }
+
+    const whoisError = noWhois(whois);
+    if (!whoisError) {
+      console.log(picocolors.gray('[domain alive]'), picocolors.gray('whois found'), { domain: apexDomain });
+      domainAliveMap.set(apexDomain, true);
+      return true;
+    }
+
+    console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain, err: whoisError });
+
+    domainAliveMap.set(apexDomain, false);
+    return false;
+  });
+}
+
 async function $resolve(name: string, type: DNS2.PacketQuestion, server: [string, DNS2.DnsResolver]) {
   try {
     return await asyncRetry(async () => {
@@ -113,140 +224,6 @@ async function getWhois(domain: string) {
   return asyncRetry(() => whoiser.domain(domain, { raw: true }), { retries: 5 });
 }
 
-const domainAliveMap = new Map<string, boolean>();
-function onDomainAlive(domain: string): [string, boolean] {
-  domainAliveMap.set(domain, true);
-  return [domain, true];
-}
-function onDomainDead(domain: string): [string, boolean] {
-  domainAliveMap.set(domain, false);
-  return [domain, false];
-}
-
-export async function isDomainAlive(domain: string, isSuffix: boolean): Promise<[string, boolean]> {
-  if (domainAliveMap.has(domain)) {
-    return [domain, domainAliveMap.get(domain)!];
-  }
-
-  const apexDomain = tldts.getDomain(domain, looseTldtsOpt);
-  if (!apexDomain) {
-    console.log(picocolors.gray('[domain invalid]'), picocolors.gray('no apex domain'), { domain });
-    return onDomainAlive(domain);
-  }
-
-  const apexDomainAlive = await keyedAsyncMutexWithQueue(apexDomain, () => isApexDomainAlive(apexDomain));
-  if (isSuffix) {
-    return apexDomainAlive;
-  }
-  if (!apexDomainAlive[1]) {
-    return apexDomainAlive;
-  }
-
-  const $domain = domain[0] === '.' ? domain.slice(1) : domain;
-
-  const aDns: string[] = [];
-  const aaaaDns: string[] = [];
-
-  // test 2 times before make sure record is empty
-  const servers = pickRandom(dohServers, 2);
-  for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-    const aRecords = (await $resolve($domain, 'A', servers[i]));
-    if (aRecords.answers.length > 0) {
-      return onDomainAlive(domain);
-    }
-
-    aDns.push(aRecords.dns);
-  }
-  for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-    const aaaaRecords = (await $resolve($domain, 'AAAA', servers[i]));
-    if (aaaaRecords.answers.length > 0) {
-      return onDomainAlive(domain);
-    }
-
-    aaaaDns.push(aaaaRecords.dns);
-  }
-
-  // only then, let's test twice with domesticDohServers
-  for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-    const aRecords = (await $resolve($domain, 'A', pickOne(domesticDohServers)));
-    if (aRecords.answers.length > 0) {
-      return onDomainAlive(domain);
-    }
-    aDns.push(aRecords.dns);
-  }
-
-  for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-    const aaaaRecords = (await $resolve($domain, 'AAAA', pickOne(domesticDohServers)));
-    if (aaaaRecords.answers.length > 0) {
-      return onDomainAlive(domain);
-    }
-    aaaaDns.push(aaaaRecords.dns);
-  }
-
-  console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
-  return onDomainDead($domain);
-}
-
-const apexDomainNsResolvePromiseMap = new Map<string, Promise<boolean>>();
-
-async function getNS(domain: string) {
-  const servers = pickRandom(dohServers, 2);
-  for (let i = 0, len = servers.length; i < len; i++) {
-    const server = servers[i];
-    // eslint-disable-next-line no-await-in-loop -- one by one
-    const resp = await $resolve(domain, 'NS', server);
-    if (resp.answers.length > 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-async function isApexDomainAlive(apexDomain: string): Promise<[string, boolean]> {
-  if (domainAliveMap.has(apexDomain)) {
-    return [apexDomain, domainAliveMap.get(apexDomain)!];
-  }
-
-  let hasNS: boolean;
-  if (apexDomainNsResolvePromiseMap.has(apexDomain)) {
-    hasNS = await apexDomainNsResolvePromiseMap.get(apexDomain)!;
-  } else {
-    const promise = getNS(apexDomain);
-    apexDomainNsResolvePromiseMap.set(apexDomain, promise);
-    hasNS = await promise;
-  }
-
-  if (hasNS) {
-    return onDomainAlive(apexDomain);
-  }
-
-  let whois;
-
-  try {
-    whois = await getWhois(apexDomain);
-  } catch (e) {
-    console.log(picocolors.red('[whois error]'), { domain: apexDomain }, e);
-    return onDomainAlive(apexDomain);
-  }
-
-  if (process.env.DEBUG) {
-    console.log(JSON.stringify(whois, null, 2));
-  }
-
-  const whoisError = noWhois(whois);
-  if (!whoisError) {
-    console.log(picocolors.gray('[domain alive]'), picocolors.gray('whois found'), { domain: apexDomain });
-    return onDomainAlive(apexDomain);
-  }
-
-  console.log(picocolors.red('[domain dead]'), 'whois not found', { domain: apexDomain, err: whoisError });
-  return onDomainDead('.' + apexDomain);
-}
-
 // TODO: this is a workaround for https://github.com/LayeredStudio/whoiser/issues/117
 const whoisNotFoundKeywordTest = createKeywordFilter([
   'no match for',
@@ -269,11 +246,10 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   // 'pendingdelete',
   ' has been blocked by '
 ]);
-
 // whois server can redirect, so whoiser might/will get info from multiple whois servers
 // some servers (like TLD whois servers) might have cached/outdated results
 // we can only make sure a domain is alive once all response from all whois servers demonstrate so
-export function noWhois(whois: whoiser.WhoisSearchResult): null | string {
+function noWhois(whois: whoiser.WhoisSearchResult): null | string {
   let empty = true;
 
   for (const key in whois) {
