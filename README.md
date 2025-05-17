@@ -130,9 +130,9 @@ rules:
   - RULE-SET,reject_domainset,REJECT
   - RULE-SET,reject_extra_domainset,REJECT
 
-  - RULE-SET,reject_ip,REJECT
   - RULE-SET,reject_non_ip_drop,REJECT-DROP
   - RULE-SET,reject_non_ip_no_drop,REJECT
+  - RULE-SET,reject_ip,REJECT
 ```
 
 #### 搜狗输入法
