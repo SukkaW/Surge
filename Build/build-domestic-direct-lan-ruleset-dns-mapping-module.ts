@@ -210,9 +210,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
                 break;
             }
 
-            acc.dns['nameserver-policy'][domain] = dns === 'system'
-              ? ['system://', 'system', 'dhcp://system']
-              : dns;
+            acc.dns['nameserver-policy'][domain] = dns;
           });
 
           if ('hosts' in rest) {
