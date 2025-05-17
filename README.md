@@ -1,6 +1,6 @@
 # Sukka Ruleset
 
-由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/)、[Clash Premium (Dreamacro)](https://web.archive.org/web/20230521135419/https://dreamacro.github.io/clash/premium/rule-providers.html)、[sing-box](https://sing-box.sagernet.org/) 和 [Surfboard for Android](https://getsurfboard.com) 的 Ruleset Snippet。
+由 [Sukka](https://skk.moe) 搜集、整理、维护的、个人自用的、适用于 [Surge](https://nssurge.com/)、[Clash Meta (mihomo)](https://wiki.metacubex.one/)、[Clash Premium (Dreamacro)](https://web.archive.org/web/20230521135419/https://dreamacro.github.io/clash/premium/rule-providers.html)、[sing-box](https://sing-box.sagernet.org/)、[Surfboard for Android](https://getsurfboard.com) 和 [Stash](https://stash.ws/) 的 Ruleset Snippet。
 
 ## 条款和协议
 
@@ -14,7 +14,7 @@
 
 `ruleset.skk.moe` 是由 Sukka 提供的 Ruleset Server，由 Cloudflare 驱动。但是由于众所周知的原因、Cloudflare 的节点在中国大陆的访问速度和稳定性都不理想。目前，Sukka Ruleset 提供了以下官方镜像：
 
-- `ruleset-mirror.skk.moe`：由 Sukka 维护，CDN 服务由「[Gomani CDN](https://cp.gomami.io/dashboard)（内测中）」赞助，提供香港 CN2、9929、CMIN2 节点。
+- `ruleset-mirror.skk.moe`：由 Sukka 维护，CDN 服务现由腾讯云 EdgeOne Pages 提供。
 
 为了改善访问速度和稳定性，欢迎大家搭建镜像、从以下 Git 仓库同步更新：
 
