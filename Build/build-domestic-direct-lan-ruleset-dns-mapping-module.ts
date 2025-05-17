@@ -194,7 +194,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       yaml.stringify(
         dataset.reduce<{
           dns: { 'nameserver-policy': Record<string, string | string[]> },
-          hosts: Record<string, string>
+          hosts: Record<string, string | string[]>
         }>((acc, cur) => {
           const { domains, dns, ...rest } = cur[1];
           domains.forEach((domain) => {
@@ -216,7 +216,21 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
           });
 
           if ('hosts' in rest) {
-            Object.assign(acc.hosts, rest.hosts);
+            // eslint-disable-next-line guard-for-in -- known plain object
+            for (const domain in rest.hosts) {
+              const dest = rest.hosts[domain];
+
+              if (domain in acc.hosts) {
+                if (typeof acc.hosts[domain] === 'string') {
+                  acc.hosts[domain] = [acc.hosts[domain]];
+                }
+                acc.hosts[domain].push(...dest);
+              } else if (dest.length === 1) {
+                acc.hosts[domain] = dest[0];
+              } else {
+                acc.hosts[domain] = dest;
+              }
+            }
           }
 
           return acc;
