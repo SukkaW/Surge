@@ -529,6 +529,8 @@ export const PREDEFINED_WHITELIST = [
   '.nstool.netease.com', // it is only used to check local dns
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
 
+  'widget-mediator.zopim.com', // breaking zendesk chat
+
   '.llnw.net', // entire llnm.net has dead
 
   'repo.huaweicloud.com', // urlhaus
