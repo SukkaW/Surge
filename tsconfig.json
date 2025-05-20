@@ -18,5 +18,9 @@
     "./Source/**/*.js",
     "./Build/**/*.ts",
     "./Source/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "public"
   ]
 }
