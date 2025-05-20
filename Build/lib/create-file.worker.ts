@@ -49,7 +49,7 @@ const pool = new Worktank({
 });
 
 export function compareAndWriteFileInWorker(span: Span, linesA: string[], filePath: string) {
-  return span.traceChildAsync(`compare and write ${filePath}`, () => pool.exec('compareAndWriteFile', [linesA, filePath, import.meta.url]));
+  return span.traceChildAsync(`compare and write (worker) ${filePath}`, () => pool.exec('compareAndWriteFile', [linesA, filePath, import.meta.url]));
 }
 
 process.on('beforeExit', () => pool.terminate());

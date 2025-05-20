@@ -79,7 +79,7 @@ export abstract class BaseWriteStrategy {
       return;
     }
 
-    if (this.result.length > 1000) {
+    if (this.result.length > 2000) {
       return compareAndWriteFileInWorker(
         span,
         this.withPadding(
