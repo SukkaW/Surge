@@ -22,7 +22,7 @@ export function fastNormalizeDomainWithoutWww(domain: string, parsed: TldTsParse
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
   if (parsed.subdomain) {
-    if (parsed.subdomain === 'www') {
+    if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
       return parsed.domain;
     }
     if (parsed.subdomain.startsWith('www.')) {
