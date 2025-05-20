@@ -5,7 +5,14 @@ import type { Span } from '../trace';
 
 const pool = new Worktank({
   name: 'process-phishing-domains',
-  size: Math.max(2, Math.max(1, ('availableParallelism' in os ? os.availableParallelism() : (os as typeof import('node:os')).cpus().length) - 1)),
+  size: Math.max(
+    1,
+    (
+      'availableParallelism' in os
+        ? os.availableParallelism()
+        : (os as typeof import('node:os')).cpus().length
+    ) - 1
+  ),
   timeout: 10000, // The maximum number of milliseconds to wait for the result from the worker, if exceeded the worker is terminated and the execution promise rejects
   warmup: true,
   autoterminate: 30000, // The interval of milliseconds at which to check if the pool can be automatically terminated, to free up resources, workers will be spawned up again if needed
@@ -49,7 +56,7 @@ const pool = new Worktank({
 });
 
 export function compareAndWriteFileInWorker(span: Span, linesA: string[], filePath: string) {
-  return span.traceChildAsync(`compare and write ${filePath}`, () => pool.exec('compareAndWriteFile', [linesA, filePath, import.meta.url]));
+  return span.traceChildAsync(`compare and write (worker) ${filePath}`, () => pool.exec('compareAndWriteFile', [linesA, filePath, import.meta.url]));
 }
 
 process.on('beforeExit', () => pool.terminate());
