@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "ESNext.Iterator"],
     "moduleDetection": "force",
     "module": "esnext",
     "moduleResolution": "bundler",
