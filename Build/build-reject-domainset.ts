@@ -20,6 +20,7 @@ import { DomainsetOutput } from './lib/rules/domainset';
 import { foundDebugDomain } from './lib/parse-filter/shared';
 import { AdGuardHomeOutput } from './lib/rules/domainset';
 import { getPhishingDomains } from './lib/get-phishing-domains';
+import type { MaybePromise } from './lib/misc';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_extra.conf'));
@@ -77,8 +78,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
     ]);
 
-  const appendArrayToRejectOutput = rejectOutput.addFromDomainset.bind(rejectOutput);
-  const appendArrayToRejectExtraOutput = rejectExtraOutput.addFromDomainset.bind(rejectExtraOutput);
+  const appendArrayToRejectOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectOutput.addFromDomainset(source);
+  const appendArrayToRejectExtraOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectExtraOutput.addFromDomainset(source);
 
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
@@ -156,8 +157,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectPhisingOutput.whitelistDomain(domain);
     }
 
-    rejectOutput.domainTrie.dump(rejectExtraOutput.whitelistDomain.bind(rejectExtraOutput));
-    rejectOutput.domainTrie.dump(rejectPhisingOutput.whitelistDomain.bind(rejectPhisingOutput));
+    rejectOutput.domainTrie.dump(arg => rejectExtraOutput.whitelistDomain(arg));
+    rejectOutput.domainTrie.dump(arg => rejectPhisingOutput.whitelistDomain(arg));
   });
 
   await Promise.all([

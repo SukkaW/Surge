@@ -416,7 +416,7 @@ export class FileOutput {
   write(): Promise<unknown> {
     return this.span.traceChildAsync('write all', async (childSpan) => {
       await this.done();
-      childSpan.traceChildSync('write to strategies', this.writeToStrategies.bind(this));
+      childSpan.traceChildSync('write to strategies', () => this.writeToStrategies());
 
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
         const promises: Array<Promise<void> | void> = [];
