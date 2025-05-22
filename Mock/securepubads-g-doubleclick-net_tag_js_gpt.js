@@ -2,9 +2,9 @@
   'use strict';
 
   // https://developers.google.com/doubleclick-gpt/reference
-  const noopfn = function () {
+  const noopfn = () => {
     // noop
-  }.bind();
+  };
   const noopthisfn = function () {
     return this;
   };
