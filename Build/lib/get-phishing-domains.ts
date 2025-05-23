@@ -36,9 +36,10 @@ const pool = new Worktank({
 
       const { loosTldOptWithPrivateDomains } = __require('../constants/loose-tldts-opt') as typeof import('../constants/loose-tldts-opt');
       const { BLACK_TLD, WHITELIST_MAIN_DOMAINS, leathalKeywords, lowKeywords, sensitiveKeywords } = __require('../constants/phishing-score-source') as typeof import('../constants/phishing-score-source');
+      const NullPrototypeObject = __require('null-prototype-object') as typeof import('null-prototype-object');
 
       const domainCountMap = new Map<string, number>();
-      const domainScoreMap: Record<string, number> = Object.create(null);
+      const domainScoreMap: Record<string, number> = new NullPrototypeObject();
 
       let line = '';
       let tld: string | null = '';
@@ -85,9 +86,11 @@ const pool = new Worktank({
             : 1
         );
 
-        let score = apexDomain in domainScoreMap ? domainScoreMap[apexDomain] : 0;
+        let score = 0;
 
-        if (!(apexDomain in domainScoreMap)) {
+        if (apexDomain in domainScoreMap) {
+          score = domainScoreMap[apexDomain];
+        } else {
           if (BLACK_TLD.has(tld)) {
             score += 3;
           } else if (tld.length > 6) {
