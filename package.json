@@ -67,7 +67,7 @@
     "eslint-formatter-sukka": "^6.20.0",
     "expect": "^29.7.0",
     "mitata": "^1.0.34",
-    "mocha": "^11.4.0",
+    "mocha": "^11.5.0",
     "tinyexec": "^1.0.1",
     "typescript": "^5.8.3"
   },
