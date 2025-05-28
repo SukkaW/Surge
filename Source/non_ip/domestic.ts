@@ -187,7 +187,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'bilicomics.com', // m wap version of bilicomic
       // 'bilibilipay.cn', // not owned by bilibili
       // 'bilibilipay.com', // not owned by bilibili
-      '+bilicdn1.com'
+      '+bilicdn1.com',
+      '+bulicdn2.com'
     ]
   },
   XIAOMI: {
