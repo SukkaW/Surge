@@ -1,11 +1,11 @@
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { task } from './trace';
 
-import { createMemoizedPromise } from './lib/memo-promise';
+import { once } from 'foxts/once';
 import { IPListOutput } from './lib/rules/ip';
 import { createFileDescription } from './constants/description';
 
-export const getChnCidrPromise = createMemoizedPromise(async function getChnCidr() {
+export const getChnCidrPromise = once(async function getChnCidr() {
   return Promise.all([
     fetchRemoteTextByLine('https://chnroutes2.cdn.skk.moe/chnroutes.txt', true).then(Array.fromAsync<string>),
     fetchRemoteTextByLine('https://gaoyifan.github.io/china-operator-ip/china6.txt', true).then(Array.fromAsync<string>)

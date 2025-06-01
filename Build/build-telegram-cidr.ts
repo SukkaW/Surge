@@ -2,12 +2,12 @@
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { createMemoizedPromise } from './lib/memo-promise';
+import { once } from 'foxts/once';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { $$fetch } from './lib/fetch-retry';
 import { fastIpVersion } from './lib/misc';
 
-export const getTelegramCIDRPromise = createMemoizedPromise(async () => {
+export const getTelegramCIDRPromise = once(async () => {
   const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
   const lastModified = resp.headers.get('last-modified');
   const date = lastModified ? new Date(lastModified) : new Date();

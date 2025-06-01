@@ -7,7 +7,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { createMemoizedPromise } from './lib/memo-promise';
+import { once } from 'foxts/once';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, SOURCE_DIR } from './constants/dir';
@@ -52,7 +52,7 @@ export function createGetDnsMappingRule(allowWildcard: boolean) {
   };
 }
 
-export const getDomesticAndDirectDomainsRulesetPromise = createMemoizedPromise(async () => {
+export const getDomesticAndDirectDomainsRulesetPromise = once(async () => {
   const domestics = await readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/domestic.conf'));
   const directs = await readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'non_ip/direct.conf'));
   const lans: string[] = [];

@@ -1,6 +1,6 @@
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { createMemoizedPromise } from './lib/memo-promise';
+import { once } from 'foxts/once';
 import { RulesetOutput } from './lib/rules/ruleset';
 import Worktank from 'worktank';
 
@@ -44,7 +44,7 @@ const pool = new Worktank({
   }
 });
 
-export const getMicrosoftCdnRulesetPromise = createMemoizedPromise<[domains: string[], domainSuffixes: string[]]>(async () => {
+export const getMicrosoftCdnRulesetPromise = once<Promise<[domains: string[], domainSuffixes: string[]]>>(async () => {
   const res = await pool.exec(
     'getMicrosoftCdnRuleset',
     [import.meta.url]

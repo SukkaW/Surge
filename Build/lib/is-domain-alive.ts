@@ -80,7 +80,11 @@ const domesticDohServers: Array<[string, DNS2.DnsResolver]> = ([
 
 const domainAliveMutex = createKeyedAsyncMutex('isDomainAlive');
 
-export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boolean = domain[0] === '.'): Promise<boolean> {
+export async function isDomainAlive(
+  domain: string,
+  // we dont need to check domain[0] here, this is only from runAgainstSourceFile
+  isIncludeAllSubdomain: boolean
+): Promise<boolean> {
   if (domainAliveMap.has(domain)) {
     return domainAliveMap.get(domain)!;
   }
@@ -102,8 +106,6 @@ export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boole
   return domainAliveMutex.acquire(domain, async () => {
     domain = domain[0] === '.' ? domain.slice(1) : domain;
 
-    const $domain = isIncludeAllSubdomain ? '.' + domain : domain;
-
     const aDns: string[] = [];
     const aaaaDns: string[] = [];
 
@@ -113,7 +115,7 @@ export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boole
     // eslint-disable-next-line no-await-in-loop -- sequential
       const aRecords = (await $resolve(domain, 'A', servers[i]));
       if (aRecords.answers.length > 0) {
-        domainAliveMap.set($domain, true);
+        domainAliveMap.set(domain, true);
         return true;
       }
 
@@ -123,7 +125,7 @@ export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boole
     // eslint-disable-next-line no-await-in-loop -- sequential
       const aaaaRecords = (await $resolve(domain, 'AAAA', servers[i]));
       if (aaaaRecords.answers.length > 0) {
-        domainAliveMap.set($domain, true);
+        domainAliveMap.set(domain, true);
         return true;
       }
 
@@ -135,7 +137,7 @@ export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boole
     // eslint-disable-next-line no-await-in-loop -- sequential
       const aRecords = (await $resolve(domain, 'A', pickOne(domesticDohServers)));
       if (aRecords.answers.length > 0) {
-        domainAliveMap.set($domain, true);
+        domainAliveMap.set(domain, true);
         return true;
       }
       aDns.push(aRecords.dns);
@@ -144,7 +146,7 @@ export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boole
       // eslint-disable-next-line no-await-in-loop -- sequential
       const aaaaRecords = (await $resolve(domain, 'AAAA', pickOne(domesticDohServers)));
       if (aaaaRecords.answers.length > 0) {
-        domainAliveMap.set($domain, true);
+        domainAliveMap.set(domain, true);
         return true;
       }
       aaaaDns.push(aaaaRecords.dns);
@@ -152,7 +154,7 @@ export async function isDomainAlive(domain: string, isIncludeAllSubdomain: boole
 
     console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
 
-    domainAliveMap.set($domain, false);
+    domainAliveMap.set(domain, false);
     return false;
   });
 }
