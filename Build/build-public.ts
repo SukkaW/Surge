@@ -79,7 +79,9 @@ export const buildPublic = task(require.main === module, __filename)(async (span
     compareAndWriteFile(
       span,
       [
-        '# The source code is located at [Sukkaw/Surge](https://github.com/Sukkaw/Surge)'
+        '# The source code is located at [Sukkaw/Surge](https://github.com/Sukkaw/Surge)',
+        '',
+        '![GitHub repo size](https://img.shields.io/github/repo-size/sukkalab/ruleset.skk.moe?style=flat-square)'
       ],
       path.join(PUBLIC_DIR, 'README.md')
     )
