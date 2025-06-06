@@ -9,6 +9,8 @@ import { HostnameSmolTrie } from './lib/trie';
 const ENFORCED_WHITELIST = [
   'hola.sk',
   'hola.org',
+  'hola-shopping.com',
+  'mynextphone.io',
   'iadmatapk.nosdn.127.net',
   'httpdns.bilivideo.com',
   'httpdns-v6.gslb.yy.com',
@@ -18,7 +20,7 @@ const ENFORCED_WHITELIST = [
   'samsungqbe.com'
 ];
 
-const WHITELIST: string[] = ['.us-api.samsungyosemite.com', '.api-hub.samsungyosemite.com', '.holashop.org', '.solopools.net', '.hola-shopping.com', '.100xbtc.com', '.brdtest.co', '.yelts.net', '.axepool.com', '.luxxeeu.com', '.etc-pool.com', '.alph2mine.com', 'samsungcloudsolution.com', 'samsungcloudsolution.net', 'samsungqbe.com', 'lgtvsdp.com', '.apextop.cc', '.p2p-south.xyz', '.r-pool.net', '.celcoin.io', '.gameforxe.eu', '.kipcoin.org', '.cryptonote.club', '.12level.com', '.piratenbucht.eu', '.minersmine.com', '.blockhunter.info', '.hola.com.sg', '.down.my0115.ru', '.js.my0115.ru', '.wmi.my0115.ru', '.statistic.date', '.pawpools.space', '.nimbocoin.com', '.hola.hk', '.hola.sk', '.solopools.org', '.minereasy.com', '.mynextphone.io', '.newzgames.com'];
+const WHITELIST: string[] = ['.lightspeedmining.com', 'samsungqbe.com', '.zbeos.com', '.holashop.org', '.jdie.pl', '.sponsor.printondemandagency.com', '.bmcm.pw', '.vplay.life', '.hola.hk', '.peopleland.net', '.120bit.com', '.tekyboycrypto.xyz', '.rocketpool.pro', '.cryptoloot.pro', '.weminerpool.site', '.timg135.top', '.binance.associates', '.lafermedumineur.fr', '.goldencoin.online', '.hola.sk', '.hola.com.sg', '.acashtech.com', '.bitoreum.org', '.mixpools.org', '.decapool.net', '.taichicoin.org', '.luxxeeu.com'];
 
 (async () => {
   const files = await new Fdir()
