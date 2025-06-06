@@ -4,6 +4,11 @@ import { isDomainAlive } from './lib/is-domain-alive';
 import { fdir as Fdir } from 'fdir';
 import runAgainstSourceFile from './lib/run-against-source-file';
 
+import cliProgress from 'cli-progress';
+import { newQueue } from '@henrygd/queue';
+
+const queue = newQueue(32);
+
 const deadDomains: string[] = [];
 
 (async () => {
@@ -26,7 +31,8 @@ const deadDomains: string[] = [];
     .crawl(SOURCE_DIR + path.sep + 'non_ip')
     .withPromise();
 
-  const promises: Array<Promise<void>> = [];
+  const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  bar.start(0, 0);
 
   await Promise.all([
     ...domainRules,
@@ -34,18 +40,26 @@ const deadDomains: string[] = [];
   ].map(
     filepath => runAgainstSourceFile(
       filepath,
-      (domain: string, includeAllSubdomain: boolean) => promises.push(
-        isDomainAlive(domain, includeAllSubdomain).then((alive) => {
-          if (alive) {
-            return;
-          }
-          deadDomains.push(includeAllSubdomain ? '.' + domain : domain);
-        })
-      )
+      (domain: string, includeAllSubdomain: boolean) => {
+        bar.setTotal(bar.getTotal() + 1);
+
+        return queue.add(
+          () => isDomainAlive(domain, includeAllSubdomain).then((alive) => {
+            bar.increment();
+
+            if (alive) {
+              return;
+            }
+            deadDomains.push(includeAllSubdomain ? '.' + domain : domain);
+          })
+        );
+      }
     ).then(() => console.log('[crawl]', filepath))
   ));
 
-  await Promise.all(promises);
+  await queue.done();
+
+  bar.stop();
 
   console.log();
   console.log();

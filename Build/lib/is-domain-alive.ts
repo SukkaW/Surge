@@ -90,7 +90,7 @@ export async function isDomainAlive(
   }
   const apexDomain = tldts.getDomain(domain, looseTldtsOpt);
   if (!apexDomain) {
-    console.log(picocolors.gray('[domain invalid]'), picocolors.gray('no apex domain'), { domain });
+    // console.log(picocolors.gray('[domain invalid]'), picocolors.gray('no apex domain'), { domain });
     domainAliveMap.set('.' + domain, true);
     return true;
   }

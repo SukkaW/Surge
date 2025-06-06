@@ -34,6 +34,9 @@ importers:
       ci-info:
         specifier: ^4.2.0
         version: 4.2.0
+      cli-progress:
+        specifier: ^3.12.0
+        version: 3.12.0
       csv-parse:
         specifier: ^5.6.0
         version: 5.6.0
@@ -116,6 +119,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
+      '@types/cli-progress':
+        specifier: ^3.11.6
+        version: 3.11.6
       '@types/dns2':
         specifier: ^2.0.9
         version: 2.0.9
@@ -574,6 +580,9 @@ packages:
   '@types/better-sqlite3@7.6.13':
     resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
 
+  '@types/cli-progress@3.11.6':
+    resolution: {integrity: sha512-cE3+jb9WRlu+uOSAugewNpITJDt1VF8dHOopPO4IABFc3SXYL5WE/+PTz/FCdZRRfIujiWW3n3aMbv1eIGVRWA==}
+
   '@types/dns2@2.0.9':
     resolution: {integrity: sha512-+eiPSuo/KfvaaW7DiMf/vrt9mhxbZCCgxoCa/c2qMVSuZQus4BzBuKRh8XBwcUXWAtvI8QuZOp13UODJNq9DXg==}
 
@@ -899,6 +908,10 @@ packages:
   ci-info@4.2.0:
     resolution: {integrity: sha512-cYY9mypksY8NRqgDB1XD1RiJL338v/551niynFTGkZOO2LHuB2OmOYxDIe/ttN9AHwrqdum1360G3ald0W9kCg==}
     engines: {node: '>=8'}
+
+  cli-progress@3.12.0:
+    resolution: {integrity: sha512-tRkV3HJ1ASwm19THiiLIXLO7Im7wlTuKnvkYaTkyoAPefqjNg7W7DHKUlGRxy9vxDvbyCYQkQozvptuMkGCg8A==}
+    engines: {node: '>=4'}
 
   cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
@@ -2358,6 +2371,10 @@ snapshots:
     dependencies:
       '@types/node': 22.15.30
 
+  '@types/cli-progress@3.11.6':
+    dependencies:
+      '@types/node': 22.15.30
+
   '@types/dns2@2.0.9':
     dependencies:
       '@types/node': 22.15.30
@@ -2675,6 +2692,10 @@ snapshots:
   ci-info@3.9.0: {}
 
   ci-info@4.2.0: {}
+
+  cli-progress@3.12.0:
+    dependencies:
+      string-width: 4.2.3
 
   cliui@8.0.1:
     dependencies:
