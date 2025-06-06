@@ -6,7 +6,8 @@ import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
 import tldts from 'tldts-experimental';
 import { NetworkFilter } from '@ghostery/adblocker';
-import { fastNormalizeDomain, fastNormalizeDomainWithoutWww } from '../normalize-domain';
+import { fastNormalizeDomain, fastNormalizeDomainWithoutWww, fastNormalizeDomainWithoutWwwNoIP } from '../normalize-domain';
+import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 
 const enum ParseType {
   WhiteIncludeSubdomain = 0,
@@ -14,6 +15,7 @@ const enum ParseType {
   BlackAbsolute = 1,
   BlackIncludeSubdomain = 2,
   ErrorMessage = 10,
+  BlackIP = 20,
   Null = 1000,
   NotParsed = 2000
 }
@@ -230,7 +232,15 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
       && filter.isPlain() // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
-      const hostname = fastNormalizeDomainWithoutWww(filter.hostname);
+      // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
+      // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
+      if (isProbablyIpv4(filter.hostname) || isProbablyIpv6(filter.hostname)) {
+        result[0] = filter.hostname;
+        result[1] = ParseType.BlackIP;
+        return result;
+      }
+
+      const hostname = fastNormalizeDomainWithoutWwwNoIP(filter.hostname);
       if (!hostname) {
         result[1] = ParseType.Null;
         return result;
