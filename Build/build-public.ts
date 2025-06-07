@@ -6,8 +6,9 @@ import { task } from './trace';
 import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
-import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
+import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
 import { fastStringCompare, mkdirp, writeFile } from './lib/misc';
+import type { VoidOrVoidArray } from './lib/misc';
 import picocolors from 'picocolors';
 import { tagged as html } from 'foxts/tagged';
 import { compareAndWriteFile } from './lib/create-file';
@@ -15,9 +16,7 @@ import { compareAndWriteFile } from './lib/create-file';
 const mockDir = path.join(ROOT_DIR, 'Mock');
 const modulesDir = path.join(ROOT_DIR, 'Modules');
 
-async function copyDirContents(srcDir: string, destDir: string) {
-  const promises: Array<Promise<void>> = [];
-
+async function copyDirContents(srcDir: string, destDir: string, promises: Array<Promise<VoidOrVoidArray>> = []): Promise<Array<Promise<VoidOrVoidArray>>> {
   for await (const entry of await fsp.opendir(srcDir)) {
     const src = path.join(srcDir, entry.name);
     const dest = path.join(destDir, entry.name);
@@ -28,21 +27,27 @@ async function copyDirContents(srcDir: string, destDir: string) {
     }
   }
 
-  return Promise.all(promises);
+  return promises;
 }
 
 export const buildPublic = task(require.main === module, __filename)(async (span) => {
   await span.traceChildAsync('copy rest of the files', async () => {
-    await Promise.all([
-      // mkdirp(OUTPUT_MODULES_DIR),
-      mkdirp(OUTPUT_MODULES_RULES_DIR),
-      mkdirp(OUTPUT_MOCK_DIR)
-    ]);
+    const p: Array<Promise<any>> = [];
 
-    await Promise.all([
-      copyDirContents(modulesDir, OUTPUT_MODULES_DIR),
-      copyDirContents(mockDir, OUTPUT_MOCK_DIR)
-    ]);
+    let pt = mkdirp(OUTPUT_MODULES_RULES_DIR);
+    if (pt) {
+      p.push(pt.then(() => { copyDirContents(modulesDir, OUTPUT_MODULES_RULES_DIR, p); }));
+    } else {
+      p.push(copyDirContents(modulesDir, OUTPUT_MODULES_RULES_DIR, p));
+    }
+    pt = mkdirp(OUTPUT_MOCK_DIR);
+    if (pt) {
+      p.push(pt.then(() => { copyDirContents(mockDir, OUTPUT_MOCK_DIR, p); }));
+    } else {
+      p.push(copyDirContents(mockDir, OUTPUT_MOCK_DIR, p));
+    }
+
+    await Promise.all(p);
   });
 
   const html = await span
@@ -108,7 +113,7 @@ const priorityOrder: Record<'default' | string & {}, number> = {
 };
 const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || fastStringCompare(a.name, b.name);
 
-function walk(tree: TreeTypeArray) {
+function treeHtml(tree: TreeTypeArray) {
   let result = '';
   tree.sort(prioritySorter);
   for (let i = 0, len = tree.length; i < len; i++) {
@@ -117,9 +122,7 @@ function walk(tree: TreeTypeArray) {
       result += html`
         <li class="folder">
           ${entry.name}
-          <ul>
-            ${walk(entry.children)}
-          </ul>
+          <ul>${treeHtml(entry.children)}</ul>
         </li>
       `;
     } else if (/* entry.type === 'file' && */ entry.name !== 'index.html') {
@@ -132,29 +135,29 @@ function walk(tree: TreeTypeArray) {
 function generateHtml(tree: TreeTypeArray) {
   return html`
       <!DOCTYPE html>
-        <html lang="en">
+      <html lang="en">
 
-        <head>
-          <meta charset="utf-8">
-          <title>Surge Ruleset Server | Sukka (@SukkaW)</title>
-          <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-          <link href="https://cdn.skk.moe/favicon.ico" rel="icon" type="image/ico">
-          <link href="https://cdn.skk.moe/favicon/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180">
-          <link href="https://cdn.skk.moe/favicon/android-chrome-192x192.png" rel="icon" type="image/png" sizes="192x192">
-          <link href="https://cdn.skk.moe/favicon/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32">
-          <link href="https://cdn.skk.moe/favicon/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16">
-          <meta name="description" content="Sukka 自用的 Surge / Clash Premium 规则组">
+      <head>
+        <meta charset="utf-8">
+        <title>Surge Ruleset Server | Sukka (@SukkaW)</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+        <link href="https://cdn.skk.moe/favicon.ico" rel="icon" type="image/ico">
+        <link href="https://cdn.skk.moe/favicon/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180">
+        <link href="https://cdn.skk.moe/favicon/android-chrome-192x192.png" rel="icon" type="image/png" sizes="192x192">
+        <link href="https://cdn.skk.moe/favicon/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32">
+        <link href="https://cdn.skk.moe/favicon/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16">
+        <meta name="description" content="Sukka 自用的 Surge / Clash Premium 规则组">
 
-          <link rel="stylesheet" href="https://cdn.skk.moe/ruleset/css/21d8777a.css" />
+        <link rel="stylesheet" href="https://cdn.skk.moe/ruleset/css/21d8777a.css" />
 
-          <meta property="og:title" content="Surge Ruleset | Sukka (@SukkaW)">
-          <meta property="og:type" content="Website">
-          <meta property="og:url" content="https://ruleset.skk.moe/">
-          <meta property="og:image" content="https://cdn.skk.moe/favicon/android-chrome-192x192.png">
-          <meta property="og:description" content="Sukka 自用的 Surge / Clash Premium 规则组">
-          <meta name="twitter:card" content="summary">
-          <link rel="canonical" href="https://ruleset.skk.moe/">
-        </head>
+        <meta property="og:title" content="Surge Ruleset | Sukka (@SukkaW)">
+        <meta property="og:type" content="Website">
+        <meta property="og:url" content="https://ruleset.skk.moe/">
+        <meta property="og:image" content="https://cdn.skk.moe/favicon/android-chrome-192x192.png">
+        <meta property="og:description" content="Sukka 自用的 Surge / Clash Premium 规则组">
+        <meta name="twitter:card" content="summary">
+        <link rel="canonical" href="https://ruleset.skk.moe/">
+      </head>
       <body>
         <main class="container">
           <h1>Sukka Ruleset Server</h1>
@@ -163,9 +166,7 @@ function generateHtml(tree: TreeTypeArray) {
           </p>
           <p>Last Build: ${new Date().toISOString()}</p>
           <br>
-          <ul class="directory-list">
-            ${walk(tree)}
-          </ul>
+          <ul class="directory-list">${treeHtml(tree)}</ul>
         </main>
       </body>
     </html>

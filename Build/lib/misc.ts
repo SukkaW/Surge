@@ -32,6 +32,8 @@ interface Write {
   ): Promise<void>
 }
 
+export type VoidOrVoidArray = void | VoidOrVoidArray[];
+
 export function mkdirp(dir: string) {
   if (fs.existsSync(dir)) {
     return;
