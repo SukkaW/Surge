@@ -18,7 +18,7 @@ export async function fetchAssets(url: string, fallbackUrls: null | undefined | 
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
     if (index >= 0) {
-    // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
+      // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
       try {
         await waitWithAbort(50 + (index + 1) * 150, controller.signal);
       } catch {
