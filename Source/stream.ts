@@ -302,7 +302,7 @@ const HBO_ASIA: StreamService = {
     'DOMAIN-SUFFIX,hboasia.com',
     'DOMAIN-SUFFIX,hbogoasia.com',
     'DOMAIN-SUFFIX,hbogoasia.hk',
-    'DOMAIN-KEYWORD,.hbogoasia.',
+    'DOMAIN-KEYWORD,hbogoasia',
 
     'DOMAIN,44wilhpljf.execute-api.ap-southeast-1.amazonaws.com',
     // 'DOMAIN,bcbolthboa-a.akamaihd.net',
