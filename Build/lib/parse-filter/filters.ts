@@ -118,7 +118,7 @@ export function processFilterRulesWithPreload(
 const kwfilter = createKeywordFilter([
   '!',
   '?',
-  '*',
+  // '*', // *://example.com/*
   '[',
   '(',
   ']',
@@ -127,7 +127,7 @@ const kwfilter = createKeywordFilter([
   '#',
   '%',
   '&',
-  '=',
+  // '=', // maybe we want to support some modifier?
   '~',
   // special modifier
   '$popup',
