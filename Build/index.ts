@@ -1,6 +1,7 @@
 import process from 'node:process';
 import os from 'node:os';
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 
 import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
@@ -28,7 +29,7 @@ import { buildCloudMounterRules } from './build-cloudmounter-rules';
 import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 import path from 'node:path';
-import { ROOT_DIR } from './constants/dir';
+import { CACHE_DIR, ROOT_DIR } from './constants/dir';
 import { isCI } from 'ci-info';
 
 process.on('uncaughtException', (error) => {
@@ -39,6 +40,12 @@ process.on('unhandledRejection', (reason) => {
   console.error('Unhandled rejection:', reason);
   process.exit(1);
 });
+
+const removesFiles = [
+  path.join(CACHE_DIR, '.cache.db'),
+  path.join(CACHE_DIR, '.cache.db-shm'),
+  path.join(CACHE_DIR, '.cache.db-wal')
+];
 
 const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
 
@@ -82,6 +89,7 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
 
     await Promise.all([
+      ...removesFiles.map(file => fsp.rm(file, { force: true })),
       downloadPreviousBuildPromise,
       buildCommonPromise,
       downloadPreviousBuildPromise.then(() => buildRejectIPList(rootSpan)),

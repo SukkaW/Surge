@@ -141,10 +141,10 @@ jobs:
     name: Deploy to Cloudflare Pages
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04-arm
-    # matrix is a tricky way to define a variable directly in the jon yaml
+    # matrix is a tricky way to define a variable directly in the action yaml
     strategy:
       matrix:
-        wranglerVersion: ['3.114.6']
+        wranglerVersion: ['3.114.9']
     steps:
       - name: Get NPM cache directory path
         id: npm_cache_path
