@@ -16,6 +16,25 @@ import { compareAndWriteFile } from './lib/create-file';
 const mockDir = path.join(ROOT_DIR, 'Mock');
 const modulesDir = path.join(ROOT_DIR, 'Modules');
 
+const priorityOrder: Record<'default' | string & {}, number> = {
+  LICENSE: 0,
+  domainset: 10,
+  non_ip: 20,
+  ip: 30,
+  List: 40,
+  Surge: 50,
+  Clash: 60,
+  'sing-box': 70,
+  Surfboard: 80,
+  LegacyClashPremium: 81,
+  Modules: 90,
+  Script: 100,
+  Mock: 110,
+  Assets: 120,
+  Internal: 130,
+  default: Number.MAX_VALUE
+};
+
 async function copyDirContents(srcDir: string, destDir: string, promises: Array<Promise<VoidOrVoidArray>> = []): Promise<Array<Promise<VoidOrVoidArray>>> {
   for await (const entry of await fsp.opendir(srcDir)) {
     const src = path.join(srcDir, entry.name);
@@ -62,12 +81,8 @@ export const buildPublic = task(require.main === module, __filename)(async (span
         '  cache-control: public, max-age=240, stale-while-revalidate=60, stale-if-error=15',
         'https://:project.pages.dev/*',
         '  X-Robots-Tag: noindex',
-        '/Modules/*',
-        '  content-type: text/plain; charset=utf-8',
-        '/List/*',
-        '  content-type: text/plain; charset=utf-8',
-        '/Internal/*',
-        '  content-type: text/plain; charset=utf-8'
+        ...Object.keys(priorityOrder)
+          .map((name) => `/${name}/*\n  content-type: text/plain; charset=utf-8\n  X-Robots-Tag: noindex`)
       ],
       path.join(PUBLIC_DIR, '_headers')
     ),
@@ -95,22 +110,6 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   return writeFile(path.join(PUBLIC_DIR, 'index.html'), html);
 });
 
-const priorityOrder: Record<'default' | string & {}, number> = {
-  domainset: 1,
-  non_ip: 2,
-  ip: 3,
-  List: 10,
-  Surge: 11,
-  Clash: 12,
-  'sing-box': 13,
-  Modules: 20,
-  Script: 30,
-  Mock: 40,
-  Assets: 50,
-  Internal: 60,
-  LICENSE: 70,
-  default: Number.MAX_VALUE
-};
 const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || fastStringCompare(a.name, b.name);
 
 function treeHtml(tree: TreeTypeArray) {
@@ -125,7 +124,7 @@ function treeHtml(tree: TreeTypeArray) {
           <ul>${treeHtml(entry.children)}</ul>
         </li>
       `;
-    } else if (/* entry.type === 'file' && */ entry.name !== 'index.html') {
+    } else if (/* entry.type === 'file' && */ !entry.name.endsWith('.html') && !entry.name.startsWith('_')) {
       result += html`<li><a class="file directory-list-file" href="${entry.path}">${entry.name}</a></li>`;
     }
   }
