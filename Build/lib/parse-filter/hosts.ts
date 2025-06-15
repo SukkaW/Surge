@@ -56,8 +56,8 @@ export function processHosts(
   });
 }
 
-export function processHostsWithPreload(hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false) {
-  const downloadPromise = fetchAssets(hostsUrl, mirrors, true);
+export function processHostsWithPreload(hostsUrl: string, mirrors: string[] | null, includeAllSubDomain = false, allowEmptyRemote = false) {
+  const downloadPromise = fetchAssets(hostsUrl, mirrors, true, allowEmptyRemote);
   const cb = includeAllSubDomain ? hostsLineCbIncludeAllSubdomain : hostsLineCb;
 
   return (span: Span) => span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {

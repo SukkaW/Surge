@@ -1,6 +1,6 @@
 export const DEBUG_DOMAIN_TO_FIND: string | null = null; // example.com | null
 
-type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean];
+type HostsSource = [main: string, mirrors: string[] | null, includeAllSubDomain: boolean, allowEmptyRemote?: boolean];
 
 export const HOSTS: HostsSource[] = [
   // WindowsSpyBlocker hasn't been updated since 2022-06-16, its content has been merged into domainset/reject.conf

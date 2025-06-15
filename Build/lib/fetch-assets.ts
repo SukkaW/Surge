@@ -13,7 +13,7 @@ export class CustomAbortError extends Error {
 
 const reusedCustomAbortError = new CustomAbortError();
 
-export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[], processLine = false) {
+export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[], processLine = false, allowEmpty = false) {
   const controller = new AbortController();
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
@@ -38,7 +38,7 @@ export async function fetchAssets(url: string, fallbackUrls: null | undefined | 
     }
     const arr = await Array.fromAsync(stream);
 
-    if (arr.length < 1) {
+    if (arr.length < 1 && !allowEmpty) {
       throw new ResponseError(res, url, 'empty response w/o 304');
     }
 

@@ -43,7 +43,7 @@ const BOTNET_FILTER_MIRROR_URL = [
   // https://curbengh.github.io/malware-filter/botnet-filter-dnscrypt-blocked-ips.txt
 ];
 
-const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL, true).then(arr => arr.reduce<[ipv4: string[], ipv6: string[]]>((acc, ip) => {
+const getBotNetFilterIPsPromise: Promise<[ipv4: string[], ipv6: string[]]> = fetchAssets(BOTNET_FILTER_URL, BOTNET_FILTER_MIRROR_URL, true, true).then(arr => arr.reduce<[ipv4: string[], ipv6: string[]]>((acc, ip) => {
   const v = fastIpVersion(ip);
   if (v === 4) {
     acc[0].push(ip);

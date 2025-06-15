@@ -22,9 +22,10 @@ function domainListLineCbIncludeAllSubdomain(line: string, set: string[], meta: 
 }
 export function processDomainListsWithPreload(
   domainListsUrl: string, mirrors: string[] | null,
-  includeAllSubDomain = false
+  includeAllSubDomain = false,
+  allowEmptyRemote = false
 ) {
-  const downloadPromise = fetchAssets(domainListsUrl, mirrors, true);
+  const downloadPromise = fetchAssets(domainListsUrl, mirrors, true, allowEmptyRemote);
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
   return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
