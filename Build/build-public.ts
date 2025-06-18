@@ -7,14 +7,11 @@ import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
 import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
-import { fastStringCompare, mkdirp, writeFile } from './lib/misc';
+import { fastStringCompare, writeFile } from './lib/misc';
 import type { VoidOrVoidArray } from './lib/misc';
 import picocolors from 'picocolors';
 import { tagged as html } from 'foxts/tagged';
 import { compareAndWriteFile } from './lib/create-file';
-
-const mockDir = path.join(ROOT_DIR, 'Mock');
-const modulesDir = path.join(ROOT_DIR, 'Modules');
 
 const priorityOrder: Record<'default' | string & {}, number> = {
   LICENSE: 0,
@@ -53,18 +50,11 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   await span.traceChildAsync('copy rest of the files', async () => {
     const p: Array<Promise<any>> = [];
 
-    let pt = mkdirp(OUTPUT_MODULES_RULES_DIR);
-    if (pt) {
-      p.push(pt.then(() => { copyDirContents(modulesDir, OUTPUT_MODULES_RULES_DIR, p); }));
-    } else {
-      p.push(copyDirContents(modulesDir, OUTPUT_MODULES_RULES_DIR, p));
-    }
-    pt = mkdirp(OUTPUT_MOCK_DIR);
-    if (pt) {
-      p.push(pt.then(() => { copyDirContents(mockDir, OUTPUT_MOCK_DIR, p); }));
-    } else {
-      p.push(copyDirContents(mockDir, OUTPUT_MOCK_DIR, p));
-    }
+    fs.mkdirSync(OUTPUT_MODULES_RULES_DIR, { recursive: true });
+    p.push(copyDirContents(path.join(ROOT_DIR, 'Modules'), OUTPUT_MODULES_RULES_DIR, p));
+
+    fs.mkdirSync(OUTPUT_MOCK_DIR, { recursive: true });
+    p.push(copyDirContents(path.join(ROOT_DIR, 'Mock'), OUTPUT_MOCK_DIR, p));
 
     await Promise.all(p);
   });

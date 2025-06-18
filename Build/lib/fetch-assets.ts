@@ -6,7 +6,7 @@ import { TextLineStream } from 'foxts/text-line-stream';
 import { ProcessLineStream } from './process-line';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
-export class CustomAbortError extends Error {
+class CustomAbortError extends Error {
   public readonly name = 'AbortError';
   public readonly digest = 'AbortError';
 }
