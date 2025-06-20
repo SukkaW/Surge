@@ -226,7 +226,9 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectDomainsetOutput.whitelistDomain(domain);
       rejectExtraDomainsetOutput.whitelistDomain(domain);
       rejectPhisingDomainsetOutput.whitelistDomain(domain);
-      rejectNonIpRulesetOutput.whitelistDomain(domain);
+
+      // DON'T Whitelist reject non_ip ruleset, we are force blocking thingshere
+      // rejectNonIpRulesetOutput.whitelistDomain(domain);
     }
 
     // we use "whitelistKeyword" method, this will be used to create kwfilter internally
