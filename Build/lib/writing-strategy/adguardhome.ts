@@ -48,7 +48,7 @@ export class AdGuardHome extends BaseWriteStrategy {
   writeDomainKeywords(keywords: Set<string>): void {
     for (const keyword of keywords) {
       // Use regex to match keyword
-      this.result.push(`/${escapeStringRegexp(keyword)}/`);
+      this.result.push(`/${escapeStringRegexp(keyword, false)}/`);
     }
   }
 
