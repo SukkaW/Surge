@@ -3,9 +3,9 @@ import type * as tldts from 'tldts';
 export const looseTldtsOpt: NonNullable<Parameters<typeof tldts.getSubdomain>[1]> = {
   allowPrivateDomains: false,
   extractHostname: false,
+  mixedInputs: false,
   validateHostname: false,
-  detectIp: false,
-  mixedInputs: false
+  detectIp: false
 };
 
 export const loosTldOptWithPrivateDomains: NonNullable<Parameters<typeof tldts.getSubdomain>[1]> = {

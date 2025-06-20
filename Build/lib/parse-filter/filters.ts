@@ -4,9 +4,8 @@ import { fetchAssets } from '../fetch-assets';
 import { onBlackFound, onWhiteFound } from './shared';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { looseTldtsOpt } from '../../constants/loose-tldts-opt';
-import tldts from 'tldts-experimental';
+import tldts from 'tldts';
 import { NetworkFilter } from '@ghostery/adblocker';
-import { fastNormalizeDomain, fastNormalizeDomainWithoutWww, fastNormalizeDomainWithoutWwwNoIP } from '../normalize-domain';
 import { isProbablyIpv4, isProbablyIpv6 } from 'foxts/is-probably-ip';
 
 const enum ParseType {
@@ -232,16 +231,31 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
       && filter.isPlain() // isPlain() === !isRegex()
       && (!filter.isFullRegex())
     ) {
+      const white = filter.isException() || filter.isBadFilter();
+
       // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
       // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
       if (isProbablyIpv4(filter.hostname) || isProbablyIpv6(filter.hostname)) {
+        if (white) {
+          // We do not support whitelist IP anyway.
+          result[1] = ParseType.Null;
+          return result;
+        }
         result[0] = filter.hostname;
         result[1] = ParseType.BlackIP;
         return result;
       }
 
-      const hostname = fastNormalizeDomainWithoutWwwNoIP(filter.hostname);
-      if (!hostname) {
+      const parsed = tldts.parse(filter.hostname, looseTldtsOpt);
+
+      /**
+       * We can exclude wildcard in TLD
+       *
+       * ||example.*
+       *
+       * This also exclude non standard TLD like `.tor`, `.onion`, `.dn42`, etc.
+       */
+      if (!parsed.publicSuffix || !parsed.isIcann || !parsed.hostname || !parsed.domain) {
         result[1] = ParseType.Null;
         return result;
       }
@@ -251,10 +265,21 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
       //  |https://: !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
       const isIncludeAllSubDomain = filter.isHostnameAnchor();
 
-      if (filter.isException() || filter.isBadFilter()) {
-        result[0] = hostname;
+      let hostname = parsed.hostname;
+      if (white) {
+        result[0] = filter.hostname;
         result[1] = isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
         return result;
+      }
+
+      // we only strip www when it is blacklist
+      if (parsed.subdomain) {
+        if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
+          hostname = parsed.domain;
+        }
+        if (parsed.subdomain.startsWith('www.')) {
+          hostname = parsed.subdomain.slice(4) + '.' + parsed.domain;
+        }
       }
 
       const _1p = filter.firstParty();
@@ -439,38 +464,65 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     return result;
   }
 
-  if (sliced.charCodeAt(0) === 45 /* - */) {
-    // line.startsWith('-') is not a valid domain
-    result[1] = ParseType.ErrorMessage;
-    result[0] = `[parse-filter E0001] (${white ? 'white' : 'black'}) invalid domain: ${JSON.stringify({
+  // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
+  // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
+  if (isProbablyIpv4(sliced) || isProbablyIpv6(sliced)) {
+    // TODO: we might want to implements reject ip in the future
+    result[0] = `[parse-filter E0002] (${white ? 'white' : 'black'}) ip: ${JSON.stringify({
       line, sliced, sliceStart, sliceEnd
     })}`;
+    result[1] = ParseType.ErrorMessage;
     return result;
   }
 
-  const suffix = tldts.getPublicSuffix(sliced, looseTldtsOpt);
-  if (!suffix) {
-    // This exclude domain-like resource like `_social_tracking.js^`
+  const parsed = tldts.parse(sliced, looseTldtsOpt);
+
+  /**
+   * We can exclude wildcard in TLD
+   *
+   * ||example.*
+   *
+   * We can also exclude URL path pattern like this, since TLD and file extension don't overlapped
+   *
+   * -ad.css
+   * -ad.js
+   *
+   * This also exclude non standard TLD like `.tor`, `.onion`, `.dn42`, etc.
+   */
+  if (!parsed.publicSuffix || !parsed.isIcann || !parsed.hostname || !parsed.domain) {
     result[1] = ParseType.Null;
     return result;
   }
 
-  const normalizer = white ? fastNormalizeDomain : fastNormalizeDomainWithoutWww;
-  const domain = normalizer(sliced);
-
-  if (domain) {
-    result[0] = domain;
-
+  // no wildcard, we can safely normalize it˝
+  if (!parsed.hostname.includes('*')) {
     if (white) {
+      result[0] = parsed.hostname;
       result[1] = includeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
-    } else {
-      result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+      return result;
     }
+
+    // blacklist, we can strip www from subdomain
+    if (parsed.subdomain) {
+      if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
+        result[0] = parsed.domain;
+        result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+        return result;
+      }
+      if (parsed.subdomain.startsWith('www.')) {
+        result[0] = parsed.subdomain.slice(4) + '.' + parsed.domain;
+        result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+        return result;
+      }
+    }
+
+    result[0] = parsed.hostname;
+    result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
     return result;
   }
 
   result[0] = `[parse-filter E0010] (${white ? 'white' : 'black'}) invalid domain: ${JSON.stringify({
-    line, domain, suffix, sliced, sliceStart, sliceEnd
+    line, sliced, sliceStart, sliceEnd, parsed
   })}`;
   result[1] = ParseType.ErrorMessage;
   return result;
