@@ -28,7 +28,7 @@ export function processFilterRulesWithPreload(
 ) {
   const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
 
-  return (span: Span) => span.traceChildAsync<Record<'whiteDomains' | 'whiteDomainSuffixes' | 'blackDomains' | 'blackDomainSuffixes', string[]>>(`process filter rules: ${filterRulesUrl}`, async (span) => {
+  return (span: Span) => span.traceChildAsync<Record<'whiteDomains' | 'whiteDomainSuffixes' | 'blackDomains' | 'blackDomainSuffixes' | 'blackIPs', string[]>>(`process filter rules: ${filterRulesUrl}`, async (span) => {
     const filterRules = await span.traceChildPromise('download', downloadPromise);
 
     const whiteDomains = new Set<string>();
@@ -38,6 +38,8 @@ export function processFilterRulesWithPreload(
     const blackDomainSuffixes = new Set<string>();
 
     const warningMessages: string[] = [];
+
+    const blackIPs: string[] = [];
 
     const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', ParseType.NotParsed];
     /**
@@ -78,6 +80,9 @@ export function processFilterRulesWithPreload(
         case ParseType.ErrorMessage:
           warningMessages.push(hostname);
           break;
+        case ParseType.BlackIP:
+          blackIPs.push(hostname);
+          break;
         default:
           break;
       }
@@ -107,7 +112,8 @@ export function processFilterRulesWithPreload(
       whiteDomains: Array.from(whiteDomains),
       whiteDomainSuffixes: Array.from(whiteDomainSuffixes),
       blackDomains: Array.from(blackDomains),
-      blackDomainSuffixes: Array.from(blackDomainSuffixes)
+      blackDomainSuffixes: Array.from(blackDomainSuffixes),
+      blackIPs
     };
   });
 }

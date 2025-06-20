@@ -6,7 +6,7 @@ import { processHostsWithPreload } from './lib/parse-filter/hosts';
 import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA } from './constants/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, BOTNET_FILTER, BOGUS_NXDOMAIN_DNSMASQ } from './constants/reject-data-source';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
@@ -21,10 +21,14 @@ import { foundDebugDomain } from './lib/parse-filter/shared';
 import { AdGuardHomeOutput } from './lib/rules/domainset';
 import { getPhishingDomains } from './lib/get-phishing-domains';
 import type { MaybePromise } from './lib/misc';
+import { RulesetOutput } from './lib/rules/ruleset';
+import { fetchAssets } from './lib/fetch-assets';
+import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_extra.conf'));
 const readLocalRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
+const readLocalRejectIpListPromise = readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'ip/reject.conf'));
 
 const hostsDownloads = HOSTS.map(entry => processHostsWithPreload(...entry));
 const hostsExtraDownloads = HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry));
@@ -75,6 +79,36 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
     ]);
 
+  const rejectIPOutput = new RulesetOutput(span, 'reject', 'ip')
+    .withTitle('Sukka\'s Ruleset - Anti Bogus Domain')
+    .withDescription([
+      ...SHARED_DESCRIPTION,
+      '',
+      'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers, and botnet controller IPs.',
+      '',
+      'Data from:',
+      ' - https://github.com/felixonmars/dnsmasq-china-list',
+      ' - https://github.com/curbengh/botnet-filter',
+      ' - And other sources mentioned in /domainset/reject file'
+    ])
+    .bulkAddIPASN(AUGUST_ASN)
+    .bulkAddIPASN(HUIZE_ASN);
+
+  // Dedupe domainSets (no need to await this)
+  // Collect DOMAIN, DOMAIN-SUFFIX, and DOMAIN-KEYWORD from non_ip/reject.conf for deduplication
+  // DOMAIN-WILDCARD is not really useful for deduplication, it is only included in AdGuardHome output
+  // It is faster to add base than add others first then whitelist
+  rejectOutput.addFromRuleset(readLocalRejectRulesetPromise);
+  rejectExtraOutput.addFromRuleset(readLocalRejectRulesetPromise);
+
+  rejectOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+  rejectExtraOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+  rejectPhisingOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+
+  rejectExtraOutput.addFromDomainset(readLocalRejectExtraDomainsetPromise);
+
+  rejectIPOutput.addFromRuleset(readLocalRejectIpListPromise);
+
   const appendArrayToRejectOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectOutput.addFromDomainset(source);
   const appendArrayToRejectExtraOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectExtraOutput.addFromDomainset(source);
 
@@ -85,18 +119,6 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   await span
     .traceChild('download and process hosts / adblock filter rules')
     .traceAsyncFn((childSpan) => Promise.all([
-      // Dedupe domainSets
-      // Collect DOMAIN, DOMAIN-SUFFIX, and DOMAIN-KEYWORD from non_ip/reject.conf for deduplication
-      // DOMAIN-WILDCARD is not really useful for deduplication, it is only included in AdGuardHome output
-      // It is faster to add base than add others first then whitelist
-      rejectOutput.addFromRuleset(readLocalRejectRulesetPromise),
-      rejectExtraOutput.addFromRuleset(readLocalRejectRulesetPromise),
-
-      rejectOutput.addFromDomainset(readLocalRejectDomainsetPromise),
-      rejectExtraOutput.addFromDomainset(readLocalRejectDomainsetPromise),
-      rejectPhisingOutput.addFromDomainset(readLocalRejectDomainsetPromise),
-
-      rejectExtraOutput.addFromDomainset(readLocalRejectExtraDomainsetPromise),
 
       // Parse from remote hosts & domain lists
       hostsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
@@ -108,21 +130,23 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectPhisingOutput.addFromDomainset(getPhishingDomains(childSpan)),
 
       adguardFiltersDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
 
           rejectOutput.bulkAddDomain(blackDomains);
           rejectOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+          rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
         })
       ),
       adguardFiltersExtraDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
 
           rejectExtraOutput.bulkAddDomain(blackDomains);
           rejectExtraOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+          rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
         })
       ),
       adguardFiltersWhitelistsDownloads.map(
@@ -132,7 +156,27 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
         })
-      )
+      ),
+
+      span.traceChildAsync(
+        'get botnet ips',
+        () => fetchAssets(...BOTNET_FILTER, true, true)
+      ).then(arr => rejectIPOutput.bulkAddAnyCIDR(arr, false)),
+      span.traceChildAsync(
+        'get bogus nxdomain ips',
+        () => fetchAssets(...BOGUS_NXDOMAIN_DNSMASQ, true, false)
+          .then(arr => {
+            for (let i = 0, len = arr.length; i < len; i++) {
+              const line = arr[i];
+              if (line.startsWith('bogus-nxdomain=')) {
+                arr[i] = line.slice(15).trim();
+              }
+            }
+
+            return arr;
+          })
+        // bogus nxdomain needs to be blocked even after resolved
+      ).then(arr => rejectIPOutput.bulkAddAnyCIDR(arr, false))
     ].flat()));
 
   if (foundDebugDomain.value) {
@@ -143,7 +187,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   await Promise.all([
     rejectOutput.done(),
     rejectExtraOutput.done(),
-    rejectPhisingOutput.done()
+    rejectPhisingOutput.done(),
+    rejectIPOutput.done()
   ]);
 
   // whitelist
@@ -161,7 +206,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   await Promise.all([
     rejectOutput.write(),
     rejectExtraOutput.write(),
-    rejectPhisingOutput.write()
+    rejectPhisingOutput.write(),
+    rejectIPOutput.write()
   ]);
 
   // we are going to re-use rejectOutput's domainTrie and mutate it

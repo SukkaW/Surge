@@ -1,6 +1,7 @@
 import type { Span } from '../../trace';
 import { HostnameSmolTrie } from '../trie';
 import { not, nullthrow } from 'foxts/guard';
+import { fastIpVersion } from '../misc';
 import type { MaybePromise } from '../misc';
 import type { BaseWriteStrategy } from '../writing-strategy/base';
 import { merge as mergeCidr } from 'fast-cidr-tools';
@@ -224,6 +225,27 @@ export class FileOutput {
     }
     return ip + '/128';
   };
+
+  bulkAddAnyCIDR(cidrs: string[], noResolve = false) {
+    const list4 = noResolve ? this.ipcidrNoResolve : this.ipcidr;
+    const list6 = noResolve ? this.ipcidr6NoResolve : this.ipcidr6;
+
+    for (let i = 0, len = cidrs.length; i < len; i++) {
+      let cidr = cidrs[i];
+      const version = fastIpVersion(cidr);
+      if (version === 0) {
+        continue; // skip invalid IPs
+      }
+      cidr = FileOutput.ipToCidr(cidr, version);
+
+      if (version === 4) {
+        list4.add(cidr);
+      } else /* if (version === 6) */ {
+        list6.add(cidr);
+      }
+    }
+    return this;
+  }
 
   bulkAddCIDR4(cidrs: string[]) {
     for (let i = 0, len = cidrs.length; i < len; i++) {

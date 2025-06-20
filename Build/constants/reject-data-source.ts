@@ -562,3 +562,19 @@ export const PREDEFINED_WHITELIST = [
   'hbbtv.redbutton.de',
   'hbbtv.kika.de'
 ];
+
+export const BOTNET_FILTER = [
+  'https://malware-filter.pages.dev/botnet-filter-dnscrypt-blocked-ips.txt',
+  [
+    'https://botnet-filter.pages.dev/botnet-filter-dnscrypt-blocked-ips.txt',
+    'https://malware-filter.gitlab.io/malware-filter/botnet-filter-dnscrypt-blocked-ips.txt',
+    'https://malware-filter.gitlab.io/botnet-filter/botnet-filter-dnscrypt-blocked-ips.txt'
+    // 'https://curbengh.github.io/botnet-filter/botnet-filter-dnscrypt-blocked-ips.txt',
+    // https://curbengh.github.io/malware-filter/botnet-filter-dnscrypt-blocked-ips.txt
+  ]
+] as const;
+
+export const BOGUS_NXDOMAIN_DNSMASQ = [
+  'https://cdn.jsdelivr.net/gh/felixonmars/dnsmasq-china-list@master/bogus-nxdomain.china.conf',
+  ['https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf']
+] as const;
