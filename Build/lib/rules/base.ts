@@ -353,6 +353,7 @@ export class FileOutput {
     }
 
     const strategiesLen = this.strategies.length;
+
     this.domainTrie.dumpWithoutDot((domain, includeAllSubdomain) => {
       if (kwfilter(domain)) {
         return;
@@ -374,6 +375,17 @@ export class FileOutput {
     const whiteKwfilter = createKeywordFilter(Array.from(this.whitelistKeywords));
     const whitelistedKeywords = Array.from(this.domainKeywords).filter(kw => !whiteKwfilter(kw));
 
+    for (let i = 0; i < strategiesLen; i++) {
+      const strategy = this.strategies[i];
+      if (whitelistedKeywords.length) {
+        strategy.writeDomainKeywords(this.domainKeywords);
+      }
+
+      if (this.protocol.size) {
+        strategy.writeProtocols(this.protocol);
+      }
+    }
+
     this.wildcardTrie.dumpWithoutDot((wildcard) => {
       if (kwfilter(wildcard)) {
         return;
@@ -385,15 +397,11 @@ export class FileOutput {
       }
     });
 
+    const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
+
     for (let i = 0; i < strategiesLen; i++) {
       const strategy = this.strategies[i];
-      if (whitelistedKeywords.length) {
-        strategy.writeDomainKeywords(this.domainKeywords);
-      }
 
-      if (this.protocol.size) {
-        strategy.writeProtocols(this.protocol);
-      }
       if (this.userAgent.size) {
         strategy.writeUserAgents(this.userAgent);
       }
@@ -403,17 +411,11 @@ export class FileOutput {
       if (this.processPath.size) {
         strategy.writeProcessPaths(this.processPath);
       }
-    }
 
-    if (this.sourceIpOrCidr.size) {
-      const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
-      for (let i = 0, len = this.strategies.length; i < len; i++) {
-        this.strategies[i].writeSourceIpCidrs(sourceIpOrCidr);
+      if (this.sourceIpOrCidr.size) {
+        strategy.writeSourceIpCidrs(sourceIpOrCidr);
       }
-    }
 
-    for (let i = 0, len = this.strategies.length; i < len; i++) {
-      const strategy = this.strategies[i];
       if (this.sourcePort.size) {
         strategy.writeSourcePorts(this.sourcePort);
       }
@@ -446,13 +448,13 @@ export class FileOutput {
       ipcidr6NoResolve = Array.from(this.ipcidr6NoResolve);
     }
 
-    for (let i = 0, len = this.strategies.length; i < len; i++) {
+    for (let i = 0; i < strategiesLen; i++) {
       const strategy = this.strategies[i];
       // no-resolve
-      if (ipcidrNoResolve?.length) {
+      if (ipcidrNoResolve) {
         strategy.writeIpCidrs(ipcidrNoResolve, true);
       }
-      if (ipcidr6NoResolve?.length) {
+      if (ipcidr6NoResolve) {
         strategy.writeIpCidr6s(ipcidr6NoResolve, true);
       }
       if (this.ipasnNoResolve.size) {
