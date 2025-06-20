@@ -16,8 +16,8 @@ import runAgainstSourceFile from './lib/run-against-source-file';
 
     map.set(
       apexDomain,
-      rejectDomainCountMap.has(apexDomain)
-        ? rejectDomainCountMap.get(apexDomain)! + 1
+      map.has(apexDomain)
+        ? map.get(apexDomain)! + 1
         : 1
     );
   };
