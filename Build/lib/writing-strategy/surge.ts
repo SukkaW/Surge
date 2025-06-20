@@ -33,7 +33,7 @@ export class SurgeDomainSet extends BaseWriteStrategy {
   }
 
   writeDomainKeywords = noop;
-  writeDomainWildcards = noop;
+  writeDomainWildcard = noop;
   writeUserAgents = noop;
   writeProcessNames = noop;
   writeProcessPaths = noop;
@@ -78,8 +78,8 @@ export class SurgeRuleSet extends BaseWriteStrategy {
     appendSetElementsToArray(this.result, keyword, i => `DOMAIN-KEYWORD,${i}`);
   }
 
-  writeDomainWildcards(wildcard: Set<string>): void {
-    appendSetElementsToArray(this.result, wildcard, i => `DOMAIN-WILDCARD,${i}`);
+  writeDomainWildcard(wildcard: string): void {
+    this.result.push(`DOMAIN-WILDCARD,${wildcard}`);
   }
 
   writeUserAgents(userAgent: Set<string>): void {
@@ -176,7 +176,7 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
   writeDomainSuffix = noop;
 
   writeDomainKeywords = noop;
-  writeDomainWildcards = noop;
+  writeDomainWildcard = noop;
   writeUserAgents = noop;
   writeProcessNames = noop;
   writeProcessPaths = noop;

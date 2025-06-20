@@ -71,11 +71,9 @@ export class SingboxSource extends BaseWriteStrategy {
     );
   }
 
-  writeDomainWildcards(wildcard: Set<string>): void {
-    appendArrayInPlace(
-      this.singbox.domain_regex ??= [],
-      Array.from(wildcard, SingboxSource.domainWildCardToRegex)
-    );
+  writeDomainWildcard(wildcard: string): void {
+    this.singbox.domain_regex ??= [];
+    this.singbox.domain_regex.push(SingboxSource.domainWildCardToRegex(wildcard));
   }
 
   writeUserAgents = noop;

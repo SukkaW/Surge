@@ -30,7 +30,7 @@ export abstract class BaseWriteStrategy {
   abstract writeDomain(domain: string): void;
   abstract writeDomainSuffix(domain: string): void;
   abstract writeDomainKeywords(keyword: Set<string>): void;
-  abstract writeDomainWildcards(wildcard: Set<string>): void;
+  abstract writeDomainWildcard(wildcard: string): void;
   abstract writeUserAgents(userAgent: Set<string>): void;
   abstract writeProcessNames(processName: Set<string>): void;
   abstract writeProcessPaths(processPath: Set<string>): void;

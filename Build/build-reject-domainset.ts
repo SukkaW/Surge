@@ -50,11 +50,11 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
   ];
 
-  const rejectOutput = new DomainsetOutput(span, 'reject')
+  const rejectDomainsetOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
     .withDescription(rejectBaseDescription);
 
-  const rejectExtraOutput = new DomainsetOutput(span, 'reject_extra')
+  const rejectExtraDomainsetOutput = new DomainsetOutput(span, 'reject_extra')
     .withTitle('Sukka\'s Ruleset - Reject Extra')
     .withDescription([
       ...SHARED_DESCRIPTION,
@@ -67,7 +67,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       ...ADGUARD_FILTERS_EXTRA.map(filter => ` - ${filter[0]}`)
     ]);
 
-  const rejectPhisingOutput = new DomainsetOutput(span, 'reject_phishing')
+  const rejectPhisingDomainsetOutput = new DomainsetOutput(span, 'reject_phishing')
     .withTitle('Sukka\'s Ruleset - Reject Phishing')
     .withDescription([
       ...SHARED_DESCRIPTION,
@@ -77,6 +77,16 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       'Build from:',
       ...PHISHING_HOSTS_EXTRA.map(host => ` - ${host[0]}`),
       ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
+    ]);
+
+  const rejectNonIpRulesetOutput = new RulesetOutput(span, 'reject', 'non_ip')
+    .withTitle('Sukka\'s Ruleset - Reject Non-IP')
+    .withDescription([
+      ...SHARED_DESCRIPTION,
+      '',
+      'The ruleset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
+      '',
+      'The file contains wildcard domains from data source mentioned in /domainset/reject file'
     ]);
 
   const rejectIPOutput = new RulesetOutput(span, 'reject', 'ip')
@@ -98,22 +108,25 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   // Collect DOMAIN, DOMAIN-SUFFIX, and DOMAIN-KEYWORD from non_ip/reject.conf for deduplication
   // DOMAIN-WILDCARD is not really useful for deduplication, it is only included in AdGuardHome output
   // It is faster to add base than add others first then whitelist
-  rejectOutput.addFromRuleset(readLocalRejectRulesetPromise);
-  rejectExtraOutput.addFromRuleset(readLocalRejectRulesetPromise);
+  rejectDomainsetOutput.addFromRuleset(readLocalRejectRulesetPromise);
+  rejectExtraDomainsetOutput.addFromRuleset(readLocalRejectRulesetPromise);
 
-  rejectOutput.addFromDomainset(readLocalRejectDomainsetPromise);
-  rejectExtraOutput.addFromDomainset(readLocalRejectDomainsetPromise);
-  rejectPhisingOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+  rejectNonIpRulesetOutput.addFromRuleset(readLocalRejectRulesetPromise);
 
-  rejectExtraOutput.addFromDomainset(readLocalRejectExtraDomainsetPromise);
+  rejectDomainsetOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+  rejectExtraDomainsetOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+  rejectPhisingDomainsetOutput.addFromDomainset(readLocalRejectDomainsetPromise);
+
+  rejectExtraDomainsetOutput.addFromDomainset(readLocalRejectExtraDomainsetPromise);
 
   rejectIPOutput.addFromRuleset(readLocalRejectIpListPromise);
 
-  const appendArrayToRejectOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectOutput.addFromDomainset(source);
-  const appendArrayToRejectExtraOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectExtraOutput.addFromDomainset(source);
+  const appendArrayToRejectOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectDomainsetOutput.addFromDomainset(source);
+  const appendArrayToRejectExtraOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectExtraDomainsetOutput.addFromDomainset(source);
 
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
+  const filterRuleWhiteKeywords = new Set<string>();
 
   // Parse from AdGuard Filters
   await span
@@ -127,34 +140,49 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
       domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
-      rejectPhisingOutput.addFromDomainset(getPhishingDomains(childSpan)),
+      rejectPhisingDomainsetOutput.addFromDomainset(getPhishingDomains(childSpan)),
 
       adguardFiltersDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs }) => {
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs, blackWildcard, whiteKeyword, blackKeyword }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
 
-          rejectOutput.bulkAddDomain(blackDomains);
-          rejectOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+          addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+
+          rejectDomainsetOutput.bulkAddDomain(blackDomains);
+          rejectDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+
+          rejectDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
+
+          rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
+
           rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
         })
       ),
       adguardFiltersExtraDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs }) => {
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs, blackWildcard, whiteKeyword, blackKeyword }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+          addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
 
-          rejectExtraOutput.bulkAddDomain(blackDomains);
-          rejectExtraOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+          rejectExtraDomainsetOutput.bulkAddDomain(blackDomains);
+          rejectExtraDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+
+          rejectExtraDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
+
           rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
+
+          rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
         })
       ),
       adguardFiltersWhitelistsDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes }) => {
+        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, whiteKeyword, blackKeyword }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
+          addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+          addArrayElementsToSet(filterRuleWhiteKeywords, blackKeyword);
         })
       ),
 
@@ -185,29 +213,45 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   }
 
   await Promise.all([
-    rejectOutput.done(),
-    rejectExtraOutput.done(),
-    rejectPhisingOutput.done(),
-    rejectIPOutput.done()
+    rejectDomainsetOutput.done(),
+    rejectExtraDomainsetOutput.done(),
+    rejectPhisingDomainsetOutput.done(),
+    rejectIPOutput.done(),
+    rejectNonIpRulesetOutput.done()
   ]);
 
   // whitelist
   span.traceChildSync('whitelist', () => {
     for (const domain of filterRuleWhitelistDomainSets) {
-      rejectOutput.whitelistDomain(domain);
-      rejectExtraOutput.whitelistDomain(domain);
-      rejectPhisingOutput.whitelistDomain(domain);
+      rejectDomainsetOutput.whitelistDomain(domain);
+      rejectExtraDomainsetOutput.whitelistDomain(domain);
+      rejectPhisingDomainsetOutput.whitelistDomain(domain);
+      rejectNonIpRulesetOutput.whitelistDomain(domain);
     }
 
-    rejectOutput.domainTrie.dump(arg => rejectExtraOutput.whitelistDomain(arg));
-    rejectOutput.domainTrie.dump(arg => rejectPhisingOutput.whitelistDomain(arg));
+    // we use "whitelistKeyword" method, this will be used to create kwfilter internally
+    for (const keyword of filterRuleWhiteKeywords) {
+      rejectDomainsetOutput.whitelistKeyword(keyword);
+      rejectExtraDomainsetOutput.whitelistKeyword(keyword);
+      rejectPhisingDomainsetOutput.whitelistKeyword(keyword);
+      rejectNonIpRulesetOutput.whitelistKeyword(keyword);
+    }
+
+    rejectDomainsetOutput.domainTrie.dump(arg => {
+      rejectExtraDomainsetOutput.whitelistDomain(arg);
+      rejectPhisingDomainsetOutput.whitelistDomain(arg);
+
+      // e.g. .data.microsort.com can strip waston*.event.data.microsort.com
+      rejectNonIpRulesetOutput.wildcardTrie.whitelist(arg);
+    });
   });
 
   await Promise.all([
-    rejectOutput.write(),
-    rejectExtraOutput.write(),
-    rejectPhisingOutput.write(),
-    rejectIPOutput.write()
+    rejectDomainsetOutput.write(),
+    rejectExtraDomainsetOutput.write(),
+    rejectPhisingDomainsetOutput.write(),
+    rejectIPOutput.write(),
+    rejectNonIpRulesetOutput.write()
   ]);
 
   // we are going to re-use rejectOutput's domainTrie and mutate it
@@ -218,7 +262,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       'The AdGuardHome ruleset supports AD blocking, tracking protection, privacy protection, anti-mining'
     ]);
 
-  rejectOutputAdGuardHome.domainTrie = rejectOutput.domainTrie;
+  rejectOutputAdGuardHome.domainTrie = rejectDomainsetOutput.domainTrie;
 
   await rejectOutputAdGuardHome
     // .addFromRuleset(readLocalMyRejectRulesetPromise)

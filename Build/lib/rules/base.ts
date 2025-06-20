@@ -17,8 +17,12 @@ export class FileOutput {
   protected strategies: BaseWriteStrategy[] = [];
 
   public domainTrie = new HostnameSmolTrie(null);
+  public wildcardTrie: HostnameSmolTrie = new HostnameSmolTrie(null);
+
   protected domainKeywords = new Set<string>();
-  protected domainWildcard = new Set<string>();
+
+  private whitelistKeywords = new Set<string>();
+
   protected userAgent = new Set<string>();
   protected processName = new Set<string>();
   protected processPath = new Set<string>();
@@ -43,6 +47,12 @@ export class FileOutput {
 
   whitelistDomain = (domain: string) => {
     this.domainTrie.whitelist(domain);
+    this.wildcardTrie.whitelist(domain);
+    return this;
+  };
+
+  whitelistKeyword = (keyword: string) => {
+    this.whitelistKeywords.add(keyword);
     return this;
   };
 
@@ -112,6 +122,20 @@ export class FileOutput {
     return this;
   }
 
+  bulkAddDomainKeyword(keywords: string[]) {
+    for (let i = 0, len = keywords.length; i < len; i++) {
+      this.domainKeywords.add(keywords[i]);
+    }
+    return this;
+  }
+
+  bulkAddDomainWildcard(domains: string[]) {
+    for (let i = 0, len = domains.length; i < len; i++) {
+      this.wildcardTrie.add(domains[i]);
+    }
+    return this;
+  }
+
   addIPASN(asn: string) {
     this.ipasn.add(asn);
     return this;
@@ -161,7 +185,7 @@ export class FileOutput {
           this.addDomainKeyword(value);
           break;
         case 'DOMAIN-WILDCARD':
-          this.domainWildcard.add(value);
+          this.wildcardTrie.add(value);
           break;
         case 'USER-AGENT':
           this.userAgent.add(value);
@@ -318,7 +342,11 @@ export class FileOutput {
 
     this.strategiesWritten = true;
 
-    const kwfilter = createKeywordFilter(Array.from(this.domainKeywords));
+    // We use both DOMAIN-KEYWORD and whitelisted keyword to whitelist DOMAIN and DOMAIN-SUFFIX
+    const kwfilter = createKeywordFilter(
+      Array.from(this.domainKeywords)
+        .concat(Array.from(this.whitelistKeywords))
+    );
 
     if (this.strategies.filter(not(false)).length === 0) {
       throw new Error('No strategies to write ' + this.id);
@@ -330,6 +358,8 @@ export class FileOutput {
         return;
       }
 
+      this.wildcardTrie.whitelist(domain, includeAllSubdomain);
+
       for (let i = 0; i < strategiesLen; i++) {
         const strategy = this.strategies[i];
         if (includeAllSubdomain) {
@@ -340,14 +370,27 @@ export class FileOutput {
       }
     }, true);
 
-    for (let i = 0, len = this.strategies.length; i < len; i++) {
+    // Now, we whitelisted out DOMAIN-KEYWORD
+    const whiteKwfilter = createKeywordFilter(Array.from(this.whitelistKeywords));
+    const whitelistedKeywords = Array.from(this.domainKeywords).filter(kw => !whiteKwfilter(kw));
+
+    this.wildcardTrie.dumpWithoutDot((wildcard) => {
+      if (kwfilter(wildcard)) {
+        return;
+      }
+
+      for (let i = 0; i < strategiesLen; i++) {
+        const strategy = this.strategies[i];
+        strategy.writeDomainWildcard(wildcard);
+      }
+    });
+
+    for (let i = 0; i < strategiesLen; i++) {
       const strategy = this.strategies[i];
-      if (this.domainKeywords.size) {
+      if (whitelistedKeywords.length) {
         strategy.writeDomainKeywords(this.domainKeywords);
       }
-      if (this.domainWildcard.size) {
-        strategy.writeDomainWildcards(this.domainWildcard);
-      }
+
       if (this.protocol.size) {
         strategy.writeProtocols(this.protocol);
       }

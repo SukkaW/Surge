@@ -30,7 +30,7 @@ export class ClashDomainSet extends BaseWriteStrategy {
   }
 
   writeDomainKeywords = noop;
-  writeDomainWildcards = noop;
+  writeDomainWildcard = noop;
   writeUserAgents = noop;
   writeProcessNames = noop;
   writeProcessPaths = noop;
@@ -64,7 +64,7 @@ export class ClashIPSet extends BaseWriteStrategy {
   writeDomain = notSupported('writeDomain');
   writeDomainSuffix = notSupported('writeDomainSuffix');
   writeDomainKeywords = notSupported('writeDomainKeywords');
-  writeDomainWildcards = notSupported('writeDomainWildcards');
+  writeDomainWildcard = notSupported('writeDomainWildcards');
   writeUserAgents = notSupported('writeUserAgents');
   writeProcessNames = notSupported('writeProcessNames');
   writeProcessPaths = notSupported('writeProcessPaths');
@@ -111,8 +111,8 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
     appendSetElementsToArray(this.result, keyword, i => `DOMAIN-KEYWORD,${i}`);
   }
 
-  writeDomainWildcards(wildcard: Set<string>): void {
-    appendSetElementsToArray(this.result, wildcard, i => `DOMAIN-REGEX,${ClashClassicRuleSet.domainWildCardToRegex(i)}`);
+  writeDomainWildcard(wildcard: string): void {
+    this.result.push(`DOMAIN-REGEX,${ClashClassicRuleSet.domainWildCardToRegex(wildcard)}`);
   }
 
   writeUserAgents = noop;

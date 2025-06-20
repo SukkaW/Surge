@@ -12,7 +12,7 @@ export class SurfboardRuleSet extends SurgeRuleSet {
     super(type, outputDir);
   }
 
-  override writeDomainWildcards = noop;
+  override writeDomainWildcard = noop;
   override writeUserAgents = noop;
   override writeUrlRegexes = noop;
   override writeIpAsns = noop;

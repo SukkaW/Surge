@@ -14,6 +14,6 @@ export class LegacyClashPremiumClassicRuleSet extends ClashClassicRuleSet {
     super(type, outputDir);
   }
 
-  override writeDomainWildcards = noop;
+  override writeDomainWildcard = noop;
   override writeIpAsns = noop;
 }

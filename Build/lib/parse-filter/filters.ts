@@ -15,6 +15,9 @@ const enum ParseType {
   BlackIncludeSubdomain = 2,
   ErrorMessage = 10,
   BlackIP = 20,
+  BlackWildcard = 30,
+  BlackKeyword = 40,
+  WhiteKeyword = 50,
   Null = 1000,
   NotParsed = 2000
 }
@@ -28,7 +31,19 @@ export function processFilterRulesWithPreload(
 ) {
   const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
 
-  return (span: Span) => span.traceChildAsync<Record<'whiteDomains' | 'whiteDomainSuffixes' | 'blackDomains' | 'blackDomainSuffixes' | 'blackIPs', string[]>>(`process filter rules: ${filterRulesUrl}`, async (span) => {
+  return (span: Span) => span.traceChildAsync<
+    Record<
+      'whiteDomains'
+      | 'whiteDomainSuffixes'
+      | 'blackDomains'
+      | 'blackDomainSuffixes'
+      | 'blackIPs'
+      | 'blackWildcard'
+      | 'whiteKeyword'
+      | 'blackKeyword',
+      string[]
+    >
+  >(`process filter rules: ${filterRulesUrl}`, async (span) => {
     const filterRules = await span.traceChildPromise('download', downloadPromise);
 
     const whiteDomains = new Set<string>();
@@ -40,6 +55,10 @@ export function processFilterRulesWithPreload(
     const warningMessages: string[] = [];
 
     const blackIPs: string[] = [];
+    const blackWildcard = new Set<string>();
+
+    const whiteKeyword = new Set<string>();
+    const blackKeyword = new Set<string>();
 
     const MUTABLE_PARSE_LINE_RESULT: [string, ParseType] = ['', ParseType.NotParsed];
     /**
@@ -83,6 +102,15 @@ export function processFilterRulesWithPreload(
         case ParseType.BlackIP:
           blackIPs.push(hostname);
           break;
+        case ParseType.BlackWildcard:
+          blackWildcard.add(hostname);
+          break;
+        case ParseType.BlackKeyword:
+          blackKeyword.add(hostname);
+          break;
+        case ParseType.WhiteKeyword:
+          whiteKeyword.add(hostname);
+          break;
         default:
           break;
       }
@@ -113,7 +141,10 @@ export function processFilterRulesWithPreload(
       whiteDomainSuffixes: Array.from(whiteDomainSuffixes),
       blackDomains: Array.from(blackDomains),
       blackDomainSuffixes: Array.from(blackDomainSuffixes),
-      blackIPs
+      blackIPs,
+      blackWildcard: Array.from(blackWildcard),
+      whiteKeyword: Array.from(whiteKeyword),
+      blackKeyword: Array.from(blackKeyword)
     };
   });
 }
@@ -482,6 +513,7 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
   }
 
   const parsed = tldts.parse(sliced, looseTldtsOpt);
+  const hostname = parsed.hostname;
 
   /**
    * We can exclude wildcard in TLD
@@ -495,15 +527,21 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
    *
    * This also exclude non standard TLD like `.tor`, `.onion`, `.dn42`, etc.
    */
-  if (!parsed.publicSuffix || !parsed.isIcann || !parsed.hostname || !parsed.domain) {
+  if (!parsed.publicSuffix || !parsed.isIcann || !hostname || !parsed.domain) {
     result[1] = ParseType.Null;
     return result;
   }
 
   // no wildcard, we can safely normalize it˝
-  if (!parsed.hostname.includes('*')) {
+  if (!hostname.includes('*')) {
+    if (hostname.charCodeAt(0) === 45) { // 45 `-`
+      result[0] = hostname;
+      result[1] = white ? ParseType.WhiteKeyword : ParseType.BlackKeyword;
+      return result;
+    }
+
     if (white) {
-      result[0] = parsed.hostname;
+      result[0] = hostname;
       result[1] = includeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
       return result;
     }
@@ -522,14 +560,46 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
       }
     }
 
-    result[0] = parsed.hostname;
+    result[0] = hostname;
     result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
     return result;
   }
 
-  result[0] = `[parse-filter E0010] (${white ? 'white' : 'black'}) invalid domain: ${JSON.stringify({
-    line, sliced, sliceStart, sliceEnd, parsed
-  })}`;
-  result[1] = ParseType.ErrorMessage;
+  // now we only have wildcard domain left
+  if (white) {
+    // we don't support wildcard in whitelist
+    // result[1] = ParseType.Null;
+    // return result;
+    result[0] = `[parse-filter E0021] wildcard whitelist not supported: ${JSON.stringify({
+      line, sliced, sliceStart, sliceEnd, parsed
+    })}`;
+    result[1] = ParseType.ErrorMessage;
+    return result;
+  }
+
+  for (let i = 0, len = hostname.length; i < len; i++) {
+    const char = hostname.charCodeAt(i);
+
+    if (
+      (char >= 97 && char <= 122) // 97-122 `a-z`
+      || char === 46 // 46 `.`
+      || char === 45 // 45 `-`
+      || (char >= 48 && char <= 57) // 48-57 `0-9`
+      || char === 42 // 42 `*`
+      || char === 95 // 95 `_`
+      // || (char >= 65 && char <= 90) // 65-90 `A-Z`
+    ) {
+      continue;
+    }
+
+    result[0] = `[parse-filter E0020] (black) invalid wildcard domain: ${JSON.stringify({
+      line, sliced, sliceStart, sliceEnd, parsed
+    })}`;
+    result[1] = ParseType.ErrorMessage;
+    return result;
+  }
+
+  result[0] = hostname;
+  result[1] = ParseType.BlackWildcard;
   return result;
 }
