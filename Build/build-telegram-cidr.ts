@@ -5,7 +5,7 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { once } from 'foxts/once';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { $$fetch } from './lib/fetch-retry';
-import { fastIpVersion } from './lib/misc';
+import { fastIpVersion } from 'foxts/fast-ip-version';
 
 export const getTelegramCIDRPromise = once(async () => {
   const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');

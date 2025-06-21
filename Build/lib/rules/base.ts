@@ -1,7 +1,7 @@
 import type { Span } from '../../trace';
 import { HostnameSmolTrie } from '../trie';
 import { not, nullthrow } from 'foxts/guard';
-import { fastIpVersion } from '../misc';
+import { fastIpVersion } from 'foxts/fast-ip-version';
 import type { MaybePromise } from '../misc';
 import type { BaseWriteStrategy } from '../writing-strategy/base';
 import { merge as mergeCidr } from 'fast-cidr-tools';

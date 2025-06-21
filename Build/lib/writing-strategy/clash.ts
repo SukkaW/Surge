@@ -1,7 +1,8 @@
 import { appendSetElementsToArray } from 'foxts/append-set-elements-to-array';
 import { BaseWriteStrategy } from './base';
 import { noop } from 'foxts/noop';
-import { fastIpVersion, notSupported, withBannerArray } from '../misc';
+import { notSupported, withBannerArray } from '../misc';
+import { fastIpVersion } from 'foxts/fast-ip-version';
 import { OUTPUT_CLASH_DIR } from '../../constants/dir';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { MARKER_DOMAIN } from '../../constants/description';
