@@ -189,7 +189,13 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       span.traceChildAsync(
         'get botnet ips',
         () => fetchAssets(...BOTNET_FILTER, true, true)
-      ).then(arr => rejectIPOutput.bulkAddAnyCIDR(arr, false)),
+      ).then(arr => {
+        if (arr.length > 2000) {
+          throw new Error('Too many botnet ips, please check the source of BOTNET_FILTER');
+        }
+        return rejectIPOutput.bulkAddAnyCIDR(arr, false);
+      }),
+
       span.traceChildAsync(
         'get bogus nxdomain ips',
         () => fetchAssets(...BOGUS_NXDOMAIN_DNSMASQ, true, false)
@@ -197,18 +203,21 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
             for (let i = 0, len = arr.length; i < len; i++) {
               const line = arr[i];
               if (line.startsWith('bogus-nxdomain=')) {
-                arr[i] = line.slice(15).trim();
+                // bogus nxdomain needs to be blocked even after resolved
+                rejectIPOutput.addAnyCIDR(
+                  line.slice(15).trim(),
+                  false
+                );
               }
             }
 
             return arr;
           })
-        // bogus nxdomain needs to be blocked even after resolved
-      ).then(arr => rejectIPOutput.bulkAddAnyCIDR(arr, false))
+      )
     ].flat()));
 
   if (foundDebugDomain.value) {
-    // eslint-disable-next-line sukka/unicorn/no-process-exit -- cli App
+  // eslint-disable-next-line sukka/unicorn/no-process-exit -- cli App
     process.exit(1);
   }
 
@@ -227,8 +236,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectExtraDomainsetOutput.whitelistDomain(domain);
       rejectPhisingDomainsetOutput.whitelistDomain(domain);
 
-      // DON'T Whitelist reject non_ip ruleset, we are force blocking thingshere
-      // rejectNonIpRulesetOutput.whitelistDomain(domain);
+    // DON'T Whitelist reject non_ip ruleset, we are force blocking thingshere
+    // rejectNonIpRulesetOutput.whitelistDomain(domain);
     }
 
     // we use "whitelistKeyword" method, this will be used to create kwfilter internally
@@ -267,7 +276,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   rejectOutputAdGuardHome.domainTrie = rejectDomainsetOutput.domainTrie;
 
   await rejectOutputAdGuardHome
-    // .addFromRuleset(readLocalMyRejectRulesetPromise)
+  // .addFromRuleset(readLocalMyRejectRulesetPromise)
     .addFromRuleset(readLocalRejectRulesetPromise)
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-drop.conf')))
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-no-drop.conf')))

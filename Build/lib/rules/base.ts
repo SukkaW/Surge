@@ -250,6 +250,21 @@ export class FileOutput {
     return ip + '/128';
   };
 
+  addAnyCIDR(cidr: string, noResolve = false) {
+    const version = fastIpVersion(cidr);
+    if (version === 0) return this;
+
+    let list: Set<string>;
+    if (version === 4) {
+      list = noResolve ? this.ipcidrNoResolve : this.ipcidr;
+    } else /* if (version === 6) */ {
+      list = noResolve ? this.ipcidr6NoResolve : this.ipcidr6;
+    }
+
+    list.add(FileOutput.ipToCidr(cidr, version));
+    return this;
+  }
+
   bulkAddAnyCIDR(cidrs: string[], noResolve = false) {
     const list4 = noResolve ? this.ipcidrNoResolve : this.ipcidr;
     const list6 = noResolve ? this.ipcidr6NoResolve : this.ipcidr6;
