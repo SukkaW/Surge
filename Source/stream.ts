@@ -134,6 +134,7 @@ const BBC: StreamService = {
     'DOMAIN-SUFFIX,tvlicensing.co.uk',
     'DOMAIN-KEYWORD,bbcfmt',
     'DOMAIN-KEYWORD,uk-live',
+    'DOMAIN,bbc.mp-pxcdn.com', // CloudFront country blocking https://t.me/SURGEPRO/2669346
 
     'DOMAIN-SUFFIX,bbc.co.uk',
     'DOMAIN-SUFFIX,bbci.co.uk',
