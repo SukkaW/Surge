@@ -264,82 +264,63 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     }
 
     if (
-      filter.hostname // filter.hasHostname() // must have
+      filter.hostname !== undefined // filter.hasHostname() // must have
       && filter.isPlain() // isPlain() === !isRegex()
-      && (!filter.isFullRegex())
+      // ghostry run some strict checks again invalid syntax and marked them as regex as well
+      // https://github.com/ghostery/adblocker/blob/bfffdce89e741e7aa010de3759b4b536b7c23430/packages/adblocker/src/filters/network.ts#L1103
+      // So instead we manually salvage them instead of relying on them
+      // && (!filter.isRegex())
+      // && (!filter.isFullRegex()) // pattern starts and ends with "/", we can't parse this
     ) {
-      const white = filter.isException() || filter.isBadFilter();
-
-      // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
-      // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
-      if (isProbablyIpv4(filter.hostname) || isProbablyIpv6(filter.hostname)) {
-        if (white) {
-          // We do not support whitelist IP anyway.
-          result[1] = ParseType.Null;
-          return result;
-        }
-        result[0] = filter.hostname;
-        result[1] = ParseType.BlackIP;
-        return result;
-      }
-
-      const parsed = tldts.parse(filter.hostname, looseTldtsOpt);
-
-      /**
-       * We can exclude wildcard in TLD
-       *
-       * ||example.*
-       *
-       * This also exclude non standard TLD like `.tor`, `.onion`, `.dn42`, etc.
-       */
-      if (!parsed.publicSuffix || !parsed.isIcann || !parsed.hostname || !parsed.domain) {
-        result[1] = ParseType.Null;
-        return result;
-      }
-
-      //  |: filter.isHostnameAnchor(),
-      //  |: filter.isLeftAnchor(),
-      //  |https://: !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
-      const isIncludeAllSubDomain = filter.isHostnameAnchor();
-
-      let hostname = parsed.hostname;
-      if (white) {
-        result[0] = filter.hostname;
-        result[1] = isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
-        return result;
-      }
-
-      // we only strip www when it is blacklist
-      if (parsed.subdomain) {
-        if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
-          hostname = parsed.domain;
-        }
-        if (parsed.subdomain.startsWith('www.')) {
-          hostname = parsed.subdomain.slice(4) + '.' + parsed.domain;
-        }
-      }
-
       const _1p = filter.firstParty();
       const _3p = filter.thirdParty();
+      const white = filter.isException() || filter.isBadFilter();
 
-      if (_1p) { // first party is true
-        if (_3p) { // third party is also true
-          result[0] = hostname;
-          result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+      if (white) {
+        return onHostname(
+          filter.hostname,
+          white,
+          //  |: filter.isHostnameAnchor(),
+          //  |: filter.isLeftAnchor(),
+          //  |https://: !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
+          filter.isHostnameAnchor(),
+          line,
+          result
+        );
+      }
 
-          return result;
+      if (_3p) {
+        if (_1p || includeThirdParty) { // both first party and third party are true
+          // only then we run onHostname
+          return onHostname(
+            filter.hostname,
+            white,
+            //  |: filter.isHostnameAnchor(),
+            //  |: filter.isLeftAnchor(),
+            //  |https://: !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
+            filter.isHostnameAnchor(),
+            line,
+            result
+          );
         }
+
+        // only third party is true and w/o first party, there is no need to run onHostname anyway
         result[1] = ParseType.Null;
         return result;
       }
-      if (_3p) {
-        if (includeThirdParty) {
-          result[0] = hostname;
-          result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
-          return result;
-        }
-        result[1] = ParseType.Null;
-        return result;
+
+      // third party is already false
+      if (_1p) { // first part only
+        return onHostname(
+          filter.hostname,
+          white,
+          //  |: filter.isHostnameAnchor(),
+          //  |: filter.isLeftAnchor(),
+          //  |https://: !filter.isHostnameAnchor() && (filter.fromHttps() || filter.fromHttp())
+          filter.isHostnameAnchor(),
+          line,
+          result
+        );
       }
     }
   }
@@ -353,7 +334,7 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
   let sliceStart = 0;
   let sliceEnd = 0;
 
-  // After NetworkFilter.parse, it means the line can not be parsed by cliqz NetworkFilter
+  // After NetworkFilter.parse, it means the line can not be parsed by ghostry NetworkFilter
   // We now need to "salvage" the line as much as possible
 
   let white = false;
@@ -370,14 +351,10 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
 
   /**
    * Some "malformed" regex-based filters can not be parsed by NetworkFilter
-   * "$genericblock`" is also not supported by NetworkFilter, see:
-   *  https://github.com/ghostery/adblocker/blob/62caf7786ba10ef03beffecd8cd4eec111bcd5ec/packages/adblocker/test/parsing.test.ts#L950
    *
-   * `@@||cmechina.net^$genericblock`
    * `@@|ftp.bmp.ovh^|`
    * `@@|adsterra.com^|`
    * `@@.atlassian.net$document`
-   * `@@||ad.alimama.com^$genericblock`
    */
 
   switch (line.charCodeAt(sliceStart)) {
@@ -501,19 +478,33 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     return result;
   }
 
+  return onHostname(sliced, white, includeAllSubDomain, line, result);
+}
+
+function onHostname(
+  input: string,
+  white: boolean,
+  isIncludeAllSubDomain: boolean,
+  rawLine: string,
+  result: [string, ParseType]
+) {
   // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
-  // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
-  if (isProbablyIpv4(sliced) || isProbablyIpv6(sliced)) {
-    // TODO: we might want to implements reject ip in the future
-    result[0] = `[parse-filter E0002] (${white ? 'white' : 'black'}) ip: ${JSON.stringify({
-      line, sliced, sliceStart, sliceEnd
-    })}`;
-    result[1] = ParseType.ErrorMessage;
+  if (isProbablyIpv4(input) || isProbablyIpv6(input)) {
+    if (white) {
+      // We do not support whitelist IP anyway.
+      result[0] = `[parse-filter E0022] (white) no whitelist ip support: ${JSON.stringify({
+        input, rawLine
+      })}`;
+      result[1] = ParseType.ErrorMessage;
+      return result;
+    }
+    result[0] = input;
+    result[1] = ParseType.BlackIP;
     return result;
   }
+  // Now ip has been bailed out, we can safely set normalizeTldtsOpt.detectIp to false.
 
-  const parsed = tldts.parse(sliced, looseTldtsOpt);
-  const hostname = parsed.hostname;
+  const parsed = tldts.parse(input, looseTldtsOpt);
 
   /**
    * We can exclude wildcard in TLD
@@ -527,12 +518,14 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
    *
    * This also exclude non standard TLD like `.tor`, `.onion`, `.dn42`, etc.
    */
-  if (!parsed.publicSuffix || !parsed.isIcann || !hostname || !parsed.domain) {
+  if (!parsed.publicSuffix || !parsed.isIcann || !parsed.hostname || !parsed.domain) {
     result[1] = ParseType.Null;
     return result;
   }
 
-  // no wildcard, we can safely normalize it˝
+  let hostname = parsed.hostname;
+
+  // no wildcard, we can safely normalize it
   if (!hostname.includes('*')) {
     if (hostname.charCodeAt(0) === 45) { // 45 `-`
       result[0] = hostname;
@@ -542,26 +535,21 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
 
     if (white) {
       result[0] = hostname;
-      result[1] = includeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
+      result[1] = isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
       return result;
     }
 
-    // blacklist, we can strip www from subdomain
+    // we only strip www when it is blacklist
     if (parsed.subdomain) {
       if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
-        result[0] = parsed.domain;
-        result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
-        return result;
-      }
-      if (parsed.subdomain.startsWith('www.')) {
-        result[0] = parsed.subdomain.slice(4) + '.' + parsed.domain;
-        result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
-        return result;
+        hostname = parsed.domain;
+      } else if (parsed.subdomain.startsWith('www.')) {
+        hostname = parsed.subdomain.slice(4) + '.' + parsed.domain;
       }
     }
 
     result[0] = hostname;
-    result[1] = includeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+    result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
     return result;
   }
 
@@ -571,7 +559,7 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     // result[1] = ParseType.Null;
     // return result;
     result[0] = `[parse-filter E0021] wildcard whitelist not supported: ${JSON.stringify({
-      line, sliced, sliceStart, sliceEnd, parsed
+      input, rawLine, parsed
     })}`;
     result[1] = ParseType.ErrorMessage;
     return result;
@@ -593,10 +581,15 @@ export function parse($line: string, result: [string, ParseType], includeThirdPa
     }
 
     result[0] = `[parse-filter E0020] (black) invalid wildcard domain: ${JSON.stringify({
-      line, sliced, sliceStart, sliceEnd, parsed
+      input, rawLine, parsed
     })}`;
     result[1] = ParseType.ErrorMessage;
     return result;
+  }
+
+  if (hostname.charCodeAt(0) === 45) { // 45 `-`
+    // starts with - and also containing * wildcard
+    hostname = '*' + hostname;
   }
 
   result[0] = hostname;
