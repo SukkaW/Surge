@@ -410,7 +410,7 @@ export class FileOutput {
         const strategy = this.strategies[i];
         strategy.writeDomainWildcard(wildcard);
       }
-    });
+    }, true);
 
     const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
 
