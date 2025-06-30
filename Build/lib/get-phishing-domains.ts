@@ -1,17 +1,8 @@
 import Worktank from 'worktank';
 
-import { processHostsWithPreload } from './parse-filter/hosts';
-import { processDomainListsWithPreload } from './parse-filter/domainlists';
 import { dummySpan, printTraceResult } from '../trace';
 import type { Span } from '../trace';
-import { appendArrayInPlaceCurried } from 'foxts/append-array-in-place';
-import { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } from '../constants/reject-data-source';
 import type { TldTsParsed } from './normalize-domain';
-
-const downloads = [
-  ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
-  ...PHISHING_HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry))
-];
 
 const pool = new Worktank({
   name: 'process-phishing-domains',
@@ -22,8 +13,7 @@ const pool = new Worktank({
   env: {},
   methods: {
     // eslint-disable-next-line object-shorthand -- workertank
-    processPhihsingDomains: async function (
-      domainArr: string[],
+    getPhishingDomains: async function (
       importMetaUrl: string,
       /** require.main === module */ isDebug = false
     ): Promise<string[]> {
@@ -34,9 +24,28 @@ const pool = new Worktank({
       const picocolors = __require('picocolors') as typeof import('picocolors');
       const tldts = __require('tldts-experimental') as typeof import('tldts-experimental');
 
+      const { appendArrayInPlaceCurried } = __require('foxts/append-array-in-place') as typeof import('foxts/append-array-in-place');
+
       const { loosTldOptWithPrivateDomains } = __require('../constants/loose-tldts-opt') as typeof import('../constants/loose-tldts-opt');
       const { BLACK_TLD, WHITELIST_MAIN_DOMAINS, leathalKeywords, lowKeywords, sensitiveKeywords } = __require('../constants/phishing-score-source') as typeof import('../constants/phishing-score-source');
+      const { PHISHING_DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA } = __require('../constants/reject-data-source') as typeof import('../constants/reject-data-source');
+      const { dummySpan } = __require('../trace') as typeof import('../trace');
       const NullPrototypeObject = __require('null-prototype-object') as typeof import('null-prototype-object');
+
+      const { processHostsWithPreload } = __require('./parse-filter/hosts') as typeof import('./parse-filter/hosts');
+      const { processDomainListsWithPreload } = __require('./parse-filter/domainlists') as typeof import('./parse-filter/domainlists');
+
+      const downloads = [
+        ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
+        ...PHISHING_HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry))
+      ];
+
+      const domainArr: string[] = [];
+
+      const domainGroups = await Promise.all(downloads.map(task => task(dummySpan)));
+      domainGroups.forEach(appendArrayInPlaceCurried(domainArr));
+
+      // return domainArr;
 
       const domainCountMap = new Map<string, number>();
       const domainScoreMap: Record<string, number> = new NullPrototypeObject();
@@ -185,32 +194,20 @@ const pool = new Worktank({
 });
 
 export function getPhishingDomains(parentSpan: Span) {
-  return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => {
-    const domainArr = await span.traceChildAsync('download/parse/merge phishing domains', async (curSpan) => {
-      const domainArr: string[] = [];
-
-      const domainGroups = await Promise.all(downloads.map(task => task(curSpan)));
-      domainGroups.forEach(appendArrayInPlaceCurried(domainArr));
-
-      return domainArr;
-    });
-
-    return span.traceChildAsync(
-      'process phishing domain set',
-      async () => {
-        const phishingDomains = await pool.exec(
-          'processPhihsingDomains',
-          [
-            domainArr,
-            import.meta.url,
-            require.main === module
-          ]
-        );
-        pool.terminate();
-        return phishingDomains;
-      }
-    );
-  });
+  return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => span.traceChildAsync(
+    'process phishing domain set',
+    async () => {
+      const phishingDomains = await pool.exec(
+        'getPhishingDomains',
+        [
+          import.meta.url,
+          require.main === module
+        ]
+      );
+      pool.terminate();
+      return phishingDomains;
+    }
+  ));
 }
 
 if (require.main === module) {
