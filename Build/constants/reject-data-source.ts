@@ -77,9 +77,8 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   //   ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt'],
   //   true
   // ],
-  // DigitalSide Threat-Intel - OSINT Hub
-  // Update once per day
-  ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true],
+  // DigitalSide Threat-Intel - OSINT Hub -- Dead, server offline
+  // ['https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', [], true],
   // AdGuard CNAME Filter Combined
   // Update on a 7 days basis, so we can also use jsDelivr as primary URL
   [
