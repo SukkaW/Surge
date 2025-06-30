@@ -108,7 +108,8 @@ const REDIRECT_MIRROR_307 = [
   // Minecraft Wiki
   ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/'],
   ['minecraft.fandom.com/', 'https://minecraft.wiki/'],
-  ['missav.com/', 'https://missav.ws/']
+  ['missav.com/', 'https://missav.ai/'],
+  ['missav.ws/', 'https://missav.ai/']
 ];
 
 const REDIRECT_FAKEWEBSITES = [
