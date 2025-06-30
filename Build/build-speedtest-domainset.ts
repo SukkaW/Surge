@@ -9,6 +9,8 @@ import { DomainsetOutput } from './lib/rules/domainset';
 import { OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
 
+import { fastUri } from 'fast-uri';
+
 interface SpeedTestServer {
   url: string,
   lat: string,
@@ -27,7 +29,7 @@ interface SpeedTestServer {
 const getSpeedtestHostsGroupsPromise = $$fetch('https://speedtest-net-servers.cdn.skk.moe/servers.json')
   .then(res => res.json() as Promise<SpeedTestServer[]>)
   .then((data) => data.reduce<string[]>((prev, cur) => {
-    let hn: string | null = null;
+    let hn: string | null | undefined = null;
     if (cur.host) {
       hn = tldts.getHostname(cur.host, { detectIp: false, validateHostname: true });
       if (hn) {
@@ -35,7 +37,7 @@ const getSpeedtestHostsGroupsPromise = $$fetch('https://speedtest-net-servers.cd
       }
     }
     if (cur.url) {
-      hn = tldts.getHostname(cur.url, { detectIp: false, validateHostname: true });
+      hn = fastUri.parse(cur.url).host;
       if (hn) {
         prev.push(hn);
       }

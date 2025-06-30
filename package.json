@@ -31,6 +31,7 @@
     "dns2": "^2.1.0",
     "fast-cidr-tools": "^0.3.2",
     "fast-fifo": "^1.3.2",
+    "fast-uri": "^3.0.6",
     "fdir": "^6.4.6",
     "foxts": "^3.6.0",
     "hash-wasm": "^4.12.0",
