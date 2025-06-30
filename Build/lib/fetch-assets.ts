@@ -4,6 +4,7 @@ import { waitWithAbort } from 'foxts/wait';
 import { nullthrow } from 'foxts/guard';
 import { TextLineStream } from 'foxts/text-line-stream';
 import { ProcessLineStream } from './process-line';
+import { AdGuardFilterIgnoreUnsupportedLinesStream } from './parse-filter/filters';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 class CustomAbortError extends Error {
@@ -13,7 +14,10 @@ class CustomAbortError extends Error {
 
 const reusedCustomAbortError = new CustomAbortError();
 
-export async function fetchAssets(url: string, fallbackUrls: null | undefined | string[] | readonly string[], processLine = false, allowEmpty = false) {
+export async function fetchAssets(
+  url: string, fallbackUrls: null | undefined | string[] | readonly string[],
+  processLine = false, allowEmpty = false, filterAdGuardUnsupportedLines = false
+) {
   const controller = new AbortController();
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
@@ -35,6 +39,9 @@ export async function fetchAssets(url: string, fallbackUrls: null | undefined | 
     let stream = nullthrow(res.body, url + ' has an empty body').pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream({ skipEmptyLines: processLine }));
     if (processLine) {
       stream = stream.pipeThrough(new ProcessLineStream());
+    }
+    if (filterAdGuardUnsupportedLines) {
+      stream = stream.pipeThrough(new AdGuardFilterIgnoreUnsupportedLinesStream());
     }
     const arr = await Array.fromAsync(stream);
 

@@ -29,7 +29,10 @@ export function processFilterRulesWithPreload(
   fallbackUrls?: string[] | null,
   includeThirdParty = false
 ) {
-  const downloadPromise = fetchAssets(filterRulesUrl, fallbackUrls);
+  const downloadPromise = fetchAssets(
+    filterRulesUrl, fallbackUrls,
+    true, false, true
+  );
 
   return (span: Span) => span.traceChildAsync<
     Record<
@@ -192,47 +195,101 @@ const kwfilter = createKeywordFilter([
   '^popup'
 ]);
 
-export function parse($line: string, result: [string, ParseType], includeThirdParty: boolean): [hostname: string, flag: ParseType] {
-  if (
-    // doesn't include
-    !$line.includes('.') // rule with out dot can not be a domain
-    // includes
-    || kwfilter($line)
-    // note that this can only excludes $redirect but not $4-,redirect, so we still need to parse it
-    // this is only an early bail out
-  ) {
-    result[1] = ParseType.Null;
-    return result;
-  }
+/**
+ * The idea is that, TransformStream works kinda like a filter running on response. If we
+ * can filter lines before Array.fromAsync, we can create a smaller array, this saves memory
+ * and could improve performance.
+ */
+export class AdGuardFilterIgnoreUnsupportedLinesStream extends TransformStream<string, string> {
+  // private __buf = '';
+  constructor() {
+    super({
+      transform(line, controller) {
+        if (
+          // doesn't include
+          !line.includes('.') // rule with out dot can not be a domain
+          // includes
+          || kwfilter(line)
+          // note that this can only excludes $redirect but not $3p,redirect, so we still need to parse it
+          // this is only an early bail out
+        ) {
+          return;
+        }
 
-  const line = $line.trim();
+        line = line.trim();
 
-  if (line.length === 0) {
-    result[1] = ParseType.Null;
-    return result;
+        if (line.length === 0) {
+          return;
+        }
+
+        const firstCharCode = line.charCodeAt(0);
+        const lastCharCode = line.charCodeAt(line.length - 1);
+
+        if (
+          firstCharCode === 47 // 47 `/`
+          // ends with
+          // _160-600.
+          // -detect-adblock.
+          // _web-advert.
+          || lastCharCode === 46 // 46 `.`, line.endsWith('.')
+          || lastCharCode === 45 // 45 `-`, line.endsWith('-')
+          || lastCharCode === 95 // 95 `_`, line.endsWith('_')
+        ) {
+          return;
+        }
+
+        if ((line.includes('/') || line.includes(':')) && !line.includes('://')) {
+          return;
+        }
+
+        controller.enqueue(line);
+      }
+    });
   }
+}
+
+export function parse(line: string, result: [string, ParseType], includeThirdParty: boolean): [hostname: string, flag: ParseType] {
+  // We have already done this in AdGuardFilterIgnoreUnsupportedLinesStream
+
+  // if (
+  //   // doesn't include
+  //   !$line.includes('.') // rule with out dot can not be a domain
+  //   // includes
+  //   || kwfilter($line)
+  //   // note that this can only excludes $redirect but not $3p,redirect, so we still need to parse it
+  //   // this is only an early bail out
+  // ) {
+  //   result[1] = ParseType.Null;
+  //   return result;
+  // }
+
+  // const line = $line.trim();
+
+  // if (line.length === 0) {
+  //   result[1] = ParseType.Null;
+  //   return result;
+  // }
 
   const firstCharCode = line.charCodeAt(0);
-  const lastCharCode = line.charCodeAt(line.length - 1);
+  // const lastCharCode = line.charCodeAt(line.length - 1);
 
-  if (
-    firstCharCode === 47 // 47 `/`
-    // ends with
-    // _160-600.
-    // -detect-adblock.
-    // _web-advert.
-    || lastCharCode === 46 // 46 `.`, line.endsWith('.')
-    || lastCharCode === 45 // 45 `-`, line.endsWith('-')
-    || lastCharCode === 95 // 95 `_`, line.endsWith('_')
-  ) {
-    result[1] = ParseType.Null;
-    return result;
-  }
+  // if (
+  //   firstCharCode === 47 // 47 `/`
+  //   // ends with
+  //   // _160-600.
+  //   // -detect-adblock.
+  //   // _web-advert.
+  //   || lastCharCode === 46 // 46 `.`, line.endsWith('.')
+  //   || lastCharCode === 45 // 45 `-`, line.endsWith('-')
+  //   || lastCharCode === 95 // 95 `_`, line.endsWith('_')
+  // ) {
+  //   result[1] = ParseType.Null;
+  //   return result;
+  // }
 
-  if ((line.includes('/') || line.includes(':')) && !line.includes('://')) {
-    result[1] = ParseType.Null;
-    return result;
-  }
+  // if ((line.includes('/') || line.includes(':')) && !line.includes('://')) {
+  //   return;
+  // }
 
   const filter = NetworkFilter.parse(line, false);
   if (filter) {
