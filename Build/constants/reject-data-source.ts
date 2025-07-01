@@ -482,7 +482,7 @@ export const PREDEFINED_WHITELIST = [
   '.t.co', // pgl yoyo add t.co to the blacklist
   '.survicate.com', // AdGuardDNSFilter
   '.perfops.io', // AdGuardDNSFilter
-  '.d2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
+  'd2axgrpnciinw7.cloudfront.net', // ADGuardDNSFilter
   '.sb-cd.com', // AdGuard
   '.storage.yandexcloud.net', // phishing list
   '.login.microsoftonline.com', // phishing list
