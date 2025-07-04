@@ -278,6 +278,15 @@ const FOX_PLUS: StreamService = {
   ]
 };
 
+const FRIDAY: StreamService = {
+  name: 'friDay Video',
+  rules: [
+    'DOMAIN-SUFFIX,fetnet.net',
+    'DOMAIN-SUFFIX,friday.tw',
+    'DOMAIN-REGEX,^aka\d+p\.akamaized\.net'
+  ]
+};
+
 const HBO: StreamService = {
   name: 'HBO Go / HBO Now / HBO Max / Max',
   rules: [
@@ -800,7 +809,7 @@ export const ALL: StreamService[] = [
   DAZN, DEEZER, DISNEY_PLUS, DISCOVERY_PLUS, DMM,
   ENCORE_TVB,
   ENCORE_TVB_JP_TVER,
-  FOX_NOW, FOX_PLUS,
+  FOX_NOW, FOX_PLUS, FRIDAY,
   HBO, HBO_ASIA, HIMALAYA_FM, HULU, HWTV,
   IQIYI_GLOBAL, ITV,
   JOOX,
@@ -905,7 +914,8 @@ export const TW: StreamService[] = [
   // HamiVideo
   // CatchPlay
   HBO_ASIA,
-  BAHAMUT
+  BAHAMUT,
+  FRIDAY
   // elevensportstw
 ];
 
