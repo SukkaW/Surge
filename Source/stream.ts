@@ -282,7 +282,7 @@ const FRIDAY: StreamService = {
   name: 'friDay Video',
   rules: [
     'DOMAIN-SUFFIX,fetnet.net',
-    'DOMAIN-SUFFIX,friday.tw',
+    'DOMAIN-SUFFIX,video.friday.tw',
     'DOMAIN-REGEX,^aka\d+p\.akamaized\.net'
   ]
 };
