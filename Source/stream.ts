@@ -281,9 +281,7 @@ const FOX_PLUS: StreamService = {
 const FRIDAY: StreamService = {
   name: 'friDay Video',
   rules: [
-    'DOMAIN-SUFFIX,fetnet.net',
-    'DOMAIN-SUFFIX,friday.tw',
-    'DOMAIN-REGEX,^aka\d+p\.akamaized\.net'
+    'DOMAIN-SUFFIX,video.friday.tw'
   ]
 };
 
