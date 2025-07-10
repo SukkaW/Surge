@@ -36,7 +36,13 @@ export const HOSTS_EXTRA: HostsSource[] = [
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller
   [
     'https://proxy.cdn.skk.moe/https/someonewhocares.org/hosts/zero/hosts',
-    ['https://someonewhocares.org/hosts/zero/hosts'],
+    [
+      'https://someonewhocares.org/hosts/zero/hosts',
+      // 2025-07-10 Dan Pollock's website begin to randomly Cloudflare Challenge.
+      // enable non-zero hosts as fallbacks.
+      'https://someonewhocares.org/hosts/hosts',
+      'https://proxy.cdn.skk.moe/https/someonewhocares.org/hosts/hosts'
+    ],
     true
   ],
   // ad-wars is not actively maintained since 2023.11 due to Tencent's Legal Notice
