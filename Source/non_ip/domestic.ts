@@ -32,6 +32,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'alipan.com',
       'aliyundrive.com',
       'aliyundrive.net',
+      'alimama.com',
       'cainiao.com',
       'cainiao.com.cn',
       'cainiaoyizhan.com',
