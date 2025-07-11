@@ -555,6 +555,7 @@ export const PREDEFINED_WHITELIST = [
   '.expobarrio.com',
   '.hamdandates.com',
   '.amzone.co.jp',
+  '.xpanama.net',
 
   // Migrate from SmartTV-AGH List
   'mhc-ajax-eu.myhomescreen.tv',
