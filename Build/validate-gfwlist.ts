@@ -11,13 +11,52 @@ import runAgainstSourceFile from './lib/run-against-source-file';
 import { nullthrow } from 'foxts/guard';
 import { Buffer } from 'node:buffer';
 
-export async function parseGfwList() {
+export async function getTopOneMillionDomains() {
   const { parse: csvParser } = await import('csv-parse');
 
+  const topDomainTrie = new HostnameSmolTrie();
+  const csvParse = csvParser({ columns: false, skip_empty_lines: true });
+
+  const topDomainsZipBody = await (await $$fetch('https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip', {
+    headers: {
+      accept: '*/*',
+      'user-agent': 'curl/8.12.1'
+    }
+  })).arrayBuffer();
+  let entry: yauzl.Entry | null = null;
+  for await (const e of await yauzl.fromBuffer(Buffer.from(topDomainsZipBody))) {
+    if (e.filename === 'top-1m.csv') {
+      entry = e;
+      break;
+    }
+  }
+
+  const { promise, resolve, reject } = Promise.withResolvers<HostnameSmolTrie>();
+
+  const readable = await nullthrow(entry, 'top-1m.csv entry not found').openReadStream();
+  const parser = readable.pipe(csvParse);
+  parser.on('readable', () => {
+    let record;
+    while ((record = parser.read()) !== null) {
+      topDomainTrie.add(record[1]);
+    }
+  });
+
+  parser.on('end', () => {
+    resolve(topDomainTrie);
+  });
+  parser.on('error', (err) => {
+    reject(err);
+  });
+
+  return promise;
+}
+
+export async function parseGfwList() {
   const whiteSet = new Set<string>();
   const gfwListTrie = new HostnameSmolTrie();
 
-  const excludeGfwList = createKeywordFilter([
+  const gfwlistIgnoreLineKwfilter = createKeywordFilter([
     '.*',
     '*',
     '=',
@@ -31,7 +70,7 @@ export async function parseGfwList() {
     const line = processLine(l);
     if (!line) continue;
 
-    if (excludeGfwList(line)) {
+    if (gfwlistIgnoreLineKwfilter(line)) {
       continue;
     }
     if (line.startsWith('@@||')) {
@@ -71,42 +110,7 @@ export async function parseGfwList() {
     gfwListTrie.add(l);
   }
 
-  const topDomainTrie = new HostnameSmolTrie();
-
-  const csvParse = csvParser({ columns: false, skip_empty_lines: true });
-  const topDomainsZipBody = await (await $$fetch('https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip', {
-    headers: {
-      accept: '*/*',
-      'user-agent': 'curl/8.12.1'
-    }
-  })).arrayBuffer();
-  let entry: yauzl.Entry | null = null;
-  for await (const e of await yauzl.fromBuffer(Buffer.from(topDomainsZipBody))) {
-    if (e.filename === 'top-1m.csv') {
-      entry = e;
-      break;
-    }
-  }
-
-  const { promise, resolve, reject } = Promise.withResolvers<HostnameSmolTrie>();
-
-  const readable = await nullthrow(entry, 'top-1m.csv entry not found').openReadStream();
-  const parser = readable.pipe(csvParse);
-  parser.on('readable', () => {
-    let record;
-    while ((record = parser.read()) !== null) {
-      topDomainTrie.add(record[1]);
-    }
-  });
-
-  parser.on('end', () => {
-    resolve(topDomainTrie);
-  });
-  parser.on('error', (err) => {
-    reject(err);
-  });
-
-  await promise;
+  const topDomainTrie = await getTopOneMillionDomains();
 
   const keywordSet = new Set<string>();
 
@@ -116,18 +120,19 @@ export async function parseGfwList() {
   };
   await Promise.all([
     runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip/global.conf'), callback, 'ruleset', keywordSet),
-    runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/domestic.conf'), callback, 'ruleset', keywordSet),
+    // runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip/domestic.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip/reject.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip/telegram.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/ai.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/microsoft.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/apple_service.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'), callback, 'domainset')
   ]);
 
-  whiteSet.forEach(domain => gfwListTrie.whitelist(domain));
+  whiteSet.forEach(domain => gfwListTrie.whitelist(domain, true));
 
   const kwfilter = createKeywordFilter([...keywordSet]);
 
