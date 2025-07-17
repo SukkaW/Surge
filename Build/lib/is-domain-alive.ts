@@ -111,45 +111,54 @@ export async function isDomainAlive(
 
     // test 2 times before make sure record is empty
     const servers = pickRandom(dohServers, 2);
+    // TODO: increase limit when there is an error
     for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-      const aRecords = (await $resolve(domain, 'A', servers[i]));
-      if (aRecords.answers.length > 0) {
-        domainAliveMap.set(domain, true);
-        return true;
-      }
+      try {
+        // eslint-disable-next-line no-await-in-loop -- sequential
+        const aRecords = (await $resolve(domain, 'A', servers[i]));
+        if (aRecords.answers.length > 0) {
+          domainAliveMap.set(domain, true);
+          return true;
+        }
 
-      aDns.push(aRecords.dns);
+        aDns.push(aRecords.dns);
+      } catch {}
     }
     for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-      const aaaaRecords = (await $resolve(domain, 'AAAA', servers[i]));
-      if (aaaaRecords.answers.length > 0) {
-        domainAliveMap.set(domain, true);
-        return true;
-      }
+      try {
+        // eslint-disable-next-line no-await-in-loop -- sequential
+        const aaaaRecords = await $resolve(domain, 'AAAA', servers[i]);
+        if (aaaaRecords.answers.length > 0) {
+          domainAliveMap.set(domain, true);
+          return true;
+        }
 
-      aaaaDns.push(aaaaRecords.dns);
+        aaaaDns.push(aaaaRecords.dns);
+      } catch {}
     }
 
     // only then, let's test twice with domesticDohServers
     for (let i = 0; i < 2; i++) {
-    // eslint-disable-next-line no-await-in-loop -- sequential
-      const aRecords = (await $resolve(domain, 'A', pickOne(domesticDohServers)));
-      if (aRecords.answers.length > 0) {
-        domainAliveMap.set(domain, true);
-        return true;
-      }
-      aDns.push(aRecords.dns);
+      try {
+        // eslint-disable-next-line no-await-in-loop -- sequential
+        const aRecords = (await $resolve(domain, 'A', pickOne(domesticDohServers)));
+        if (aRecords.answers.length > 0) {
+          domainAliveMap.set(domain, true);
+          return true;
+        }
+        aDns.push(aRecords.dns);
+      } catch {}
     }
     for (let i = 0; i < 2; i++) {
+      try {
       // eslint-disable-next-line no-await-in-loop -- sequential
-      const aaaaRecords = (await $resolve(domain, 'AAAA', pickOne(domesticDohServers)));
-      if (aaaaRecords.answers.length > 0) {
-        domainAliveMap.set(domain, true);
-        return true;
-      }
-      aaaaDns.push(aaaaRecords.dns);
+        const aaaaRecords = (await $resolve(domain, 'AAAA', pickOne(domesticDohServers)));
+        if (aaaaRecords.answers.length > 0) {
+          domainAliveMap.set(domain, true);
+          return true;
+        }
+        aaaaDns.push(aaaaRecords.dns);
+      } catch {}
     }
 
     console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
@@ -170,12 +179,14 @@ function isApexDomainAlive(apexDomain: string) {
     const servers = pickRandom(dohServers, 2);
     for (let i = 0, len = servers.length; i < len; i++) {
       const server = servers[i];
+      try {
       // eslint-disable-next-line no-await-in-loop -- one by one
-      const resp = await $resolve(apexDomain, 'NS', server);
-      if (resp.answers.length > 0) {
-        domainAliveMap.set(apexDomain, true);
-        return true;
-      }
+        const resp = await $resolve(apexDomain, 'NS', server);
+        if (resp.answers.length > 0) {
+          domainAliveMap.set(apexDomain, true);
+          return true;
+        }
+      } catch {}
     }
 
     let whois;
