@@ -3,11 +3,11 @@ import asyncRetry from 'async-retry';
 import picocolors from 'picocolors';
 import { looseTldtsOpt } from '../constants/loose-tldts-opt';
 import { createKeyedAsyncMutex } from './keyed-async-mutex';
-import { pickRandom, pickOne } from 'foxts/pick-random';
 import tldts from 'tldts-experimental';
 import * as whoiser from 'whoiser';
 import process from 'node:process';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
+import { shuffleArray } from 'foxts/shuffle-array';
 
 const domainAliveMap = new Map<string, boolean>();
 
@@ -110,9 +110,9 @@ export async function isDomainAlive(
     const aaaaDns: string[] = [];
 
     // test 2 times before make sure record is empty
-    const servers = pickRandom(dohServers, 2);
-    // TODO: increase limit when there is an error
-    for (let i = 0; i < 2; i++) {
+    const servers = shuffleArray(dohServers, { copy: true });
+
+    for (let i = 0, len = servers.length; i < len; i++) {
       try {
         // eslint-disable-next-line no-await-in-loop -- sequential
         const aRecords = (await $resolve(domain, 'A', servers[i]));
@@ -123,8 +123,13 @@ export async function isDomainAlive(
 
         aDns.push(aRecords.dns);
       } catch {}
+
+      if (aDns.length >= 2) {
+        break; // we only need to test 2 times
+      }
     }
-    for (let i = 0; i < 2; i++) {
+
+    for (let i = 0, len = servers.length; i < len; i++) {
       try {
         // eslint-disable-next-line no-await-in-loop -- sequential
         const aaaaRecords = await $resolve(domain, 'AAAA', servers[i]);
@@ -135,30 +140,43 @@ export async function isDomainAlive(
 
         aaaaDns.push(aaaaRecords.dns);
       } catch {}
+
+      if (aaaaDns.length >= 2) {
+        break; // we only need to test 2 times
+      }
     }
 
     // only then, let's test twice with domesticDohServers
-    for (let i = 0; i < 2; i++) {
+    const domesticServers = shuffleArray(domesticDohServers, { copy: true });
+    for (let i = 0, len = domesticServers.length; i < len; i++) {
       try {
         // eslint-disable-next-line no-await-in-loop -- sequential
-        const aRecords = (await $resolve(domain, 'A', pickOne(domesticDohServers)));
+        const aRecords = await $resolve(domain, 'A', domesticServers[i]);
         if (aRecords.answers.length > 0) {
           domainAliveMap.set(domain, true);
           return true;
         }
         aDns.push(aRecords.dns);
       } catch {}
+      if (aDns.length >= 2) {
+        break; // we only need to test 2 times
+      }
     }
-    for (let i = 0; i < 2; i++) {
+
+    for (let i = 0, len = domesticServers.length; i < len; i++) {
       try {
-      // eslint-disable-next-line no-await-in-loop -- sequential
-        const aaaaRecords = (await $resolve(domain, 'AAAA', pickOne(domesticDohServers)));
+        // eslint-disable-next-line no-await-in-loop -- sequential
+        const aaaaRecords = await $resolve(domain, 'AAAA', domesticServers[i]);
         if (aaaaRecords.answers.length > 0) {
           domainAliveMap.set(domain, true);
           return true;
         }
         aaaaDns.push(aaaaRecords.dns);
       } catch {}
+
+      if (aaaaDns.length >= 2) {
+        break; // we only need to test 2 times
+      }
     }
 
     console.log(picocolors.red('[domain dead]'), 'no A/AAAA records', { domain, a: aDns, aaaa: aaaaDns });
@@ -176,15 +194,25 @@ function isApexDomainAlive(apexDomain: string) {
   }
 
   return apexDomainMap.acquire(apexDomain, async () => {
-    const servers = pickRandom(dohServers, 2);
+    const servers = shuffleArray(dohServers, { copy: true });
+
+    let nsSuccess = 0;
+
     for (let i = 0, len = servers.length; i < len; i++) {
       const server = servers[i];
       try {
-      // eslint-disable-next-line no-await-in-loop -- one by one
+        // eslint-disable-next-line no-await-in-loop -- one by one
         const resp = await $resolve(apexDomain, 'NS', server);
         if (resp.answers.length > 0) {
           domainAliveMap.set(apexDomain, true);
           return true;
+        }
+
+        nsSuccess++;
+
+        if (nsSuccess >= 2) {
+          // we only need to test 2 times
+          break;
         }
       } catch {}
     }
