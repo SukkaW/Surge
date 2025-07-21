@@ -41,51 +41,50 @@ const adguardFiltersWhitelistsDownloads = ADGUARD_FILTERS_WHITELIST.map(entry =>
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
   const rejectDomainsetOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
+    .appendDescription(
+      SHARED_DESCRIPTION,
       '',
       'The domainset supports AD blocking, tracking protection, privacy protection, anti-mining'
-    ])
+    )
     .appendDataSource(HOSTS.map(host => host[0]))
     .appendDataSource(DOMAIN_LISTS.map(domainList => domainList[0]));
 
   const rejectExtraDomainsetOutput = new DomainsetOutput(span, 'reject_extra')
     .withTitle('Sukka\'s Ruleset - Reject Extra')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
+    .appendDescription(
+      SHARED_DESCRIPTION,
       '',
       'The domainset supports AD blocking, tracking protection, privacy protection, anti-mining'
-    ])
+    )
     .appendDataSource(HOSTS_EXTRA.map(host => host[0]))
     .appendDataSource(DOMAIN_LISTS_EXTRA.map(domainList => domainList[0]));
 
   const rejectPhisingDomainsetOutput = new DomainsetOutput(span, 'reject_phishing')
     .withTitle('Sukka\'s Ruleset - Reject Phishing')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
+    .appendDescription(
+      SHARED_DESCRIPTION,
       '',
       'The domainset is specifically designed for anti-phishing'
-    ])
+    )
     .appendDataSource(PHISHING_HOSTS_EXTRA.map(host => host[0]))
     .appendDataSource(PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => domainList[0]));
 
   const rejectNonIpRulesetOutput = new RulesetOutput(span, 'reject', 'non_ip')
     .withTitle('Sukka\'s Ruleset - Reject Non-IP')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
-      '',
+    .appendDescription(SHARED_DESCRIPTION, '')
+    .appendDescription(
       'The ruleset supports AD blocking, tracking protection, privacy protection, anti-phishing, anti-mining',
       '',
       'The file contains wildcard domains from data source mentioned in /domainset/reject file'
-    ]);
+    );
 
   const rejectIPOutput = new RulesetOutput(span, 'reject', 'ip')
     .withTitle('Sukka\'s Ruleset - Anti Bogus Domain')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
+    .appendDescription(
+      SHARED_DESCRIPTION,
       '',
       'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers, and botnet controller IPs.'
-    ])
+    )
     .appendDataSource('https://github.com/felixonmars/dnsmasq-china-list')
     .appendDataSource('https://github.com/curbengh/botnet-filter')
     .bulkAddIPASN(AUGUST_ASN)

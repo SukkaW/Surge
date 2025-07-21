@@ -89,29 +89,29 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
   return Promise.all([
     new RulesetOutput(span, 'domestic', 'non_ip')
       .withTitle('Sukka\'s Ruleset - Domestic Domains')
-      .withDescription([
-        ...SHARED_DESCRIPTION,
+      .appendDescription(
+        SHARED_DESCRIPTION,
         '',
         'This file contains known addresses that are avaliable in the Mainland China.'
-      ])
+      )
       .addFromRuleset(domestics)
       .write(),
     new RulesetOutput(span, 'direct', 'non_ip')
       .withTitle('Sukka\'s Ruleset - Direct Rules')
-      .withDescription([
-        ...SHARED_DESCRIPTION,
+      .appendDescription(
+        SHARED_DESCRIPTION,
         '',
         'This file contains domains and process that should not be proxied.'
-      ])
+      )
       .addFromRuleset(directs)
       .write(),
     new RulesetOutput(span, 'lan', 'non_ip')
       .withTitle('Sukka\'s Ruleset - LAN')
-      .withDescription([
-        ...SHARED_DESCRIPTION,
+      .appendDescription(
+        SHARED_DESCRIPTION,
         '',
         'This file includes rules for LAN DOMAIN and reserved TLDs.'
-      ])
+      )
       .addFromRuleset(lans)
       .write(),
 
@@ -122,12 +122,12 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
 
       const output = new SurgeOnlyRulesetOutput(span, name.toLowerCase(), 'sukka_local_dns_mapping', OUTPUT_MODULES_RULES_DIR)
         .withTitle(`Sukka's Ruleset - Local DNS Mapping (${name})`)
-        .withDescription([
-          ...SHARED_DESCRIPTION,
+        .appendDescription(
+          SHARED_DESCRIPTION,
           '',
           'This is an internal rule that is only referenced by sukka_local_dns_mapping.sgmodule',
           'Do not use this file in your Rule section, all rules are included in non_ip/domestic.conf already.'
-        ]);
+        );
 
       domains.forEach((domain) => {
         switch (domain[0]) {

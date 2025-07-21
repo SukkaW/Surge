@@ -15,21 +15,17 @@ function createRulesetForStreamService(
     // Domains
     new RulesetOutput(span, fileId, 'non_ip')
       .withTitle(`Sukka's Ruleset - Stream Services: ${title}`)
-      .withDescription([
-        ...SHARED_DESCRIPTION,
-        '',
-        ...streamServices.map((i) => `- ${i.name}`)
-      ])
+      .appendDescription(SHARED_DESCRIPTION)
+      .appendDescription('')
+      .appendDescription(streamServices.map((i) => `- ${i.name}`))
       .addFromRuleset(streamServices.flatMap((i) => i.rules))
       .write(),
     // IP
     new RulesetOutput(span, fileId, 'ip')
       .withTitle(`Sukka's Ruleset - Stream Services IPs: ${title}`)
-      .withDescription([
-        ...SHARED_DESCRIPTION,
-        '',
-        ...streamServices.map((i) => `- ${i.name}`)
-      ])
+      .appendDescription(SHARED_DESCRIPTION)
+      .appendDescription('')
+      .appendDescription(streamServices.map((i) => `- ${i.name}`))
       .bulkAddCIDR4NoResolve(streamServices.flatMap(i => i.ip?.v4 ?? []))
       .bulkAddCIDR6NoResolve(streamServices.flatMap(i => i.ip?.v6 ?? []))
       .write()

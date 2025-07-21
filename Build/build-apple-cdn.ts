@@ -12,14 +12,14 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
 
   return new DomainsetOutput(span, 'apple_cdn')
     .withTitle('Sukka\'s Ruleset - Apple CDN')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
+    .appendDescription(SHARED_DESCRIPTION)
+    .appendDescription(
       '',
       'This file contains Apple\'s domains using their China mainland CDN servers.',
       '',
       'Data from:',
       ' - https://github.com/felixonmars/dnsmasq-china-list'
-    ])
+    )
     .bulkAddDomainSuffix(res)
     .write();
 });

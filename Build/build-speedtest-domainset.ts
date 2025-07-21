@@ -48,11 +48,11 @@ const getSpeedtestHostsGroupsPromise = $$fetch('https://speedtest-net-servers.cd
 export const buildSpeedtestDomainSet = task(require.main === module, __filename)(
   async (span) => new DomainsetOutput(span, 'speedtest')
     .withTitle('Sukka\'s Ruleset - Speedtest Domains')
-    .withDescription([
-      ...SHARED_DESCRIPTION,
+    .appendDescription(
+      SHARED_DESCRIPTION,
       '',
       'This file contains common speedtest endpoints.'
-    ])
+    )
     .addFromDomainset(readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'domainset/speedtest.conf')))
     .addFromDomainset(readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')))
     .bulkAddDomain(await span.traceChildPromise('get speedtest hosts groups', getSpeedtestHostsGroupsPromise))

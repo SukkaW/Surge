@@ -75,21 +75,21 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
   return Promise.all([
     new DomainsetOutput(span, 'cdn')
       .withTitle('Sukka\'s Ruleset - CDN Domains')
-      .withDescription([
-        ...SHARED_DESCRIPTION,
+      .appendDescription(SHARED_DESCRIPTION)
+      .appendDescription(
         '',
         'This file contains object storage and static assets CDN domains.'
-      ])
+      )
       .addFromDomainset(cdnDomainsList)
       .write(),
 
     new DomainsetOutput(span, 'download')
       .withTitle('Sukka\'s Ruleset - Large Files Hosting Domains')
-      .withDescription([
-        ...SHARED_DESCRIPTION,
+      .appendDescription(SHARED_DESCRIPTION)
+      .appendDescription(
         '',
         'This file contains domains for software updating & large file hosting.'
-      ])
+      )
       .addFromDomainset(downloadDomainSet)
       .write()
   ]);

@@ -9,6 +9,7 @@ import { merge as mergeCidr } from 'fast-cidr-tools';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import path from 'node:path';
 import { SurgeMitmSgmodule } from '../writing-strategy/surge';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 /**
  * Holds the universal rule data (domain, ip, url-regex, etc. etc.)
@@ -83,6 +84,21 @@ export class FileOutput {
   protected description: string[] | null = null;
   withDescription(description: string[] | readonly string[]) {
     this.description = description as string[];
+    return this;
+  }
+
+  appendDescription(description: string | string[], ...rest: string[]) {
+    this.description ??= [];
+    if (typeof description === 'string') {
+      this.description.push(description);
+    } else {
+      appendArrayInPlace(this.description, description);
+    }
+
+    if (rest.length) {
+      appendArrayInPlace(this.description, rest);
+    }
+
     return this;
   }
 

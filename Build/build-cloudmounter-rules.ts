@@ -16,11 +16,9 @@ export const buildCloudMounterRules = task(require.main === module, __filename)(
     ].map(cidr => `AND,((${domain}),(SRC-IP,${cidr}))`)
   ]));
 
-  const description = SHARED_DESCRIPTION;
-
   return new RulesetOutput(span, 'cloudmounter', 'non_ip')
     .withTitle('Sukka\'s Ruleset - CloudMounter / RaiDrive')
-    .withDescription(description)
+    .withDescription(SHARED_DESCRIPTION)
     .addFromRuleset(results)
     .write();
 });

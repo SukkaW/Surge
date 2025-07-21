@@ -21,18 +21,16 @@ export const buildChnCidr = task(require.main === module, __filename)(async (spa
   return Promise.all([
     new IPListOutput(span, 'china_ip', false)
       .withTitle('Sukka\'s Ruleset - Mainland China IPv4 CIDR')
-      .withDescription([
-        ...description,
-        'Data from https://misaka.io (misakaio @ GitHub)'
-      ])
+      .withDescription(description)
+      .appendDataSource('https://chnroutes2.cdn.skk.moe/chnroutes.txt')
       .bulkAddCIDR4(filteredCidr4)
       .write(),
     new IPListOutput(span, 'china_ip_ipv6', false)
       .withTitle('Sukka\'s Ruleset - Mainland China IPv6 CIDR')
-      .withDescription([
-        ...description,
-        'Data from https://github.com/gaoyifan/china-operator-ip'
-      ])
+      .withDescription(description)
+      .appendDataSource(
+        'https://github.com/gaoyifan/china-operator-ip'
+      )
       .bulkAddCIDR6(cidr6)
       .write()
   ]);

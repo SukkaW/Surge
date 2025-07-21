@@ -55,20 +55,16 @@ export const getMicrosoftCdnRulesetPromise = once<Promise<[domains: string[], do
 });
 
 export const buildMicrosoftCdn = task(require.main === module, __filename)(async (span) => {
-  const description = [
-    ...SHARED_DESCRIPTION,
-    '',
-    'This file contains Microsoft\'s domains using their China mainland CDN servers.',
-    '',
-    'Data from:',
-    ' - https://github.com/felixonmars/dnsmasq-china-list'
-  ];
-
   const [domains, domainSuffixes] = await span.traceChildPromise('get microsoft cdn domains', getMicrosoftCdnRulesetPromise());
 
   return new RulesetOutput(span, 'microsoft_cdn', 'non_ip')
     .withTitle('Sukka\'s Ruleset - Microsoft CDN')
-    .withDescription(description)
+    .appendDescription(SHARED_DESCRIPTION)
+    .appendDescription(
+      '',
+      'This file contains Microsoft\'s domains using their China mainland CDN servers.'
+    )
+    .appendDataSource('https://github.com/felixonmars/dnsmasq-china-list')
     .bulkAddDomain(domains)
     .bulkAddDomainSuffix(domainSuffixes)
     .write();
