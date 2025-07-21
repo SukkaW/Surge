@@ -39,45 +39,35 @@ const adguardFiltersExtraDownloads = ADGUARD_FILTERS_EXTRA.map(entry => processF
 const adguardFiltersWhitelistsDownloads = ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRulesWithPreload(...entry));
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
-  const rejectBaseDescription = [
-    ...SHARED_DESCRIPTION,
-    '',
-    'The domainset supports AD blocking, tracking protection, privacy protection, anti-mining',
-    '',
-    'Build from:',
-    ...HOSTS.map(host => ` - ${host[0]}`),
-    ...DOMAIN_LISTS.map(domainList => ` - ${domainList[0]}`),
-    ...ADGUARD_FILTERS.map(filter => ` - ${Array.isArray(filter) ? filter[0] : filter}`)
-  ];
-
   const rejectDomainsetOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
-    .withDescription(rejectBaseDescription);
+    .withDescription([
+      ...SHARED_DESCRIPTION,
+      '',
+      'The domainset supports AD blocking, tracking protection, privacy protection, anti-mining'
+    ])
+    .appendDataSource(HOSTS.map(host => host[0]))
+    .appendDataSource(DOMAIN_LISTS.map(domainList => domainList[0]));
 
   const rejectExtraDomainsetOutput = new DomainsetOutput(span, 'reject_extra')
     .withTitle('Sukka\'s Ruleset - Reject Extra')
     .withDescription([
       ...SHARED_DESCRIPTION,
       '',
-      'The domainset supports AD blocking, tracking protection, privacy protection, anti-mining',
-      '',
-      'Build from:',
-      ...HOSTS_EXTRA.map(host => ` - ${host[0]}`),
-      ...DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`),
-      ...ADGUARD_FILTERS_EXTRA.map(filter => ` - ${filter[0]}`)
-    ]);
+      'The domainset supports AD blocking, tracking protection, privacy protection, anti-mining'
+    ])
+    .appendDataSource(HOSTS_EXTRA.map(host => host[0]))
+    .appendDataSource(DOMAIN_LISTS_EXTRA.map(domainList => domainList[0]));
 
   const rejectPhisingDomainsetOutput = new DomainsetOutput(span, 'reject_phishing')
     .withTitle('Sukka\'s Ruleset - Reject Phishing')
     .withDescription([
       ...SHARED_DESCRIPTION,
       '',
-      'The domainset is specifically designed for anti-phishing',
-      '',
-      'Build from:',
-      ...PHISHING_HOSTS_EXTRA.map(host => ` - ${host[0]}`),
-      ...PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => ` - ${domainList[0]}`)
-    ]);
+      'The domainset is specifically designed for anti-phishing'
+    ])
+    .appendDataSource(PHISHING_HOSTS_EXTRA.map(host => host[0]))
+    .appendDataSource(PHISHING_DOMAIN_LISTS_EXTRA.map(domainList => domainList[0]));
 
   const rejectNonIpRulesetOutput = new RulesetOutput(span, 'reject', 'non_ip')
     .withTitle('Sukka\'s Ruleset - Reject Non-IP')
@@ -94,13 +84,10 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .withDescription([
       ...SHARED_DESCRIPTION,
       '',
-      'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers, and botnet controller IPs.',
-      '',
-      'Data from:',
-      ' - https://github.com/felixonmars/dnsmasq-china-list',
-      ' - https://github.com/curbengh/botnet-filter',
-      ' - And other sources mentioned in /domainset/reject file'
+      'This file contains known addresses that are hijacking NXDOMAIN results returned by DNS servers, and botnet controller IPs.'
     ])
+    .appendDataSource('https://github.com/felixonmars/dnsmasq-china-list')
+    .appendDataSource('https://github.com/curbengh/botnet-filter')
     .bulkAddIPASN(AUGUST_ASN)
     .bulkAddIPASN(HUIZE_ASN);
 
@@ -143,7 +130,13 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectPhisingDomainsetOutput.addFromDomainset(getPhishingDomains(childSpan)),
 
       adguardFiltersDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs, blackWildcard, whiteKeyword, blackKeyword }) => {
+        task => task(childSpan).then(({
+          filterRulesUrl,
+          whiteDomains, whiteDomainSuffixes,
+          blackDomains, blackDomainSuffixes,
+          blackIPs, blackWildcard,
+          whiteKeyword, blackKeyword
+        }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
 
@@ -154,13 +147,22 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
 
           rejectDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
 
+          rejectDomainsetOutput.appendDataSource(filterRulesUrl);
+
           rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
+          rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
 
           rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
+          rejectIPOutput.appendDataSource(filterRulesUrl);
         })
       ),
       adguardFiltersExtraDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, blackIPs, blackWildcard, whiteKeyword, blackKeyword }) => {
+        task => task(childSpan).then(({
+          filterRulesUrl,
+          whiteDomains, whiteDomainSuffixes,
+          blackDomains, blackDomainSuffixes,
+          blackIPs, blackWildcard, whiteKeyword, blackKeyword
+        }) => {
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
           addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
           addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
@@ -170,9 +172,13 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
 
           rejectExtraDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
 
+          rejectExtraDomainsetOutput.appendDataSource(filterRulesUrl);
+
           rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
+          rejectIPOutput.appendDataSource(filterRulesUrl);
 
           rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
+          rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
         })
       ),
       adguardFiltersWhitelistsDownloads.map(

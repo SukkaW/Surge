@@ -45,7 +45,9 @@ export function processFilterRulesWithPreload(
       | 'whiteKeyword'
       | 'blackKeyword',
       string[]
-    >
+    > & {
+      filterRulesUrl: string
+    }
   >(`process filter rules: ${filterRulesUrl}`, async (span) => {
     const filterRules = await span.traceChildPromise('download', downloadPromise);
 
@@ -140,6 +142,7 @@ export function processFilterRulesWithPreload(
     );
 
     return {
+      filterRulesUrl,
       whiteDomains: Array.from(whiteDomains),
       whiteDomainSuffixes: Array.from(whiteDomainSuffixes),
       blackDomains: Array.from(blackDomains),
