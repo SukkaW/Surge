@@ -529,7 +529,8 @@ export class FileOutput {
 
   write(): Promise<unknown> {
     return this.span.traceChildAsync('write all', async (childSpan) => {
-      await this.done();
+      await childSpan.traceChildAsync('done', () => this.done());
+
       childSpan.traceChildSync('write to strategies', () => this.writeToStrategies());
 
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
