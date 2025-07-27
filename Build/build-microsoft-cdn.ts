@@ -5,41 +5,44 @@ import { RulesetOutput } from './lib/rules/ruleset';
 import Worktank from 'worktank';
 
 const pool = new Worktank({
-  name: 'build-internal-reverse-chn-cidr',
-  size: 1,
-  timeout: 10000, // The maximum number of milliseconds to wait for the result from the worker, if exceeded the worker is terminated and the execution promise rejects
-  warmup: true,
-  autoterminate: 30000, // The interval of milliseconds at which to check if the pool can be automatically terminated, to free up resources, workers will be spawned up again if needed
-  env: {},
-  methods: {
+  pool: {
+    name: 'build-internal-reverse-chn-cidr',
+    size: 1 // The number of workers to keep in the pool, if more workers are needed they will be spawned up to this limit
+  },
+  worker: {
+    autoAbort: 10000,
+    autoTerminate: 30000, // The interval of milliseconds at which to check if the pool can be automatically terminated, to free up resources, workers will be spawned up again if needed
+    autoInstantiate: true,
+    methods: {
     // eslint-disable-next-line object-shorthand -- workertank
-    getMicrosoftCdnRuleset: async function (importMetaUrl: string): Promise<[domains: string[], domainSuffixes: string[]]> {
+      getMicrosoftCdnRuleset: async function (importMetaUrl: string): Promise<[domains: string[], domainSuffixes: string[]]> {
       // TODO: createRequire is a temporary workaround for https://github.com/nodejs/node/issues/51956
-      const { default: module } = await import('node:module');
-      const __require = module.createRequire(importMetaUrl);
+        const { default: module } = await import('node:module');
+        const __require = module.createRequire(importMetaUrl);
 
-      const { HostnameSmolTrie } = __require('./lib/trie');
-      const { PROBE_DOMAINS, DOMAINS, DOMAIN_SUFFIXES, BLACKLIST } = __require('./constants/microsoft-cdn') as typeof import('./constants/microsoft-cdn');
-      const { fetchRemoteTextByLine } = __require('./lib/fetch-text-by-line') as typeof import('./lib/fetch-text-by-line');
-      const { appendArrayInPlace } = __require('foxts/append-array-in-place') as typeof import('foxts/append-array-in-place');
-      const { extractDomainsFromFelixDnsmasq } = __require('./lib/parse-dnsmasq') as typeof import('./lib/parse-dnsmasq');
+        const { HostnameSmolTrie } = __require('./lib/trie');
+        const { PROBE_DOMAINS, DOMAINS, DOMAIN_SUFFIXES, BLACKLIST } = __require('./constants/microsoft-cdn') as typeof import('./constants/microsoft-cdn');
+        const { fetchRemoteTextByLine } = __require('./lib/fetch-text-by-line') as typeof import('./lib/fetch-text-by-line');
+        const { appendArrayInPlace } = __require('foxts/append-array-in-place') as typeof import('foxts/append-array-in-place');
+        const { extractDomainsFromFelixDnsmasq } = __require('./lib/parse-dnsmasq') as typeof import('./lib/parse-dnsmasq');
 
-      const trie = new HostnameSmolTrie();
+        const trie = new HostnameSmolTrie();
 
-      for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
-        const domain = extractDomainsFromFelixDnsmasq(line);
-        if (domain) {
-          trie.add(domain);
+        for await (const line of await fetchRemoteTextByLine('https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf')) {
+          const domain = extractDomainsFromFelixDnsmasq(line);
+          if (domain) {
+            trie.add(domain);
+          }
         }
+
+        // remove blacklist domain from trie, to prevent them from being included in the later dump
+        BLACKLIST.forEach(black => trie.whitelist(black));
+
+        const domains: string[] = DOMAINS;
+        const domainSuffixes = appendArrayInPlace(PROBE_DOMAINS.flatMap(domain => trie.find(domain)), DOMAIN_SUFFIXES);
+
+        return [domains, domainSuffixes] as const;
       }
-
-      // remove blacklist domain from trie, to prevent them from being included in the later dump
-      BLACKLIST.forEach(black => trie.whitelist(black));
-
-      const domains: string[] = DOMAINS;
-      const domainSuffixes = appendArrayInPlace(PROBE_DOMAINS.flatMap(domain => trie.find(domain)), DOMAIN_SUFFIXES);
-
-      return [domains, domainSuffixes] as const;
     }
   }
 });
