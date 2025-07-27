@@ -133,12 +133,12 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // ],
   // Curben's UrlHaus Malicious URL Blocklist
   [
-    'https://urlhaus-filter.pages.dev/urlhaus-filter-domains.txt',
+    'https://urlhaus-filter.pages.dev/urlhaus-filter-domains-online.txt',
     [
-      'https://malware-filter.pages.dev/urlhaus-filter-domains.txt',
-      'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-domains.txt',
-      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains.txt',
-      'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains.txt'
+      'https://malware-filter.pages.dev/urlhaus-filter-domains-online.txt',
+      'https://malware-filter.gitlab.io/urlhaus-filter/urlhaus-filter-domains-online.txt',
+      'https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-domains-online.txt',
+      'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains-online.txt'
     ],
     true
   ]
