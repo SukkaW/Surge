@@ -165,7 +165,7 @@ const kwfilter = createKeywordFilter([
   '(',
   ']',
   ')',
-  ',',
+  ',', // $3p,doc
   '#',
   '%',
   '&',
@@ -208,13 +208,14 @@ export class AdGuardFilterIgnoreUnsupportedLinesStream extends TransformStream<s
   constructor() {
     super({
       transform(line, controller) {
+        let firstCharCode = line.charCodeAt(0);
         if (
+          // bail out path-like/cosmetic very early, even before trim
+          firstCharCode === 47 // /
+          || firstCharCode === 35 // #
           // doesn't include
-          !line.includes('.') // rule with out dot can not be a domain
-          // includes
-          || kwfilter(line)
-          // note that this can only excludes $redirect but not $3p,redirect, so we still need to parse it
-          // this is only an early bail out
+          || !line.includes('.') // rule with out dot can not be a domain
+          || kwfilter(line) // filter out some symbols/modifiers
         ) {
           return;
         }
@@ -225,7 +226,7 @@ export class AdGuardFilterIgnoreUnsupportedLinesStream extends TransformStream<s
           return;
         }
 
-        const firstCharCode = line.charCodeAt(0);
+        firstCharCode = line.charCodeAt(0);
         const lastCharCode = line.charCodeAt(line.length - 1);
 
         if (
@@ -273,7 +274,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
   //   return result;
   // }
 
-  const firstCharCode = line.charCodeAt(0);
+  // const firstCharCode = line.charCodeAt(0);
   // const lastCharCode = line.charCodeAt(line.length - 1);
 
   // if (
@@ -401,7 +402,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
   let includeAllSubDomain = false;
 
   if (
-    firstCharCode === 64 // 64 `@`
+    line.charCodeAt(0) === 64 // 64 `@`
     && line.charCodeAt(1) === 64 // 64 `@`
   ) {
     sliceStart += 2;
@@ -430,7 +431,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
 
       break;
 
-    case 46: { /** | */ // line.startsWith('@@.') || line.startsWith('.')
+    case 46: { /** . */ // line.startsWith('@@.') || line.startsWith('.')
       /**
        * `.ay.delivery^`
        * `.m.bookben.com^`
