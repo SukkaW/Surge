@@ -5,6 +5,7 @@ import { nullthrow } from 'foxts/guard';
 import { TextLineStream } from 'foxts/text-line-stream';
 import { ProcessLineStream } from './process-line';
 import { AdGuardFilterIgnoreUnsupportedLinesStream } from './parse-filter/filters';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 // eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
 class CustomAbortError extends Error {
@@ -22,9 +23,9 @@ export async function fetchAssets(
 
   const createFetchFallbackPromise = async (url: string, index: number) => {
     if (index >= 0) {
-      // Most assets can be downloaded within 250ms. To avoid wasting bandwidth, we will wait for 500ms before downloading from the fallback URL.
+      // To avoid wasting bandwidth, we will wait for a few time before downloading from the fallback URL.
       try {
-        await waitWithAbort(50 + (index + 1) * 150, controller.signal);
+        await waitWithAbort(200 + (index + 1) * 400, controller.signal);
       } catch {
         console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
         throw reusedCustomAbortError;
@@ -36,7 +37,9 @@ export async function fetchAssets(
     }
     const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
 
-    let stream = nullthrow(res.body, url + ' has an empty body').pipeThrough(new TextDecoderStream()).pipeThrough(new TextLineStream({ skipEmptyLines: processLine }));
+    let stream = nullthrow(res.body, url + ' has an empty body')
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(new TextLineStream({ skipEmptyLines: processLine }));
     if (processLine) {
       stream = stream.pipeThrough(new ProcessLineStream());
     }
@@ -53,11 +56,15 @@ export async function fetchAssets(
     return arr;
   };
 
+  const primaryPromise = createFetchFallbackPromise(url, -1);
+
   if (!fallbackUrls || fallbackUrls.length === 0) {
-    return createFetchFallbackPromise(url, -1);
+    return primaryPromise;
   }
-  return Promise.any([
-    createFetchFallbackPromise(url, -1),
-    ...fallbackUrls.map(createFetchFallbackPromise)
-  ]);
+  return Promise.any(
+    appendArrayInPlace(
+      [primaryPromise],
+      fallbackUrls.map(createFetchFallbackPromise)
+    )
+  );
 }
