@@ -67,12 +67,14 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'feizhu.com',
       'taopiaopiao.com',
       'fliggy.com',
+      'alibtrip.com',
       'koubei.com',
       'mybank.cn',
       'mmstat.com',
       'uczzd.cn',
       'iconfont.cn',
       'freshhema.com',
+      'freshippo.com',
       'hemamax.com',
       'hemaos.com',
       'hemashare.cn',
@@ -81,6 +83,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'npmmirror.com',
       'alios.cn',
       'wandoujia.com',
+      '9game.cn',
       'aligames.com',
       '25pp.com',
       '+aliapp.org',
@@ -243,6 +246,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'feishu.net',
       '+feishucdn.com',
       '+feishupkg.com',
+      'baike.com',
+      'zjurl.cn',
+      'okr.com',
       'douyin.com',
       '+douyinpic.com',
       '+douyinstatic.com',
@@ -250,6 +256,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+douyinliving.com',
       '+douyinvod.com',
       'huoshan.com',
+      'doubao.com',
+      'coze.cn',
+      'wukong.com',
       '+huoshanstatic.com',
       'huoshanzhibo.com',
       'ixigua.com',
@@ -257,20 +266,37 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+ixgvideo.com',
       '+volccdn.com',
       '+byted-static.com',
-      'volces.com',
+      'volces.com', // Use hichina.com NS
       'baike.com',
       '+zjcdn.com',
       '+zijieapi.com',
       'feelgood.cn',
-      '+bytetcc.com', // Use hichina.com as NS
-      '+bytednsdoc.com', // Uses alidns.com as NS
-      '+byteimg.com', // Uses alidns.com as NS
-      '+byteacctimg.com', // Uses alidns.com as NS
+      'volcengine.com',
+      '+bytetcc.com', // Use hichina.com NS
+      '+bytednsdoc.com', // Uses alidns.com NS
+      '+byteimg.com', // Uses alidns.com NS
+      '+byteacctimg.com', // Uses alidns.com NS
+      '+byteeffecttos.com', // Use hichina.com NS
       '+ibytedapm.com', // China NS
       'oceanengine.com',
       '+edge-byted.com',
       '+volcvideo.com',
-      '+bytecdntp.com' // hichina.com NS
+      '+bytecdntp.com', // hichina.com NS
+      // Done Che Di
+      'dongchedi.com',
+      'dcarstatic.com',
+      'dcarlive.com',
+      'dcarimg.com',
+      'dcarvod.com',
+      'dcarapi.com',
+      // PiPiXia
+      'pipix.com',
+      'ppximg.com',
+      'ppxstatic.com',
+      'ppxvod.com',
+      'xiaoxiaapi.com',
+      // rsproxy
+      'rsproxy.cn'
     ]
   },
   BAIDU: {
@@ -296,6 +322,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+baidubcr.com',
       '+yunjiasu-cdn.net',
       'tieba.com',
+      'dwz.cn',
+      'zuoyebang.com',
+      'zybang.com',
       'xiaodutv.com',
       '+shifen.com',
       '+jomodns.com',
