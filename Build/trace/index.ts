@@ -122,6 +122,7 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
         dummySpan.stop();
         printTraceResult(dummySpan.traceResult);
         process.nextTick(whyIsNodeRunning);
+        process.nextTick(() => process.exit(0));
       });
     }
 

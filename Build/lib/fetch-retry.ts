@@ -23,7 +23,7 @@ if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
 
-const agent = new Agent({ allowH2: false });
+const agent = new Agent({ allowH2: true });
 
 setGlobalDispatcher(agent.compose(
   interceptors.dns({
