@@ -10,7 +10,7 @@ export type TldTsParsed = ReturnType<typeof tldts.parse>;
 /**
  * Skipped the input non-empty check, the `domain` should not be empty.
  */
-export function fastNormalizeDomainWithoutWwwNoIP(domain: string, parsed: TldTsParsed | null = null) {
+function fastNormalizeDomainWithoutWwwNoIP(domain: string, parsed: TldTsParsed | null = null) {
   // We don't want tldts to call its own "extractHostname" on ip, bail out ip first.
   // This function won't run with IP, we can safely set normalizeTldtsOpt.detectIp to false.
 
@@ -19,7 +19,12 @@ export function fastNormalizeDomainWithoutWwwNoIP(domain: string, parsed: TldTsP
   if (!parsed.isIcann && !parsed.isPrivate) return null;
 
   if (parsed.subdomain) {
-    if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
+    if (
+      parsed.subdomain === 'www'
+      || parsed.subdomain === 'xml-v4'
+      || parsed.subdomain === 'xml-eu'
+      || parsed.subdomain === 'xml-eu-v4'
+    ) {
       return parsed.domain;
     }
     if (parsed.subdomain.startsWith('www.')) {

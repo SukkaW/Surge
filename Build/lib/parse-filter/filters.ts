@@ -602,7 +602,12 @@ function onHostname(
 
     // we only strip www when it is blacklist
     if (parsed.subdomain) {
-      if (parsed.subdomain === 'www' || parsed.subdomain === 'xml-v4') {
+      if (
+        parsed.subdomain === 'www'
+        || parsed.subdomain === 'xml-v4'
+        || parsed.subdomain === 'xml-eu'
+        || parsed.subdomain === 'xml-eu-v4'
+      ) {
         hostname = parsed.domain;
       } else if (parsed.subdomain.startsWith('www.')) {
         hostname = parsed.subdomain.slice(4) + '.' + parsed.domain;
