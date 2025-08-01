@@ -17,7 +17,7 @@ export async function getTopOneMillionDomains() {
   const topDomainTrie = new HostnameSmolTrie();
   const csvParse = csvParser({ columns: false, skip_empty_lines: true });
 
-  const topDomainsZipBody = await (await $$fetch('https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip', {
+  const topDomainsZipBody = await (await $$fetch('https://tranco-list.eu/top-1m.csv.zip', {
     headers: {
       accept: '*/*',
       'user-agent': 'curl/8.12.1'
@@ -126,7 +126,7 @@ export async function parseGfwList() {
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'non_ip/stream.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/ai.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/microsoft.conf'), callback, 'ruleset', keywordSet),
-    runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/apple_service.conf'), callback, 'ruleset', keywordSet),
+    runAgainstSourceFile(path.resolve(SOURCE_DIR, 'non_ip/apple_services.conf'), callback, 'ruleset', keywordSet),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'), callback, 'domainset')
