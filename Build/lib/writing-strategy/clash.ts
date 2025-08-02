@@ -113,7 +113,7 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
   }
 
   writeDomainWildcard(wildcard: string): void {
-    this.result.push(`DOMAIN-REGEX,${ClashClassicRuleSet.domainWildCardToRegex(wildcard)}`);
+    this.result.push(`DOMAIN-WILDCARD,${wildcard}`);
   }
 
   writeUserAgents = noop;
