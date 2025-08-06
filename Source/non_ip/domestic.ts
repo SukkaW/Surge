@@ -444,7 +444,7 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
 
 export const AdGuardHomeDNSMapping = {
   system: ['udp://10.10.1.1:53'],
-  'https://doh.pub/dns-query': ['tls://1.12.12.12', 'tls://120.53.53.53', 'https://1.12.12.12/dns-query', 'https://120.53.53.53/dns-query'],
+  'https://doh.pub/dns-query': ['tls://dot.pub', 'https://doh.pub/dns-query'],
   'quic://dns.alidns.com:853': ['quic://223.5.5.5', 'quic://223.6.6.6', 'h3://223.5.5.5/dns-query', 'h3://223.6.6.6/dns-query'],
   'https://doh.360.cn/dns-query': ['https://doh.360.cn/dns-query', 'tls://dot.360.cn'],
   '180.76.76.76': ['udp://180.76.76.76'],

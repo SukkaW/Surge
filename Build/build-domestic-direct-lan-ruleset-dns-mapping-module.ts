@@ -244,10 +244,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       span,
       [
         '# Local DNS Mapping for AdGuard Home',
-        'tls://1.12.12.12',
-        'tls://120.53.53.53',
-        'https://1.12.12.12/dns-query',
-        'https://120.53.53.53/dns-query',
+        'tls://dot.pub',
+        'https://doh.pub/dns-query',
         '[//]udp://10.10.1.1:53',
         ...(([DOMESTICS, DIRECTS, LAN, HOSTS] as const).flatMap(Object.values) as DNSMapping[]).flatMap(({ domains, dns: _dns }) => domains.flatMap((domain) => {
           let dns;
