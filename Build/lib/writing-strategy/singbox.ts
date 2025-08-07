@@ -35,7 +35,7 @@ export class SingboxSource extends BaseWriteStrategy {
 
   static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
-  private singbox: SingboxHeadlessRule = {
+  private readonly singbox: SingboxHeadlessRule = {
     domain: [MARKER_DOMAIN],
     domain_suffix: [MARKER_DOMAIN]
   };

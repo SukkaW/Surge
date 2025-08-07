@@ -25,7 +25,7 @@ export class FileOutput {
 
   protected domainKeywords = new Set<string>();
 
-  private whitelistKeywords = new Set<string>();
+  private readonly whitelistKeywords = new Set<string>();
 
   protected userAgent = new Set<string>();
   protected processName = new Set<string>();

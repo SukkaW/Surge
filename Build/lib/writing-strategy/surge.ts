@@ -148,7 +148,7 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
   readonly fileExtension = 'sgmodule';
   readonly type = '';
 
-  private rules = new Set<string>();
+  private readonly rules = new Set<string>();
 
   protected get result() {
     if (this.rules.size === 0) {

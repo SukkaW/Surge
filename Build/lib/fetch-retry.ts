@@ -139,10 +139,6 @@ export class ResponseError<T extends UndiciResponseData | Response> extends Erro
     const statusCode = 'statusCode' in res ? res.statusCode : res.status;
     super('HTTP ' + statusCode + ' ' + args.map(_ => inspect(_)).join(' '));
 
-    if ('captureStackTrace' in Error) {
-      Error.captureStackTrace(this, ResponseError);
-    }
-
     // eslint-disable-next-line sukka/unicorn/custom-error-definition -- deliberatly use previous name
     this.name = this.constructor.name;
     this.res = res;
