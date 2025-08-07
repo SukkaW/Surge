@@ -32,6 +32,11 @@ const priorityOrder: Record<'default' | string & {}, number> = {
   default: Number.MAX_VALUE
 };
 
+const closedRootFolders = [
+  'Mock',
+  'Internal'
+];
+
 async function copyDirContents(srcDir: string, destDir: string, promises: Array<Promise<VoidOrVoidArray>> = []): Promise<Array<Promise<VoidOrVoidArray>>> {
   for await (const entry of await fsp.opendir(srcDir)) {
     const src = path.join(srcDir, entry.name);
@@ -104,15 +109,18 @@ export const buildPublic = task(require.main === module, __filename)(async (span
 
 const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || fastStringCompare(a.name, b.name);
 
-function treeHtml(tree: TreeTypeArray, level = 0) {
+function treeHtml(tree: TreeTypeArray, level = 0, closedFolderList: string[] = []): string {
   let result = '';
   tree.sort(prioritySorter);
+
   for (let i = 0, len = tree.length; i < len; i++) {
     const entry = tree[i];
+    const open = closedFolderList.includes(entry.name) ? '' : (level === 0 ? 'open' : '');
+
     if (entry.type === TreeFileType.DIRECTORY) {
       result += html`
         <li class="folder">
-          <details ${level === 0 ? 'open' : ''}>
+          <details ${open}>
             <summary>${entry.name}</summary>
             <ul>${treeHtml(entry.children, level + 1)}</ul>
           </details>
@@ -708,7 +716,7 @@ function generateHtml(tree: TreeTypeArray) {
           <p>Last Build: ${new Date().toISOString()}</p>
           <br>
           <ul class="tree">
-            ${treeHtml(tree)}
+            ${treeHtml(tree, 0, closedRootFolders)}
           </ul>
         </main>
       </body>
