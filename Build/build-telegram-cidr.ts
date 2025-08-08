@@ -145,7 +145,10 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
   return new RulesetOutput(span, 'telegram', 'ip')
     .withTitle('Sukka\'s Ruleset - Telegram IP CIDR')
     .withDescription(description)
-    .withDate(date)
+    // .withDate(date) // With extra data source, we no longer use last-modified for file date
+    .appendDataSource(
+      'https://core.telegram.org/resources/cidr.txt (last updated: ' + date.toISOString() + ')'
+    )
     .bulkAddCIDR4NoResolve(ipcidr)
     .bulkAddCIDR6NoResolve(ipcidr6)
     .write();
