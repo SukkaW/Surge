@@ -15,8 +15,7 @@ export const getTelegramCIDRPromise = once(async () => {
   const date = lastModified ? new Date(lastModified) : new Date();
 
   const ipcidr: string[] = [
-    // Telegram secret backup CIDR, announced by AS62041
-    // see also https://github.com/Telegram-FOSS-Team/Telegram-FOSS/blob/10da5406ed92d30c6add3b25d40b2b3b6995d873/TMessagesProj/src/main/java/org/telegram/tgnet/ConnectionsManager.java#L1157
+    // Unused secret Telegram backup CIDR, announced by AS62041
     '95.161.64.0/20'
   ];
   const ipcidr6: string[] = [];
@@ -32,6 +31,8 @@ export const getTelegramCIDRPromise = once(async () => {
 
   const backupIPs = new Set<string>();
 
+  // https://github.com/tdlib/td/blob/master/td/telegram/ConfigManager.cpp
+
   // Backup IP Source 1 (DoH)
   await Promise.all([
     DNS2.DOHClient({
@@ -43,19 +44,21 @@ export const getTelegramCIDRPromise = once(async () => {
       http: false
     })
   ].map(async (client) => {
+    try {
     // tapv3.stel.com was for testing server
-    const resp = await client('apv3.stel.com', 'TXT');
-    const strings = resp.answers.map(i => i.data);
+      const resp = await client('apv3.stel.com', 'TXT');
+      const strings = resp.answers.map(i => i.data);
 
-    const str = strings[0]!.length > strings[1]!.length
-      ? strings[0]! + strings[1]!
-      : strings[1]! + strings[0]!;
+      const str = strings[0]!.length > strings[1]!.length
+        ? strings[0]! + strings[1]!
+        : strings[1]! + strings[0]!;
 
-    const ips = getTelegramBackupIPFromBase64(str);
-    ips.forEach(i => i && backupIPs.add(i.ip));
+      const ips = getTelegramBackupIPFromBase64(str);
+      ips.forEach(i => i && backupIPs.add(i.ip));
+    } catch {}
   }));
 
-  // Backup IP Source 2: Firebase Storage
+  // Backup IP Source 2: Firebase Realtime Database
   try {
     const text = await (await $$fetch('https://reserve-5a846.firebaseio.com/ipconfigv3.json')).json();
     if (typeof text === 'string' && text.length === 344) {
@@ -79,6 +82,19 @@ export const getTelegramCIDRPromise = once(async () => {
       ips.forEach(i => i && backupIPs.add(i.ip));
     }
   } catch {}
+
+  // Backup IP Source 4: Google App Engine: https://dns-telegram.appspot.com https://dns-telegram.appspot.com/test
+  try {
+    const text = await (await $$fetch('https://dns-telegram.appspot.com')).text();
+    if (text.length === 344) {
+      const ips = getTelegramBackupIPFromBase64(text);
+      ips.forEach(i => i && backupIPs.add(i.ip));
+    }
+  } catch {}
+
+  // tcdnb.azureedge.net no longer works
+
+  console.log(`Found ${backupIPs.size} backup IPs:`, backupIPs);
 
   ipcidr.push(...Array.from(backupIPs).map(i => i + '/32'));
 
