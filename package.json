@@ -40,6 +40,7 @@
     "picocolors": "^1.1.1",
     "punycode": "^2.3.1",
     "tar-fs": "^3.1.0",
+    "telegram": "^2.26.22",
     "tldts": "^6.1.86",
     "tldts-experimental": "^6.1.86",
     "undici": "^7.13.0",

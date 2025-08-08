@@ -6,6 +6,8 @@ import { once } from 'foxts/once';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { $$fetch } from './lib/fetch-retry';
 import { fastIpVersion } from 'foxts/fast-ip-version';
+import DNS2 from 'dns2';
+import { getTelegramBackupIPFromBase64 } from './lib/get-telegram-backup-ip';
 
 export const getTelegramCIDRPromise = once(async () => {
   const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
@@ -27,6 +29,58 @@ export const getTelegramCIDRPromise = once(async () => {
       ipcidr6.push(cidr);
     }
   }
+
+  const backupIPs = new Set<string>();
+
+  // Backup IP Source 1 (DoH)
+  await Promise.all([
+    DNS2.DOHClient({
+      dns: '8.8.8.8',
+      http: false
+    }),
+    DNS2.DOHClient({
+      dns: '1.0.0.1',
+      http: false
+    })
+  ].map(async (client) => {
+    // tapv3.stel.com was for testing server
+    const resp = await client('apv3.stel.com', 'TXT');
+    const strings = resp.answers.map(i => i.data);
+
+    const str = strings[0]!.length > strings[1]!.length
+      ? strings[0]! + strings[1]!
+      : strings[1]! + strings[0]!;
+
+    const ips = getTelegramBackupIPFromBase64(str);
+    ips.forEach(i => i && backupIPs.add(i.ip));
+  }));
+
+  // Backup IP Source 2: Firebase Storage
+  try {
+    const text = await (await $$fetch('https://reserve-5a846.firebaseio.com/ipconfigv3.json')).json();
+    if (typeof text === 'string' && text.length === 344) {
+      const ips = getTelegramBackupIPFromBase64(text);
+      ips.forEach(i => i && backupIPs.add(i.ip));
+    }
+  } catch {
+    // ignore all errors
+  }
+
+  // Backup IP Source 3: Firebase Value Store
+  try {
+    const json = await (await $$fetch('https://firestore.googleapis.com/v1/projects/reserve-5a846/databases/(default)/documents/ipconfig/v3')).json();
+    if (
+      json && typeof json === 'object'
+      && 'fields' in json && typeof json.fields === 'object' && json.fields
+      && 'data' in json.fields && typeof json.fields.data === 'object' && json.fields.data
+      && 'stringValue' in json.fields.data && typeof json.fields.data.stringValue === 'string' && json.fields.data.stringValue.length === 344
+    ) {
+      const ips = getTelegramBackupIPFromBase64(json.fields.data.stringValue);
+      ips.forEach(i => i && backupIPs.add(i.ip));
+    }
+  } catch {}
+
+  ipcidr.push(...Array.from(backupIPs).map(i => i + '/32'));
 
   return { date, ipcidr, ipcidr6 };
 });
