@@ -84,7 +84,14 @@ export const getTelegramCIDRPromise = once(async () => {
 
   // Backup IP Source 3: Firebase Value Store (test server not supported)
   try {
-    const json = await (await $$fetch('https://firestore.googleapis.com/v1/projects/reserve-5a846/databases/(default)/documents/ipconfig/v3')).json();
+    const json = await (await $$fetch('https://firestore.googleapis.com/v1/projects/reserve-5a846/databases/(default)/documents/ipconfig/v3', {
+      headers: {
+        Accept: '*/*',
+        Origin: undefined // Without this line, Google API will return "Bad request: Origin doesn't match Host for XD3.". Probably have something to do with sqlite cache store
+      }
+    })).json();
+
+    // const json = await resp.json();
     if (
       json && typeof json === 'object'
       && 'fields' in json && typeof json.fields === 'object' && json.fields
