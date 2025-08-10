@@ -122,7 +122,7 @@ setGlobalDispatcher(agent.compose(
       location: path.join(CACHE_DIR, 'undici-better-sqlite3-cache-store.db'),
       maxEntrySize: 1024 * 1024 * 100 // 100 MiB
     }),
-    cacheByDefault: 180 // 3 minutes
+    cacheByDefault: 600 // 10 minutes
   })
 ));
 
