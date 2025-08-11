@@ -4,7 +4,8 @@ import fsp from 'node:fs/promises';
 import { SOURCE_DIR } from './constants/dir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie, HostnameTrie } from './lib/trie';
+import { task } from './trace';
 
 const ENFORCED_WHITELIST = [
   'hola.sk',
@@ -20,10 +21,10 @@ const ENFORCED_WHITELIST = [
   'samsungqbe.com'
 ];
 
-const WHITELIST: string[] = ['.lightspeedmining.com', 'samsungqbe.com', '.zbeos.com', '.holashop.org', '.jdie.pl', '.sponsor.printondemandagency.com', '.bmcm.pw', '.vplay.life', '.hola.hk', '.peopleland.net', '.120bit.com', '.tekyboycrypto.xyz', '.rocketpool.pro', '.cryptoloot.pro', '.weminerpool.site', '.timg135.top', '.binance.associates', '.lafermedumineur.fr', '.goldencoin.online', '.hola.sk', '.hola.com.sg', '.acashtech.com', '.bitoreum.org', '.mixpools.org', '.decapool.net', '.taichicoin.org', '.luxxeeu.com'];
+const WHITELIST: string[] = ['.dxdhd.com', '.tokto-motion.net', '.hola-shopping.com', '.luxxeeu.com', '.newzgames.com', '.hola.com.sg', 'pengtu.cc', '.cdn-js-query.com', 'samsungcloudsolution.net', 'samsungcloudsolution.com', 'static.estebull.com', '.drawservant.com', '.enjoy7plains.xyz', '.zmfindyourhalf.top', '.mineblocks.eu', '.cointaft.com', '.chain-pool.com', '.lamby-crypto.com', '.grftpool.com', '.onebtcplace.com', '.pepecore.com', '.punchsub.net', '.imzlabs.net', '.datapaw.net', '.smpool.net', '.yetimining.net', '.igrid.org', '.50centfreedom.us', '.cyg2016.xyz', '.easypool.xyz', '.arhash.xyz', '.enviromint.xyz', '.pool.space', '.anomp.cc', '.bitconnectpool.co', '.cryptopool.space', '.automatix.to', '.coolmine.to', '.coolpool.to', '.dpool.to', '.template-download.to', '.aurum7.to', '.sunpool.to', '.speedpool.to', '.cfcnet.to', '.pool.do', '.pool.bit34.com', '.eos.zhizhu.to', '.mubicdn.com', 'cdn.fastmediaing.com', '.webinfcdn.com', '.aosikaimage.com'];
 
-(async () => {
-  const files = await new Fdir()
+task(require.main === module, __filename)(async (span) => {
+  const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
     .withFullPaths()
     .filter((filepath, isDirectory) => {
       if (isDirectory) return true;
@@ -33,55 +34,58 @@ const WHITELIST: string[] = ['.lightspeedmining.com', 'samsungqbe.com', '.zbeos.
       return extname !== '.js' && extname !== '.ts';
     })
     .crawl(SOURCE_DIR)
-    .withPromise();
+    .withPromise());
 
-  const whiteTrie = new HostnameSmolTrie(WHITELIST);
-  ENFORCED_WHITELIST.forEach((item) => whiteTrie.whitelist(item));
-  const whitelist = whiteTrie.dump();
+  const whiteTrie = span.traceChildSync('build whitelist trie', () => {
+    const trie = new HostnameSmolTrie(WHITELIST);
+    ENFORCED_WHITELIST.forEach((item) => trie.whitelist(item));
+    return trie;
+  });
 
-  await Promise.all(files.map(file => dedupeFile(file, whitelist)));
-})();
+  await Promise.all(files.map(file => span.traceChildAsync('dedupe ' + file, () => dedupeFile(file, whiteTrie))));
+});
 
-async function dedupeFile(file: string, whitelist: string[]) {
-  const set = new Set<string>();
+async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
   const result: string[] = [];
+
+  const trie = new HostnameTrie();
 
   for await (const l of readFileByLine(file)) {
     const line = processLine(l);
+
     if (!line) {
       if (l.startsWith('# $ skip_dedupe_src')) {
         return;
       }
 
-      result.push(l);
+      result.push(l); // keep all comments and blank lines
       continue;
     }
 
-    if (set.has(line)) {
-      continue;
+    if (trie.has(line)) {
+      continue; // drop duplicate
     }
 
-    // We can't use a trie here since we need to keep the order
-    if (whitelist.some((whiteItem) => isDomainSuffix(whiteItem, line))) {
-      continue;
+    if (whitelist.has(line)) {
+      continue; // drop whitelisted items
     }
 
-    set.add(line);
+    trie.add(line);
     result.push(line);
   }
 
   return fsp.writeFile(file, result.join('\n') + '\n');
 }
 
-function isDomainSuffix(whiteItem: string, incomingItem: string) {
-  const whiteIncludeDomain = whiteItem[0] === '.';
-  whiteItem = whiteItem[0] === '.' ? whiteItem.slice(1) : whiteItem;
+// function isDomainSuffix(whiteItem: string, incomingItem: string) {
+//   const whiteIncludeDomain = whiteItem[0] === '.';
+//   whiteItem = whiteItem[0] === '.' ? whiteItem.slice(1) : whiteItem;
 
-  if (whiteItem === incomingItem) {
-    return true; // as long as exact match, we don't care if subdomain is included or not
-  }
-  if (whiteIncludeDomain) {
-    return incomingItem.endsWith('.' + whiteItem);
-  }
-  return false;
-}
+//   if (whiteItem === incomingItem) {
+//     return true; // as long as exact match, we don't care if subdomain is included or not
+//   }
+//   if (whiteIncludeDomain) {
+//     return incomingItem.endsWith('.' + whiteItem);
+//   }
+//   return false;
+// }
