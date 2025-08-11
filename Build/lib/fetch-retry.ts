@@ -1,8 +1,8 @@
 import picocolors from 'picocolors';
 import undici, {
   interceptors,
-  Agent,
-  setGlobalDispatcher
+  Agent
+  // setGlobalDispatcher
 } from 'undici';
 
 import type {
@@ -25,7 +25,7 @@ if (!fs.existsSync(CACHE_DIR)) {
 
 const agent = new Agent({ allowH2: true });
 
-setGlobalDispatcher(agent.compose(
+(agent.compose(
   interceptors.dns({
     // disable IPv6
     dualStack: false,
