@@ -9,13 +9,12 @@
   },
   "type": "commonjs",
   "scripts": {
-    "node": "SWCRC=true node -r @swc-node/register",
-    "dexnode": "SWCRC=true dexnode -r @swc-node/register",
+    "node": "SWC_NODE_IGNORE_DYNAMIC=true node -r @swc-node/register",
+    "dexnode": "SWC_NODE_IGNORE_DYNAMIC=true dexnode -r @swc-node/register",
     "build": "pnpm run node ./Build/index.ts",
     "build-profile": "pnpm run dexnode -r @swc-node/register ./Build/index.ts",
-    "build-webstream": "ENABLE_EXPERIMENTAL_WEBSTREAMS=true pnpm run node ./Build/index.ts",
     "lint": "eslint --format=sukka .",
-    "test": "SWCRC=true SWC_NODE_PROJECT=tsconfig.test.json mocha --require @swc-node/register --watch-extensions ts,tsx"
+    "test": "SWC_NODE_IGNORE_DYNAMIC=true SWC_NODE_PROJECT=tsconfig.test.json mocha --require @swc-node/register --watch-extensions ts,tsx"
   },
   "author": "",
   "license": "ISC",
