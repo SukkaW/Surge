@@ -792,6 +792,15 @@ const VUDU: StreamService = {
   ]
 };
 
+const FRIDAY_TW: StreamService = {
+  name: 'Friday TW',
+  rules: [
+    // https://github.com/SukkaW/Surge/pull/74#issuecomment-3188450562
+    'DOMAIN,video.friday.tw',
+    'DOMAIN,ana.video.friday.tw' // Does't actually a detection, only a log report stuff and not actually being used anywhere
+  ]
+};
+
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -800,7 +809,7 @@ export const ALL: StreamService[] = [
   DAZN, DEEZER, DISNEY_PLUS, DISCOVERY_PLUS, DMM,
   ENCORE_TVB,
   ENCORE_TVB_JP_TVER,
-  FOX_NOW, FOX_PLUS,
+  FRIDAY_TW, FOX_NOW, FOX_PLUS,
   HBO, HBO_ASIA, HIMALAYA_FM, HULU, HWTV,
   IQIYI_GLOBAL, ITV,
   JOOX,
@@ -905,8 +914,9 @@ export const TW: StreamService[] = [
   // HamiVideo
   // CatchPlay
   HBO_ASIA,
-  BAHAMUT
-  // elevensportstw
+  BAHAMUT,
+  // elevensportstw,
+  FRIDAY_TW
 ];
 
 export const JP: StreamService[] = [
