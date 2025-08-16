@@ -56,11 +56,11 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6
       fdir:
-        specifier: ^6.4.6
-        version: 6.4.6(picomatch@4.0.3)
+        specifier: ^6.5.0
+        version: 6.5.0(picomatch@4.0.3)
       foxts:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^3.11.1
+        version: 3.11.1
       hash-wasm:
         specifier: ^4.12.0
         version: 4.12.0
@@ -68,8 +68,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       null-prototype-object:
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^1.2.2
+        version: 1.2.2
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -141,8 +141,8 @@ importers:
         specifier: ^10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^24.2.1
-        version: 24.2.1
+        specifier: ^24.3.0
+        version: 24.3.0
       '@types/punycode':
         specifier: ^2.1.4
         version: 2.1.4
@@ -663,8 +663,8 @@ packages:
   '@types/mocha@10.0.10':
     resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
-  '@types/node@24.2.1':
-    resolution: {integrity: sha512-DRh5K+ka5eJic8CjH7td8QpYEV6Zo10gfRkjHCO3weqZHWDtAaSTFtl4+VMqOJ4N5jcuhZ9/l+yy8rVgw7BQeQ==}
+  '@types/node@24.3.0':
+    resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
 
   '@types/punycode@2.1.4':
     resolution: {integrity: sha512-trzh6NzBnq8yw5e35f8xe8VTYjqM3NE7bohBtvDVf/dtUer3zYTLK1Ka3DG3p7bdtoaOHZucma6FfVKlQ134pQ==}
@@ -1358,6 +1358,9 @@ packages:
   fast-escape-html@1.1.0:
     resolution: {integrity: sha512-nRvjfywv8gzIBs0fM/ht6S5scNUamm+o+91p/69cYYNWODb7b/UiQfjFx+6n8NMtdHs6K80kh+hW1dPNS/opIA==}
 
+  fast-escape-regexp@1.0.1:
+    resolution: {integrity: sha512-VSnAgWEYHdyyVegVfN/TUCa6hDQ7PIxdIJVWq4RWqyegkG9zFwNb21uykT0hAyvKlKnFR+zOu/25434pHBXtLA==}
+
   fast-fifo@1.3.2:
     resolution: {integrity: sha512-/d9sfos4yxzpwkDkuN7k2SqFKtYNmCTzgfEpz82x34IM9/zc8KGxQoXg1liNC/izpRM/MBdt44Nmx41ZWqk+FQ==}
 
@@ -1377,8 +1380,9 @@ packages:
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
 
-  fdir@6.4.6:
-    resolution: {integrity: sha512-hiFoqpyZcfNm1yc4u8oWCf9A2c4D3QjCrks3zmoVKVxpQRzmPNar1hUJcBG2RQHvEVGDN+Jm81ZheVLAQMK6+w==}
+  fdir@6.5.0:
+    resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
+    engines: {node: '>=12.0.0'}
     peerDependencies:
       picomatch: ^3 || ^4
     peerDependenciesMeta:
@@ -1415,8 +1419,8 @@ packages:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
 
-  foxts@3.10.0:
-    resolution: {integrity: sha512-2PGT491dnQMuFMeUQ2XObSUw+cIOrgGY548xQkO0K3ocqEUF9Yk0KQsR4ynizKvmlQk03eDi0VG6svwskzJK+w==}
+  foxts@3.11.1:
+    resolution: {integrity: sha512-R099NsBvarB5uNLDzqnngTej8OKl9FRHjHrwWKuHkPzV4KTK/QoOkF4XY6y2rA1LB0qZ4C9yjoXGdCWbohb7lw==}
 
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
@@ -1720,8 +1724,8 @@ packages:
     resolution: {integrity: sha512-vv8fJuOUCCvSPjDjBLlMqYMHob4aGjkmrkaE42/mZr0VT+ZAU10jRF8oTnX9+pgU9/vYJ8P7YT3Vd6ajkmzSCw==}
     engines: {node: '>=0.12'}
 
-  null-prototype-object@1.2.1:
-    resolution: {integrity: sha512-hF2dDg6s3O9Rdr4BT2A1gZvO6wEKWxvT1UKNPGK1CXi/E4XyNrbahazEKXb53GtN0dRGKtSvCuB0ZgWBSMvHfQ==}
+  null-prototype-object@1.2.2:
+    resolution: {integrity: sha512-JhzIvS2Z8GKpDO5E/Usry9EGP8gznHSyPVY9a4Uv98OnkbYSe4qvge97/DeDdejICnb7YTW7fSvbcMSKCuVrMA==}
     engines: {node: '>= 20'}
 
   once@1.4.0:
@@ -2351,7 +2355,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
       jest-regex-util: 30.0.1
 
   '@jest/schemas@30.0.5':
@@ -2364,7 +2368,7 @@ snapshots:
       '@jest/schemas': 30.0.5
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
       '@types/yargs': 17.0.33
       chalk: 4.1.2
 
@@ -2613,15 +2617,15 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/cli-progress@3.11.6':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/dns2@2.0.9':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/estree@1.0.8': {}
 
@@ -2641,7 +2645,7 @@ snapshots:
 
   '@types/mocha@10.0.10': {}
 
-  '@types/node@24.2.1':
+  '@types/node@24.3.0':
     dependencies:
       undici-types: 7.10.0
 
@@ -2653,12 +2657,12 @@ snapshots:
 
   '@types/tar-fs@2.0.4':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
       '@types/tar-stream': 3.1.4
 
   '@types/tar-stream@3.1.4':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -2668,7 +2672,7 @@ snapshots:
 
   '@types/yauzl-promise@4.0.1':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@typescript-eslint/eslint-plugin@8.39.0(@typescript-eslint/parser@8.39.0(eslint@9.33.0)(typescript@5.9.2))(eslint@9.33.0)(typescript@5.9.2)':
     dependencies:
@@ -3125,7 +3129,7 @@ snapshots:
       eslint-plugin-regexp: 2.10.0(eslint@9.33.0)
       eslint-plugin-sukka: 6.23.1(eslint@9.33.0)(typescript@5.9.2)
       eslint-plugin-unused-imports: 4.1.4(@typescript-eslint/eslint-plugin@8.39.0(@typescript-eslint/parser@8.39.0(eslint@9.33.0)(typescript@5.9.2))(eslint@9.33.0)(typescript@5.9.2))(eslint@9.33.0)
-      foxts: 3.10.0
+      foxts: 3.11.1
       jsonc-eslint-parser: 2.4.0
       picocolors: 1.1.1
       typescript-eslint: 8.39.0(eslint@9.33.0)(typescript@5.9.2)
@@ -3272,7 +3276,7 @@ snapshots:
       '@eslint-sukka/shared': 6.23.1(eslint@9.33.0)(typescript@5.9.2)
       '@typescript-eslint/type-utils': 8.39.0(eslint@9.33.0)(typescript@5.9.2)
       '@typescript-eslint/utils': 8.39.0(eslint@9.33.0)(typescript@5.9.2)
-      foxts: 3.10.0
+      foxts: 3.11.1
     optionalDependencies:
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -3395,6 +3399,8 @@ snapshots:
 
   fast-escape-html@1.1.0: {}
 
+  fast-escape-regexp@1.0.1: {}
+
   fast-fifo@1.3.2: {}
 
   fast-glob@3.3.3:
@@ -3415,7 +3421,7 @@ snapshots:
     dependencies:
       reusify: 1.1.0
 
-  fdir@6.4.6(picomatch@4.0.3):
+  fdir@6.5.0(picomatch@4.0.3):
     optionalDependencies:
       picomatch: 4.0.3
 
@@ -3448,9 +3454,10 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  foxts@3.10.0:
+  foxts@3.11.1:
     dependencies:
       fast-escape-html: 1.1.0
+      fast-escape-regexp: 1.0.1
 
   fs-constants@1.0.0: {}
 
@@ -3608,7 +3615,7 @@ snapshots:
   jest-mock@30.0.5:
     dependencies:
       '@jest/types': 30.0.5
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
       jest-util: 30.0.5
 
   jest-regex-util@30.0.1: {}
@@ -3616,7 +3623,7 @@ snapshots:
   jest-util@30.0.5:
     dependencies:
       '@jest/types': 30.0.5
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
       chalk: 4.1.2
       ci-info: 4.3.0
       graceful-fs: 4.2.11
@@ -3745,7 +3752,7 @@ snapshots:
     dependencies:
       write-file-atomic: 1.3.4
 
-  null-prototype-object@1.2.1: {}
+  null-prototype-object@1.2.2: {}
 
   once@1.4.0:
     dependencies:
@@ -4076,7 +4083,7 @@ snapshots:
 
   tinyglobby@0.2.14:
     dependencies:
-      fdir: 6.4.6(picomatch@4.0.3)
+      fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
   tldts-core@6.1.86: {}
@@ -4142,7 +4149,7 @@ snapshots:
   undici-cache-store-better-sqlite3@1.0.0(undici@7.13.0):
     dependencies:
       better-sqlite3: 11.10.0
-      foxts: 3.10.0
+      foxts: 3.11.1
       undici: 7.13.0
 
   undici-types@7.10.0: {}
