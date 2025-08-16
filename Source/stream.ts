@@ -389,7 +389,7 @@ const IQIYI_GLOBAL: StreamService = {
     'DOMAIN,cache-video.iq.com',
     'DOMAIN,akmcdnoversea-tw.inter.ptqy.gitv.tv',
     'DOMAIN,chuangcachecdnoversea-tw.inter.ptqy.gitv.tv',
-    'DOMAIN-SUFFIX,inter.iqiyi.com',
+    // 'DOMAIN-SUFFIX,inter.iqiyi.com', // matching domestic CDN lvbaiducdncmn.inter.iqiyi.com, baiducdnct.inter.iqiyi.com, etc.
     'DOMAIN-SUFFIX,intl-rcd.iqiyi.com',
     'DOMAIN-SUFFIX,intl-subscription.iqiyi.com',
     'DOMAIN-SUFFIX,intl.iqiyi.com'
