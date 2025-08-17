@@ -63,6 +63,7 @@ function processFile(span: Span, sourcePath: string) {
     let sgmodulePathname: string | null = null;
 
     try {
+      let l: string | null = '';
       for await (const line of readFileByLine(sourcePath)) {
         if (line.startsWith(MAGIC_COMMAND_SKIP)) {
           return $skip;
@@ -83,7 +84,7 @@ function processFile(span: Span, sourcePath: string) {
           continue;
         }
 
-        const l = processLine(line);
+        l = processLine(line);
         if (l) {
           lines.push(l);
         }

@@ -45,9 +45,11 @@ export function fetchRemoteTextByLine(url: string, processLine = false): Promise
 
 export async function readFileIntoProcessedArray(file: string /* | FileHandle */) {
   const results = [];
+  let processed: string | null = '';
   for await (const line of readFileByLine(file)) {
-    if (processLine(line)) {
-      results.push(line);
+    processed = processLine(line);
+    if (processed) {
+      results.push(processed);
     }
   }
   return results;

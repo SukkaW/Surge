@@ -50,8 +50,10 @@ async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
 
   const trie = new HostnameTrie();
 
+  let line: string | null = '';
+
   for await (const l of readFileByLine(file)) {
-    const line = processLine(l);
+    line = processLine(l);
 
     if (!line) {
       if (l.startsWith('# $ skip_dedupe_src')) {

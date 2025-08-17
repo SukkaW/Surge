@@ -88,6 +88,8 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     steamDomainSetPromise
   ]);
 
+  console.log(JSON.stringify(cdnDomainsList, null, 2));
+
   // Move S3 domains to download domain set, since S3 files may be large
   appendArrayInPlace(downloadDomainSet, S3OSSDomains);
   appendArrayInPlace(downloadDomainSet, steamDomainSet);

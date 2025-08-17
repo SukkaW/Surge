@@ -37,6 +37,12 @@ export function processLine(line: string): string | null {
      */
   }
 
+  const otherPoundSign = trimmed.indexOf('#');
+
+  if (otherPoundSign > 0) {
+    return trimmed.slice(0, otherPoundSign).trimEnd();
+  }
+
   return trimmed;
 }
 

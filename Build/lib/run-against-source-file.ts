@@ -9,8 +9,9 @@ export default async function runAgainstSourceFile(
   /** Secret keyword collection, only use for special purpose */
   keywordSet?: Set<string> | null
 ) {
+  let l: string | null = '';
   for await (const line of readFileByLine(filePath)) {
-    const l = processLine(line);
+    l = processLine(line);
     if (!l) {
       continue;
     }
