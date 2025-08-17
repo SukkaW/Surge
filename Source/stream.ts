@@ -446,7 +446,9 @@ const LITV: StreamService = {
   name: 'LiTV',
   rules: [
     'DOMAIN,litvfreemobile-hichannel.cdn.hinet.net',
-    'DOMAIN-SUFFIX,litv.tv'
+    'DOMAIN,ntdfreepc-tgc.cdn.hinet.net',
+    'DOMAIN,www.litv.tv',
+    'DOMAIN,cdi.ofiii.com' // Ofiii Free Movie
   ]
 };
 
@@ -801,13 +803,6 @@ const FRIDAY_TW: StreamService = {
   ]
 };
 
-const OFIII: StreamService = {
-  name: 'ofiii Free Movie',
-  rules: [
-    'DOMAIN,cdi.ofiii.com'
-  ]
-};
-
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -822,10 +817,10 @@ export const ALL: StreamService[] = [
   JOOX,
   KKBOX,
   KKTV,
-  LINE_TV, LITV,
+  LINE_TV,
   MY5, MYTV_SUPER,
   NETFLIX, NAVER_TV, NICONICO, NHK_PLUS, NOW_E,
-  OFIII, OVERCAST_FM,
+  OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
   SOUNDCLOUD, SHOWTIME, SPOTIFY,
   TAIWAN_GOOD, TIDAL, TIKTOK, TVB_ANYWHERE, TWITCH,
@@ -923,8 +918,7 @@ export const TW: StreamService[] = [
   HBO_ASIA,
   BAHAMUT,
   // elevensportstw,
-  FRIDAY_TW,
-  OFIII
+  FRIDAY_TW
 ];
 
 export const JP: StreamService[] = [
