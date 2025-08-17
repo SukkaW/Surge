@@ -801,6 +801,13 @@ const FRIDAY_TW: StreamService = {
   ]
 };
 
+const OFIII: StreamService = {
+  name: 'ofiii Free Movie',
+  rules: [
+    'DOMAIN,cdi.ofiii.com'
+  ]
+};
+
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -818,7 +825,7 @@ export const ALL: StreamService[] = [
   LINE_TV, LITV,
   MY5, MYTV_SUPER,
   NETFLIX, NAVER_TV, NICONICO, NHK_PLUS, NOW_E,
-  OVERCAST_FM,
+  OFIII, OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
   SOUNDCLOUD, SHOWTIME, SPOTIFY,
   TAIWAN_GOOD, TIDAL, TIKTOK, TVB_ANYWHERE, TWITCH,
@@ -916,7 +923,8 @@ export const TW: StreamService[] = [
   HBO_ASIA,
   BAHAMUT,
   // elevensportstw,
-  FRIDAY_TW
+  FRIDAY_TW,
+  OFIII
 ];
 
 export const JP: StreamService[] = [

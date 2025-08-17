@@ -107,7 +107,10 @@ export const LAN = {
   },
   LAN_WITHOUT_REAL_IP: {
     dns: 'system',
-    hosts: {},
+    hosts: {
+      '127.0.0.1.sslip.io': ['127.0.0.1'],
+      '127.atlas.skk.moe': ['127.0.0.1']
+    },
     realip: false,
     ruleset: true,
     domains: [
@@ -148,7 +151,9 @@ export const LAN = {
       // 'amplifi.lan',
       // '$localhost',
       '+localdomain',
-      'home.arpa'
+      'home.arpa',
+      '127.0.0.1.sslip.io',
+      '127.atlas.skk.moe'
     ]
   }
 } as const satisfies Record<string, DNSMapping>;
