@@ -168,7 +168,13 @@ export class FileOutput {
   }
 
   private async addFromDomainsetPromise(source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) {
-    for await (const line of await source) {
+    for await (let line of await source) {
+      const otherPoundSign = line.lastIndexOf('#');
+
+      if (otherPoundSign > 0) {
+        line = line.slice(0, otherPoundSign).trimEnd();
+      }
+
       if (line[0] === '.') {
         this.addDomainSuffix(line, true);
       } else {
@@ -187,7 +193,13 @@ export class FileOutput {
   }
 
   private async addFromRulesetPromise(source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) {
-    for await (const line of await source) {
+    for await (let line of await source) {
+      const otherPoundSign = line.lastIndexOf('#');
+
+      if (otherPoundSign > 0) {
+        line = line.slice(0, otherPoundSign).trimEnd();
+      }
+
       const splitted = line.split(',');
       const type = splitted[0];
       const value = splitted[1];
