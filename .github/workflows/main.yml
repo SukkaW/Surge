@@ -5,7 +5,7 @@ on:
       - master
   pull_request:
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "45 12/12 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
