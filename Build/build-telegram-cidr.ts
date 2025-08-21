@@ -36,8 +36,8 @@ export const getTelegramCIDRPromise = once(async () => {
 
   // Backup IP Source 1 (DoH)
   await Promise.all([
-    DNS2.DOHClient({ dns: '8.8.8.8' }),
-    DNS2.DOHClient({ dns: '1.0.0.1' })
+    DNS2.DOHClient({ dns: 'https://8.8.4.4/dns-query?dns={query}' }),
+    DNS2.DOHClient({ dns: 'https://1.0.0.1/dns-query?dns={query}' })
   ].flatMap(
     (client) => [
       'apv3.stel.com', // prod

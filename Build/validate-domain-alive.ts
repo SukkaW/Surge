@@ -44,13 +44,14 @@ const deadDomains: string[] = [];
         bar.setTotal(bar.getTotal() + 1);
 
         return queue.add(
-          () => isDomainAlive(domain, includeAllSubdomain).then((alive) => {
+          () => isDomainAlive(domain).then(({ alive, registerableDomainAlive, registerableDomain }) => {
             bar.increment();
 
-            if (alive) {
-              return;
+            if (!registerableDomainAlive) {
+              deadDomains.push('.' + registerableDomain);
+            } else if (!alive) {
+              deadDomains.push(includeAllSubdomain ? '.' + domain : domain);
             }
-            deadDomains.push(includeAllSubdomain ? '.' + domain : domain);
           })
         );
       }
