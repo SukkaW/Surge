@@ -18,10 +18,6 @@ class DnsError extends Error {
   }
 }
 
-interface DnsResponse extends DNS2.$DnsResponse {
-  dns: string
-}
-
 const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   '8.8.8.8',
   '8.8.4.4',
@@ -59,10 +55,7 @@ const dohServers: Array<[string, DNS2.DnsResolver]> = ([
   // 'dns.rabbitdns.org'
 ] as const).map(dns => [
   dns,
-  DNS2.DOHClient({
-    dns,
-    http: false
-  })
+  DNS2.DOHClient({ dns })
 ] as const);
 
 const domesticDohServers: Array<[string, DNS2.DnsResolver]> = ([
@@ -72,10 +65,7 @@ const domesticDohServers: Array<[string, DNS2.DnsResolver]> = ([
   '1.12.12.12'
 ] as const).map(dns => [
   dns,
-  DNS2.DOHClient({
-    dns,
-    http: false
-  })
+  DNS2.DOHClient({ dns })
 ] as const);
 
 const domainAliveMutex = createKeyedAsyncMutex('isDomainAlive');
@@ -121,7 +111,7 @@ export async function isDomainAlive(
           return true;
         }
 
-        aDns.push(aRecords.dns);
+        aDns.push(servers[i][0]);
       } catch {}
 
       if (aDns.length >= 2) {
@@ -138,7 +128,7 @@ export async function isDomainAlive(
           return true;
         }
 
-        aaaaDns.push(aaaaRecords.dns);
+        aaaaDns.push(servers[i][0]);
       } catch {}
 
       if (aaaaDns.length >= 2) {
@@ -156,7 +146,7 @@ export async function isDomainAlive(
           domainAliveMap.set(domain, true);
           return true;
         }
-        aDns.push(aRecords.dns);
+        aDns.push(domesticServers[i][0]);
       } catch {}
       if (aDns.length >= 2) {
         break; // we only need to test 2 times
@@ -171,7 +161,7 @@ export async function isDomainAlive(
           domainAliveMap.set(domain, true);
           return true;
         }
-        aaaaDns.push(aaaaRecords.dns);
+        aaaaDns.push(domesticServers[i][0]);
       } catch {}
 
       if (aaaaDns.length >= 2) {
@@ -246,10 +236,7 @@ async function $resolve(name: string, type: DNS2.PacketQuestion, server: [string
       const [dohServer, dohClient] = server;
 
       try {
-        return {
-          ...await dohClient(name, type),
-          dns: dohServer
-        } satisfies DnsResponse;
+        return await dohClient(name, type);
       } catch (e) {
         // console.error(e);
         throw new DnsError((e as Error).message, dohServer);
