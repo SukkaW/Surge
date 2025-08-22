@@ -3,10 +3,11 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { once } from 'foxts/once';
 import { RulesetOutput } from './lib/rules/ruleset';
 import Worktank from 'worktank';
+import { RULES } from './constants/microsoft-cdn';
 
 const pool = new Worktank({
   pool: {
-    name: 'build-internal-reverse-chn-cidr',
+    name: 'get-microsoft-cdn',
     size: 1 // The number of workers to keep in the pool, if more workers are needed they will be spawned up to this limit
   },
   worker: {
@@ -16,7 +17,7 @@ const pool = new Worktank({
     methods: {
     // eslint-disable-next-line object-shorthand -- workertank
       getMicrosoftCdnRuleset: async function (importMetaUrl: string): Promise<[domains: string[], domainSuffixes: string[]]> {
-      // TODO: createRequire is a temporary workaround for https://github.com/nodejs/node/issues/51956
+        // TODO: createRequire is a temporary workaround for https://github.com/nodejs/node/issues/51956
         const { default: module } = await import('node:module');
         const __require = module.createRequire(importMetaUrl);
 
@@ -67,6 +68,7 @@ export const buildMicrosoftCdn = task(require.main === module, __filename)(async
       '',
       'This file contains Microsoft\'s domains using their China mainland CDN servers.'
     )
+    .addFromRuleset(RULES)
     .appendDataSource('https://github.com/felixonmars/dnsmasq-china-list')
     .bulkAddDomain(domains)
     .bulkAddDomainSuffix(domainSuffixes)

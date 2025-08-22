@@ -1,5 +1,11 @@
 export const PROBE_DOMAINS = ['.microsoft.com', '.windows.net', '.windows.com', '.windowsupdate.com', '.windowssearch.com', '.office.net'];
 
+export const RULES = [
+  // Microsoft OCSP (HTTP Only)
+  String.raw`URL-REGEX,^http://www\.microsoft\.com/pki/`,
+  String.raw`URL-REGEX,^http://www\.microsoft\.com/pkiops/`
+];
+
 export const DOMAINS = [
   'res.cdn.office.net',
   'res-1.cdn.office.net',
