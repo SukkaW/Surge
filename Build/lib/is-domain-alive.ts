@@ -9,10 +9,10 @@ const dnsServers = [
   '162.159.46.1',
   'dns.cloudflare.com', // Cloudflare DoH that uses different IPs
   // one.one.one.one // Cloudflare DoH that uses 1.1.1.1 and 1.0.0.1
-  '101.101.101.101', // TWNIC
+  // '101.101.101.101', // TWNIC, has DNS pollution, e.g. t66y.com
   '185.222.222.222', // DNS.SB
   '45.11.45.11', // DNS.SB
-  'doh.dns.sb', // DNS.SB, Different PoPs w/ GeoDNS
+  'doh.dns.sb', // DNS.SB, Unicast PoPs w/ GeoDNS
   // 'doh.sb', // DNS.SB xTom Anycast IP
   // 'dns.sb', // DNS.SB use same xTom Anycast IP as doh.sb
   'dns10.quad9.net', // Quad9 unfiltered
@@ -36,7 +36,8 @@ const dnsServers = [
   'private.canadianshield.cira.ca',
   'unfiltered.joindns4.eu',
   'public.dns.iij.jp',
-  'doh.libredns.gr'
+  'doh.libredns.gr',
+  'common.dot.dns.yandex.net'
   // '198.54.117.10' // NameCheap DNS, supports DoT, DoH, UDP53
   // 'ada.openbld.net',
   // 'dns.rabbitdns.org'
