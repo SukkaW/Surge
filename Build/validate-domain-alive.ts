@@ -1,6 +1,6 @@
 import { SOURCE_DIR } from './constants/dir';
 import path from 'node:path';
-import { isDomainAlive } from './lib/is-domain-alive';
+import { isDomainAlive, isRegisterableDomainAlive } from './lib/is-domain-alive';
 import { fdir as Fdir } from 'fdir';
 import runAgainstSourceFile from './lib/run-against-source-file';
 
@@ -43,17 +43,24 @@ const deadDomains: string[] = [];
       (domain: string, includeAllSubdomain: boolean) => {
         bar.setTotal(bar.getTotal() + 1);
 
-        return queue.add(
-          () => isDomainAlive(domain).then(({ alive, registerableDomainAlive, registerableDomain }) => {
-            bar.increment();
+        return queue.add(async () => {
+          let registerableDomainAlive, registerableDomain, alive: boolean | undefined;
 
-            if (!registerableDomainAlive) {
-              deadDomains.push('.' + registerableDomain);
-            } else if (!alive) {
-              deadDomains.push(includeAllSubdomain ? '.' + domain : domain);
-            }
-          })
-        );
+          if (includeAllSubdomain) {
+            // we only need to check apex domain, because we don't know if there is any stripped subdomain
+            ({ alive: registerableDomainAlive, registerableDomain } = await isRegisterableDomainAlive(domain));
+          } else {
+            ({ alive, registerableDomainAlive, registerableDomain } = await isDomainAlive(domain));
+          }
+
+          bar.increment();
+
+          if (!registerableDomainAlive) {
+            deadDomains.push('.' + registerableDomain);
+          } else if (!includeAllSubdomain && alive != null && !alive) {
+            deadDomains.push(domain);
+          }
+        });
       }
     ).then(() => console.log('[crawl]', filepath))
   ));

@@ -51,7 +51,7 @@ jobs:
       - run: pnpm install
       - run: pnpm run node Build/validate-domain-alive.ts
         env:
-          DEBUG: domain-alive:*
+          DEBUG: domain-alive:dead-domain:*
       - name: Cache cache.db
         if: always()
         uses: actions/cache/save@v4

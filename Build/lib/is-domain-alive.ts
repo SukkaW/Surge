@@ -1,4 +1,4 @@
-import { createDomainAliveChecker } from 'domain-alive';
+import { createDomainAliveChecker, createRegisterableDomainAliveChecker } from 'domain-alive';
 
 const dnsServers = [
   '8.8.8.8',
@@ -42,10 +42,20 @@ const dnsServers = [
   // 'dns.rabbitdns.org'
 ].map(dns => 'https://' + dns + '/dns-query');
 
-console.log({ dnsServers });
+const resultCache = new Map();
+const registerableDomainResultCache = new Map();
+
+export const isRegisterableDomainAlive = createRegisterableDomainAliveChecker({
+  dns: {
+    dnsServers
+  },
+  registerableDomainResultCache
+});
 
 export const isDomainAlive = createDomainAliveChecker({
   dns: {
     dnsServers
-  }
+  },
+  registerableDomainResultCache,
+  resultCache
 });
