@@ -1,4 +1,5 @@
 import { createDomainAliveChecker, createRegisterableDomainAliveChecker } from 'domain-alive';
+import { $$fetch } from './fetch-retry';
 
 const dnsServers = [
   '8.8.8.8',
@@ -46,17 +47,29 @@ const dnsServers = [
 const resultCache = new Map();
 const registerableDomainResultCache = new Map();
 
-export const isRegisterableDomainAlive = createRegisterableDomainAliveChecker({
-  dns: {
-    dnsServers
-  },
-  registerableDomainResultCache
-});
+export async function getMethods() {
+  const customWhoisServersMapping = await (await ($$fetch('https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json'))).json() as any;
 
-export const isDomainAlive = createDomainAliveChecker({
-  dns: {
-    dnsServers
-  },
-  registerableDomainResultCache,
-  resultCache
-});
+  const isRegisterableDomainAlive = createRegisterableDomainAliveChecker({
+    dns: {
+      dnsServers
+    },
+    registerableDomainResultCache,
+    whois: {
+      customWhoisServersMapping
+    }
+  });
+
+  const isDomainAlive = createDomainAliveChecker({
+    dns: {
+      dnsServers
+    },
+    registerableDomainResultCache,
+    resultCache,
+    whois: {
+      customWhoisServersMapping
+    }
+  });
+
+  return { isRegisterableDomainAlive, isDomainAlive };
+};
