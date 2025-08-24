@@ -52,7 +52,8 @@ export async function getMethods() {
 
   const isRegisterableDomainAlive = createRegisterableDomainAliveChecker({
     dns: {
-      dnsServers
+      dnsServers,
+      maxAttempts: 6
     },
     registerableDomainResultCache,
     whois: {
@@ -62,7 +63,8 @@ export async function getMethods() {
 
   const isDomainAlive = createDomainAliveChecker({
     dns: {
-      dnsServers
+      dnsServers,
+      maxAttempts: 6
     },
     registerableDomainResultCache,
     resultCache,
