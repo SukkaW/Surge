@@ -42,7 +42,6 @@ jobs:
           filter: "tree:0" # we don't care about git history here
           fetch-tags: false
           path: ${{ steps.ramdisk.outputs.build_dir }}
-          token: ${{ secrets.GIT_TOKEN }}
       - name: Setup build folder
         run: |
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/.git ]; then
