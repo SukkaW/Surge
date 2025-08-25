@@ -30,7 +30,7 @@
     "domain-alive": "^0.1.6",
     "fast-cidr-tools": "^0.3.2",
     "fast-fifo": "^1.3.2",
-    "fast-uri": "^3.0.6",
+    "fast-uri": "^3.1.0",
     "fdir": "^6.5.0",
     "foxts": "^3.12.0",
     "hash-wasm": "^4.12.0",
