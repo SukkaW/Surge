@@ -15,6 +15,12 @@ export default async function runAgainstSourceFile(
     if (!l) {
       continue;
     }
+    const otherPoundSign = l.lastIndexOf('#');
+
+    if (otherPoundSign > 0) {
+      l = l.slice(0, otherPoundSign).trimEnd();
+    }
+
     if (type == null) {
       if (l.includes(',')) {
         type = 'ruleset';
