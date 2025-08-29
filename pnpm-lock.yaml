@@ -78,11 +78,11 @@ importers:
         specifier: ^2.26.22
         version: 2.26.22
       tldts:
-        specifier: ^6.1.86
-        version: 6.1.86
+        specifier: ^7.0.12
+        version: 7.0.12
       tldts-experimental:
-        specifier: ^6.1.86
-        version: 6.1.86
+        specifier: ^7.0.12
+        version: 7.0.12
       undici:
         specifier: ^7.15.0
         version: 7.15.0
@@ -2043,21 +2043,11 @@ packages:
     resolution: {integrity: sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ==}
     engines: {node: '>=12.0.0'}
 
-  tldts-core@6.1.86:
-    resolution: {integrity: sha512-Je6p7pkk+KMzMv2XXKmAE3McmolOQFdxkKw0R8EYNr7sELW46JqnNeTX8ybPiQgvg1ymCoF8LXs5fzFaZvJPTA==}
-
   tldts-core@7.0.12:
     resolution: {integrity: sha512-3K76aXywJFduGRsOYoY5JzINLs/WMlOkeDwPL+8OCPq2Rh39gkSDtWAxdJQlWjpun/xF/LHf29yqCi6VC/rHDA==}
 
-  tldts-experimental@6.1.86:
-    resolution: {integrity: sha512-X3N3+SrwSajvANDyIBFa6tf/nO0VoqaXvvINSnQkZMGbzNlD+9G7Xb24Mtk3ZBVZJRGY7UynAJJL8kRVt6Z46Q==}
-
   tldts-experimental@7.0.12:
     resolution: {integrity: sha512-riDDp/JrJJuh/2GV1Tgg6OnOwcWlgleBKi4/xkhd0DW7tvvmNjmWXCh2nj7Z2G1k9S/AGN4RiiPRbvhGJUCxeg==}
-
-  tldts@6.1.86:
-    resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
-    hasBin: true
 
   tldts@7.0.12:
     resolution: {integrity: sha512-M9ZQBPp6FyqhMcl233vHYyYRkxXOA1SKGlnq13S0mJdUhRSwr2w6I8rlchPL73wBwRlyIZpFvpu2VcdSMWLYXw==}
@@ -4137,21 +4127,11 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
-  tldts-core@6.1.86: {}
-
   tldts-core@7.0.12: {}
-
-  tldts-experimental@6.1.86:
-    dependencies:
-      tldts-core: 6.1.86
 
   tldts-experimental@7.0.12:
     dependencies:
       tldts-core: 7.0.12
-
-  tldts@6.1.86:
-    dependencies:
-      tldts-core: 6.1.86
 
   tldts@7.0.12:
     dependencies:
