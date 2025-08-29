@@ -89,7 +89,16 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
           dns: {
             'fake-ip-filter': appendArrayInPlace(
               /** clash */
-              dataset.flatMap(({ domains }) => domains.map((domain) => `+.${domain}`)),
+              dataset.flatMap(({ domains }) => domains.map((domain) => {
+                switch (domain[0]) {
+                  case '$':
+                    return domain.slice(1);
+                  case '+':
+                    return '+.' + domain.slice(1);
+                  default:
+                    return domain;
+                }
+              })),
               HOSTNAMES
             )
           }
