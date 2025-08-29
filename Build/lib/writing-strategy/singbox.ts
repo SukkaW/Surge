@@ -2,7 +2,6 @@ import { BaseWriteStrategy } from './base';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { noop } from 'foxts/noop';
 import { withIdentityContent } from '../misc';
-import { fastIpVersion } from 'foxts/fast-ip-version';
 import stringify from 'json-stringify-pretty-compact';
 import { OUTPUT_SINGBOX_DIR } from '../../constants/dir';
 import { MARKER_DOMAIN } from '../../constants/description';
@@ -79,19 +78,21 @@ export class SingboxSource extends BaseWriteStrategy {
 
   writeUserAgents = noop;
 
-  writeProcessNames(processName: Set<string>): void {
-    appendArrayInPlace(
-      this.singbox.process_name ??= [],
-      Array.from(processName)
-    );
-  }
+  writeProcessNames = noop;
+  // writeProcessNames(processName: Set<string>): void {
+  //   appendArrayInPlace(
+  //     this.singbox.process_name ??= [],
+  //     Array.from(processName)
+  //   );
+  // }
 
-  writeProcessPaths(processPath: Set<string>): void {
-    appendArrayInPlace(
-      this.singbox.process_path ??= [],
-      Array.from(processPath)
-    );
-  }
+  writeProcessPaths = noop;
+  // writeProcessPaths(processPath: Set<string>): void {
+  //   appendArrayInPlace(
+  //     this.singbox.process_path ??= [],
+  //     Array.from(processPath)
+  //   );
+  // }
 
   writeUrlRegexes = noop;
 
@@ -113,58 +114,62 @@ export class SingboxSource extends BaseWriteStrategy {
 
   writeIpAsns = noop;
 
-  writeSourceIpCidrs(sourceIpCidr: string[]): void {
-    this.singbox.source_ip_cidr ??= [];
-    for (let i = 0, len = sourceIpCidr.length; i < len; i++) {
-      const value = sourceIpCidr[i];
-      if (value.includes('/')) {
-        this.singbox.source_ip_cidr.push(value);
-        continue;
-      }
-      const v = fastIpVersion(value);
-      if (v === 4) {
-        this.singbox.source_ip_cidr.push(`${value}/32`);
-        continue;
-      }
-      if (v === 6) {
-        this.singbox.source_ip_cidr.push(`${value}/128`);
-        continue;
-      }
-    }
-  }
+  writeSourceIpCidrs = noop;
+  // writeSourceIpCidrs(sourceIpCidr: string[]): void {
+  //   this.singbox.source_ip_cidr ??= [];
+  //   for (let i = 0, len = sourceIpCidr.length; i < len; i++) {
+  //     const value = sourceIpCidr[i];
+  //     if (value.includes('/')) {
+  //       this.singbox.source_ip_cidr.push(value);
+  //       continue;
+  //     }
+  //     const v = fastIpVersion(value);
+  //     if (v === 4) {
+  //       this.singbox.source_ip_cidr.push(`${value}/32`);
+  //       continue;
+  //     }
+  //     if (v === 6) {
+  //       this.singbox.source_ip_cidr.push(`${value}/128`);
+  //       continue;
+  //     }
+  //   }
+  // }
 
-  writeSourcePorts(port: Set<string>): void {
-    this.singbox.source_port ??= [];
+  writeSourcePorts = noop;
+  // writeSourcePorts(port: Set<string>): void {
+  //   this.singbox.source_port ??= [];
 
-    for (const i of port) {
-      const tmp = Number(i);
-      if (!Number.isNaN(tmp)) {
-        this.singbox.source_port.push(tmp);
-      }
-    }
-  }
+  //   for (const i of port) {
+  //     const tmp = Number(i);
+  //     if (!Number.isNaN(tmp)) {
+  //       this.singbox.source_port.push(tmp);
+  //     }
+  //   }
+  // }
 
-  writeDestinationPorts(port: Set<string>): void {
-    this.singbox.port ??= [];
+  writeDestinationPorts = noop;
+  // writeDestinationPorts(port: Set<string>): void {
+  //   this.singbox.port ??= [];
 
-    for (const i of port) {
-      const tmp = Number(i);
-      if (!Number.isNaN(tmp)) {
-        this.singbox.port.push(tmp);
-      }
-    }
-  }
+  //   for (const i of port) {
+  //     const tmp = Number(i);
+  //     if (!Number.isNaN(tmp)) {
+  //       this.singbox.port.push(tmp);
+  //     }
+  //   }
+  // }
 
-  writeProtocols(protocol: Set<string>): void {
-    this.singbox.network ??= [];
-    // protocol has already be normalized and will only be uppercase
-    if (protocol.has('UDP')) {
-      this.singbox.network.push('udp');
-    }
-    if (protocol.has('TCP')) {
-      this.singbox.network.push('tcp');
-    }
-  }
+  writeProtocols = noop;
+  // writeProtocols(protocol: Set<string>): void {
+  //   this.singbox.network ??= [];
+  //   // protocol has already be normalized and will only be uppercase
+  //   if (protocol.has('UDP')) {
+  //     this.singbox.network.push('udp');
+  //   }
+  //   if (protocol.has('TCP')) {
+  //     this.singbox.network.push('tcp');
+  //   }
+  // }
 
   writeOtherRules = noop;
 }
