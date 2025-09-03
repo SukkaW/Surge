@@ -17,10 +17,6 @@ export const AUGUST_ASN = [
 
 export const HUIZE_ASN = [
   '61302',
-  '44324', // MoeDove
-  '53808', // MoeDove
   '60539',
-  '60842',
-  '140915',
-  '40115' // MoeDove
+  '60842'
 ];
