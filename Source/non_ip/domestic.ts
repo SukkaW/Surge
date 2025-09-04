@@ -130,6 +130,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       // 'qqmail.cn', // not owned by QQ, is sold on hichina.com
       '+qqmail.com',
       'qzone.com',
+      'tencent-cloud.cn',
       '+tencent-cloud.net',
       '+tencent-cloud.com', // apex doain resolve to 0.0.0.1 by DNSPod public DNS
       'tencent.com',
