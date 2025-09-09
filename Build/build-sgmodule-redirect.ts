@@ -4,15 +4,7 @@ import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts-experimental';
 import { isTruthy } from 'foxts/guard';
 import { OUTPUT_MODULES_DIR } from './constants/dir';
-
-function escapeRegExp(string = '') {
-  const reRegExpChar = /[$()*+.?[\\\]^{|}]/g;
-  const reHasRegExpChar = new RegExp(reRegExpChar.source);
-
-  return string && reHasRegExpChar.test(string)
-    ? string.replaceAll(reRegExpChar, String.raw`\$&`)
-    : string;
-}
+import { escapeStringRegexp } from 'foxts/escape-string-regexp';
 
 const REDIRECT_MIRROR_HEADER = [
   // Gravatar
@@ -33,8 +25,6 @@ const REDIRECT_MIRROR_HEADER = [
   ['sdn.geekzu.org/', 'https://secure.gravatar.com/'],
   // libravatar
   ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/'],
-  // gh-proxy
-  ['github.moeyy.xyz/', 'https://'],
   // 7ED Services
   ['use.sevencdn.com/css', 'https://fonts.googleapis.com/css'],
   ['use.sevencdn.com/ajax/libs/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
@@ -68,9 +58,9 @@ const REDIRECT_MIRROR_HEADER = [
   ['cdn.iocdn.cc/css', 'https://fonts.googleapis.com/css'],
   ['cdn.iocdn.cc/icon', 'https://fonts.googleapis.com/icon'],
   ['cdn.iocdn.cc/earlyaccess', 'https://fonts.googleapis.com/earlyaccess'],
-  ['cdn.iocdn.cc/s', 'fonts.gstatic.com/s'],
-  ['cdn.iocdn.cc/static', 'themes.googleusercontent.com/static'],
-  ['cdn.iocdn.cc/ajax', 'ajax.googleapis.com/ajax'],
+  ['cdn.iocdn.cc/s', 'https://fonts.gstatic.com/s'],
+  ['cdn.iocdn.cc/static', 'https://themes.googleusercontent.com/static'],
+  ['cdn.iocdn.cc/ajax', 'https://ajax.googleapis.com/ajax'],
   ['cdn.iocdn.cc/', 'https://cdn.jsdelivr.net/'],
   // wp-china-yes
   ['googlefonts.admincdn.com/', 'https://fonts.googleapis.com/'],
@@ -109,6 +99,7 @@ const REDIRECT_MIRROR_307 = [
   // Minecraft Wiki
   ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/'],
   ['minecraft.fandom.com/', 'https://minecraft.wiki/'],
+  // Hello, FANZA!
   ['missav.com/', 'https://missav.ai/'],
   ['missav.ws/', 'https://missav.ai/'],
   ['thisav.com/', 'https://thisav.me/']
@@ -172,9 +163,9 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       `hostname = %APPEND% ${domains.join(', ')}`,
       '',
       '[URL Rewrite]',
-      ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 header`),
-      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${escapeRegExp(from)} ${to} 307`),
-      ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeRegExp(from)}(.*) ${to}$1 307`)
+      ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeStringRegexp(from)}(.*) ${to}$1 header`),
+      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${(from)} ${to} 307`),
+      ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeStringRegexp(from)}(.*) ${to}$1 307`)
     ],
     path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect.sgmodule')
   );
