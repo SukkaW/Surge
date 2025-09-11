@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "build_dir=previous-build-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
       - name: Download Previous Build
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: SukkaLab/ruleset.skk.moe
           persist-credentials: false
