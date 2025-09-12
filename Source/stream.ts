@@ -123,7 +123,8 @@ const BAHAMUT: StreamService = {
 
     'DOMAIN-SUFFIX,bahamut.com.tw',
     'DOMAIN-SUFFIX,ani.gamer.com.tw',
-
+    'DOMAIN-SUFFIX,api.gamer.com.tw',
+    
     'USER-AGENT,Anime*'
   ]
 };
