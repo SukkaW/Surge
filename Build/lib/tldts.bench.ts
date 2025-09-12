@@ -6,7 +6,7 @@ import * as tldts from 'tldts';
 import * as tldtsExperimental from 'tldts-experimental';
 
 (async () => {
-  const data = await Array.fromAsync(await fetchRemoteTextByLine('https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt', true));
+  const data = await Array.fromAsync(await fetchRemoteTextByLine('https://phishing.army/download/phishing_army_blocklist.txt', true));
 
   const tldtsOpt: Parameters<typeof tldts.getDomain>[1] = {
     allowPrivateDomains: false,
@@ -18,13 +18,13 @@ import * as tldtsExperimental from 'tldts-experimental';
 
   (['getDomain', 'getPublicSuffix', 'getSubdomain', 'parse'] as const).forEach(methodName => {
     group(() => {
-      bench('tldts', () => {
+      bench('tldts - ' + methodName, () => {
         for (let i = 0, len = data.length; i < len; i++) {
           tldts[methodName](data[i], tldtsOpt);
         }
       });
 
-      bench('tldts-experimental', () => {
+      bench('tldts-experimental - ' + methodName, () => {
         for (let i = 0, len = data.length; i < len; i++) {
           tldtsExperimental[methodName](data[i], tldtsOpt);
         }
@@ -32,5 +32,5 @@ import * as tldtsExperimental from 'tldts-experimental';
     });
   });
 
-  run();
+  return run();
 })();

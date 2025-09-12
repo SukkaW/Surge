@@ -1,5 +1,5 @@
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
-import tldts from 'tldts';
+import tldts from 'tldts-experimental';
 import { HostnameSmolTrie } from './lib/trie';
 import path from 'node:path';
 import { SOURCE_DIR } from './constants/dir';

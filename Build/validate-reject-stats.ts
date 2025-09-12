@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
-import tldts from 'tldts';
+import tldts from 'tldts-experimental';
 import { loosTldOptWithPrivateDomains } from './constants/loose-tldts-opt';
 import runAgainstSourceFile from './lib/run-against-source-file';
 
