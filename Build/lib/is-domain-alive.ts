@@ -32,14 +32,12 @@ const dnsServers = [
   // 'ordns.he.net',
   'dns.mullvad.net',
   'basic.rethinkdns.com',
-  'doh.qis.io',
   'dns.surfsharkdns.com',
   'private.canadianshield.cira.ca',
   'unfiltered.joindns4.eu',
   'public.dns.iij.jp',
-  'doh.libredns.gr',
-  'common.dot.dns.yandex.net'
-  // '198.54.117.10' // NameCheap DNS, supports DoT, DoH, UDP53
+  'common.dot.dns.yandex.net',
+  'safeservedns.com' // NameCheap DNS, supports DoT, DoH, UDP53
   // 'ada.openbld.net',
   // 'dns.rabbitdns.org'
 ].map(dns => 'https://' + dns + '/dns-query');
