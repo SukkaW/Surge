@@ -31,7 +31,7 @@ export default async function runAgainstSourceFile(
 
     if (type === 'ruleset') {
       const [ruleType, domain] = l.split(',', 3);
-      switch (ruleType) {
+      switch (ruleType.toUpperCase()) {
         case 'DOMAIN': {
           callback(domain, false);
           break;

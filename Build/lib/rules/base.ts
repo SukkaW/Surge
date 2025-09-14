@@ -201,7 +201,7 @@ export class FileOutput {
       }
 
       const splitted = line.split(',');
-      const type = splitted[0];
+      const type = splitted[0].toUpperCase();
       const value = splitted[1];
       const arg = splitted[2];
 
