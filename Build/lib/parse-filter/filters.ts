@@ -243,6 +243,7 @@ export class AdGuardFilterIgnoreUnsupportedLinesStream extends TransformStream<s
         }
 
         if ((line.includes('/') || line.includes(':')) && !line.includes('://')) {
+          // ignore any line that has "/" or ":" but not "://"
           return;
         }
 
@@ -393,7 +394,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
    */
 
   let sliceStart = 0;
-  let sliceEnd = 0;
+  let sliceEnd = line.length;
 
   // After NetworkFilter.parse, it means the line can not be parsed by ghostry NetworkFilter
   // We now need to "salvage" the line as much as possible
@@ -479,7 +480,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
 
   const indexOfDollar = line.indexOf('$', sliceStart);
   if (indexOfDollar > -1) {
-    sliceEnd = indexOfDollar - line.length;
+    sliceEnd = indexOfDollar;
   }
 
   /*
@@ -533,7 +534,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
     sliceEnd -= 1;
   }
 
-  const sliced = (sliceStart > 0 || sliceEnd < 0) ? line.slice(sliceStart, sliceEnd === 0 ? undefined : sliceEnd) : line;
+  const sliced = line.slice(sliceStart, sliceEnd);
   if (sliced.length === 0 || sliced.includes('/')) {
     result[1] = ParseType.Null;
     return result;
