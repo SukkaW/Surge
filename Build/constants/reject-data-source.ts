@@ -13,16 +13,6 @@ export const HOSTS: HostsSource[] = [
     'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Xiaomi-Extension.txt',
     ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Xiaomi-Extension.txt'],
     false
-  ],
-  [
-    'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Huawei-AdBlock.txt',
-    ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt'],
-    false
-  ],
-  [
-    'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Samsung-AdBlock.txt',
-    ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Samsung-AdBlock.txt'],
-    false
   ]
 ];
 
@@ -57,6 +47,20 @@ export const HOSTS_EXTRA: HostsSource[] = [
     'https://cdn.jsdelivr.net/gh/hoshsadiq/adblock-nocoin-list@master/hosts.txt',
     ['https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt'],
     true
+  ],
+  // GoodbyeAds - Huawei AdBlock, most of its content has been covered by reject.conf, the rest should belongs to reject_extra now
+  [
+    'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Huawei-AdBlock.txt',
+    ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Huawei-AdBlock.txt'],
+    false
+  ],
+  // GoodbyeAds - Samsung AdBlock
+  // most of its content has covered by reject.conf. Remaining domains, some are not even owned by samsung, some are normal API/SSO/DNS
+  // blocking them doesn't make sense, yet will not breaking anything anyway, so we move it to extra
+  [
+    'https://cdn.jsdelivr.net/gh/jerryn70/GoodbyeAds@master/Extension/GoodbyeAds-Samsung-AdBlock.txt',
+    ['https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Extension/GoodbyeAds-Samsung-AdBlock.txt'],
+    false
   ]
 ];
 
@@ -199,11 +203,12 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     [
       'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
       'https://secure.fanboy.co.nz/easyprivacy.txt',
-      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
-      'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt',
       'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt'
+      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
+      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
+      'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
     ]
+    // 3p is included in AdGuardDNSFilter, which we will use that in reject_extra
   ],
   // AdGuard Base Filter: Use AdGuard Base Filter w/ EasyList
   // [
@@ -213,12 +218,13 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // AdGuard Mobile AD
   [
     'https://filters.adtidy.org/extension/ublock/filters/11_optimized.txt',
-    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/2_without_easylist.txt']
+    ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/11_optimized.txt']
   ],
   // AdGuard Tracking Protection
   [
     'https://filters.adtidy.org/extension/ublock/filters/3_optimized.txt',
     ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/3_optimized.txt']
+    // 3p is included in AdGuardDNSFilter
   ],
   // AdGuard Chinese filter (EasyList China + AdGuard Chinese filter)
   [
@@ -282,6 +288,7 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // AdGuard DNS Filter
   // way too many other countries' domains (JP, Spanish, RU, VN, Turkish, Ukarainian, Dutch, etc.)
   // EasyList, EasyPrivacy, Chinese and general filters are already included in base data source
+  // Including extra $third-party rules
   [
     'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
     [
@@ -315,7 +322,6 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   [
     'https://filters.adtidy.org/extension/ublock/filters/7_optimized.txt',
     ['https://proxy.cdn.skk.moe/https/filters.adtidy.org/extension/ublock/filters/7_optimized.txt']
-
   ],
   // uBlock Origin Filter List
   [
