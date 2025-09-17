@@ -77,7 +77,7 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
   // instead we maintain a list of our own
 
   // BarbBlock
-  // The barbblock list has never been updated since ~~2019-05~~ 2023-10, merged to reject_extra.conf
+  // The barbblock list has never been updated since ~~2019-05~~ ~~2023-10~~ 2025-07, merged to reject_extra.conf
   // [
   //   'https://cdn.jsdelivr.net/gh/paulgb/BarbBlock@main/blacklists/domain-list.txt',
   //   ['https://paulgb.github.io/BarbBlock/blacklists/domain-list.txt'],
