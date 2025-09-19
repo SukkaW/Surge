@@ -402,16 +402,16 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
   DNSPOD: {
     hosts: {
       // 'dot.pub': ['120.53.53.53', '1.12.12.12'],
-      'doh.pub': ['120.53.53.53', '1.12.12.12']
+      // 'doh.pub': ['120.53.53.53', '1.12.12.12']
       // 'dns.pub': ['120.53.53.53', '1.12.12.12']
     },
     realip: false,
     ruleset: false,
-    dns: 'https://1.12.12.12/dns-query',
+    dns: '119.29.29.29',
     domains: [
-      // '$dot.pub',
-      '$doh.pub'
-      // '$dns.pub'
+      '$dot.pub',
+      '$doh.pub',
+      '$dns.pub'
     ]
   },
   QIHOO360: {
