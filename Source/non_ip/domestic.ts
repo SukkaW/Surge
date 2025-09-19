@@ -376,7 +376,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'yunpan.com.cn',
       '+qh-cdn.com',
       'baomitu.com',
-      'qiku.com'
+      'qiku.com',
+      '360simg.com'
     ]
   }
 };
