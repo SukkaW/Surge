@@ -5,8 +5,8 @@ on:
       - master
   pull_request:
   schedule:
-    - cron: '0 5 * * *'  # Runs at 05:00 UTC
-    - cron: '0 17 * * *' # Runs at 1:00 UTC
+    - cron: "0 12 * * *"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -18,30 +18,30 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - uses: smorimoto/tune-github-hosted-runner-network@v1
-        # https://github.com/actions/runner-images/issues/1187
-      - uses: actions/checkout@v5
+      # - name: Tune GitHub-hosted runner network
+      #   # https://github.com/actions/runner-images/issues/1187
+      #   uses: smorimoto/tune-github-hosted-runner-network@v1
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v4
         with:
           node-version-file: ".node-version"
           cache: "pnpm"
+      - name: Download Previous Build
+        uses: actions/checkout@v4
+        with:
+          repository: SukkaLab/ruleset.skk.moe
+          persist-credentials: false
+          path: previous-build-${{ github.run_id }}-${{ github.run_number }}
+          token: ${{ secrets.GIT_TOKEN }}
       - name: Grab Building Folder
         id: ramdisk
         run: |
           echo "build_dir=previous-build-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
-      - name: Download Previous Build
-        uses: actions/checkout@v5
-        with:
-          repository: SukkaLab/ruleset.skk.moe
-          persist-credentials: false
-          filter: "tree:0" # we don't care about git history here
-          fetch-tags: false
-          path: ${{ steps.ramdisk.outputs.build_dir }}
       - name: Setup build folder
         run: |
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/.git ]; then
@@ -49,7 +49,6 @@ jobs:
             exit 1
           fi
           rm -rf "${{ steps.ramdisk.outputs.build_dir }}/.git"
-
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/List ]; then
             echo "List not found"
             exit 1
@@ -116,111 +115,73 @@ jobs:
           path: |
             .cache
           key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
-
-  diff_deployment_on_pr:
-    if: github.ref != 'refs/heads/master'
+  compile_and_release:
     needs:
       - build
-    name: Diff output
+    name: Compile JSON to SRS and Upload Release
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
-      - name: Diff
+      - name: Install sing-box
         run: |
-          git clone --filter=tree:0 --no-tags https://github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git >/dev/null 2>&1
-          cd ./deploy-git
-          git fetch origin master >/dev/null 2>&1
-          rm -rf ./*
-          cp -rf ../public/* ./
-          git --no-pager diff --minimal
-
-  deploy_to_cloudflare_pages:
-    needs:
-      - build
-    name: Deploy to Cloudflare Pages
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-24.04
-    # matrix is a tricky way to define a variable directly in the action yaml
-    strategy:
-      matrix:
-        wranglerVersion: ['3.114.12']
-    steps:
-      - name: Get NPM cache directory path
-        id: npm_cache_path
-        shell: sh
-        run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ${{ steps.npm_cache_path.outputs.dir }}
-            node_modules
-          key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ matrix.wranglerVersion }}
-          restore-keys: |
-            deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-
-      - uses: actions/download-artifact@v4
-        with:
-          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
-          path: public
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-          wranglerVersion: ${{ matrix.wranglerVersion }}
-
-  deploy_to_github_gitlab:
-    needs:
-      - build
-    name: Deploy to GitHub and GitLab
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
-          path: public
-      - name: Upload Dist to GitLab
-        continue-on-error: true
+          sudo mkdir -p /etc/apt/keyrings
+          sudo curl -fsSL https://sing-box.app/gpg.key -o /etc/apt/keyrings/sagernet.asc
+          sudo chmod a+r /etc/apt/keyrings/sagernet.asc
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/sagernet.asc] https://deb.sagernet.org/ * *" | \
+            sudo tee /etc/apt/sources.list.d/sagernet.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y sing-box
+      - name: Compile JSON to SRS
         run: |
-          git clone --filter=tree:0 --no-tags https://${GITLAB_TOKEN_NAME}:${GITLAB_TOKEN}@gitlab.com/SukkaW/ruleset.skk.moe.git ./deploy-git
-          cd ./deploy-git
-          git config --global push.dgefault matching
-          git config --global user.email "${GITLAB_EMAIL}"
-          git config --global user.name "${GITLAB_USER}"
-          rm -rf ./*
-          cp -rf ../public/* ./
-          git add --all .
-          git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
-          git push --quiet --force origin HEAD:master
-          cd ..
-          rm -rf ./deploy-git
-        env:
-          GITLAB_EMAIL: ${{ secrets.GITLAB_EMAIL }}
-          GITLAB_USER: ${{ secrets.GITLAB_USER }}
-          GITLAB_TOKEN_NAME: ${{ secrets.GITLAB_TOKEN_NAME }}
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-      - name: Upload Dist to GitHub
-        continue-on-error: true
+          mkdir -p output
+          # Check if sing-box directory exists
+          if [ ! -d "public/sing-box" ]; then
+            echo "Warning: sing-box directory not found, skipping compilation"
+            exit 0
+          fi
+          
+          # Compile all JSON files in sing-box directory
+          for rule_type in domainset non_ip ip; do
+            if [ -d "public/sing-box/${rule_type}" ]; then
+              echo "Processing ${rule_type} rules..."
+              find "public/sing-box/${rule_type}" -type f -name "*.json" | while read -r json_file; do
+                file_name=$(basename "$json_file" .json)
+                output_file="output/${rule_type}_${file_name}.srs"
+                echo "Compiling: $json_file -> $output_file"
+                sing-box rule-set compile "$json_file" -o "$output_file"
+              done
+            else
+              echo "Directory public/sing-box/${rule_type} not found, skipping..."
+            fi
+          done
+          
+          # List compiled files
+          echo "Compiled files:"
+          ls -la output/ || echo "No files compiled"
+      - name: Set timestamp tag
+        id: set_tag
         run: |
-          gh repo unarchive SukkaLab/ruleset.skk.moe --yes
-          git clone --filter=tree:0 --no-tags https://${GH_USER}:${GH_TOKEN}@github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git
-          cd ./deploy-git
-          git config --global push.default matching
-          git config --global user.email "${GH_EMAIL}"
-          git config --global user.name "${GH_USER}"
-          rm -rf ./*
-          cp -rf ../public/* ./
-          echo "ruleset.skk.moe" > CNAME
-          git add --all .
-          git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
-          git push --quiet --force origin HEAD:master
-          cd ..
-          rm -rf ./deploy-git
-          gh repo archive SukkaLab/ruleset.skk.moe --yes
-        env:
-          GH_EMAIL: ${{ secrets.GIT_EMAIL }}
-          GH_USER: ${{ secrets.GIT_USER }}
-          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+          TAG=$(date +'%Y%m%d%H%M%S')
+          echo "TAG=${TAG}" >> $GITHUB_OUTPUT
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output/*.srs
+          tag: ${{ steps.set_tag.outputs.TAG }}
+          overwrite: true
+          file_glob: true
+      - name: Upload binaries to latest release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output/*.srs
+          tag: latest
+          overwrite: true
+          file_glob: true
