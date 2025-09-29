@@ -45,6 +45,30 @@ const getSpeedtestHostsGroupsPromise = $$fetch('https://speedtest-net-servers.cd
     return prev;
   }, []));
 
+interface LibreSpeedServerInfo {
+  name: string,
+  dlURL: string,
+  ulURL: string,
+  pingURL: string,
+  getIpURL: string,
+  server: string,
+  sponsorName: string
+}
+
+const getLibrespeedBackendsPromise = $$fetch('https://speedtest-net-servers.cdn.skk.moe/librespeed-servers.json')
+  .then(res => res.json() as Promise<LibreSpeedServerInfo[]>)
+  .then((data) => data.reduce<string[]>((prev, cur) => {
+    let hn: string | null | undefined = null;
+    if (cur.server) {
+      hn = fastUri.parse(cur.server).host;
+      if (hn) {
+        prev.push(hn);
+      }
+    }
+
+    return prev;
+  }, []));
+
 export const buildSpeedtestDomainSet = task(require.main === module, __filename)(
   async (span) => new DomainsetOutput(span, 'speedtest')
     .withTitle('Sukka\'s Ruleset - Speedtest Domains')
@@ -55,6 +79,7 @@ export const buildSpeedtestDomainSet = task(require.main === module, __filename)
     )
     .addFromDomainset(readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'domainset/speedtest.conf')))
     .addFromDomainset(readFileIntoProcessedArray(path.resolve(OUTPUT_SURGE_DIR, 'domainset/speedtest.conf')))
-    .bulkAddDomain(await span.traceChildPromise('get speedtest hosts groups', getSpeedtestHostsGroupsPromise))
+    .bulkAddDomain(await span.traceChildPromise('get speedtest.test servers', getSpeedtestHostsGroupsPromise))
+    .bulkAddDomain(await span.traceChildPromise('get librespeed backends', getLibrespeedBackendsPromise))
     .write()
 );
