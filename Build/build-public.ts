@@ -12,6 +12,7 @@ import type { VoidOrVoidArray } from './lib/misc';
 import picocolors from 'picocolors';
 import { tagged as html } from 'foxts/tagged';
 import { compareAndWriteFile } from './lib/create-file';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 const priorityOrder: Record<'default' | string & {}, number> = {
   LICENSE: 0,
@@ -71,14 +72,15 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   await Promise.all([
     compareAndWriteFile(
       span,
-      [
-        '/*',
-        '  cache-control: public, max-age=240, stale-while-revalidate=60, stale-if-error=15',
-        'https://:project.pages.dev/*',
-        '  X-Robots-Tag: noindex',
-        ...Object.keys(priorityOrder)
-          .map((name) => `/${name}/*\n  content-type: text/plain; charset=utf-8\n  X-Robots-Tag: noindex`)
-      ],
+      appendArrayInPlace(
+        [
+          '/*',
+          '  cache-control: public, max-age=300, stale-while-revalidate=30, stale-if-error=60',
+          'https://:project.pages.dev/*',
+          '  X-Robots-Tag: noindex'
+        ],
+        Object.keys(priorityOrder).map((name) => `/${name}/*\n  content-type: text/plain; charset=utf-8\n  X-Robots-Tag: noindex`)
+      ),
       path.join(PUBLIC_DIR, '_headers')
     ),
     compareAndWriteFile(

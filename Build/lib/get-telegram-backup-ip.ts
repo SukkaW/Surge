@@ -5,15 +5,16 @@ import crypto from 'node:crypto';
 import { Api, extensions as TgExtensions } from 'telegram';
 import { bigint2ip } from 'fast-cidr-tools';
 
-const mtptoto_public_rsa = '-----BEGIN RSA PUBLIC KEY-----\n'
-  + 'MIIBCgKCAQEAyr+18Rex2ohtVy8sroGP\n'
-  + 'BwXD3DOoKCSpjDqYoXgCqB7ioln4eDCFfOBUlfXUEvM/fnKCpF46VkAftlb4VuPD\n'
-  + 'eQSS/ZxZYEGqHaywlroVnXHIjgqoxiAd192xRGreuXIaUKmkwlM9JID9WS2jUsTp\n'
-  + 'zQ91L8MEPLJ/4zrBwZua8W5fECwCCh2c9G5IzzBm+otMS/YKwmR1olzRCyEkyAEj\n'
-  + 'XWqBI9Ftv5eG8m0VkBzOG655WIYdyV0HfDK/NWcvGqa0w/nriMD6mDjKOryamw0O\n'
-  + 'P9QuYgMN0C9xMW9y8SmP4h92OAWodTYgY1hZCxdv6cs5UnW9+PWvS+WIbkh+GaWY\n'
-  + 'xwIDAQAB\n'
-  + '-----END RSA PUBLIC KEY-----\n';
+const mtptoto_public_rsa = `-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEAyr+18Rex2ohtVy8sroGP
+BwXD3DOoKCSpjDqYoXgCqB7ioln4eDCFfOBUlfXUEvM/fnKCpF46VkAftlb4VuPD
+eQSS/ZxZYEGqHaywlroVnXHIjgqoxiAd192xRGreuXIaUKmkwlM9JID9WS2jUsTp
+zQ91L8MEPLJ/4zrBwZua8W5fECwCCh2c9G5IzzBm+otMS/YKwmR1olzRCyEkyAEj
+XWqBI9Ftv5eG8m0VkBzOG655WIYdyV0HfDK/NWcvGqa0w/nriMD6mDjKOryamw0O
+P9QuYgMN0C9xMW9y8SmP4h92OAWodTYgY1hZCxdv6cs5UnW9+PWvS+WIbkh+GaWY
+xwIDAQAB
+-----END RSA PUBLIC KEY-----
+`;
 
 export function getTelegramBackupIPFromBase64(base64: string) {
   // 1. Check base64 size
