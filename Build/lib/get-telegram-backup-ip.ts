@@ -5,6 +5,8 @@ import crypto from 'node:crypto';
 import { Api, extensions as TgExtensions } from 'telegram';
 import { bigint2ip } from 'fast-cidr-tools';
 
+import { base64ToUint8Array, concatUint8Arrays } from 'foxts/uint8array-utils';
+
 const mtptoto_public_rsa = `-----BEGIN RSA PUBLIC KEY-----
 MIIBCgKCAQEAyr+18Rex2ohtVy8sroGP
 BwXD3DOoKCSpjDqYoXgCqB7ioln4eDCFfOBUlfXUEvM/fnKCpF46VkAftlb4VuPD
@@ -26,7 +28,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
   // Not needed with Buffer.from
 
   // 3. Decode base64 to Buffer
-  const decoded = Buffer.from(base64, 'base64');
+  const decoded = base64ToUint8Array(base64);
   if (decoded.length !== 256) {
     throw new TypeError('Decoded buffer length is not 344 bytes, received ' + decoded.length);
   }
@@ -55,7 +57,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   decipher.setAutoPadding(false);
 
-  const decryptedCbc = Buffer.concat([decipher.update(dataCbc), decipher.final()]);
+  const decryptedCbc = concatUint8Arrays([decipher.update(dataCbc), decipher.final()]);
 
   if (decryptedCbc.length !== 224) {
     throw new Error(`Decrypted AES payload length is not 224 bytes, received ${decryptedCbc.length}`);
@@ -74,7 +76,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
     throw new Error('SHA256 hash mismatch');
   }
 
-  const parser = new TgExtensions.BinaryReader(decryptedCbc);
+  const parser = new TgExtensions.BinaryReader(Buffer.from(decryptedCbc));
   const len = parser.readInt();
   if (len < 8 || len > 208) throw new Error(`Invalid TL data length: ${len}`);
 
@@ -86,7 +88,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
 
   const payload = decryptedCbc.subarray(8, len);
 
-  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(payload));
+  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(Buffer.from(payload)));
 
   return configSimple.rules.flatMap(rule => rule.ips.map(ip => {
     switch (ip.CONSTRUCTOR_ID) {
