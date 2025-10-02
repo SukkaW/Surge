@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ghostery/adblocker": "^2.11.6",
+    "@ghostery/adblocker": "^2.12.0",
     "@henrygd/queue": "^1.0.7",
     "@mitata/counters": "^0.0.8",
     "better-sqlite3": "^12.4.1",
@@ -32,7 +32,7 @@
     "fast-fifo": "^1.3.2",
     "fast-uri": "^3.1.0",
     "fdir": "^6.5.0",
-    "foxts": "^3.13.0",
+    "foxts": "^4.0.0",
     "hash-wasm": "^4.12.0",
     "json-stringify-pretty-compact": "3.0.0",
     "null-prototype-object": "^1.2.3",
@@ -51,7 +51,7 @@
     "yauzl-promise": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^7.1.1",
+    "@eslint-sukka/node": "^7.2.1",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.13.5",
     "@types/better-sqlite3": "^7.6.13",
@@ -59,20 +59,20 @@
     "@types/dns2": "^2.0.10",
     "@types/fast-fifo": "^1.3.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.6.2",
     "@types/punycode": "^2.1.4",
     "@types/tar-fs": "^2.0.4",
     "@types/yauzl-promise": "^4.0.1",
     "eslint": "^9.36.0",
-    "eslint-config-sukka": "^7.1.1",
-    "eslint-formatter-sukka": "^7.1.1",
-    "expect": "^30.1.2",
+    "eslint-config-sukka": "^7.2.1",
+    "eslint-formatter-sukka": "^7.2.1",
+    "expect": "^30.2.0",
     "mitata": "^1.0.34",
-    "mocha": "^11.7.2",
+    "mocha": "^11.7.4",
     "tinyexec": "^1.0.1",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.17.1",
+  "packageManager": "pnpm@10.18.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core",
