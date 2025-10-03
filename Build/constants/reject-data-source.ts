@@ -537,7 +537,7 @@ export const PREDEFINED_WHITELIST = [
   'store1.gofile.io', // Dandelion Sprout's Annoyances List
   'ad.12306.cn', // https://github.com/jdlingyu/ad-wars
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
-  '.nstool.netease.com', // it is only used to check local dns
+  '.telize.com', // AdGuardDNSFilter
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
 
   'widget-mediator.zopim.com', // breaking zendesk chat
