@@ -44,9 +44,6 @@ importers:
       fast-cidr-tools:
         specifier: ^0.3.3
         version: 0.3.3
-      fast-fifo:
-        specifier: ^1.3.2
-        version: 1.3.2
       fast-uri:
         specifier: ^3.1.0
         version: 3.1.0
@@ -123,9 +120,6 @@ importers:
       '@types/dns2':
         specifier: ^2.0.10
         version: 2.0.10
-      '@types/fast-fifo':
-        specifier: ^1.3.0
-        version: 1.3.0
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -665,9 +659,6 @@ packages:
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
-
-  '@types/fast-fifo@1.3.0':
-    resolution: {integrity: sha512-xTVvla2QX5ruNmVUqCFc++xm42xl6RBaroppSleSczvM2rAwClr88MbnrgDGLIStt4RCVegeKO4z2HM5AHFOng==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -2666,8 +2657,6 @@ snapshots:
       '@types/node': 24.7.0
 
   '@types/estree@1.0.8': {}
-
-  '@types/fast-fifo@1.3.0': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
