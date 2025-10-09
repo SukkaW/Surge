@@ -336,6 +336,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
 
       // Bilibili Baidu CDN
       '$upos-sz-mirrorbd.bilivideo.com',
+      '$upos-sz-mirrorbdb.bilivideo.com',
       '$upos-sz-mirrorbos.bilivideo.com'
     ]
   },
