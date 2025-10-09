@@ -2,7 +2,7 @@
  * Hostbane-Optimized Trie based on Mnemonist Trie
  */
 
-import { fastStringCompare } from './misc';
+import { fastStringCompare } from 'foxts/fast-string-compare';
 import util from 'node:util';
 import { noop } from 'foxts/noop';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';

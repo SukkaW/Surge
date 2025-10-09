@@ -7,7 +7,8 @@ import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
 import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
-import { fastStringCompare, writeFile } from './lib/misc';
+import { writeFile } from './lib/misc';
+import { fastStringCompare } from 'foxts/fast-string-compare';
 import type { VoidOrVoidArray } from './lib/misc';
 import picocolors from 'picocolors';
 import { tagged as html } from 'foxts/tagged';
