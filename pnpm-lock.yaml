@@ -65,9 +65,6 @@ importers:
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
-      punycode:
-        specifier: ^2.3.1
-        version: 2.3.1
       tar-fs:
         specifier: ^3.1.1
         version: 3.1.1
@@ -126,9 +123,6 @@ importers:
       '@types/node':
         specifier: ^24.7.1
         version: 24.7.1
-      '@types/punycode':
-        specifier: ^2.1.4
-        version: 2.1.4
       '@types/tar-fs':
         specifier: ^2.0.4
         version: 2.0.4
@@ -677,9 +671,6 @@ packages:
 
   '@types/node@24.7.1':
     resolution: {integrity: sha512-CmyhGZanP88uuC5GpWU9q+fI61j2SkhO3UGMUdfYRE6Bcy0ccyzn1Rqj9YAB/ZY4kOXmNf0ocah5GtphmLMP6Q==}
-
-  '@types/punycode@2.1.4':
-    resolution: {integrity: sha512-trzh6NzBnq8yw5e35f8xe8VTYjqM3NE7bohBtvDVf/dtUer3zYTLK1Ka3DG3p7bdtoaOHZucma6FfVKlQ134pQ==}
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
@@ -2673,8 +2664,6 @@ snapshots:
   '@types/node@24.7.1':
     dependencies:
       undici-types: 7.14.0
-
-  '@types/punycode@2.1.4': {}
 
   '@types/stack-utils@2.0.3': {}
 
