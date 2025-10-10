@@ -39,8 +39,8 @@ importers:
         specifier: github:lsongdev/node-dns#e4fa035aca0b8eb730bde3431fbf0c60a31a09c9
         version: https://codeload.github.com/lsongdev/node-dns/tar.gz/e4fa035aca0b8eb730bde3431fbf0c60a31a09c9
       domain-alive:
-        specifier: ^0.1.9
-        version: 0.1.9
+        specifier: ^0.1.10
+        version: 0.1.10
       fast-cidr-tools:
         specifier: ^0.3.3
         version: 0.3.3
@@ -1100,8 +1100,8 @@ packages:
   dom-serializer@1.4.1:
     resolution: {integrity: sha512-VHwB3KfrcOOkelEG2ZOfxqLZdfkil8PtJi4P8N2MMXucZq2yLp75ClViUlOVwyoHEDjYU433Aq+5zWP61+RGag==}
 
-  domain-alive@0.1.9:
-    resolution: {integrity: sha512-y8QTqHdP1Tzsl8Uln8R9nWUdY4IKsnZh8K0fnxTq6tdbyNsFrt3+EoDJAzn4YYUh73lMRueRRTIOZvXngIWZdw==}
+  domain-alive@0.1.10:
+    resolution: {integrity: sha512-5Znsozkx3Ct+riJ1RSHd8ZzRt9Og8skrzy7EGeWv6I13KtVVx/crgM2gKQ6Od/QvA+wF8+XBKx44ikW00TFDVQ==}
 
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
@@ -3060,12 +3060,11 @@ snapshots:
       domhandler: 4.3.1
       entities: 2.2.0
 
-  domain-alive@0.1.9:
+  domain-alive@0.1.10:
     dependencies:
       debug: 4.4.1(supports-color@8.1.1)
       dns2: https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11
       foxts: 4.3.1
-      punycode: 2.3.1
       tldts: 7.0.17
     transitivePeerDependencies:
       - supports-color

@@ -27,7 +27,7 @@
     "cli-progress": "^3.12.0",
     "csv-parse": "^6.1.0",
     "dns2": "github:lsongdev/node-dns#e4fa035aca0b8eb730bde3431fbf0c60a31a09c9",
-    "domain-alive": "^0.1.9",
+    "domain-alive": "^0.1.10",
     "fast-cidr-tools": "^0.3.3",
     "fast-uri": "^3.1.0",
     "fdir": "^6.5.0",
@@ -68,7 +68,7 @@
     "tinyexec": "^1.0.1",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.18.1",
+  "packageManager": "pnpm@10.18.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core",
