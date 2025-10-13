@@ -13,7 +13,7 @@ export const DOMAINS = [
   'statics.teams.cdn.office.net'
 ];
 
-export const DOMAIN_SUFFIXES = ['download.prss.microsoft.com'];
+export const DOMAIN_SUFFIXES = [];
 
 export const BLACKLIST = [
   'www.microsoft.com',
