@@ -145,6 +145,11 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
       'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains-online.txt'
     ],
     true
+  ],
+  [
+    'https://raw.githubusercontent.com/DandelionSprout/adfilt/refs/heads/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareDomains.txt',
+    [],
+    true
   ]
   // Spam404
   // Not actively maintained, let's consider it is dead
@@ -254,12 +259,6 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     ]
   ]
   //
-  // [
-  //   'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt',
-  //   [
-  //     'https://adguardteam.github.io/HostlistsRegistry/assets/filter_12.txt'
-  //   ]
-  // ]
   // Stalkerware
   // [
   //   'https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts',

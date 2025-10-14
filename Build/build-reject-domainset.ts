@@ -24,6 +24,7 @@ import type { MaybePromise } from './lib/misc';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
 import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
+import { arrayPushNonNullish } from 'foxts/array-push-non-nullish';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_extra.conf'));
@@ -117,102 +118,112 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   // Parse from AdGuard Filters
   await span
     .traceChild('download and process hosts / adblock filter rules')
-    .traceAsyncFn((childSpan) => Promise.all([
-
+    .traceAsyncFn((childSpan) => {
+      const promises: Array<Promise<void>> = [];
       // Parse from remote hosts & domain lists
-      hostsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
-      hostsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
 
-      domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)),
-      domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)),
+      arrayPushNonNullish(promises, hostsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)));
+      arrayPushNonNullish(promises, hostsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)));
+      arrayPushNonNullish(promises, domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)));
+      arrayPushNonNullish(promises, domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)));
 
-      rejectPhisingDomainsetOutput.addFromDomainset(getPhishingDomains(childSpan)),
+      rejectPhisingDomainsetOutput.addFromDomainset(getPhishingDomains(childSpan));
 
-      adguardFiltersDownloads.map(
-        task => task(childSpan).then(({
-          filterRulesUrl,
-          whiteDomains, whiteDomainSuffixes,
-          blackDomains, blackDomainSuffixes,
-          blackIPs, blackWildcard,
-          whiteKeyword, blackKeyword
-        }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+      arrayPushNonNullish(
+        promises,
+        adguardFiltersDownloads.map(
+          task => task(childSpan).then(({
+            filterRulesUrl,
+            whiteDomains, whiteDomainSuffixes,
+            blackDomains, blackDomainSuffixes,
+            blackIPs, blackWildcard,
+            whiteKeyword, blackKeyword
+          }) => {
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
 
-          addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+            addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
 
-          rejectDomainsetOutput.bulkAddDomain(blackDomains);
-          rejectDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+            rejectDomainsetOutput.bulkAddDomain(blackDomains);
+            rejectDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
 
-          rejectDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
+            rejectDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
 
-          rejectDomainsetOutput.appendDataSource(filterRulesUrl);
+            rejectDomainsetOutput.appendDataSource(filterRulesUrl);
 
-          rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
-          rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
+            rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
+            rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
 
-          rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
-          rejectIPOutput.appendDataSource(filterRulesUrl);
-        })
-      ),
-      adguardFiltersExtraDownloads.map(
-        task => task(childSpan).then(({
-          filterRulesUrl,
-          whiteDomains, whiteDomainSuffixes,
-          blackDomains, blackDomainSuffixes,
-          blackIPs, blackWildcard, whiteKeyword, blackKeyword
-        }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
-          addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
-
-          rejectExtraDomainsetOutput.bulkAddDomain(blackDomains);
-          rejectExtraDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
-
-          rejectExtraDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
-
-          rejectExtraDomainsetOutput.appendDataSource(filterRulesUrl);
-
-          rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
-          rejectIPOutput.appendDataSource(filterRulesUrl);
-
-          rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
-          rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
-        })
-      ),
-      adguardFiltersWhitelistsDownloads.map(
-        task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, whiteKeyword, blackKeyword }) => {
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
-          addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
-          addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
-          addArrayElementsToSet(filterRuleWhiteKeywords, blackKeyword);
-        })
-      ),
-
-      span.traceChildAsync(
-        'get bogus nxdomain ips',
-        () => fetchAssets(...BOGUS_NXDOMAIN_DNSMASQ, true, false)
-          .then(arr => {
-            for (let i = 0, len = arr.length; i < len; i++) {
-              const line = arr[i];
-              if (line.startsWith('bogus-nxdomain=')) {
-                // bogus nxdomain needs to be blocked even after resolved
-                rejectIPOutput.addAnyCIDR(
-                  line.slice(15).trim(),
-                  false
-                );
-              }
-            }
-
-            return arr;
+            rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
+            rejectIPOutput.appendDataSource(filterRulesUrl);
           })
-      )
-    ].flat()));
+        )
+      );
+
+      arrayPushNonNullish(
+        promises,
+        adguardFiltersExtraDownloads.map(
+          task => task(childSpan).then(({
+            filterRulesUrl,
+            whiteDomains, whiteDomainSuffixes,
+            blackDomains, blackDomainSuffixes,
+            blackIPs, blackWildcard, whiteKeyword, blackKeyword
+          }) => {
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+            addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+
+            rejectExtraDomainsetOutput.bulkAddDomain(blackDomains);
+            rejectExtraDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+
+            rejectExtraDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
+
+            rejectExtraDomainsetOutput.appendDataSource(filterRulesUrl);
+
+            rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
+            rejectIPOutput.appendDataSource(filterRulesUrl);
+
+            rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
+            rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
+          })
+        )
+      );
+      arrayPushNonNullish(
+        promises,
+        adguardFiltersWhitelistsDownloads.map(
+          task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, whiteKeyword, blackKeyword }) => {
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
+            addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
+            addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+            addArrayElementsToSet(filterRuleWhiteKeywords, blackKeyword);
+          })
+        )
+      );
+
+      promises.push(span.traceChildAsync(
+        'get bogus nxdomain ips',
+        () => fetchAssets(...BOGUS_NXDOMAIN_DNSMASQ, true, false).then(arr => {
+          for (let i = 0, len = arr.length; i < len; i++) {
+            const line = arr[i];
+            if (line.startsWith('bogus-nxdomain=')) {
+              // bogus nxdomain needs to be blocked even after resolved
+              rejectIPOutput.addAnyCIDR(
+                line.slice(15).trim(),
+                false
+              );
+            }
+          }
+          // return arr;
+        })
+      ));
+
+      return Promise.all(promises);
+    });
 
   if (foundDebugDomain.value) {
-  // eslint-disable-next-line sukka/unicorn/no-process-exit -- cli App
+    // eslint-disable-next-line sukka/unicorn/no-process-exit -- cli App
     process.exit(1);
   }
 
@@ -231,8 +242,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectExtraDomainsetOutput.whitelistDomain(domain);
       rejectPhisingDomainsetOutput.whitelistDomain(domain);
 
-    // DON'T Whitelist reject non_ip ruleset, we are force blocking thingshere
-    // rejectNonIpRulesetOutput.whitelistDomain(domain);
+      // DON'T Whitelist reject non_ip ruleset, we are force blocking thingshere
+      // rejectNonIpRulesetOutput.whitelistDomain(domain);
     }
 
     // we use "whitelistKeyword" method, this will be used to create kwfilter internally
@@ -271,7 +282,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   rejectOutputAdGuardHome.domainTrie = rejectDomainsetOutput.domainTrie;
 
   await rejectOutputAdGuardHome
-  // .addFromRuleset(readLocalMyRejectRulesetPromise)
+    // .addFromRuleset(readLocalMyRejectRulesetPromise)
     .addFromRuleset(readLocalRejectRulesetPromise)
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-drop.conf')))
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-no-drop.conf')))

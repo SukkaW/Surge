@@ -546,7 +546,7 @@ export class FileOutput {
       childSpan.traceChildSync('write to strategies', () => this.writeToStrategies());
 
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
-        const promises: Array<Promise<void> | void> = [];
+        const promises: Array<Promise<void>> = [];
 
         const descriptions = nullthrow(this.description, 'Missing description');
 

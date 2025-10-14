@@ -31,7 +31,7 @@
     "fast-cidr-tools": "^0.3.3",
     "fast-uri": "^3.1.0",
     "fdir": "^6.5.0",
-    "foxts": "^4.4.0",
+    "foxts": "^4.5.0",
     "hash-wasm": "^4.12.0",
     "json-stringify-pretty-compact": "4.0.0",
     "null-prototype-object": "^1.2.3",
@@ -49,7 +49,7 @@
     "yauzl-promise": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^7.3.3",
+    "@eslint-sukka/node": "^7.3.5",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.13.5",
     "@types/better-sqlite3": "^7.6.13",
@@ -60,8 +60,8 @@
     "@types/tar-fs": "^2.0.4",
     "@types/yauzl-promise": "^4.0.1",
     "eslint": "^9.37.0",
-    "eslint-config-sukka": "^7.3.3",
-    "eslint-formatter-sukka": "^7.3.3",
+    "eslint-config-sukka": "^7.3.5",
+    "eslint-formatter-sukka": "^7.3.5",
     "expect": "^30.2.0",
     "mitata": "^1.0.34",
     "mocha": "^11.7.4",
