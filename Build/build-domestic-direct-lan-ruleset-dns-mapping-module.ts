@@ -120,30 +120,56 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         return;
       }
 
-      const output = new SurgeOnlyRulesetOutput(span, name.toLowerCase(), 'sukka_local_dns_mapping', OUTPUT_MODULES_RULES_DIR)
+      const surgeOutput = new SurgeOnlyRulesetOutput(
+        span,
+        name.toLowerCase(),
+        'sukka_local_dns_mapping',
+        OUTPUT_MODULES_RULES_DIR
+      )
         .withTitle(`Sukka's Ruleset - Local DNS Mapping (${name})`)
         .appendDescription(
           SHARED_DESCRIPTION,
           '',
           'This is an internal rule that is only referenced by sukka_local_dns_mapping.sgmodule',
-          'Do not use this file in your Rule section, all rules are included in non_ip/domestic.conf already.'
+          'Do not use this file in your Rule section, all entries are included in non_ip/domestic.conf already.'
+        );
+
+      const mihomoOutput = new SurgeOnlyRulesetOutput(
+        span,
+        name.toLowerCase(),
+        'mihomo_nameserver_policy',
+        OUTPUT_INTERNAL_DIR
+      )
+        .withTitle(`Sukka's Ruleset - Local DNS Mapping for Mihomo NameServer Policy (${name})`)
+        .appendDescription(
+          SHARED_DESCRIPTION,
+          '',
+          'This ruleset is only used for mihomo\'s nameserver-policy feature, which',
+          'is similar to the RULE-SET referenced by sukka_local_dns_mapping.sgmodule.',
+          'Do not use this file in your Rule section, all entries are included in non_ip/domestic.conf already.'
         );
 
       domains.forEach((domain) => {
         switch (domain[0]) {
           case '$':
-            output.addDomain(domain.slice(1));
+            surgeOutput.addDomain(domain.slice(1));
+            mihomoOutput.addDomain(domain.slice(1));
             break;
           case '+':
-            output.addDomainSuffix(domain.slice(1));
+            surgeOutput.addDomainSuffix(domain.slice(1));
+            mihomoOutput.addDomainSuffix(domain.slice(1));
             break;
           default:
-            output.addDomainSuffix(domain);
+            surgeOutput.addDomainSuffix(domain);
+            mihomoOutput.addDomainSuffix(domain);
             break;
         }
       });
 
-      return output.write();
+      return Promise.all([
+        surgeOutput.write(),
+        mihomoOutput.write()
+      ]);
     }),
 
     compareAndWriteFile(
@@ -194,24 +220,49 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       yaml.stringify(
         dataset.reduce<{
           dns: { 'nameserver-policy': Record<string, string | string[]> },
-          hosts: Record<string, string | string[]>
+          hosts: Record<string, string | string[]>,
+          'rule-providers': Record<string, {
+            type: 'http',
+            path: `./sukkaw_ruleset/${string}`,
+            url: string,
+            behavior: 'classical',
+            format: 'text',
+            interval: number
+          }>
         }>((acc, cur) => {
-          const { domains, dns, ...rest } = cur[1];
-          domains.forEach((domain) => {
-            switch (domain[0]) {
-              case '$':
-                domain = domain.slice(1);
-                break;
-              case '+':
-                domain = `*.${domain.slice(1)}`;
-                break;
-              default:
-                domain = `+.${domain}`;
-                break;
-            }
+          const { domains, dns, ruleset, ...rest } = cur[1];
 
-            acc.dns['nameserver-policy'][domain] = dns;
-          });
+          if (ruleset) {
+            const ruleset_name = cur[0].toLowerCase();
+            const mihomo_ruleset_id = `mihomo_nameserver_policy_${ruleset_name}`;
+
+            acc.dns['nameserver-policy'][`rule-set:${mihomo_ruleset_id}`] = dns;
+
+            acc['rule-providers'][mihomo_ruleset_id] = {
+              type: 'http',
+              path: `./sukkaw_ruleset/${mihomo_ruleset_id}.txt`,
+              url: `https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/${ruleset_name}.txt`,
+              behavior: 'classical',
+              format: 'text',
+              interval: 43200
+            };
+          } else {
+            domains.forEach((domain) => {
+              switch (domain[0]) {
+                case '$':
+                  domain = domain.slice(1);
+                  break;
+                case '+':
+                  domain = `*.${domain.slice(1)}`;
+                  break;
+                default:
+                  domain = `+.${domain}`;
+                  break;
+              }
+
+              acc.dns['nameserver-policy'][domain] = dns;
+            });
+          }
 
           if ('hosts' in rest) {
             // eslint-disable-next-line guard-for-in -- known plain object
@@ -234,6 +285,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
           return acc;
         }, {
           dns: { 'nameserver-policy': {} },
+          'rule-providers': {},
           hosts: {}
         }),
         { version: '1.1' }

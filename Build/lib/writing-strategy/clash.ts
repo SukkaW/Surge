@@ -94,7 +94,7 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
 
   protected result: string[] = [`DOMAIN,${MARKER_DOMAIN}`];
 
-  constructor(public readonly type: 'ip' | 'non_ip' /* | (string & {}) */, public readonly outputDir = OUTPUT_CLASH_DIR) {
+  constructor(public readonly type: 'ip' | 'non_ip' | (string & {}), public readonly outputDir = OUTPUT_CLASH_DIR) {
     super(outputDir);
   }
 
