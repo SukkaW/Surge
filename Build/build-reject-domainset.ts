@@ -259,7 +259,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       rejectPhisingDomainsetOutput.whitelistDomain(arg);
 
       // e.g. .data.microsort.com can strip waston*.event.data.microsort.com
-      rejectNonIpRulesetOutput.wildcardTrie.whitelist(arg);
+      // rejectNonIpRulesetOutput.wildcardTrie.whitelist(arg);
     });
   });
 

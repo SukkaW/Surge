@@ -444,6 +444,11 @@ export class FileOutput {
 
     if (this.wildcardSet.size) {
       this.wildcardSet.forEach((wildcard) => {
+        // Overlapped w/ DOMAIN-kEYWORD
+        if (kwfilter(wildcard)) {
+          return;
+        }
+
         for (let i = 0; i < strategiesLen; i++) {
           const strategy = this.strategies[i];
           strategy.writeDomainWildcard(wildcard);
