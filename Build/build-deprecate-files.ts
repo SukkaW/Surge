@@ -3,11 +3,12 @@ import { compareAndWriteFile } from './lib/create-file';
 import { task } from './trace';
 import path from 'node:path';
 import fsp from 'node:fs/promises';
+import { globSync } from 'tinyglobby';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 const DEPRECATED_FILES = [
   ['non_ip/global_plus', 'This file has been merged with non_ip/global'],
-  ['domainset/reject_sukka', 'This file has been merged with domainset/reject'],
-  ['Internal/reversed-chn-cidr.txt', 'This file has been replaced by https://chnroutes2.cdn.skk.moe/reversed-chnroutes.txt']
+  ['domainset/reject_sukka', 'This file has been merged with domainset/reject']
 ];
 
 const REMOVED_FILES = [
@@ -17,15 +18,21 @@ const REMOVED_FILES = [
   'Clash/non_ip/clash_fake_ip_filter.txt',
   'sing-box/domainset/steam.json',
   'Modules/sukka_unlock_abema.sgmodule',
-  'Modules/sukka_exclude_reservered_ip.sgmodule'
+  'Modules/sukka_exclude_reservered_ip.sgmodule',
+  'Modules/Rules/*.sgmodule',
+  'Internal/mihomo_nameserver_policy/*.conf'
+];
+
+const REMOVED_FOLDERS = [
+  'List/Internal',
+  'Clash/Internal'
 ];
 
 export const buildDeprecateFiles = task(require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
-  const promises: Array<Promise<unknown>> = REMOVED_FILES
-    .map(f => fsp.rm(
-      path.join(PUBLIC_DIR, f),
-      { force: true, recursive: true }
-    ));
+  const promises: Array<Promise<unknown>> = globSync(REMOVED_FILES, { cwd: PUBLIC_DIR, absolute: true })
+    .map(f => fsp.rm(f, { force: true, recursive: true }));
+
+  appendArrayInPlace(promises, REMOVED_FOLDERS.map(folder => fsp.rm(path.join(PUBLIC_DIR, folder), { force: true, recursive: true })));
 
   for (const [filePath, description] of DEPRECATED_FILES) {
     const content = [

@@ -71,6 +71,9 @@ importers:
       telegram:
         specifier: ^2.26.22
         version: 2.26.22
+      tinyglobby:
+        specifier: ^0.2.15
+        version: 0.2.15
       tldts:
         specifier: ^7.0.17
         version: 7.0.17

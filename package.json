@@ -38,6 +38,7 @@
     "picocolors": "^1.1.1",
     "tar-fs": "^3.1.1",
     "telegram": "^2.26.22",
+    "tinyglobby": "^0.2.15",
     "tldts": "^7.0.17",
     "tldts-experimental": "^7.0.17",
     "undici": "^7.16.0",

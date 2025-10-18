@@ -6,7 +6,7 @@ import { task } from './trace';
 import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
-import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
+import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
 import { writeFile } from './lib/misc';
 import { fastStringCompare } from 'foxts/fast-string-compare';
 import type { VoidOrVoidArray } from './lib/misc';
@@ -57,8 +57,8 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   await span.traceChildAsync('copy rest of the files', async () => {
     const p: Array<Promise<any>> = [];
 
-    fs.mkdirSync(OUTPUT_MODULES_RULES_DIR, { recursive: true });
-    p.push(copyDirContents(path.join(ROOT_DIR, 'Modules'), OUTPUT_MODULES_RULES_DIR, p));
+    fs.mkdirSync(OUTPUT_MODULES_DIR, { recursive: true });
+    p.push(copyDirContents(path.join(ROOT_DIR, 'Modules'), OUTPUT_MODULES_DIR, p));
 
     fs.mkdirSync(OUTPUT_MOCK_DIR, { recursive: true });
     p.push(copyDirContents(path.join(ROOT_DIR, 'Mock'), OUTPUT_MOCK_DIR, p));
