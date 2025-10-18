@@ -11,7 +11,7 @@ import { once } from 'foxts/once';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, SOURCE_DIR } from './constants/dir';
-import { RulesetOutput } from './lib/rules/ruleset';
+import { MihomoNameserverPolicyOutput, RulesetOutput } from './lib/rules/ruleset';
 import { SurgeOnlyRulesetOutput } from './lib/rules/ruleset';
 
 export function createGetDnsMappingRule(allowWildcard: boolean) {
@@ -134,7 +134,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
           'Do not use this file in your Rule section, all entries are included in non_ip/domestic.conf already.'
         );
 
-      const mihomoOutput = new SurgeOnlyRulesetOutput(
+      const mihomoOutput = new MihomoNameserverPolicyOutput(
         span,
         name.toLowerCase(),
         'mihomo_nameserver_policy',
