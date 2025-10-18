@@ -25,7 +25,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
   }
 
   // 2. Filter to base64 and check length
-  // Not needed with Buffer.from
+  // Not needed with base64ToUint8Array, it has built-in base64-able checking
 
   // 3. Decode base64 to Buffer
   const decoded = base64ToUint8Array(base64);
@@ -76,7 +76,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
     throw new Error('SHA256 hash mismatch');
   }
 
-  const parser = new TgExtensions.BinaryReader(Buffer.from(decryptedCbc));
+  const parser = new TgExtensions.BinaryReader(Buffer.from(decryptedCbc.buffer, decryptedCbc.byteOffset, decryptedCbc.byteLength));
   const len = parser.readInt();
   if (len < 8 || len > 208) throw new Error(`Invalid TL data length: ${len}`);
 
@@ -88,7 +88,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
 
   const payload = decryptedCbc.subarray(8, len);
 
-  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(Buffer.from(payload)));
+  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength)));
 
   return configSimple.rules.flatMap(rule => rule.ips.map(ip => {
     switch (ip.CONSTRUCTOR_ID) {
