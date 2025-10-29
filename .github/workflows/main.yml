@@ -122,7 +122,7 @@ jobs:
     needs:
       - build
     name: Diff output
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -142,7 +142,7 @@ jobs:
       - build
     name: Deploy to Cloudflare Pages
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     # matrix is a tricky way to define a variable directly in the action yaml
     strategy:
       matrix:
@@ -176,7 +176,7 @@ jobs:
       - build
     name: Deploy to GitHub and GitLab
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - uses: actions/download-artifact@v4
         with:
