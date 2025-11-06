@@ -204,7 +204,7 @@ export function getPhishingDomains(parentSpan: Span) {
       const phishingDomains = await pool.exec(
         'getPhishingDomains',
         [
-          import.meta.url,
+          __filename,
           require.main === module
         ]
       );

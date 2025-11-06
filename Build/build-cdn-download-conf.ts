@@ -23,10 +23,10 @@ const pool = new Worktank({
     autoInstantiate: true,
     methods: {
       // eslint-disable-next-line object-shorthand -- workertank
-      getS3OSSDomains: async function (importMetaUrl: string): Promise<string[]> {
+      getS3OSSDomains: async function (__filename: string): Promise<string[]> {
         // TODO: createRequire is a temporary workaround for https://github.com/nodejs/node/issues/51956
         const { default: module } = await import('node:module');
-        const __require = module.createRequire(importMetaUrl);
+        const __require = module.createRequire(__filename);
 
         const { HostnameTrie } = __require('./lib/trie') as typeof import('./lib/trie');
         const { fetchRemoteTextByLine } = __require('./lib/fetch-text-by-line') as typeof import('./lib/fetch-text-by-line');
@@ -81,7 +81,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
   ] = await Promise.all([
     span.traceChildAsync('download public suffix list for s3', () => pool.exec(
       'getS3OSSDomains',
-      [import.meta.url]
+      [__filename]
     ).finally(() => pool.terminate())),
     cdnDomainsListPromise,
     downloadDomainSetPromise,

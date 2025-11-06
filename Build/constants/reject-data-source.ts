@@ -145,6 +145,11 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
       'https://curbengh.github.io/urlhaus-filter/urlhaus-filter-domains-online.txt'
     ],
     true
+  ],
+  [
+    'https://raw.githubusercontent.com/DandelionSprout/adfilt/refs/heads/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareDomains.txt',
+    [],
+    true
   ]
   // Spam404
   // Not actively maintained, let's consider it is dead
@@ -254,12 +259,6 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     ]
   ]
   //
-  // [
-  //   'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt',
-  //   [
-  //     'https://adguardteam.github.io/HostlistsRegistry/assets/filter_12.txt'
-  //   ]
-  // ]
   // Stalkerware
   // [
   //   'https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts',
@@ -537,7 +536,7 @@ export const PREDEFINED_WHITELIST = [
   'store1.gofile.io', // Dandelion Sprout's Annoyances List
   'ad.12306.cn', // https://github.com/jdlingyu/ad-wars
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
-  '.nstool.netease.com', // it is only used to check local dns
+  '.telize.com', // AdGuardDNSFilter
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
 
   'widget-mediator.zopim.com', // breaking zendesk chat

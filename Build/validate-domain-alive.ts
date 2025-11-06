@@ -41,7 +41,7 @@ const deadDomains: string[] = [];
   const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   bar.start(0, 0);
 
-  await Promise.all([
+  void Promise.all([
     ...domainRules,
     ...domainSets
   ].map(

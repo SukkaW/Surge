@@ -35,6 +35,21 @@ export class SurgeOnlyRulesetOutput extends FileOutput {
   }
 }
 
+export class MihomoNameserverPolicyOutput extends FileOutput {
+  constructor(
+    span: Span,
+    id: string,
+    type: 'non_ip' | (string & {}),
+    overrideOutputDir?: string
+  ) {
+    super(span, id);
+
+    this.strategies = [
+      new ClashClassicRuleSet(type, overrideOutputDir)
+    ];
+  }
+}
+
 export class ClashOnlyRulesetOutput extends FileOutput {
   constructor(
     span: Span,

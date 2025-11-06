@@ -20,10 +20,11 @@ const ENFORCED_WHITELIST = [
   'samsungcloudsolution.net',
   'samsungqbe.com',
   'ntp.api.bz',
-  'cdn.tuk.dev'
+  'cdn.tuk.dev',
+  'vocadb-analytics.fly.dev'
 ];
 
-const WHITELIST: string[] = ['ntp.api.bz', 'httpdns.bilivideo.com', 'httpdns-v6.gslb.yy.com', 'cdn.tuk.dev', 'cpan.catalyst.net.nz', 'adx.yixin.im', 'vocadb-analytics.fly.dev', 'ad.yixin.im', 'cdn.javsts.com', 'files.webfe.shopee.io'];
+const WHITELIST: string[] = ['ntp.api.bz', 'httpdns.bilivideo.com', 'httpdns-v6.gslb.yy.com', 'smd-cms.nasa.gov', 'ddcdn.comtucdncom.com', 'cpan.noris.de', 'mopnativeadv.037201.com', 'vocadb-analytics.fly.dev', 'iadmatapk.nosdn.127.net', 'ad-stat.ksosoft.com', 'adapi.lenovogame.com', 'img5.gelbooru.com'];
 
 task(require.main === module, __filename)(async (span) => {
   const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
