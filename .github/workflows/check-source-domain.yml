@@ -3,6 +3,9 @@ on:
   # manual trigger only
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Check
