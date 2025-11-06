@@ -538,6 +538,7 @@ export const PREDEFINED_WHITELIST = [
   '.ib.snssdk.com', // AdGuard Tracking Protection -- breaks 今日头条专业版
   '.telize.com', // AdGuardDNSFilter
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
+  'freegeoip.app', // AdGuardDNSFilter
 
   'widget-mediator.zopim.com', // breaking zendesk chat
 
