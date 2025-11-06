@@ -5,15 +5,18 @@ import crypto from 'node:crypto';
 import { Api, extensions as TgExtensions } from 'telegram';
 import { bigint2ip } from 'fast-cidr-tools';
 
-const mtptoto_public_rsa = '-----BEGIN RSA PUBLIC KEY-----\n'
-  + 'MIIBCgKCAQEAyr+18Rex2ohtVy8sroGP\n'
-  + 'BwXD3DOoKCSpjDqYoXgCqB7ioln4eDCFfOBUlfXUEvM/fnKCpF46VkAftlb4VuPD\n'
-  + 'eQSS/ZxZYEGqHaywlroVnXHIjgqoxiAd192xRGreuXIaUKmkwlM9JID9WS2jUsTp\n'
-  + 'zQ91L8MEPLJ/4zrBwZua8W5fECwCCh2c9G5IzzBm+otMS/YKwmR1olzRCyEkyAEj\n'
-  + 'XWqBI9Ftv5eG8m0VkBzOG655WIYdyV0HfDK/NWcvGqa0w/nriMD6mDjKOryamw0O\n'
-  + 'P9QuYgMN0C9xMW9y8SmP4h92OAWodTYgY1hZCxdv6cs5UnW9+PWvS+WIbkh+GaWY\n'
-  + 'xwIDAQAB\n'
-  + '-----END RSA PUBLIC KEY-----\n';
+import { base64ToUint8Array, concatUint8Arrays } from 'foxts/uint8array-utils';
+
+const mtptoto_public_rsa = `-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEAyr+18Rex2ohtVy8sroGP
+BwXD3DOoKCSpjDqYoXgCqB7ioln4eDCFfOBUlfXUEvM/fnKCpF46VkAftlb4VuPD
+eQSS/ZxZYEGqHaywlroVnXHIjgqoxiAd192xRGreuXIaUKmkwlM9JID9WS2jUsTp
+zQ91L8MEPLJ/4zrBwZua8W5fECwCCh2c9G5IzzBm+otMS/YKwmR1olzRCyEkyAEj
+XWqBI9Ftv5eG8m0VkBzOG655WIYdyV0HfDK/NWcvGqa0w/nriMD6mDjKOryamw0O
+P9QuYgMN0C9xMW9y8SmP4h92OAWodTYgY1hZCxdv6cs5UnW9+PWvS+WIbkh+GaWY
+xwIDAQAB
+-----END RSA PUBLIC KEY-----
+`;
 
 export function getTelegramBackupIPFromBase64(base64: string) {
   // 1. Check base64 size
@@ -22,10 +25,10 @@ export function getTelegramBackupIPFromBase64(base64: string) {
   }
 
   // 2. Filter to base64 and check length
-  // Not needed with Buffer.from
+  // Not needed with base64ToUint8Array, it has built-in base64-able checking
 
   // 3. Decode base64 to Buffer
-  const decoded = Buffer.from(base64, 'base64');
+  const decoded = base64ToUint8Array(base64);
   if (decoded.length !== 256) {
     throw new TypeError('Decoded buffer length is not 344 bytes, received ' + decoded.length);
   }
@@ -54,7 +57,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   decipher.setAutoPadding(false);
 
-  const decryptedCbc = Buffer.concat([decipher.update(dataCbc), decipher.final()]);
+  const decryptedCbc = concatUint8Arrays([decipher.update(dataCbc), decipher.final()]);
 
   if (decryptedCbc.length !== 224) {
     throw new Error(`Decrypted AES payload length is not 224 bytes, received ${decryptedCbc.length}`);
@@ -73,7 +76,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
     throw new Error('SHA256 hash mismatch');
   }
 
-  const parser = new TgExtensions.BinaryReader(decryptedCbc);
+  const parser = new TgExtensions.BinaryReader(Buffer.from(decryptedCbc.buffer, decryptedCbc.byteOffset, decryptedCbc.byteLength));
   const len = parser.readInt();
   if (len < 8 || len > 208) throw new Error(`Invalid TL data length: ${len}`);
 
@@ -85,7 +88,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
 
   const payload = decryptedCbc.subarray(8, len);
 
-  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(payload));
+  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength)));
 
   return configSimple.rules.flatMap(rule => rule.ips.map(ip => {
     switch (ip.CONSTRUCTOR_ID) {

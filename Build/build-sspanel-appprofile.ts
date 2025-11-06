@@ -30,6 +30,16 @@ const steamDomainsPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'do
  * This only generates a simplified version, for under-used users only.
  */
 export const buildSSPanelUIMAppProfile = task(require.main === module, __filename)(async (span) => {
+  const streamRules = AllStreamServices.flatMap((i) => i.rules);
+  const [streamCidrs4, streamCidrs6] = AllStreamServices.reduce<[cidr4: string[], cidr6: string[]]>((acc, i) => {
+    if (i.ip) {
+      appendArrayInPlace(acc[0], i.ip.v4);
+      appendArrayInPlace(acc[1], i.ip.v6);
+    }
+
+    return acc;
+  }, [[], []]);
+
   const [
     [domesticRules, directRules, lanRules],
     appleCdnDomains,
@@ -38,12 +48,12 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     neteaseMusicRules,
     microsoftRules,
     appleRules,
-    streamRules,
+    // streamRules,
     steamDomainset,
     globalRules,
     telegramRules,
     [domesticCidrs4, domesticCidrs6],
-    [streamCidrs4, streamCidrs6],
+    // [streamCidrs4, streamCidrs6],
     { ipcidr: telegramCidrs4, ipcidr6: telegramCidrs6 },
     rawLanCidrs
   ] = await Promise.all([
@@ -56,8 +66,6 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     // microsoft & apple - domains
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/microsoft.conf')),
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/apple_services.conf')),
-    // stream - domains
-    AllStreamServices.flatMap((i) => i.rules),
     // steam - domains
     steamDomainsPromise,
     // global - domains
@@ -65,14 +73,6 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf')),
     // domestic - ip cidr
     getChnCidrPromise(),
-    AllStreamServices.reduce<[cidr4: string[], cidr6: string[]]>((acc, i) => {
-      if (i.ip) {
-        appendArrayInPlace(acc[0], i.ip.v4);
-        appendArrayInPlace(acc[1], i.ip.v6);
-      }
-
-      return acc;
-    }, [[], []]),
     // global - ip cidr
     getTelegramCIDRPromise(),
     // lan - ip cidr

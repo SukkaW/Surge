@@ -4,7 +4,7 @@ import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts-experimental';
 import { isTruthy } from 'foxts/guard';
 import { OUTPUT_MODULES_DIR } from './constants/dir';
-import { escapeStringRegexp } from 'foxts/escape-string-regexp';
+import { escapeRegexp } from 'fast-escape-regexp';
 
 const REDIRECT_MIRROR_HEADER = [
   // Gravatar
@@ -163,9 +163,9 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       `hostname = %APPEND% ${domains.join(', ')}`,
       '',
       '[URL Rewrite]',
-      ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeStringRegexp(from)}(.*) ${to}$1 header`),
+      ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 header`),
       ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${(from)} ${to} 307`),
-      ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeStringRegexp(from)}(.*) ${to}$1 307`)
+      ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 307`)
     ],
     path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect.sgmodule')
   );

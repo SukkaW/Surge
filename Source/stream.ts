@@ -804,6 +804,14 @@ const FRIDAY_TW: StreamService = {
   ]
 };
 
+const MANGAFOX: StreamService = {
+  name: 'MangaFox',
+  rules: [
+    'DOMAIN-SUFFIX,mangafox.me',
+    'DOMAIN-SUFFIX,fanfox.net'
+  ]
+};
+
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -819,7 +827,7 @@ export const ALL: StreamService[] = [
   KKBOX,
   KKTV,
   LINE_TV,
-  MY5, MYTV_SUPER,
+  MANGAFOX, MY5, MYTV_SUPER,
   NETFLIX, NAVER_TV, NICONICO, NHK_PLUS, NOW_E,
   OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
@@ -919,7 +927,8 @@ export const TW: StreamService[] = [
   HBO_ASIA,
   BAHAMUT,
   // elevensportstw,
-  FRIDAY_TW
+  FRIDAY_TW,
+  MANGAFOX
 ];
 
 export const JP: StreamService[] = [
@@ -972,6 +981,7 @@ export const KR = [
 ];
 
 export const SOUTH_EAST_ASIA = [
+  MANGAFOX
   // HBO
   // B-Global SouthEastAsia
   // MeWatch SG

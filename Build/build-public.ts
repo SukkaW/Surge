@@ -6,12 +6,14 @@ import { task } from './trace';
 import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
-import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_RULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
-import { fastStringCompare, writeFile } from './lib/misc';
+import { OUTPUT_MOCK_DIR, OUTPUT_MODULES_DIR, PUBLIC_DIR, ROOT_DIR } from './constants/dir';
+import { writeFile } from './lib/misc';
+import { fastStringCompare } from 'foxts/fast-string-compare';
 import type { VoidOrVoidArray } from './lib/misc';
 import picocolors from 'picocolors';
 import { tagged as html } from 'foxts/tagged';
 import { compareAndWriteFile } from './lib/create-file';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 const priorityOrder: Record<'default' | string & {}, number> = {
   LICENSE: 0,
@@ -55,8 +57,8 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   await span.traceChildAsync('copy rest of the files', async () => {
     const p: Array<Promise<any>> = [];
 
-    fs.mkdirSync(OUTPUT_MODULES_RULES_DIR, { recursive: true });
-    p.push(copyDirContents(path.join(ROOT_DIR, 'Modules'), OUTPUT_MODULES_RULES_DIR, p));
+    fs.mkdirSync(OUTPUT_MODULES_DIR, { recursive: true });
+    p.push(copyDirContents(path.join(ROOT_DIR, 'Modules'), OUTPUT_MODULES_DIR, p));
 
     fs.mkdirSync(OUTPUT_MOCK_DIR, { recursive: true });
     p.push(copyDirContents(path.join(ROOT_DIR, 'Mock'), OUTPUT_MOCK_DIR, p));
@@ -71,14 +73,15 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   await Promise.all([
     compareAndWriteFile(
       span,
-      [
-        '/*',
-        '  cache-control: public, max-age=240, stale-while-revalidate=60, stale-if-error=15',
-        'https://:project.pages.dev/*',
-        '  X-Robots-Tag: noindex',
-        ...Object.keys(priorityOrder)
-          .map((name) => `/${name}/*\n  content-type: text/plain; charset=utf-8\n  X-Robots-Tag: noindex`)
-      ],
+      appendArrayInPlace(
+        [
+          '/*',
+          '  cache-control: public, max-age=300, stale-while-revalidate=30, stale-if-error=60',
+          'https://:project.pages.dev/*',
+          '  X-Robots-Tag: noindex'
+        ],
+        Object.keys(priorityOrder).map((name) => `/${name}/*\n  content-type: text/plain; charset=utf-8\n  X-Robots-Tag: noindex`)
+      ),
       path.join(PUBLIC_DIR, '_headers')
     ),
     compareAndWriteFile(

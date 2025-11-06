@@ -21,7 +21,7 @@ export class FileOutput {
   protected dataSource = new Set<string>();
 
   public domainTrie = new HostnameSmolTrie(null);
-  public wildcardTrie: HostnameSmolTrie = new HostnameSmolTrie(null);
+  public wildcardSet = new Set<string>();
 
   protected domainKeywords = new Set<string>();
 
@@ -51,7 +51,6 @@ export class FileOutput {
 
   whitelistDomain = (domain: string) => {
     this.domainTrie.whitelist(domain);
-    this.wildcardTrie.whitelist(domain);
     return this;
   };
 
@@ -150,7 +149,7 @@ export class FileOutput {
 
   bulkAddDomainWildcard(domains: string[]) {
     for (let i = 0, len = domains.length; i < len; i++) {
-      this.wildcardTrie.add(domains[i]);
+      this.wildcardSet.add(domains[i]);
     }
     return this;
   }
@@ -216,7 +215,7 @@ export class FileOutput {
           this.addDomainKeyword(value);
           break;
         case 'DOMAIN-WILDCARD':
-          this.wildcardTrie.add(value);
+          this.wildcardSet.add(value);
           break;
         case 'USER-AGENT':
           this.userAgent.add(value);
@@ -418,8 +417,6 @@ export class FileOutput {
         return;
       }
 
-      this.wildcardTrie.whitelist(domain, includeAllSubdomain);
-
       for (let i = 0; i < strategiesLen; i++) {
         const strategy = this.strategies[i];
         if (includeAllSubdomain) {
@@ -445,16 +442,19 @@ export class FileOutput {
       }
     }
 
-    this.wildcardTrie.dumpWithoutDot((wildcard) => {
-      if (kwfilter(wildcard)) {
-        return;
-      }
+    if (this.wildcardSet.size) {
+      this.wildcardSet.forEach((wildcard) => {
+        // Overlapped w/ DOMAIN-kEYWORD
+        if (kwfilter(wildcard)) {
+          return;
+        }
 
-      for (let i = 0; i < strategiesLen; i++) {
-        const strategy = this.strategies[i];
-        strategy.writeDomainWildcard(wildcard);
-      }
-    }, true);
+        for (let i = 0; i < strategiesLen; i++) {
+          const strategy = this.strategies[i];
+          strategy.writeDomainWildcard(wildcard);
+        }
+      });
+    }
 
     const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
 
@@ -546,7 +546,7 @@ export class FileOutput {
       childSpan.traceChildSync('write to strategies', () => this.writeToStrategies());
 
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
-        const promises: Array<Promise<void> | void> = [];
+        const promises: Array<Promise<void>> = [];
 
         const descriptions = nullthrow(this.description, 'Missing description');
 

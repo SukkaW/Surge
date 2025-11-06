@@ -36,8 +36,14 @@ const HOSTNAMES = [
   // 'localhost.ptlogin2.qq.com
   // 'localhost.sec.qq.com',
   // 'localhost.work.weixin.qq.com',
-  '*.sslip.io',
-  '*.nip.io'
+  '127.*.*.*.sslip.io',
+  '127-*-*-*.sslip.io',
+  '*.127.*.*.*.sslip.io',
+  '*-127-*-*-*.sslip.io',
+  '127.*.*.*.nip.io',
+  '127-*-*-*.nip.io',
+  '*.127.*.*.*.nip.io',
+  '*-127-*-*-*.nip.io'
 ];
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {
