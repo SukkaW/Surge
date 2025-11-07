@@ -224,3 +224,13 @@ jobs:
           GH_EMAIL: ${{ secrets.GIT_EMAIL }}
           GH_USER: ${{ secrets.GIT_USER }}
           GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+  remove_artifacts:
+    needs:
+      - deploy_to_cloudflare_pages
+      - deploy_to_github_gitlab
+    name: Remove Artifacts after Deployment
+    runs-on: ubuntu-slim
+    steps:
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
