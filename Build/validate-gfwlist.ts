@@ -144,8 +144,8 @@ export async function parseGfwList() {
     }
   });
 
-  console.log(missingTop10000Gfwed.size, '');
   console.log(Array.from(missingTop10000Gfwed).join('\n'));
+  console.log('', missingTop10000Gfwed.size);
 
   return [
     whiteSet,
