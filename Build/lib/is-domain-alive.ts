@@ -13,7 +13,8 @@ const dnsServers = [
   'doh.dns.sb', // DNS.SB, Unicast PoPs w/ GeoDNS
   // 'doh.sb', // DNS.SB xTom Anycast IP
   // 'dns.sb', // DNS.SB use same xTom Anycast IP as doh.sb
-  'dns10.quad9.net', // Quad9 unfiltered
+  // 'dns10.quad9.net', // Quad9 unfiltered
+  '9.9.9.10', '149.112.112.10', // Quad9 unfiltered
   'doh.sandbox.opendns.com', // OpenDNS sandbox (unfiltered)
   'unfiltered.adguard-dns.com',
   // 'v.recipes', // Proxy Cloudflare, too many HTTP 503

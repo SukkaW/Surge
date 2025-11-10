@@ -24,7 +24,7 @@ const ENFORCED_WHITELIST = [
   'vocadb-analytics.fly.dev'
 ];
 
-const WHITELIST: string[] = ['ntp.api.bz', 'httpdns.bilivideo.com', 'httpdns-v6.gslb.yy.com', 'smd-cms.nasa.gov', 'ddcdn.comtucdncom.com', 'cpan.noris.de', 'mopnativeadv.037201.com', 'vocadb-analytics.fly.dev', 'iadmatapk.nosdn.127.net', 'ad-stat.ksosoft.com', 'adapi.lenovogame.com', 'img5.gelbooru.com'];
+const WHITELIST: string[] = ['httpdns.bilivideo.com', 'ntp.api.bz', 'httpdns-v6.gslb.yy.com', 'img.vim-cn.com', 'img.jjbb.me', 'thingproxy.freeboard.io', 'assets.chess24.com', 'cdn.chess24.com', 'static-assets.freeanimehentai.net', 'static.javcdn.info', 'cdn.vidible.tv', 'it.apache.contactlab.it', 'mirror.netinch.com', 'de.freedif.org', 'league1.maoyuncloud.cn', 'spl.ztvx8.com', 'zls.xz6d.com', 'iadmatapk.nosdn.127.net', 'show.buzzcity.net', 'click.buzzcity.net', 'apps.buzzcity.net', 'content-cdn.y2mate.com', 'images.voguehk.com', 'cdn.amh.moe', 'statics.mnnews.tw'];
 
 task(require.main === module, __filename)(async (span) => {
   const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
