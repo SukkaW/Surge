@@ -13,6 +13,7 @@ import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
 import { buildDomesticRuleset } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
+import { buildGlobalRuleset } from './build-global-server-dns-mapping';
 import { buildStreamService } from './build-stream-service';
 
 import { buildRedirectModule } from './build-sgmodule-redirect';
@@ -100,6 +101,7 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan)),
+      downloadPreviousBuildPromise.then(() => buildGlobalRuleset(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildRedirectModule(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildStreamService(rootSpan)),

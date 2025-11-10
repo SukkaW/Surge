@@ -13,6 +13,7 @@ import { isTruthy, nullthrow } from 'foxts/guard';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_SURGE_DIR, SOURCE_DIR } from './constants/dir';
 import { ClashOnlyRulesetOutput } from './lib/rules/ruleset';
+import { getGlobalRulesetPromise } from './build-global-server-dns-mapping';
 
 const POLICY_GROUPS: Array<[name: string, insertProxy: boolean, insertDirect: boolean]> = [
   ['Default Proxy', true, false],
@@ -50,7 +51,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     appleRules,
     // streamRules,
     steamDomainset,
-    globalRules,
+    [globalRules],
     telegramRules,
     [domesticCidrs4, domesticCidrs6],
     // [streamCidrs4, streamCidrs6],
@@ -69,7 +70,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     // steam - domains
     steamDomainsPromise,
     // global - domains
-    readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/global.conf')),
+    getGlobalRulesetPromise(),
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/telegram.conf')),
     // domestic - ip cidr
     getChnCidrPromise(),
