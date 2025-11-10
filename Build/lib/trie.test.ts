@@ -365,4 +365,47 @@ describe('smol tree', () => {
     trie.whitelist('cdn.example.com');
     expect(trie.dump()).toStrictEqual(['blog.cdn.example.com']);
   });
+
+  it('contains - normal', () => {
+    const trie = createTrie([
+      'skk.moe',
+      'anotherskk.moe',
+      'blog.anotherskk.moe',
+      'blog.skk.moe'
+    ], true);
+
+    expect(trie.contains('skk.moe')).toBe(true);
+    expect(trie.contains('blog.skk.moe')).toBe(true);
+    expect(trie.contains('anotherskk.moe')).toBe(true);
+    expect(trie.contains('blog.anotherskk.moe')).toBe(true);
+
+    expect(trie.contains('example.com')).toBe(false);
+    expect(trie.contains('blog.example.com')).toBe(false);
+    expect(trie.contains('skk.mo')).toBe(false);
+    expect(trie.contains('cdn.skk.moe')).toBe(false);
+  });
+
+  it('contains - subdomain', () => {
+    const trie = createTrie([
+      'index.rubygems.org'
+    ], true);
+
+    expect(trie.contains('rubygems.org')).toBe(false);
+    expect(trie.contains('index.rubygems.org')).toBe(true);
+    expect(trie.contains('sub.index.rubygems.org')).toBe(false);
+  });
+
+  it('contains - include subdomains', () => {
+    const trie = createTrie([
+      '.skk.moe'
+    ], true);
+
+    expect(trie.contains('skk.moe')).toBe(true);
+    expect(trie.contains('blog.skk.moe')).toBe(true);
+    expect(trie.contains('image.cdn.skk.moe')).toBe(true);
+
+    expect(trie.contains('example.com')).toBe(false);
+    expect(trie.contains('blog.example.com')).toBe(false);
+    expect(trie.contains('skk.mo')).toBe(false);
+  });
 });

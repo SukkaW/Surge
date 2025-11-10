@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises';
 import { SOURCE_DIR } from './constants/dir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import { HostnameSmolTrie, HostnameTrie } from './lib/trie';
+import { HostnameSmolTrie } from './lib/trie';
 import { task } from './trace';
 
 const ENFORCED_WHITELIST = [
@@ -21,7 +21,8 @@ const ENFORCED_WHITELIST = [
   'samsungqbe.com',
   'ntp.api.bz',
   'cdn.tuk.dev',
-  'vocadb-analytics.fly.dev'
+  'vocadb-analytics.fly.dev',
+  'img.vim-cn.com'
 ];
 
 const WHITELIST: string[] = ['httpdns.bilivideo.com', 'ntp.api.bz', 'httpdns-v6.gslb.yy.com', 'img.vim-cn.com', 'img.jjbb.me', 'thingproxy.freeboard.io', 'assets.chess24.com', 'cdn.chess24.com', 'static-assets.freeanimehentai.net', 'static.javcdn.info', 'cdn.vidible.tv', 'it.apache.contactlab.it', 'mirror.netinch.com', 'de.freedif.org', 'league1.maoyuncloud.cn', 'spl.ztvx8.com', 'zls.xz6d.com', 'iadmatapk.nosdn.127.net', 'show.buzzcity.net', 'click.buzzcity.net', 'apps.buzzcity.net', 'content-cdn.y2mate.com', 'images.voguehk.com', 'cdn.amh.moe', 'statics.mnnews.tw'];
@@ -51,9 +52,12 @@ task(require.main === module, __filename)(async (span) => {
 async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
   const result: string[] = [];
 
-  const trie = new HostnameTrie();
+  const trie = new HostnameSmolTrie();
 
   let line: string | null = '';
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- .call
+  let trieHasOrContains = HostnameSmolTrie.prototype.has;
 
   for await (const l of readFileByLine(file)) {
     line = processLine(l);
@@ -62,12 +66,16 @@ async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
       if (l.startsWith('# $ skip_dedupe_src')) {
         return;
       }
+      if (l.startsWith('# $ dedupe_use_trie_contains')) {
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- .call
+        trieHasOrContains = HostnameSmolTrie.prototype.contains;
+      }
 
       result.push(l); // keep all comments and blank lines
       continue;
     }
 
-    if (trie.has(line)) {
+    if (trieHasOrContains.call(trie, line)) {
       continue; // drop duplicate
     }
 
