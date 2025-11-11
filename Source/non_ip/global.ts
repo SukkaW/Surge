@@ -130,8 +130,10 @@ export const GLOBAL: Record<string, DNSMapping> = {
     realip: false,
     ruleset: false,
     domains: [
+      'mediawiki.org',
       'wikibooks.org',
       'wikidata.org',
+      'wikifunctions.org',
       'wikimedia.org',
       'wikimediafoundation.org',
       'wikinews.org',
@@ -142,7 +144,8 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'wikiversity.org',
       'wikivoyage.org',
       'wiktionary.org',
-      'wmfusercontent.org'
+      'wmfusercontent.org',
+      'w.wiki'
     ]
   }
 };
