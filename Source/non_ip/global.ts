@@ -123,5 +123,26 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'cloudflarestatus.com',
       'cloudflareaccess.com'
     ]
+  },
+  WIKIMEDIA: {
+    hosts: {},
+    dns: 'https://wikimedia-dns.org/dns-query',
+    realip: false,
+    ruleset: false,
+    domains: [
+      'wikibooks.org',
+      'wikidata.org',
+      'wikimedia.org',
+      'wikimediafoundation.org',
+      'wikinews.org',
+      'wikipedia.com',
+      'wikipedia.org',
+      'wikiquote.org',
+      'wikisource.org',
+      'wikiversity.org',
+      'wikivoyage.org',
+      'wiktionary.org',
+      'wmfusercontent.org'
+    ]
   }
 };
