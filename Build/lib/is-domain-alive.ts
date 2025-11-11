@@ -8,7 +8,8 @@ const dnsServers = [
   'dns.cloudflare.com', // Cloudflare DoH that uses different IPs: 172.64.41.8,162.159.61.8
   'cloudflare-dns.com', // Cloudflare DoH that uses different IPs: 104.16.249.249,104.16.248.249
   // one.one.one.one // Cloudflare DoH that uses 1.1.1.1 and 1.0.0.1
-  // '101.101.101.101', // TWNIC, has DNS pollution, e.g. t66y.com
+  // '101.101.101.101', 'dns.twnic.tw' // TWNIC, has DNS pollution, e.g. t66y.com
+  // 'dns.hinet.net' // HiNet DoH, has DNS pollution, e.g. t66y.com
   '185.222.222.222', '45.11.45.11', // DNS.SB
   'doh.dns.sb', // DNS.SB, Unicast PoPs w/ GeoDNS
   // 'doh.sb', // DNS.SB xTom Anycast IP
