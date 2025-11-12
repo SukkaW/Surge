@@ -145,6 +145,7 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'wikivoyage.org',
       'wiktionary.org',
       'wmfusercontent.org',
+      'wmflabs.org',
       'w.wiki'
     ]
   }

@@ -10,6 +10,7 @@ import { $$fetch } from './lib/fetch-retry';
 import runAgainstSourceFile from './lib/run-against-source-file';
 import { nullthrow } from 'foxts/guard';
 import { Buffer } from 'node:buffer';
+import { GLOBAL } from '../Source/non_ip/global';
 
 export async function getTopOneMillionDomains() {
   const { parse: csvParser } = await import('csv-parse');
@@ -131,6 +132,18 @@ export async function parseGfwList() {
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/reject_extra.conf'), callback, 'domainset'),
     runAgainstSourceFile(path.resolve(OUTPUT_SURGE_DIR, 'domainset/cdn.conf'), callback, 'domainset')
   ]);
+
+  Object.values(GLOBAL).forEach(({ domains }) => {
+    domains.forEach(domain => {
+      if (domain[0] === '$') {
+        callback(domain.slice(1), false);
+      } else if (domain[0] === '+') {
+        callback(domain.slice(1), true);
+      } else {
+        callback(domain, true);
+      }
+    });
+  });
 
   whiteSet.forEach(domain => gfwListTrie.whitelist(domain, true));
 
