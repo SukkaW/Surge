@@ -400,6 +400,7 @@ rules:
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,[Replace with your policy]
 ```
 
 **Clash Meta**
@@ -413,9 +414,17 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/ai.txt
     path: ./sukkaw_ruleset/ai_non_ip.txt
+  apple_intelligence_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/apple_intelligence.txt
+    path: ./sukkaw_ruleset/apple_intelligence_non_ip.txt
 
 rules:
   - RULE-SET,ai_non_ip,[Replace with your policy]
+  - RULE-SET,apple_intelligence_non_ip,[Replace with your policy]
 ```
 
 #### Telegram
