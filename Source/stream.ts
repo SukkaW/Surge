@@ -791,7 +791,10 @@ const WETV: StreamService = {
 const VUDU: StreamService = {
   name: 'Vudu',
   rules: [
-    'DOMAIN-SUFFIX,vudu.com'
+    'DOMAIN,vudu.com',
+    'DOMAIN,athome.fandango.com'
+    // images2.vudu.com -- no geo block
+    // api.vudu.com -- no geo block
   ]
 };
 
@@ -826,6 +829,14 @@ const TUBI_TV: StreamService = {
   ]
 };
 
+const PLUTO_TV: StreamService = {
+  name: 'Pluto TV',
+  rules: [
+    'DOMAIN,pluto.tv',
+    'DOMAIN,www.pluto.tv'
+  ]
+};
+
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -844,7 +855,7 @@ export const ALL: StreamService[] = [
   MANGAFOX, MY5, MYTV_SUPER,
   NETFLIX, NAVER_TV, NICONICO, NHK_PLUS, NOW_E,
   OVERCAST_FM,
-  PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
+  PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB, PLUTO_TV,
   SOUNDCLOUD, SHOWTIME, SPOTIFY,
   TAIWAN_GOOD, TIDAL, TIKTOK, TVB_ANYWHERE, TWITCH, TUBI_TV,
   VIUTV, VUDU,
@@ -874,7 +885,7 @@ export const NORTH_AMERICA: StreamService[] = [
   // https://setantasports.com/
   // tubitv.com
   // SlingTV
-  // PlutoTV
+  PLUTO_TV,
   // AcornTV
   SHOWTIME,
   ENCORE_TVB,
