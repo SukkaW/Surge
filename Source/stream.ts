@@ -812,6 +812,20 @@ const MANGAFOX: StreamService = {
   ]
 };
 
+const TUBI_TV: StreamService = {
+  name: 'Tubi TV',
+  rules: [
+    'DOMAIN,tubi.tv',
+    'DOMAIN,www.tubi.tv',
+    'DOMAIN,tubitv.com',
+    'DOMAIN,www.tubitv.com',
+    'DOMAIN-SUFFIX,production-public.tubi.io'
+    // mcdn.tubi.tv -- no geo block
+    // canvas-lb.tubitv.com -- image CDN, also no geo blocking
+    // tubi.video -- streaming CDN, also no geo blocking
+  ]
+};
+
 export const ALL: StreamService[] = [
   $4GTV,
   ABEMA_TV, AMAZON_PRIME_VIDEO, ALL4, APPLE_TV, APPLE_MUSIC_TV,
@@ -832,7 +846,7 @@ export const ALL: StreamService[] = [
   OVERCAST_FM,
   PARAMOUNT, PBS, PEACOCK, PANDORA, PORNHUB,
   SOUNDCLOUD, SHOWTIME, SPOTIFY,
-  TAIWAN_GOOD, TIDAL, TIKTOK, TVB_ANYWHERE, TWITCH,
+  TAIWAN_GOOD, TIDAL, TIKTOK, TVB_ANYWHERE, TWITCH, TUBI_TV,
   VIUTV, VUDU,
   WETV,
   YOUTUBE, YOUTUBE_MUSIC
@@ -868,7 +882,8 @@ export const NORTH_AMERICA: StreamService[] = [
   DISCOVERY_PLUS,
   PARAMOUNT,
   PEACOCK,
-  CRACKLE
+  CRACKLE,
+  TUBI_TV
   // Popcornflix
   // Crunchyroll
   // ATTNOW
