@@ -67,6 +67,7 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'gvt7.com',
       'gvt9.com',
       'gwtproject.org',
+      'html5rocks.com',
       'itasoftware.com',
       'madewithcode.com',
       'material.io',
@@ -98,6 +99,7 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'googlezip.net',
       'dns.google',
       '$pki.goog', // ocsp.pki.goog and o.pki.goog is available in Mainland China
+      'fish.audio',
       //
       'gooogle.com',
       'firebase.com',
@@ -105,7 +107,10 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'run.app',
       // TLDs
       'google',
-      'goog'
+      'goog',
+
+      // special
+      'cloudflarestatus.com'
     ]
   },
   CLOUDFLARE: {
@@ -120,7 +125,7 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'cloudflare.com',
       'cloudflare.dev',
       'cloudflareresolve.com',
-      'cloudflarestatus.com',
+      // 'cloudflarestatus.com', intentionally excluded from cloudflare section and moved to google
       'cloudflareaccess.com'
     ]
   },
