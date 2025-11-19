@@ -57,6 +57,8 @@ export async function parseGfwList() {
   const whiteSet = new Set<string>();
   const gfwListTrie = new HostnameSmolTrie();
 
+  let totalGfwSize = 0;
+
   const gfwlistIgnoreLineKwfilter = createKeywordFilter([
     '.*',
     '*',
@@ -100,14 +102,17 @@ export async function parseGfwList() {
     }
     const d = fastNormalizeDomain(line);
     if (d) {
+      totalGfwSize++;
       gfwListTrie.add(d);
       continue;
     }
   }
   for await (const l of await fetchRemoteTextByLine('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt', true)) {
+    totalGfwSize++;
     gfwListTrie.add(l);
   }
   for await (const l of await fetchRemoteTextByLine('https://raw.githubusercontent.com/Loyalsoldier/v2ray-rules-dat/release/gfw.txt', true)) {
+    totalGfwSize++;
     gfwListTrie.add(l);
   }
 
@@ -147,6 +152,9 @@ export async function parseGfwList() {
 
   whiteSet.forEach(domain => gfwListTrie.whitelist(domain, true));
 
+  let gfwListSize = 0;
+  gfwListTrie.dump(() => gfwListSize++);
+
   const kwfilter = createKeywordFilter([...keywordSet]);
 
   const missingTop10000Gfwed = new Set<string>();
@@ -158,7 +166,7 @@ export async function parseGfwList() {
   });
 
   console.log(Array.from(missingTop10000Gfwed).join('\n'));
-  console.log('', missingTop10000Gfwed.size);
+  console.log({ totalGfwSize, gfwListSize, missingSize: missingTop10000Gfwed.size });
 
   return [
     whiteSet,
@@ -170,3 +178,5 @@ export async function parseGfwList() {
 if (require.main === module) {
   parseGfwList().catch(console.error);
 }
+
+// python.com waiting-for-sell
