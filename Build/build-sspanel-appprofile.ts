@@ -61,7 +61,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     // domestic - domains
     getDomesticAndDirectDomainsRulesetPromise(),
     getAppleCdnDomainsPromise(),
-    getMicrosoftCdnRulesetPromise(),
+    getMicrosoftCdnRulesetPromise,
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/apple_cn.conf')),
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'non_ip/neteasemusic.conf')),
     // microsoft & apple - domains

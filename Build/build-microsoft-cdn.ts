@@ -1,6 +1,5 @@
 import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
-import { once } from 'foxts/once';
 import { RulesetOutput } from './lib/rules/ruleset';
 import Worktank from 'worktank';
 import { RULES } from './constants/microsoft-cdn';
@@ -48,18 +47,13 @@ const pool = new Worktank({
   }
 });
 
-export const getMicrosoftCdnRulesetPromise = once<Promise<[domains: string[], domainSuffixes: string[]]>>(async () => {
-  const res = await pool.exec(
-    'getMicrosoftCdnRuleset',
-    [__filename]
-  );
-  pool.terminate();
-
-  return res;
-});
+export const getMicrosoftCdnRulesetPromise = pool.exec(
+  'getMicrosoftCdnRuleset',
+  [__filename]
+).finally(() => pool.terminate());
 
 export const buildMicrosoftCdn = task(require.main === module, __filename)(async (span) => {
-  const [domains, domainSuffixes] = await span.traceChildPromise('get microsoft cdn domains', getMicrosoftCdnRulesetPromise());
+  const [domains, domainSuffixes] = await span.traceChildPromise('get microsoft cdn domains', getMicrosoftCdnRulesetPromise);
 
   return new RulesetOutput(span, 'microsoft_cdn', 'non_ip')
     .withTitle('Sukka\'s Ruleset - Microsoft CDN')

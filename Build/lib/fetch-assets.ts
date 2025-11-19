@@ -35,6 +35,9 @@ export async function fetchAssets(
       console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
       throw reusedCustomAbortError;
     }
+    if (index >= 0) {
+      console.log(picocolors.yellowBright('[fetch fallback begin]'), picocolors.gray(url));
+    }
     const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
 
     let stream = nullthrow(res.body, url + ' has an empty body')

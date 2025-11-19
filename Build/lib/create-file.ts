@@ -29,8 +29,8 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
 
     // The default highwater mark is normally 16384,
     // So we make sure direct write to file if the content is
-    // most likely less than 500 lines
-    if (linesALen < 500) {
+    // most likely less than 250 lines
+    if (linesALen < 250) {
       return writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
     }
 
