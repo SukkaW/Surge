@@ -8,14 +8,9 @@ import { AdGuardFilterIgnoreUnsupportedLinesStream } from './parse-filter/filter
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 import { newQueue } from '@henrygd/queue';
+import { AbortError } from 'foxts/abort-error';
 
-// eslint-disable-next-line sukka/unicorn/custom-error-definition -- typescript is better
-class CustomAbortError extends Error {
-  public readonly name = 'AbortError';
-  public readonly digest = 'AbortError';
-}
-
-const reusedCustomAbortError = new CustomAbortError();
+const reusedCustomAbortError = new AbortError();
 
 const queue = newQueue(16);
 

@@ -18,6 +18,7 @@ import { inspect } from 'node:util';
 import path from 'node:path';
 import fs from 'node:fs';
 import { CACHE_DIR } from '../constants/dir';
+import { isAbortErrorLike } from 'foxts/abort-error';
 
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -166,13 +167,8 @@ export async function $$fetch(url: string, init: RequestInit = defaultRequestIni
 
     return res;
   } catch (err: unknown) {
-    if (typeof err === 'object' && err !== null && 'name' in err) {
-      if ((
-        err.name === 'AbortError'
-        || ('digest' in err && err.digest === 'AbortError')
-      )) {
-        console.log(picocolors.gray('[fetch abort]'), url);
-      }
+    if (isAbortErrorLike(err)) {
+      console.log(picocolors.gray('[fetch abort]'), url);
     } else {
       console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
     }
@@ -195,13 +191,8 @@ export async function requestWithLog(url: string, opt?: Parameters<typeof undici
 
     return res;
   } catch (err: unknown) {
-    if (typeof err === 'object' && err !== null && 'name' in err) {
-      if ((
-        err.name === 'AbortError'
-        || ('digest' in err && err.digest === 'AbortError')
-      )) {
-        console.log(picocolors.gray('[fetch abort]'), url);
-      }
+    if (isAbortErrorLike(err)) {
+      console.log(picocolors.gray('[fetch abort]'), url);
     } else {
       console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
     }
