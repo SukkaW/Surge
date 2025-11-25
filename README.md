@@ -59,6 +59,8 @@
 
 ```ini
 # Non IP
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
+
 # 基础的 12 万拦截域名
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching
 # 额外 9 万拦截域名，作为基础的补充，启用时需要搭配基础一起使用
@@ -68,7 +70,6 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_extra.conf,REJECT
 # DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject_phishing.conf,REJECT
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching
-RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
 # URL-REGEX
 # 需搭配 Surge 模块 https://ruleset.skk.moe/Modules/sukka_mitm_hostnames.sgmodule 使用
 # MITM 和 URL-REGEX 性能开销极大，不推荐使用
@@ -127,12 +128,12 @@ rule-providers:
     path: ./sukkaw_ruleset/reject_ip.txt
 
 rules:
-  - RULE-SET,reject_non_ip,REJECT
+  - RULE-SET,reject_non_ip_drop,REJECT-DROP
 
   - RULE-SET,reject_domainset,REJECT
   - RULE-SET,reject_extra_domainset,REJECT
+  - RULE-SET,reject_non_ip,REJECT
 
-  - RULE-SET,reject_non_ip_drop,REJECT-DROP
   - RULE-SET,reject_non_ip_no_drop,REJECT
   - RULE-SET,reject_ip,REJECT
 ```
