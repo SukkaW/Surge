@@ -25,7 +25,7 @@ const ENFORCED_WHITELIST = [
   'img.vim-cn.com'
 ];
 
-const WHITELIST: string[] = ['httpdns.bilivideo.com', 'ntp.api.bz', 'httpdns-v6.gslb.yy.com', 'img.vim-cn.com', 'img.jjbb.me', 'thingproxy.freeboard.io', 'assets.chess24.com', 'cdn.chess24.com', 'static-assets.freeanimehentai.net', 'static.javcdn.info', 'cdn.vidible.tv', 'it.apache.contactlab.it', 'mirror.netinch.com', 'de.freedif.org', 'league1.maoyuncloud.cn', 'spl.ztvx8.com', 'zls.xz6d.com', 'iadmatapk.nosdn.127.net', 'show.buzzcity.net', 'click.buzzcity.net', 'apps.buzzcity.net', 'content-cdn.y2mate.com', 'images.voguehk.com', 'cdn.amh.moe', 'statics.mnnews.tw'];
+const WHITELIST: string[] = ['ntp.api.bz', 'httpdns.bilivideo.com', 'httpdns.platform.dbankcloud.cn', 'dns.iqiyi.com', 'dns.qiyipic.iqiyi.com', 'img.vim-cn.com', 'chat-content.beanfun.com', 'archive.mirror.ba', 'ctan.imsc.res.in', 'gnu.freemirror.org', 'probe.whatismyipaddress.com', 'sdkrec.tf.360.cn', 'iadmatapk.nosdn.127.net', 'gamecenter.iqiyi.com', 'tracking.klickthru.com', 'm.shilian168.cn', 'm.zdjgj.cn', 'gcpool.ddns.net', 'radpool.ddns.net', 's9.maxstream.org', 's10.maxstream.org', 's11.maxstream.org', 'statics.erothots.co', 'mcdn.tubi.tv'];
 
 task(require.main === module, __filename)(async (span) => {
   const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
