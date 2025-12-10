@@ -105,8 +105,10 @@ const pool = new Worktank({
           } else {
             if (BLACK_TLD.has(tld)) {
               score += 3;
-            } else if (tld.length > 6) {
+            } else if (tld.length > 4) {
               score += 2;
+            } else if (tld.length > 5) {
+              score += 4;
             }
             if (apexDomain.length >= 18) {
               score += 0.5;

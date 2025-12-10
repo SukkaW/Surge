@@ -26,12 +26,10 @@ export async function fetchAssets(
       try {
         await waitWithAbort(1800 + (index + 1) * 1200, controller.signal);
       } catch {
-        console.log(picocolors.gray('[fetch cancelled early]'), picocolors.gray(url));
         throw reusedCustomAbortError;
       }
     }
     if (controller.signal.aborted) {
-      console.log(picocolors.gray('[fetch cancelled]'), picocolors.gray(url));
       throw reusedCustomAbortError;
     }
     if (index >= 0) {
