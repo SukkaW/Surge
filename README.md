@@ -401,7 +401,7 @@ rules:
 
 ```ini
 RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,[Replace with your policy]
-RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,[Replace with your policy]
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,[Replace with your policy],extended-matching
 ```
 
 **Clash Meta**
