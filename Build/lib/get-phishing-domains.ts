@@ -202,17 +202,10 @@ const pool = new Worktank({
 export function getPhishingDomains(parentSpan: Span) {
   return parentSpan.traceChild('get phishing domains').traceAsyncFn(async (span) => span.traceChildAsync(
     'process phishing domain set',
-    async () => {
-      const phishingDomains = await pool.exec(
-        'getPhishingDomains',
-        [
-          __filename,
-          require.main === module
-        ]
-      );
-      pool.terminate();
-      return phishingDomains;
-    }
+    () => pool.exec(
+      'getPhishingDomains',
+      [__filename, require.main === module]
+    ).finally(() => pool.terminate())
   ));
 }
 

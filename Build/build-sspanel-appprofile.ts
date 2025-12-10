@@ -6,7 +6,7 @@ import path from 'node:path';
 
 import { ALL as AllStreamServices } from '../Source/stream';
 import { getChnCidrPromise } from './build-chn-cidr';
-import { getTelegramCIDRPromise } from './build-telegram-cidr';
+import { getTelegramCIDRPromise } from './lib/get-telegram-backup-ip';
 import { compareAndWriteFile } from './lib/create-file';
 import { getMicrosoftCdnRulesetPromise } from './build-microsoft-cdn';
 import { isTruthy, nullthrow } from 'foxts/guard';
@@ -75,7 +75,7 @@ export const buildSSPanelUIMAppProfile = task(require.main === module, __filenam
     // domestic - ip cidr
     getChnCidrPromise(),
     // global - ip cidr
-    getTelegramCIDRPromise(),
+    getTelegramCIDRPromise,
     // lan - ip cidr
     readFileIntoProcessedArray(path.join(OUTPUT_SURGE_DIR, 'ip/lan.conf'))
   ] as const);

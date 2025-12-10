@@ -79,10 +79,13 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     downloadDomainSet,
     steamDomainSet
   ] = await Promise.all([
-    span.traceChildAsync('download public suffix list for s3', () => pool.exec(
-      'getS3OSSDomains',
-      [__filename]
-    ).finally(() => pool.terminate())),
+    span.traceChildAsync(
+      'download public suffix list for s3',
+      () => pool.exec(
+        'getS3OSSDomains',
+        [__filename]
+      ).finally(() => pool.terminate())
+    ),
     cdnDomainsListPromise,
     downloadDomainSetPromise,
     steamDomainSetPromise
