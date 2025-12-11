@@ -539,6 +539,7 @@ export const PREDEFINED_WHITELIST = [
   '.telize.com', // AdGuardDNSFilter
   '.wns.windows.com', // Windows Push Notifications. Besides there is no point in adding these
   'freegeoip.app', // AdGuardDNSFilter
+  'hostip.info', // AdGuardDNSFilter
 
   'widget-mediator.zopim.com', // breaking zendesk chat
 
