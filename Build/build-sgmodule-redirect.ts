@@ -101,7 +101,6 @@ const REDIRECT_MIRROR_307 = [
   ['minecraft.fandom.com/', 'https://minecraft.wiki/'],
   // Hello, FANZA!
   ['missav.com/', 'https://missav.ai/'],
-  ['missav.ws/', 'https://missav.ai/'],
   ['thisav.com/', 'https://thisav.me/']
 ];
 
