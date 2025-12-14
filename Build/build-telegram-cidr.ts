@@ -5,7 +5,7 @@ import { RulesetOutput } from './lib/rules/ruleset';
 import { getTelegramCIDRPromise } from './lib/get-telegram-backup-ip';
 
 export const buildTelegramCIDR = task(require.main === module, __filename)(async (span) => {
-  const { timestamp, ipcidr, ipcidr6 } = await span.traceChildPromise('get telegram cidr', getTelegramCIDRPromise);
+  const { timestamp, ipcidr, ipcidr6 } = await span.traceChildAsync('get telegram cidr', getTelegramCIDRPromise);
 
   if (ipcidr.length + ipcidr6.length === 0) {
     throw new Error('Failed to fetch data!');

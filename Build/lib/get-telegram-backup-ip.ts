@@ -9,6 +9,7 @@ import { base64ToUint8Array, concatUint8Arrays } from 'foxts/uint8array-utils';
 
 import Worktank from 'worktank';
 import { wait } from 'foxts/wait';
+import { once } from 'foxts/once';
 
 const mtptoto_public_rsa = `-----BEGIN RSA PUBLIC KEY-----
 MIIBCgKCAQEAyr+18Rex2ohtVy8sroGP
@@ -257,7 +258,7 @@ const pool = new Worktank({
   }
 });
 
-export const getTelegramCIDRPromise = wait(0).then(() => pool.exec(
+export const getTelegramCIDRPromise = once(() => wait(0).then(() => pool.exec(
   'getTelegramBackupIPs',
   [__filename]
-)).finally(() => pool.terminate());
+)).finally(() => pool.terminate()), false);
