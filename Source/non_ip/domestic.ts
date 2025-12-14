@@ -278,6 +278,9 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+byteimg.com', // Uses alidns.com NS
       '+byteacctimg.com', // Uses alidns.com NS
       '+byteeffecttos.com', // Use hichina.com NS
+      '+bytescm.com', // Use alidns.com NS
+      '+bytetos.com', // Use alidns.com NS
+      '+bdurl.net', // Uses alidns.com NS
       '+ibytedapm.com', // China NS
       'oceanengine.com',
       '+edge-byted.com',
