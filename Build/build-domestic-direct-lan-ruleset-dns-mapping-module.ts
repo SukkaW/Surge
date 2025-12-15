@@ -233,7 +233,9 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
             const ruleset_name = cur[0].toLowerCase();
             const mihomo_ruleset_id = `mihomo_nameserver_policy_${ruleset_name}`;
 
-            acc.dns['nameserver-policy'][`rule-set:${mihomo_ruleset_id}`] = dns;
+            if (dns) {
+              acc.dns['nameserver-policy'][`rule-set:${mihomo_ruleset_id}`] = dns;
+            }
 
             acc['rule-providers'][mihomo_ruleset_id] = {
               type: 'http',
@@ -257,7 +259,9 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
                   break;
               }
 
-              acc.dns['nameserver-policy'][domain] = dns;
+              if (dns) {
+                acc.dns['nameserver-policy'][domain] = dns;
+              }
             });
           }
 
@@ -297,6 +301,10 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
         'https://doh.pub/dns-query',
         '[//]udp://10.10.1.1:53',
         ...(([DOMESTICS, DIRECTS, LAN, HOSTS] as const).flatMap(Object.values) as DNSMapping[]).flatMap(({ domains, dns: _dns }) => domains.flatMap((domain) => {
+          if (!_dns) {
+            return [];
+          }
+
           let dns;
           if (_dns in AdGuardHomeDNSMapping) {
             dns = AdGuardHomeDNSMapping[_dns as keyof typeof AdGuardHomeDNSMapping].join(' ');
