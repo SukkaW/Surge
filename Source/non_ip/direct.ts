@@ -6,7 +6,7 @@ export interface DNSMapping {
   realip: boolean,
   /** should convert to ruleset */
   ruleset: boolean,
-  dns: string,
+  dns: string | null,
   /**
    * domain[0]
    *
@@ -47,6 +47,18 @@ export const DIRECTS = {
 } as const satisfies Record<string, DNSMapping>;
 
 export const LAN = {
+  // By default, all hostnames with the suffix '.local' will be resolved by the system.
+  // Some app like OrbStack uses mDNS and this TLD (orb.local) via mDNS.
+  // Surge already handles .local with mDNS properly, we should not map to server:system
+  LOCAL_SPECIAL: {
+    dns: null,
+    hosts: {},
+    realip: false,
+    ruleset: false,
+    domains: [
+      '+local'
+    ]
+  },
   LAN_WITHOUT_REAL_IP: {
     dns: 'system',
     hosts: {
@@ -139,7 +151,10 @@ export const LAN = {
     ruleset: true,
     domains: [
       '+lan',
-      '+local',
+      // By default, all hostnames with the suffix '.local' will be resolved by the system.
+      // Some app like OrbStack uses mDNS and this TLD (orb.local) via mDNS.
+      // Surge already handles .local with mDNS properly, we should not map to server:system
+      // '+local',
       '+internal',
       // 'amplifi.lan',
       // '$localhost',
