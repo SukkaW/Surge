@@ -51,9 +51,9 @@ export const LAN = {
   // Some app like OrbStack uses mDNS and this TLD (orb.local) via mDNS.
   // Surge already handles .local with mDNS properly, we should not map to server:system
   LOCAL_SPECIAL: {
-    dns: null,
+    dns: null, // disable DNS server for now. In the future we might wannna explicitly specify `server: force-syslib`
     hosts: {},
-    realip: false,
+    realip: true,
     ruleset: false,
     domains: [
       '+local'
