@@ -57,6 +57,7 @@ export class SingboxSource extends BaseWriteStrategy {
   withPadding = withIdentityContent;
 
   writeDomain(domain: string): void {
+    if (domain.length === 0) return;
     this.singbox.domain.push(domain);
   }
 
