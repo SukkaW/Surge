@@ -5,7 +5,7 @@ import { getHostname } from 'tldts-experimental';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { escapeRegexp } from 'fast-escape-regexp';
 
-const REDIRECT_MIRROR_HEADER = [
+const REDIRECT_MIRROR_HEADER: Array<[from: string, to: string, canUboUriTransform?: boolean]> = [
   // Gravatar
   // ['gravatar.neworld.org/', 'https://secure.gravatar.com/'],
   ['cdn.v2ex.com/gravatar/', 'https://secure.gravatar.com/avatar/', true],
@@ -74,15 +74,15 @@ const REDIRECT_MIRROR_HEADER = [
   ['fastly-polyfill.net/', 'https://cdnjs.cloudflare.com/polyfill/', true],
   ['polyfill-fastly.net/', 'https://cdnjs.cloudflare.com/polyfill/', true],
   // BootCDN has been controlled by a malicious actor and being used to spread malware
-  ['cdn.bootcss.com/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['cdn.bootcdn.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['cdn.staticfile.org/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
+  ['cdn.bootcss.com/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['cdn.bootcdn.net/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['cdn.staticfile.org/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
   // The UNPKG has not been actively maintained and is finally down (https://github.com/unpkg/unpkg/issues/412)
   ['unpkg.com/', 'https://cdn.jsdelivr.net/npm/', true]
-] as const;
+];
 
-const REDIRECT_MIRROR_307 = [
+const REDIRECT_MIRROR_307: Array<[from: string, to: string, canUboUriTransform?: boolean]> = [
   // Redirect Google
   ['google.cn/', 'https://google.com/'],
   ['www.google.cn/', 'https://www.google.com/'],
@@ -94,14 +94,14 @@ const REDIRECT_MIRROR_307 = [
   ['acg.tv/sm', 'https://www.nicovideo.jp/watch/sm'],
   ['acg.tv/', 'https://b23.tv/'],
   // Minecraft Wiki
-  ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/'],
-  ['minecraft.fandom.com/', 'https://minecraft.wiki/'],
+  ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/', true],
+  ['minecraft.fandom.com/', 'https://minecraft.wiki/', true],
   // Hello, FANZA!
-  ['missav.com/', 'https://missav.ai/'],
-  ['thisav.com/', 'https://thisav.me/']
+  ['missav.com/', 'https://missav.ai/', true],
+  ['thisav.com/', 'https://thisav.me/', true]
 ];
 
-const REDIRECT_FAKEWEBSITES = [
+const REDIRECT_FAKEWEBSITES: Array<[from: string, to: string]> = [ // all REDIRECT_FAKEWEBSITES can be transformed by uBO uritransform
   // IGN China to IGN Global
   ['ign.xn--fiqs8s', 'https://cn.ign.com/ccpref/us'],
   // Fuck Makeding
@@ -140,7 +140,7 @@ const REDIRECT_FAKEWEBSITES = [
   ['xshellcn.com', 'https://www.netsarang.com/products/xsh_overview.html'],
   ['yuanchengxiezuo.com', 'https://www.teamviewer.com/zhcn'],
   ['zbrushcn.com', 'https://www.maxon.net/en/zbrush']
-] as const;
+];
 
 export const buildRedirectModule = task(require.main === module, __filename)(async (span) => {
   const fullDomains: string[] = [];
@@ -157,11 +157,13 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
     }
   }
   for (let i = 0, len = REDIRECT_MIRROR_307.length; i < len; i++) {
-    const [from] = REDIRECT_MIRROR_307[i];
+    const [from, , canUboUriTransform] = REDIRECT_MIRROR_307[i];
     const hostname = getHostname(from, { detectIp: false });
     if (hostname) {
       fullDomains.push(hostname);
-      minimumDomains.push(hostname);
+      if (!canUboUriTransform) {
+        minimumDomains.push(hostname);
+      }
     }
   }
   for (let i = 0, len = REDIRECT_FAKEWEBSITES.length; i < len; i++) {
@@ -169,7 +171,10 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
     const hostname = getHostname(from, { detectIp: false });
     if (hostname) {
       fullDomains.push(hostname);
-      minimumDomains.push(hostname);
+      // REDIRECT_FAKEWEBSITES all can be transformed by uBO uritransform
+      // if (!canUboUriTransform) {
+      //   minimumDomains.push(hostname);
+      // }
     }
   }
 
@@ -197,6 +202,7 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
         `#!desc=Last Updated: ${new Date().toISOString()} Size: ${minimumDomains.length}`,
         '# This module only contains rules that doesn\'t work with/hasn\'t migrated to uBlock Origin\'s "uritransform" filter syntax',
         '# uBO/AdGuard filter can be found at https://ruleset.skk.moe/Internal/sukka_ubo_url_redirect_filters.txt',
+        '# This reduces mitm-hostnames and improves performance, with the tradeoff of uBO/AdGuard filter only cover mostly in browser.',
         '',
         '[MITM]',
         `hostname = %APPEND% ${minimumDomains.join(', ')}`,
@@ -208,8 +214,12 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
           }
           return acc;
         }, []),
-        ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${(from)} ${to} 307`),
-        ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 307`)
+        ...REDIRECT_MIRROR_307.reduce<string[]>((acc, [from, to, canUboUriTransform]) => {
+          if (!canUboUriTransform) {
+            acc.push(`^https?://${escapeRegexp(from)}(.*) ${to}$1 307`);
+          }
+          return acc;
+        }, [])
       ],
       path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect_minimum.sgmodule')
     ),
@@ -224,25 +234,47 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
         '! Homepage: https://ruleset.skk.moe',
         '! GitHub: https://github.com/SukkaW/Surge',
         '',
-        ...REDIRECT_MIRROR_HEADER.reduce<string[]>((acc, [from, to, canUboUriTransform]) => {
-          if (!canUboUriTransform) {
-            return acc;
-          }
-
-          acc.push(
-            '||'
-            + from
-            + '$all,uritransform=/'
-            + escapeRegexp(from).replaceAll('/', String.raw`\/`)
-            + '/'
-            + to.replace('https://', '').replaceAll('/', String.raw`\/`)
-            + '/'
-          );
-
-          return acc;
-        }, [])
+        ...REDIRECT_MIRROR_HEADER.reduce<string[]>(uBOUriTransformGenerator, []),
+        ...REDIRECT_MIRROR_307.reduce<string[]>(uBOUriTransformGenerator, []),
+        ...REDIRECT_FAKEWEBSITES.reduce<string[]>(uBOUriTransformGeneratorForFakeWebsites, [])
       ],
       path.join(OUTPUT_INTERNAL_DIR, 'sukka_ubo_url_redirect_filters.txt')
     )
   ]);
 });
+
+function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]: [from: string, to: string, canUboUriTransform?: boolean]): string[] {
+  if (!canUboUriTransform) {
+    return acc;
+  }
+
+  // unlike Surge, which processes rules form top to bottom, uBO treats later rules with higher priority (overriden-like behavior),
+  // so when doing uBO we need to prepend. Given the the rules count is small, the performance impact is negligible.
+  acc.unshift(
+    '||'
+    + from
+    + '$all,uritransform=/'
+    + escapeRegexp(from).replaceAll('/', String.raw`\/`)
+    + '/'
+    + to.replace('https://', '').replaceAll('/', String.raw`\/`)
+    + '/'
+  );
+
+  return acc;
+}
+
+function uBOUriTransformGeneratorForFakeWebsites(acc: string[], [from, to]: [from: string, to: string]): string[] {
+  // unlike Surge, which processes rules form top to bottom, uBO treats later rules with higher priority (overriden-like behavior),
+  // so when doing uBO we need to prepend. Given the the rules count is small, the performance impact is negligible.
+  acc.unshift(
+    '||'
+    + from
+    + '$all,uritransform=/'
+    + String.raw`.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + String.raw`\/(.*)`
+    + '/'
+    + to.replace('https://', '').replaceAll('/', String.raw`\/`)
+    + '/'
+  );
+
+  return acc;
+}
