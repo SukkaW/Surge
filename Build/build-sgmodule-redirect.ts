@@ -4,6 +4,7 @@ import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts-experimental';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { escapeRegexp } from 'fast-escape-regexp';
+import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 
 const REDIRECT_MIRROR_HEADER: Array<[from: string, to: string, canUboUriTransform?: boolean]> = [
   // Gravatar
@@ -143,16 +144,16 @@ const REDIRECT_FAKEWEBSITES: Array<[from: string, to: string]> = [ // all REDIRE
 ];
 
 export const buildRedirectModule = task(require.main === module, __filename)(async (span) => {
-  const fullDomains: string[] = [];
-  const minimumDomains: string[] = [];
+  const fullDomains = new Set<string>();
+  const minimumDomains = new Set<string>();
 
   for (let i = 0, len = REDIRECT_MIRROR_HEADER.length; i < len; i++) {
     const [from, , canUboUriTransform] = REDIRECT_MIRROR_HEADER[i];
     const hostname = getHostname(from, { detectIp: false });
     if (hostname) {
-      fullDomains.push(hostname);
+      fullDomains.add(hostname);
       if (!canUboUriTransform) {
-        minimumDomains.push(hostname);
+        minimumDomains.add(hostname);
       }
     }
   }
@@ -160,9 +161,9 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
     const [from, , canUboUriTransform] = REDIRECT_MIRROR_307[i];
     const hostname = getHostname(from, { detectIp: false });
     if (hostname) {
-      fullDomains.push(hostname);
+      fullDomains.add(hostname);
       if (!canUboUriTransform) {
-        minimumDomains.push(hostname);
+        minimumDomains.add(hostname);
       }
     }
   }
@@ -170,11 +171,8 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
     const [from] = REDIRECT_FAKEWEBSITES[i];
     const hostname = getHostname(from, { detectIp: false });
     if (hostname) {
-      fullDomains.push(hostname);
+      fullDomains.add(hostname);
       // REDIRECT_FAKEWEBSITES all can be transformed by uBO uritransform
-      // if (!canUboUriTransform) {
-      //   minimumDomains.push(hostname);
-      // }
     }
   }
 
@@ -183,10 +181,10 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       span,
       [
         '#!name=[Sukka] URL Redirect',
-        `#!desc=Last Updated: ${new Date().toISOString()} Size: ${fullDomains.length}`,
+        `#!desc=Last Updated: ${new Date().toISOString()} Size: ${fullDomains.size}`,
         '',
         '[MITM]',
-        `hostname = %APPEND% ${fullDomains.join(', ')}`,
+        `hostname = %APPEND% ${fastStringArrayJoin(Array.from(fullDomains), ', ')}`,
         '',
         '[URL Rewrite]',
         ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 header`),
@@ -199,13 +197,13 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       span,
       [
         '#!name=[Sukka] URL Redirect (Minimum)',
-        `#!desc=Last Updated: ${new Date().toISOString()} Size: ${minimumDomains.length}`,
+        `#!desc=Last Updated: ${new Date().toISOString()} Size: ${minimumDomains.size}`,
         '# This module only contains rules that doesn\'t work with/hasn\'t migrated to uBlock Origin\'s "uritransform" filter syntax',
         '# uBO/AdGuard filter can be found at https://ruleset.skk.moe/Internal/sukka_ubo_url_redirect_filters.txt',
         '# This reduces mitm-hostnames and improves performance, with the tradeoff of uBO/AdGuard filter only cover mostly in browser.',
         '',
         '[MITM]',
-        `hostname = %APPEND% ${minimumDomains.join(', ')}`,
+        `hostname = %APPEND% ${fastStringArrayJoin(Array.from(minimumDomains), ', ')}`,
         '',
         '[URL Rewrite]',
         ...REDIRECT_MIRROR_HEADER.reduce<string[]>((acc, [from, to, canUboUriTransform]) => {
