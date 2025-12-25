@@ -33,13 +33,13 @@ const getSpeedtestHostsGroupsPromise = $$fetch('https://speedtest-net-servers.cd
     if (cur.host) {
       hn = tldts.getHostname(cur.host, { detectIp: false, validateHostname: true });
       if (hn) {
-        prev.push(hn);
+        prev.push(hn.trim()); // speedtest API typo: "url":"http:// t4y-toronto-ca-osts1.ser.tek4you.ca:8080/speedtest/upload.php"
       }
     }
     if (cur.url) {
       hn = fastUri.parse(cur.url).host;
       if (hn) {
-        prev.push(hn);
+        prev.push(hn.trim()); // speedtest API typo: "url":"http:// t4y-toronto-ca-osts1.ser.tek4you.ca:8080/speedtest/upload.php"
       }
     }
     return prev;
@@ -62,7 +62,7 @@ const getLibrespeedBackendsPromise = $$fetch('https://speedtest-net-servers.cdn.
     if (cur.server) {
       hn = fastUri.parse(cur.server).host;
       if (hn) {
-        prev.push(hn);
+        prev.push(hn.trim());
       }
     }
 

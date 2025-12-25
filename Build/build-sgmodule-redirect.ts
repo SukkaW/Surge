@@ -2,35 +2,35 @@ import path from 'node:path';
 import { task } from './trace';
 import { compareAndWriteFile } from './lib/create-file';
 import { getHostname } from 'tldts-experimental';
-import { isTruthy } from 'foxts/guard';
-import { OUTPUT_MODULES_DIR } from './constants/dir';
+import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { escapeRegexp } from 'fast-escape-regexp';
+import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 
-const REDIRECT_MIRROR_HEADER = [
+const REDIRECT_MIRROR_HEADER: Array<[from: string, to: string, canUboUriTransform?: boolean]> = [
   // Gravatar
-  ['gravatar.neworld.org/', 'https://secure.gravatar.com/'],
-  ['cdn.v2ex.com/gravatar/', 'https://secure.gravatar.com/avatar/'],
+  // ['gravatar.neworld.org/', 'https://secure.gravatar.com/'],
+  ['cdn.v2ex.com/gravatar/', 'https://secure.gravatar.com/avatar/', true],
   // U.SB
-  ['cdnjs.loli.net/', 'https://cdnjs.cloudflare.com/'],
-  ['fonts.loli.net/', 'https://fonts.googleapis.com/'],
-  ['gstatic.loli.net/', 'https://fonts.gstatic.com/'],
-  ['themes.loli.net/', 'https://themes.googleusercontent.com/'],
-  ['ajax.loli.net/', 'https://ajax.googleapis.com/'],
-  ['gravatar.loli.net/', 'https://secure.gravatar.com/'],
+  ['cdnjs.loli.net/', 'https://cdnjs.cloudflare.com/', true],
+  ['fonts.loli.net/', 'https://fonts.googleapis.com/', true],
+  ['gstatic.loli.net/', 'https://fonts.gstatic.com/', true],
+  ['themes.loli.net/', 'https://themes.googleusercontent.com/', true],
+  ['ajax.loli.net/', 'https://ajax.googleapis.com/', true],
+  ['gravatar.loli.net/', 'https://secure.gravatar.com/', true],
   // Geekzu
-  ['gapis.geekzu.org/ajax/', 'https://ajax.googleapis.com/'],
-  ['fonts.geekzu.org/', 'https://fonts.googleapis.com/'],
-  ['gapis.geekzu.org/g-fonts/', 'https://fonts.gstatic.com/'],
-  ['gapis.geekzu.org/g-themes/', 'https://themes.googleusercontent.com/'],
-  ['sdn.geekzu.org/', 'https://secure.gravatar.com/'],
+  ['gapis.geekzu.org/ajax/', 'https://ajax.googleapis.com/', true],
+  ['fonts.geekzu.org/', 'https://fonts.googleapis.com/', true],
+  ['gapis.geekzu.org/g-fonts/', 'https://fonts.gstatic.com/', true],
+  ['gapis.geekzu.org/g-themes/', 'https://themes.googleusercontent.com/', true],
+  ['sdn.geekzu.org/', 'https://secure.gravatar.com/', true],
   // libravatar
-  ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/'],
+  ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/', true],
   // 7ED Services
-  ['use.sevencdn.com/css', 'https://fonts.googleapis.com/css'],
-  ['use.sevencdn.com/ajax/libs/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['use.sevencdn.com/gajax/', 'https://ajax.googleapis.com/ajax/'],
-  ['use.sevencdn.com/chart', 'https://chart.googleapis.com/chart'],
-  ['use.sevencdn.com/avatar', 'https://secure.gravatar.com/avatar'],
+  ['use.sevencdn.com/css', 'https://fonts.googleapis.com/css', true],
+  ['use.sevencdn.com/ajax/libs/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['use.sevencdn.com/gajax/', 'https://ajax.googleapis.com/ajax/', true],
+  ['use.sevencdn.com/chart', 'https://chart.googleapis.com/chart', true],
+  ['use.sevencdn.com/avatar', 'https://secure.gravatar.com/avatar', true],
   ['raw.gitmirror.com/', 'https://raw.githubusercontent.com/'],
   ['gist.gitmirror.com/', 'https://gist.githubusercontent.com/'],
   ['raw.githubusercontents.com/', 'https://raw.githubusercontent.com/'],
@@ -40,52 +40,50 @@ const REDIRECT_MIRROR_HEADER = [
   ['raw.fastgit.org/', 'https://raw.githubusercontent.com/'],
   // ['assets.fastgit.org/', 'https://github.githubassets.com/'],
   // jsDelivr
-  ['fastly.jsdelivr.net/', 'https://cdn.jsdelivr.net/'],
-  ['gcore.jsdelivr.net/', 'https://cdn.jsdelivr.net/'],
-  ['testingcf.jsdelivr.net/', 'https://cdn.jsdelivr.net/'],
+  ['fastly.jsdelivr.net/', 'https://cdn.jsdelivr.net/', true],
+  ['gcore.jsdelivr.net/', 'https://cdn.jsdelivr.net/', true],
+  ['testingcf.jsdelivr.net/', 'https://cdn.jsdelivr.net/', true],
   // JSDMirror
-  ['cdn.jsdmirror.com/', 'https://cdn.jsdelivr.net/'],
-  ['cdn.jsdmirror.cn/', 'https://cdn.jsdelivr.net/'],
+  ['cdn.jsdmirror.com/', 'https://cdn.jsdelivr.net/', true],
+  ['cdn.jsdmirror.cn/', 'https://cdn.jsdelivr.net/', true],
   // onmicrosoft.cn
-  ['jsd.onmicrosoft.cn/', 'https://cdn.jsdelivr.net/'],
-  ['npm.onmicrosoft.cn/', 'https://cdn.jsdelivr.net/npm/'],
-  ['cdnjs.onmicrosoft.cn/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
+  ['jsd.onmicrosoft.cn/', 'https://cdn.jsdelivr.net/', true],
+  ['npm.onmicrosoft.cn/', 'https://cdn.jsdelivr.net/npm/', true],
+  ['cdnjs.onmicrosoft.cn/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
   // KGitHub
   ['raw.kgithub.com/', 'https://raw.githubusercontent.com/'],
   ['raw.kkgithub.com/', 'https://raw.githubusercontent.com/'],
   // cdn.iocdn.cc
-  ['cdn.iocdn.cc/avatar/', 'https://secure.gravatar.com/avatar/'],
-  ['cdn.iocdn.cc/css', 'https://fonts.googleapis.com/css'],
-  ['cdn.iocdn.cc/icon', 'https://fonts.googleapis.com/icon'],
-  ['cdn.iocdn.cc/earlyaccess', 'https://fonts.googleapis.com/earlyaccess'],
-  ['cdn.iocdn.cc/s', 'https://fonts.gstatic.com/s'],
-  ['cdn.iocdn.cc/static', 'https://themes.googleusercontent.com/static'],
-  ['cdn.iocdn.cc/ajax', 'https://ajax.googleapis.com/ajax'],
-  ['cdn.iocdn.cc/', 'https://cdn.jsdelivr.net/'],
+  ['cdn.iocdn.cc/avatar/', 'https://secure.gravatar.com/avatar/', true],
+  ['cdn.iocdn.cc/css', 'https://fonts.googleapis.com/css', true],
+  ['cdn.iocdn.cc/icon', 'https://fonts.googleapis.com/icon', true],
+  ['cdn.iocdn.cc/earlyaccess', 'https://fonts.googleapis.com/earlyaccess', true],
+  ['cdn.iocdn.cc/s', 'https://fonts.gstatic.com/s', true],
+  ['cdn.iocdn.cc/static', 'https://themes.googleusercontent.com/static', true],
+  ['cdn.iocdn.cc/ajax', 'https://ajax.googleapis.com/ajax', true],
+  ['cdn.iocdn.cc/', 'https://cdn.jsdelivr.net/', true],
   // wp-china-yes
-  ['googlefonts.admincdn.com/', 'https://fonts.googleapis.com/'],
-  ['googleajax.admincdn.com/', 'https://ajax.googleapis.com/'],
-  ['cdnjs.admincdn.com/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
+  ['googlefonts.admincdn.com/', 'https://fonts.googleapis.com/', true],
+  ['googleajax.admincdn.com/', 'https://ajax.googleapis.com/', true],
+  ['cdnjs.admincdn.com/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
   // Polyfill
-  ['polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
-  ['polyfill.top/', 'https://cdnjs.cloudflare.com/polyfill/'],
-  ['polyfill-js.cn/', 'https://cdnjs.cloudflare.com/polyfill/'],
-  ['cdn.polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
-  ['fastly-polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/'],
-  ['fastly-polyfill.net/', 'https://cdnjs.cloudflare.com/polyfill/'],
-  ['polyfill-fastly.net/', 'https://cdnjs.cloudflare.com/polyfill/'],
+  ['polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/', true],
+  ['polyfill.top/', 'https://cdnjs.cloudflare.com/polyfill/', true],
+  ['polyfill-js.cn/', 'https://cdnjs.cloudflare.com/polyfill/', true],
+  ['cdn.polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/', true],
+  ['fastly-polyfill.io/', 'https://cdnjs.cloudflare.com/polyfill/', true],
+  ['fastly-polyfill.net/', 'https://cdnjs.cloudflare.com/polyfill/', true],
+  ['polyfill-fastly.net/', 'https://cdnjs.cloudflare.com/polyfill/', true],
   // BootCDN has been controlled by a malicious actor and being used to spread malware
-  ['cdn.bootcss.com/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['cdn.bootcdn.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
-  ['cdn.staticfile.org/', 'https://cdnjs.cloudflare.com/ajax/libs/'],
+  ['cdn.bootcss.com/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['cdn.bootcdn.net/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
+  ['cdn.staticfile.org/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
   // The UNPKG has not been actively maintained and is finally down (https://github.com/unpkg/unpkg/issues/412)
-  ['unpkg.com/', 'https://cdn.jsdelivr.net/npm/'],
-  // Misc
-  ['pics.javbus.com/', 'https://i0.wp.com/pics.javbus.com/']
-] as const;
+  ['unpkg.com/', 'https://cdn.jsdelivr.net/npm/', true]
+];
 
-const REDIRECT_MIRROR_307 = [
+const REDIRECT_MIRROR_307: Array<[from: string, to: string, canUboUriTransform?: boolean]> = [
   // Redirect Google
   ['google.cn/', 'https://google.com/'],
   ['www.google.cn/', 'https://www.google.com/'],
@@ -97,14 +95,14 @@ const REDIRECT_MIRROR_307 = [
   ['acg.tv/sm', 'https://www.nicovideo.jp/watch/sm'],
   ['acg.tv/', 'https://b23.tv/'],
   // Minecraft Wiki
-  ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/'],
-  ['minecraft.fandom.com/', 'https://minecraft.wiki/'],
+  ['minecraft.fandom.com/wiki/', 'https://minecraft.wiki/w/', true],
+  ['minecraft.fandom.com/', 'https://minecraft.wiki/', true],
   // Hello, FANZA!
-  ['missav.com/', 'https://missav.ai/'],
-  ['thisav.com/', 'https://thisav.me/']
+  ['missav.com/', 'https://missav.ai/', true],
+  ['thisav.com/', 'https://thisav.me/', true]
 ];
 
-const REDIRECT_FAKEWEBSITES = [
+const REDIRECT_FAKEWEBSITES: Array<[from: string, to: string]> = [ // all REDIRECT_FAKEWEBSITES can be transformed by uBO uritransform
   // IGN China to IGN Global
   ['ign.xn--fiqs8s', 'https://cn.ign.com/ccpref/us'],
   // Fuck Makeding
@@ -143,29 +141,138 @@ const REDIRECT_FAKEWEBSITES = [
   ['xshellcn.com', 'https://www.netsarang.com/products/xsh_overview.html'],
   ['yuanchengxiezuo.com', 'https://www.teamviewer.com/zhcn'],
   ['zbrushcn.com', 'https://www.maxon.net/en/zbrush']
-] as const;
+];
 
 export const buildRedirectModule = task(require.main === module, __filename)(async (span) => {
-  const domains = Array.from(new Set([
-    ...REDIRECT_MIRROR_HEADER.map(([from]) => getHostname(from, { detectIp: false })),
-    ...REDIRECT_FAKEWEBSITES.flatMap(([from]) => [from, `*.${from}`]),
-    ...REDIRECT_MIRROR_307.map(([from]) => getHostname(from, { detectIp: false }))
-  ])).filter(isTruthy);
+  const fullDomains = new Set<string>();
+  const minimumDomains = new Set<string>();
 
-  return compareAndWriteFile(
-    span,
-    [
-      '#!name=[Sukka] URL Redirect',
-      `#!desc=Last Updated: ${new Date().toISOString()} Size: ${domains.length}`,
-      '',
-      '[MITM]',
-      `hostname = %APPEND% ${domains.join(', ')}`,
-      '',
-      '[URL Rewrite]',
-      ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 header`),
-      ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${(from)} ${to} 307`),
-      ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 307`)
-    ],
-    path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect.sgmodule')
-  );
+  for (let i = 0, len = REDIRECT_MIRROR_HEADER.length; i < len; i++) {
+    const [from, , canUboUriTransform] = REDIRECT_MIRROR_HEADER[i];
+    const hostname = getHostname(from, { detectIp: false });
+    if (hostname) {
+      fullDomains.add(hostname);
+      if (!canUboUriTransform) {
+        minimumDomains.add(hostname);
+      }
+    }
+  }
+  for (let i = 0, len = REDIRECT_MIRROR_307.length; i < len; i++) {
+    const [from, , canUboUriTransform] = REDIRECT_MIRROR_307[i];
+    const hostname = getHostname(from, { detectIp: false });
+    if (hostname) {
+      fullDomains.add(hostname);
+      if (!canUboUriTransform) {
+        minimumDomains.add(hostname);
+      }
+    }
+  }
+  for (let i = 0, len = REDIRECT_FAKEWEBSITES.length; i < len; i++) {
+    const [from] = REDIRECT_FAKEWEBSITES[i];
+    const hostname = getHostname(from, { detectIp: false });
+    if (hostname) {
+      fullDomains.add(hostname);
+      // REDIRECT_FAKEWEBSITES all can be transformed by uBO uritransform
+    }
+  }
+
+  await Promise.all([
+    compareAndWriteFile(
+      span,
+      [
+        '#!name=[Sukka] URL Redirect',
+        `#!desc=Last Updated: ${new Date().toISOString()} Size: ${fullDomains.size}`,
+        '',
+        '[MITM]',
+        `hostname = %APPEND% ${fastStringArrayJoin(Array.from(fullDomains), ', ')}`,
+        '',
+        '[URL Rewrite]',
+        ...REDIRECT_MIRROR_HEADER.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 header`),
+        ...REDIRECT_FAKEWEBSITES.map(([from, to]) => `^https?://(www.)?${(from)} ${to} 307`),
+        ...REDIRECT_MIRROR_307.map(([from, to]) => `^https?://${escapeRegexp(from)}(.*) ${to}$1 307`)
+      ],
+      path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect.sgmodule')
+    ),
+    compareAndWriteFile(
+      span,
+      [
+        '#!name=[Sukka] URL Redirect (Minimum)',
+        `#!desc=Last Updated: ${new Date().toISOString()} Size: ${minimumDomains.size}`,
+        '# This module only contains rules that doesn\'t work with/hasn\'t migrated to uBlock Origin\'s "uritransform" filter syntax',
+        '# uBO/AdGuard filter can be found at https://ruleset.skk.moe/Internal/sukka_ubo_url_redirect_filters.txt',
+        '# This reduces mitm-hostnames and improves performance, with the tradeoff of uBO/AdGuard filter only cover mostly in browser.',
+        '',
+        '[MITM]',
+        `hostname = %APPEND% ${fastStringArrayJoin(Array.from(minimumDomains), ', ')}`,
+        '',
+        '[URL Rewrite]',
+        ...REDIRECT_MIRROR_HEADER.reduce<string[]>((acc, [from, to, canUboUriTransform]) => {
+          if (!canUboUriTransform) {
+            acc.push(`^https?://${escapeRegexp(from)}(.*) ${to}$1 header`);
+          }
+          return acc;
+        }, []),
+        ...REDIRECT_MIRROR_307.reduce<string[]>((acc, [from, to, canUboUriTransform]) => {
+          if (!canUboUriTransform) {
+            acc.push(`^https?://${escapeRegexp(from)}(.*) ${to}$1 307`);
+          }
+          return acc;
+        }, [])
+      ],
+      path.join(OUTPUT_MODULES_DIR, 'sukka_url_redirect_minimum.sgmodule')
+    ),
+    compareAndWriteFile(
+      span,
+      [
+        '! Title: [sukka] Sukka URL Redirect',
+        `! Last modified: ${new Date().toUTCString()}`,
+        '! Expires: 4 hours',
+        '! Description: Redirect requests via uritransform network filter syntax.',
+        '! License: https://ruleset.skk.moe/LICENSE',
+        '! Homepage: https://ruleset.skk.moe',
+        '! GitHub: https://github.com/SukkaW/Surge',
+        '',
+        ...REDIRECT_MIRROR_HEADER.reduce<string[]>(uBOUriTransformGenerator, []),
+        ...REDIRECT_MIRROR_307.reduce<string[]>(uBOUriTransformGenerator, []),
+        ...REDIRECT_FAKEWEBSITES.reduce<string[]>(uBOUriTransformGeneratorForFakeWebsites, [])
+      ],
+      path.join(OUTPUT_INTERNAL_DIR, 'sukka_ubo_url_redirect_filters.txt')
+    )
+  ]);
 });
+
+function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]: [from: string, to: string, canUboUriTransform?: boolean]): string[] {
+  if (!canUboUriTransform) {
+    return acc;
+  }
+
+  // unlike Surge, which processes rules form top to bottom, uBO treats later rules with higher priority (overriden-like behavior),
+  // so when doing uBO we need to prepend. Given the the rules count is small, the performance impact is negligible.
+  acc.unshift(
+    '||'
+    + from
+    + '$all,uritransform=/'
+    + escapeRegexp(from).replaceAll('/', String.raw`\/`)
+    + '/'
+    + to.replace('https://', '').replaceAll('/', String.raw`\/`)
+    + '/'
+  );
+
+  return acc;
+}
+
+function uBOUriTransformGeneratorForFakeWebsites(acc: string[], [from, to]: [from: string, to: string]): string[] {
+  // unlike Surge, which processes rules form top to bottom, uBO treats later rules with higher priority (overriden-like behavior),
+  // so when doing uBO we need to prepend. Given the the rules count is small, the performance impact is negligible.
+  acc.unshift(
+    '||'
+    + from
+    + '$all,uritransform=/'
+    + String.raw`.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + String.raw`\/(.*)`
+    + '/'
+    + to.replace('https://', '').replaceAll('/', String.raw`\/`)
+    + '/'
+  );
+
+  return acc;
+}

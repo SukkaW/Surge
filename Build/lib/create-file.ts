@@ -6,6 +6,7 @@ import type { Span } from '../trace';
 import { readFileByLine } from './fetch-text-by-line';
 import { writeFile } from './misc';
 import { createCompareSource, fileEqualWithCommentComparator } from 'foxts/compare-source';
+import { promisify } from 'node:util';
 
 export const fileEqual = createCompareSource(fileEqualWithCommentComparator);
 
@@ -31,7 +32,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     // So we make sure direct write to file if the content is
     // most likely less than 250 lines
     if (linesALen < 250) {
-      return writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
+      return writeFile(filePath, fastStringArrayJoin(linesA, '\n'));
     }
 
     const writeStream = fs.createWriteStream(filePath);
@@ -40,8 +41,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
       // eslint-disable-next-line no-await-in-loop -- stream high water mark
       if (p) await p;
     }
-
-    writeStream.end();
-    writeStream.close();
+    await promisify(writeStream.end.bind(writeStream))();
+    await promisify(writeStream.close.bind(writeStream))();
   });
 }
