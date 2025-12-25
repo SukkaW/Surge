@@ -24,7 +24,7 @@ function fastNormalizeDomainWithoutWwwNoIP(domain: string, parsed: TldTsParsed |
       || parsed.subdomain === 'xml-v4'
       || parsed.subdomain === 'xml-eu'
       || parsed.subdomain === 'xml-eu-v4'
-      || (parsed.subdomain.length === 4 && parsed.subdomain.startsWith('www'))
+      // || (parsed.subdomain.length === 4 && parsed.subdomain.startsWith('www'))
     ) {
       return parsed.domain;
     }
