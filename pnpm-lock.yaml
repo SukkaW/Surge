@@ -15,8 +15,8 @@ importers:
   .:
     dependencies:
       '@ghostery/adblocker':
-        specifier: ^2.13.1
-        version: 2.13.1
+        specifier: ^2.13.2
+        version: 2.13.2
       '@henrygd/queue':
         specifier: ^1.2.0
         version: 1.2.0
@@ -257,14 +257,14 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@ghostery/adblocker-content@2.13.1':
-    resolution: {integrity: sha512-fzHCwAQnAgO91kqIt8qugQxXv1n8lyyfHdSz7Wd+4JkipmGE8HjtzBfVBXtEo+sAM0aOFyZbg2NDQdpUuoYvaQ==}
+  '@ghostery/adblocker-content@2.13.2':
+    resolution: {integrity: sha512-noCmPF7vdzScClz1fEcN05a53x/114WpxISRbTAjDrAMYxHeWkG+NdytGLqauEPL68fDunr70vgoyR1YnY1AkA==}
 
-  '@ghostery/adblocker-extended-selectors@2.13.1':
-    resolution: {integrity: sha512-Qmfp7p9nQGTPLL9EpXJ5ZBdgwTDW44b2Va6xhpa3OcU0X3/fpAUHE0cLqj3fYATfQm0qYj97mWqtnpqV4K3Mvw==}
+  '@ghostery/adblocker-extended-selectors@2.13.2':
+    resolution: {integrity: sha512-5djmtmtCD+xCeKjOPDz5W369wTOZMj8wdl1KLRGcBIGOdD8p2QaX+BjXoDiQ2TCj1V24k68IlrPIbIFwXYbEsA==}
 
-  '@ghostery/adblocker@2.13.1':
-    resolution: {integrity: sha512-uPmJ0TOWvI8LTx2tBU5SFTHjUV0ZStqLS/Jq1c2PdAq1c4ToeyCo9uE7pTyN9SaRg9lckUZonMtkm94vH1rz8w==}
+  '@ghostery/adblocker@2.13.2':
+    resolution: {integrity: sha512-OZ3lG665ZTijchjclqFfW1I6BVE7pesu5tNWR7UZueSgWgHjCinw8cT1NEWmUocjQpBYBYl+rLaV0+HY7kGQAg==}
 
   '@ghostery/url-parser@1.3.0':
     resolution: {integrity: sha512-FEzdSeiva0Mt3bR4xePFzthhjT4IzvA5QTvS1xXkNyLpMGeq40mb3V2fSs0ZItRaP9IybZthDfHUSbQ1HLdx4Q==}
@@ -2317,16 +2317,16 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@ghostery/adblocker-content@2.13.1':
+  '@ghostery/adblocker-content@2.13.2':
     dependencies:
-      '@ghostery/adblocker-extended-selectors': 2.13.1
+      '@ghostery/adblocker-extended-selectors': 2.13.2
 
-  '@ghostery/adblocker-extended-selectors@2.13.1': {}
+  '@ghostery/adblocker-extended-selectors@2.13.2': {}
 
-  '@ghostery/adblocker@2.13.1':
+  '@ghostery/adblocker@2.13.2':
     dependencies:
-      '@ghostery/adblocker-content': 2.13.1
-      '@ghostery/adblocker-extended-selectors': 2.13.1
+      '@ghostery/adblocker-content': 2.13.2
+      '@ghostery/adblocker-extended-selectors': 2.13.2
       '@ghostery/url-parser': 1.3.0
       '@remusao/guess-url-type': 2.1.0
       '@remusao/small': 2.1.0

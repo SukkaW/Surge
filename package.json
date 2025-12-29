@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ghostery/adblocker": "^2.13.1",
+    "@ghostery/adblocker": "^2.13.2",
     "@henrygd/queue": "^1.2.0",
     "@mitata/counters": "^0.0.8",
     "better-sqlite3": "^12.5.0",
@@ -70,7 +70,7 @@
     "tinyexec": "^1.0.2",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.26.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core",
