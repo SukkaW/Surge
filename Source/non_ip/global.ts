@@ -126,7 +126,21 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'cloudflare.dev',
       'cloudflareresolve.com',
       // 'cloudflarestatus.com', intentionally excluded from cloudflare section and moved to google
-      'cloudflareaccess.com'
+      'cloudflareaccess.com',
+      'cloudflaretunnel.com',
+      'one.one.one',
+
+      'pages.dev',
+      'workers.dev',
+      'trycloudflare.com',
+      'videodelivery.net',
+
+      'cf-ipfs.com',
+      'cloudflare-ipfs.com',
+      'cloudflare.tv',
+      'cloudflareapps.com',
+      'cloudflarepreview.com',
+      'cloudflarestorage.com'
     ]
   },
   WIKIMEDIA: {
