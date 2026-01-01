@@ -131,10 +131,13 @@ const pool = new Worktank({
 
         const picocolors = __require('picocolors') as typeof import('picocolors');
         const { fetch } = __require('./fetch-retry') as typeof import('./fetch-retry');
-        const DNS2 = __require('dns2') as typeof import('dns2');
+
+        const dns = __require('node:dns/promises') as typeof import('node:dns/promises');
+
         const { createReadlineInterfaceFromResponse } = __require('./fetch-text-by-line') as typeof import('./fetch-text-by-line');
         const { getTelegramBackupIPFromBase64 } = __require('./get-telegram-backup-ip') as typeof import('./get-telegram-backup-ip');
         const { fastIpVersion } = __require('foxts/fast-ip-version') as typeof import('foxts/fast-ip-version');
+        const { fastStringArrayJoin } = __require('foxts/fast-string-array-join') as typeof import('foxts/fast-string-array-join');
 
         const resp = await fetch('https://core.telegram.org/resources/cidr.txt');
         const lastModified = resp.headers.get('last-modified');
@@ -159,33 +162,37 @@ const pool = new Worktank({
 
         // https://github.com/tdlib/td/blob/master/td/telegram/ConfigManager.cpp
 
-        // Backup IP Source 1 (DoH)
-        await Promise.all([
-          DNS2.DOHClient({ dns: 'https://8.8.4.4/dns-query?dns={query}' }),
-          DNS2.DOHClient({ dns: 'https://1.0.0.1/dns-query?dns={query}' })
-        ].flatMap(
-          (client) => [
-            'apv3.stel.com', // prod
-            'tapv3.stel.com' // test
-          ].map(async (domain) => {
-            try {
-              // tapv3.stel.com was for testing server
-              const resp = await client(domain, 'TXT');
-              const strings = resp.answers.map(i => i.data);
+        const resolvers = ['8.8.8.8', '1.0.0.1'].map((ip) => {
+          const resolver = new dns.Resolver();
+          resolver.setServers([ip]);
+          return Object.assign(resolver, { server: ip });
+        });
 
-              const str = strings[0]!.length > strings[1]!.length
-                ? strings[0]! + strings[1]!
-                : strings[1]! + strings[0]!;
-
-              const ips = getTelegramBackupIPFromBase64(str);
-              ips.forEach(i => backupIPs.add(i.ip));
-
-              console.log('[telegram backup ip]', picocolors.green('DoH TXT'), { domain, ips });
-            } catch (e) {
-              console.error('[telegram backup ip]', picocolors.red('DoH TXT error'), { domain }, e);
+        // Backup IP Source 1 (DNS)
+        await Promise.all(resolvers.flatMap((resolver) => [
+          'apv3.stel.com', // prod
+          'tapv3.stel.com' // test
+        ].map(async (domain) => {
+          try {
+            // tapv3.stel.com was for testing server
+            const resp = await resolver.resolveTxt(domain);
+            const strings = resp.map(r => fastStringArrayJoin(r, '')); // flatten
+            if (strings.length !== 2) {
+              throw new TypeError(`Unexpected TXT record count: ${strings.length}`);
             }
-          })
-        ));
+
+            const str = strings[0].length > strings[1].length
+              ? strings[0] + strings[1]
+              : strings[1] + strings[0];
+
+            const ips = getTelegramBackupIPFromBase64(str);
+            ips.forEach(i => backupIPs.add(i.ip));
+
+            console.log('[telegram backup ip]', picocolors.green('DNS TXT'), { domain, ips, server: resolver.server });
+          } catch (e) {
+            console.error('[telegram backup ip]', picocolors.red('DNS TXT error'), { domain }, e);
+          }
+        })));
 
         // Backup IP Source 2: Firebase Realtime Database (test server not supported)
         try {
