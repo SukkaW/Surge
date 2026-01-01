@@ -25,7 +25,7 @@ const dnsServers = [
   // 'https://v.recipes/dns-query', // Proxy Cloudflare, too many HTTP 503
   'h2://v.recipes/dns/dns.google/dns-query', // Proxy Google, claims to not limited by Google 1500 QPS limit
   'h2://freedns.controld.com/p0', // ControlD unfiltered
-  'h2://dns.bebasid.com/unfiltered', // BebasID
+  // 'h2://dns.bebasid.com/unfiltered', // BebasID, cause loads of RangeError: Attempt to access memory outside buffer bounds, possibly caused by timeout
   // 'https://193.110.81.0/dns-query', // dns0.eu
   // 'https://185.253.5.0/dns-query', // dns0.eu
   // 'https://zero.dns0.eu/dns-query',
