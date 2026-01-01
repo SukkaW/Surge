@@ -19,7 +19,7 @@ const dnsServers = [
   // 'https://doh.sb/dns-query', // DNS.SB xTom Anycast IP
   // 'https://dns.sb/dns-query', // DNS.SB use same xTom Anycast IP as doh.sb
   // 'https://dns10.quad9.net/dns-query', // Quad9 unfiltered
-  'https://9.9.9.10/dns-query', 'https://149.112.112.10/dns-query', // Quad9 unfiltered
+  // 'https://9.9.9.10/dns-query', 'https://149.112.112.10/dns-query', // Quad9 unfiltered, now enforces HTTP/2
   'https://doh.sandbox.opendns.com/dns-query', // OpenDNS sandbox (unfiltered)
   'https://unfiltered.adguard-dns.com/dns-query', // AdGuard unfiltered
   // 'https://v.recipes/dns-query', // Proxy Cloudflare, too many HTTP 503
