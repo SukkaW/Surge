@@ -36,8 +36,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0
       domain-alive:
-        specifier: ^0.1.14
-        version: 0.1.14
+        specifier: ^0.1.17
+        version: 0.1.17
       fast-cidr-tools:
         specifier: ^0.3.4
         version: 0.3.4
@@ -1111,8 +1111,8 @@ packages:
   dom-serializer@1.4.1:
     resolution: {integrity: sha512-VHwB3KfrcOOkelEG2ZOfxqLZdfkil8PtJi4P8N2MMXucZq2yLp75ClViUlOVwyoHEDjYU433Aq+5zWP61+RGag==}
 
-  domain-alive@0.1.14:
-    resolution: {integrity: sha512-7D0lXVxIvLXfE2SAx8xlIXTdpbv95rAB9K9rVrI7Iq1tEh+jXL634E0RQmEHX2RQMPHtoTX85kZdi1DnqGbOcA==}
+  domain-alive@0.1.17:
+    resolution: {integrity: sha512-ACL2WVZ5lldyBnrFjD4Jb9FeJd4SS4vhiKoIfq2qQrWXfAxM+go1WjjykceyjlCj8zqby3Ss0Nh5hDyl1/SFzw==}
 
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
@@ -3051,7 +3051,7 @@ snapshots:
       domhandler: 4.3.1
       entities: 2.2.0
 
-  domain-alive@0.1.14:
+  domain-alive@0.1.17:
     dependencies:
       debug: 4.4.1
       foxts: 5.0.4
