@@ -2,48 +2,48 @@ import { createDomainAliveChecker, createRegisterableDomainAliveChecker } from '
 import { $$fetch } from './fetch-retry';
 
 const dnsServers = [
-  '8.8.8.8', '8.8.4.4',
-  '1.0.0.1', '1.1.1.1',
-  '162.159.36.1', '162.159.46.1',
-  'dns.cloudflare.com', // Cloudflare DoH that uses different IPs: 172.64.41.8,162.159.61.8
-  'cloudflare-dns.com', // Cloudflare DoH that uses different IPs: 104.16.249.249,104.16.248.249
-  'mozilla.cloudflare-dns.com', // Cloudflare DoH that uses different IPs: 162.159.61.4,172.64.41.4
+  'https://8.8.8.8/dns-query', 'https://8.8.4.4/dns-query',
+  'https://1.0.0.1/dns-query', 'https://1.1.1.1/dns-query',
+  'https://162.159.36.1/dns-query', 'https://162.159.46.1/dns-query',
+  'https://dns.cloudflare.com/dns-query', // Cloudflare DoH that uses different IPs: 172.64.41.8,162.159.61.8
+  'https://cloudflare-dns.com/dns-query', // Cloudflare DoH that uses different IPs: 104.16.249.249,104.16.248.249
+  'https://mozilla.cloudflare-dns.com/dns-query', // Cloudflare DoH that uses different IPs: 162.159.61.4,172.64.41.4
   // one.one.one.one // Cloudflare DoH that uses 1.1.1.1 and 1.0.0.1
-  // '101.101.101.101', 'dns.twnic.tw' // TWNIC, has DNS pollution, e.g. t66y.com
-  // 'dns.hinet.net' // HiNet DoH, has DNS pollution, e.g. t66y.com
-  '185.222.222.222', '45.11.45.11', // DNS.SB
-  // 'doh.dns.sb', // DNS.SB, Unicast PoPs w/ GeoDNS
-  'us-chi.doh.sb', // DNS.SB Chicago PoP
-  'us-nyc.doh.sb', // DNS.SB New York City PoP
-  'us-sjc.doh.sb', // DNS.SB San Jose PoP
-  // 'doh.sb', // DNS.SB xTom Anycast IP
-  // 'dns.sb', // DNS.SB use same xTom Anycast IP as doh.sb
-  // 'dns10.quad9.net', // Quad9 unfiltered
-  '9.9.9.10', '149.112.112.10', // Quad9 unfiltered
-  'doh.sandbox.opendns.com', // OpenDNS sandbox (unfiltered)
-  'unfiltered.adguard-dns.com', // AdGuard unfiltered
-  // 'v.recipes', // Proxy Cloudflare, too many HTTP 503
-  // '76.76.2.0', // ControlD unfiltered, path not /dns-query
-  // '76.76.10.0', // ControlD unfiltered, path not /dns-query
-  // 'dns.bebasid.com', // BebasID, path not /dns-query but /unfiltered
-  // '193.110.81.0', // dns0.eu
-  // '185.253.5.0', // dns0.eu
-  // 'zero.dns0.eu',
-  'dns.nextdns.io',
-  'anycast.dns.nextdns.io',
-  'wikimedia-dns.org',
-  // 'ordns.he.net',
-  // 'dns.mullvad.net', empty HTTP body a lot
-  'basic.rethinkdns.com',
-  'dns.surfsharkdns.com',
-  // 'private.canadianshield.cira.ca', enforce HTTP/2
-  // 'unfiltered.joindns4.eu', // too many ECONNRESET on GitHub Actions
-  'public.dns.iij.jp',
-  // 'common.dot.dns.yandex.net', // too many ECONNRESET on GitHub Actions
-  'safeservedns.com' // NameCheap DNS, supports DoT, DoH, UDP53
-  // 'ada.openbld.net',
-  // 'dns.rabbitdns.org'
-].map(dns => 'https://' + dns + '/dns-query');
+  // 'https://101.101.101.101/dns-query', 'https://dns.twnic.tw/dns-query' // TWNIC, has DNS pollution, e.g. t66y.com
+  // 'https://dns.hinet.net/dns-query' // HiNet DoH, has DNS pollution, e.g. t66y.com
+  'https://185.222.222.222/dns-query', 'https://45.11.45.11/dns-query', // DNS.SB
+  // 'https://doh.dns.sb/dns-query', // DNS.SB, Unicast PoPs w/ GeoDNS
+  'https://us-chi.doh.sb/dns-query', // DNS.SB Chicago PoP
+  'https://us-nyc.doh.sb/dns-query', // DNS.SB New York City PoP
+  'https://us-sjc.doh.sb/dns-query', // DNS.SB San Jose PoP
+  // 'https://doh.sb/dns-query', // DNS.SB xTom Anycast IP
+  // 'https://dns.sb/dns-query', // DNS.SB use same xTom Anycast IP as doh.sb
+  // 'https://dns10.quad9.net/dns-query', // Quad9 unfiltered
+  'https://9.9.9.10/dns-query', 'https://149.112.112.10/dns-query', // Quad9 unfiltered
+  'https://doh.sandbox.opendns.com/dns-query', // OpenDNS sandbox (unfiltered)
+  'https://unfiltered.adguard-dns.com/dns-query', // AdGuard unfiltered
+  // 'https://v.recipes/dns-query', // Proxy Cloudflare, too many HTTP 503
+  'https://v.recipes/dns/dns.google/dns-query', // Proxy Google, claims to not limited by Google 1500 QPS limit
+  'https://freedns.controld.com/p0', // ControlD unfiltered
+  'https://dns.bebasid.com/unfiltered', // BebasID
+  // 'https://193.110.81.0/dns-query', // dns0.eu
+  // 'https://185.253.5.0/dns-query', // dns0.eu
+  // 'https://zero.dns0.eu/dns-query',
+  'https://dns.nextdns.io/dns-query',
+  'https://anycast.dns.nextdns.io/dns-query',
+  'https://wikimedia-dns.org/dns-query',
+  // 'https://ordns.he.net/dns-query',
+  // 'https://dns.mullvad.net/dns-query', empty HTTP body a lot
+  'https://basic.rethinkdns.com/dns-query',
+  'https://dns.surfsharkdns.com/dns-query',
+  // 'https://private.canadianshield.cira.ca/dns-query', enforce HTTP/2
+  // 'https://unfiltered.joindns4.eu/dns-query', // too many ECONNRESET on GitHub Actions
+  'https://public.dns.iij.jp/dns-query',
+  // 'https://common.dot.dns.yandex.net/dns-query', // too many ECONNRESET on GitHub Actions
+  'https://safeservedns.com/dns-query' // NameCheap DNS, supports DoT, DoH, UDP53
+  // 'https://ada.openbld.net/dns-query', Contains filtering
+  // 'https://dns.rabbitdns.org/dns-query'
+];
 
 const resultCache = new Map();
 const registerableDomainResultCache = new Map();
