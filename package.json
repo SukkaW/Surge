@@ -27,7 +27,7 @@
     "cli-progress": "^3.12.0",
     "csv-parse": "^6.1.0",
     "dns2": "github:lsongdev/node-dns#e4fa035aca0b8eb730bde3431fbf0c60a31a09c9",
-    "domain-alive": "^0.1.13",
+    "domain-alive": "^0.1.14",
     "fast-cidr-tools": "^0.3.4",
     "fast-escape-regexp": "^1.0.1",
     "fast-uri": "^3.1.0",
