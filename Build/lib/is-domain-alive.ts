@@ -20,7 +20,14 @@ const dnsServers = [
   // 'https://dns.sb/dns-query', // DNS.SB use same xTom Anycast IP as doh.sb
   // 'https://dns10.quad9.net/dns-query', // Quad9 unfiltered
   'h2://9.9.9.10/dns-query', 'h2://149.112.112.10/dns-query', // Quad9 unfiltered
-  'h2://doh.sandbox.opendns.com/dns-query', // OpenDNS sandbox (unfiltered)
+
+  // OpenDNS sandbox (unfiltered), doesn't support HTTP/2 properly
+  // Error: Session closed without receiving a SETTINGS frame
+  //
+  // verified with curl:
+  // curl: (16) Error in the HTTP2 framing layer
+  'https://doh.sandbox.opendns.com/dns-query',
+
   'h2://unfiltered.adguard-dns.com/dns-query', // AdGuard unfiltered
   // 'https://v.recipes/dns-query', // Proxy Cloudflare, too many HTTP 503
   'h2://v.recipes/dns/dns.google/dns-query', // Proxy Google, claims to not limited by Google 1500 QPS limit
