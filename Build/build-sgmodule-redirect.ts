@@ -269,7 +269,15 @@ function uBOUriTransformGeneratorForFakeWebsites(acc: string[], [from, to]: [fro
     '||'
     + from
     + '$all,uritransform=/'
-    + String.raw`.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + String.raw`\/(.*)`
+    // \/.*formysql\.com\/.*
+    //
+    // By adding \/.* at the beginning and the end, we can avoid replace the protocol (https:// or http://),
+    // which will bork uBlock Origin's filter matching (requires final URL to be a valid URL):
+    //
+    // https://www.formysql.com/en/products/navicat-for-mysql
+    //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // https://www.navicat.com.cn
+    + String.raw`\/.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + String.raw`.*`
     + '/'
     + to.replace('https://', '').replaceAll('/', String.raw`\/`)
     + '/'
