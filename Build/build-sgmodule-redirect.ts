@@ -80,7 +80,8 @@ const REDIRECT_MIRROR_HEADER: Array<[from: string, to: string, canUboUriTransfor
   ['cdn.staticfile.net/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
   ['cdn.staticfile.org/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
   // The UNPKG has not been actively maintained and is finally down (https://github.com/unpkg/unpkg/issues/412)
-  ['unpkg.com/', 'https://cdn.jsdelivr.net/npm/', true]
+  // Don't enable URL Redirect minimum, due to its popularity and thus CSP issues
+  ['unpkg.com/', 'https://cdn.jsdelivr.net/npm/']
 ];
 
 const REDIRECT_MIRROR_307: Array<[from: string, to: string, canUboUriTransform?: boolean]> = [
