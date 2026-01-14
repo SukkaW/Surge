@@ -44,7 +44,10 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'cloud.microsoft', // actually owned by Microsoft
   'windows.net', // Microsoft refuses to add web.core.windows.net to the Public Suffix List
   'myqcloud.com', // curben phishing-filter contains many entries
-  'surge.sh' // caused by phishing-filter, also no public suffix
+  'surge.sh', // caused by phishing-filter, also no public suffix
+
+  'pages.dev',
+  'workers.dev'
 ]);
 
 export const leathalKeywords = createKeywordFilter([
