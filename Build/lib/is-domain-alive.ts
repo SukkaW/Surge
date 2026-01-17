@@ -47,9 +47,9 @@ const dnsServers = [
   // 'https://unfiltered.joindns4.eu/dns-query', // too many ECONNRESET on GitHub Actions
   'h2://public.dns.iij.jp/dns-query',
   // 'https://common.dot.dns.yandex.net/dns-query', // too many ECONNRESET on GitHub Actions
-  'h2://safeservedns.com/dns-query', // NameCheap DNS, supports DoT, DoH, UDP53
+  'h2://safeservedns.com/dns-query' // NameCheap DNS, supports DoT, DoH, UDP53
   // 'https://ada.openbld.net/dns-query', Contains filtering
-  'h2://dns.rabbitdns.org/dns-query'
+  // 'h2://dns.rabbitdns.org/dns-query' -- TO MANY HTTP 522
 ];
 
 const resultCache = new Map();

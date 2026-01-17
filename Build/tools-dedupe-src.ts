@@ -25,7 +25,7 @@ const ENFORCED_WHITELIST = [
   'img.vim-cn.com'
 ];
 
-const WHITELIST: string[] = ['ntp.api.bz', 'httpdns.bilivideo.com', 'httpdns.platform.dbankcloud.cn', 'dns.iqiyi.com', 'dns.qiyipic.iqiyi.com', 'img.vim-cn.com', 'chat-content.beanfun.com', 'archive.mirror.ba', 'ctan.imsc.res.in', 'gnu.freemirror.org', 'probe.whatismyipaddress.com', 'sdkrec.tf.360.cn', 'iadmatapk.nosdn.127.net', 'gamecenter.iqiyi.com', 'tracking.klickthru.com', 'm.shilian168.cn', 'm.zdjgj.cn', 'gcpool.ddns.net', 'radpool.ddns.net', 's9.maxstream.org', 's10.maxstream.org', 's11.maxstream.org', 'statics.erothots.co', 'mcdn.tubi.tv'];
+const DEDUPE_LIST: string[] = ['ntp.api.bz', 'httpdns.bilivideo.com', 'httpdns.platform.dbankcloud.cn', 'dns.iqiyi.com', 'dns.qiyipic.iqiyi.com', 'img.vim-cn.com', 'cdn.commento.io', 'cdn.glitch.com', 'cdn.glitch.global', 'content.product.glitch.com', 'mirror.as24220.net', 'mirrors.switch.ca', 'ubuntu.pishgaman.net', 'mirror.famaserver.com', 'ubuntu-mirror.kimiahost.com', 'mirror.aminidc.com', 'mirror.ucu.ac.ug', 'mirror.0-1.cloud', 'ctan.um.ac.ir', 'ctan.yazd.ac.ir', 'report.huatuo.qq.com', 'repo.iut.ac.ir', 'ad.api.youshiad.cn', 'm.j5s9b.cn', 'ee.j5s9b.cn', 'e.duomeng.org', 'cdn.onlyhentaistuff.com', 'gt1.onlyhentaistuff.com', 'cm1.aminoapps.com', 'iadmatapk.nosdn.127.net'];
 
 task(require.main === module, __filename)(async (span) => {
   const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
@@ -41,7 +41,7 @@ task(require.main === module, __filename)(async (span) => {
     .withPromise());
 
   const whiteTrie = span.traceChildSync('build whitelist trie', () => {
-    const trie = new HostnameSmolTrie(WHITELIST);
+    const trie = new HostnameSmolTrie(DEDUPE_LIST);
     ENFORCED_WHITELIST.forEach((item) => trie.whitelist(item));
     return trie;
   });
