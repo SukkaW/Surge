@@ -204,12 +204,12 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   ],
   // EasyPrivacy
   [
-    'https://easylist.to/easylist/easyprivacy.txt',
+    'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
     [
+      'https://easylist.to/easylist/easyprivacy.txt',
+      'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt',
       'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
       'https://secure.fanboy.co.nz/easyprivacy.txt',
-      'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt',
-      'https://raw.githubusercontent.com/easylist/easylist/gh-pages/easyprivacy.txt',
       'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
       'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
     ]
