@@ -58,8 +58,11 @@ export async function parseDomesticList() {
   //   }
   // }
   // ]);
+  const dump = resultTrie.dump(null, true);
 
-  console.log(resultTrie.dump().join('\n') + '\n');
+  console.log(dump.join('\n') + '\n');
+
+  console.log(`# Total: ${dump.length}`);
 }
 
 if (require.main === module) {
