@@ -213,7 +213,7 @@ jobs:
           git config --global user.name "${GH_USER}"
           rm -rf ./*
           cp -rf ../public/* ./
-          echo "ruleset.skk.moe" > CNAME
+          echo "ruleset-mirror.skk.moe" > CNAME
           git add --all .
           git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
           git push --quiet --force origin HEAD:master
