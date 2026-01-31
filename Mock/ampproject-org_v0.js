@@ -11,4 +11,4 @@
     '}'
   ].join('\n');
   head.appendChild(style);
-}());
+})();

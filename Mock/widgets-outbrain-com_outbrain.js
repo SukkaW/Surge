@@ -50,4 +50,4 @@
     obr.extern[a] = noopfn;
   });
   window.OBR = obr;
-}());
+})();

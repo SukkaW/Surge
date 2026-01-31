@@ -14,4 +14,4 @@
     setCookiePath: noopfn,
     setDomainName: noopfn
   };
-}());
+})();

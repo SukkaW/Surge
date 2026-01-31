@@ -17,4 +17,4 @@
     toolbox: noopfn,
     update: noopfn
   };
-}());
+})();
