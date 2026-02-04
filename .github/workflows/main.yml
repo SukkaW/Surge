@@ -21,13 +21,13 @@ jobs:
     steps:
       - uses: smorimoto/tune-github-hosted-runner-network@v1
         # https://github.com/actions/runner-images/issues/1187
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".node-version"
           cache: "pnpm"
@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "build_dir=previous-build-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
       - name: Download Previous Build
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: SukkaLab/ruleset.skk.moe
           persist-credentials: false
@@ -67,7 +67,7 @@ jobs:
           echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
           echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
       - name: Restore cache.db
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-db-restore
         with:
           path: |
@@ -102,7 +102,7 @@ jobs:
             exit 1
           fi
           echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: ${{ steps.ramdisk.outputs.build_dir }}
@@ -112,7 +112,7 @@ jobs:
           include-hidden-files: false
       - name: Cache cache.db
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             .cache
@@ -125,7 +125,7 @@ jobs:
     name: Diff output
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
@@ -153,7 +153,7 @@ jobs:
         id: npm_cache_path
         shell: sh
         run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
@@ -161,7 +161,7 @@ jobs:
           key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ matrix.wranglerVersion }}
           restore-keys: |
             deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
@@ -179,7 +179,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
@@ -206,7 +206,7 @@ jobs:
       - name: Upload Dist to GitHub
         continue-on-error: true
         run: |
-          gh repo unarchive SukkaLab/ruleset.skk.moe --yes
+          # gh repo unarchive SukkaLab/ruleset.skk.moe --yes
           git clone --filter=tree:0 --no-tags https://${GH_USER}:${GH_TOKEN}@github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git
           cd ./deploy-git
           git config --global push.default matching
@@ -220,7 +220,7 @@ jobs:
           git push --quiet --force origin HEAD:master
           cd ..
           rm -rf ./deploy-git
-          gh repo archive SukkaLab/ruleset.skk.moe --yes
+          # gh repo archive SukkaLab/ruleset.skk.moe --yes
         env:
           GH_EMAIL: ${{ secrets.GIT_EMAIL }}
           GH_USER: ${{ secrets.GIT_USER }}

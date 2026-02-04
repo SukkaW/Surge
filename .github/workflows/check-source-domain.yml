@@ -12,13 +12,13 @@ jobs:
       # - name: Tune GitHub-hosted runner network
       #   # https://github.com/actions/runner-images/issues/1187
       #   uses: smorimoto/tune-github-hosted-runner-network@v1
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".node-version"
           cache: "pnpm"
@@ -33,7 +33,7 @@ jobs:
           echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
           echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
       - name: Restore cache.db
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-db-restore
         with:
           path: |
@@ -53,7 +53,7 @@ jobs:
           DEBUG: domain-alive:dead-domain,domain-alive:error:*
       - name: Cache cache.db
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             .cache
