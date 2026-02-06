@@ -95,6 +95,8 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+yuque.com',
       'quark.cn',
 
+      '+geovisearth.com', // tiles.geovisearth.com, tiles{1~3}.geovisearth.com
+
       // Bilibili Aliyun CDN
       '$upos-sz-mirrorali.bilivideo.com',
       '$upos-sz-estgoss.bilivideo.com',
