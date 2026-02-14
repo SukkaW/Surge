@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ghostery/adblocker": "^2.13.4",
+    "@ghostery/adblocker": "^2.14.1",
     "@henrygd/queue": "^1.2.0",
     "@mitata/counters": "^0.0.8",
     "better-sqlite3": "^12.6.2",
@@ -39,9 +39,9 @@
     "tar-fs": "^3.1.1",
     "telegram": "^2.26.22",
     "tinyglobby": "^0.2.15",
-    "tldts": "^7.0.21",
-    "tldts-experimental": "^7.0.21",
-    "undici": "^7.20.0",
+    "tldts": "^7.0.23",
+    "tldts-experimental": "^7.0.23",
+    "undici": "^7.22.0",
     "undici-cache-store-better-sqlite3": "^1.0.0",
     "why-is-node-running": "^3.2.2",
     "worktank": "^3.0.2",
@@ -56,7 +56,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/cli-progress": "^3.11.6",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.10.10",
+    "@types/node": "^24.10.13",
     "@types/tar-fs": "^2.0.4",
     "@types/yauzl-promise": "^4.0.1",
     "eslint": "^9.39.2",
@@ -68,7 +68,7 @@
     "tinyexec": "^1.0.2",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.29.3",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core",
