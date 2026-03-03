@@ -121,8 +121,8 @@ importers:
         specifier: ^10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^24.10.14
-        version: 24.10.14
+        specifier: ^24.11.0
+        version: 24.11.0
       '@types/tar-fs':
         specifier: ^2.0.4
         version: 2.0.4
@@ -645,8 +645,8 @@ packages:
   '@types/mocha@10.0.10':
     resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
-  '@types/node@24.10.14':
-    resolution: {integrity: sha512-OowOUbD1lBCOFIPOZ8xnMIhgqA4sCutMiYOmPHL1PTLt5+y1XA+g2+yC9OOyz8p+deMZqPZLxfMjYIfrKsPeFg==}
+  '@types/node@24.11.0':
+    resolution: {integrity: sha512-fPxQqz4VTgPI/IQ+lj9r0h+fDR66bzoeMGHp8ASee+32OSGIkeASsoZuJixsQoVef1QJbeubcPBxKk22QVoWdw==}
 
   '@types/tar-fs@2.0.4':
     resolution: {integrity: sha512-ipPec0CjTmVDWE+QKr9cTmIIoTl7dFG/yARCM5MqK8i6CNLIG1P8x4kwDsOQY1ChZOZjH0wO9nvfgBvWl4R3kA==}
@@ -2399,11 +2399,11 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 24.10.14
+      '@types/node': 24.11.0
 
   '@types/cli-progress@3.11.6':
     dependencies:
-      '@types/node': 24.10.14
+      '@types/node': 24.11.0
 
   '@types/esrecurse@4.3.1': {}
 
@@ -2413,22 +2413,22 @@ snapshots:
 
   '@types/mocha@10.0.10': {}
 
-  '@types/node@24.10.14':
+  '@types/node@24.11.0':
     dependencies:
       undici-types: 7.16.0
 
   '@types/tar-fs@2.0.4':
     dependencies:
-      '@types/node': 24.10.14
+      '@types/node': 24.11.0
       '@types/tar-stream': 3.1.4
 
   '@types/tar-stream@3.1.4':
     dependencies:
-      '@types/node': 24.10.14
+      '@types/node': 24.11.0
 
   '@types/yauzl-promise@4.0.1':
     dependencies:
-      '@types/node': 24.10.14
+      '@types/node': 24.11.0
 
   '@typescript-eslint/eslint-plugin@8.56.0(@typescript-eslint/parser@8.56.0(eslint@10.0.2)(typescript@5.9.3))(eslint@10.0.2)(typescript@5.9.3)':
     dependencies:

@@ -56,7 +56,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/cli-progress": "^3.11.6",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.10.14",
+    "@types/node": "^24.11.0",
     "@types/tar-fs": "^2.0.4",
     "@types/yauzl-promise": "^4.0.1",
     "earl": "^2.0.0",
