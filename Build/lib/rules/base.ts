@@ -147,9 +147,14 @@ export class FileOutput {
     return this;
   }
 
-  bulkAddDomainWildcard(domains: string[]) {
-    for (let i = 0, len = domains.length; i < len; i++) {
-      this.wildcardSet.add(domains[i]);
+  addDomainWildcard(wildcard: string) {
+    this.wildcardSet.add(wildcard);
+    return this;
+  }
+
+  bulkAddDomainWildcard(wildcards: string[]) {
+    for (let i = 0, len = wildcards.length; i < len; i++) {
+      this.wildcardSet.add(wildcards[i]);
     }
     return this;
   }
