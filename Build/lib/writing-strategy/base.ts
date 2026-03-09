@@ -46,27 +46,6 @@ export abstract class BaseWriteStrategy {
 
   protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
 
-  static readonly domainWildCardToRegex = (domain: string) => {
-    let result = '^';
-    for (let i = 0, len = domain.length; i < len; i++) {
-      switch (domain[i]) {
-        case '.':
-          result += String.raw`\.`;
-          break;
-        case '*':
-          result += String.raw`[\w.-]*?`;
-          break;
-        case '?':
-          result += String.raw`[\w.-]`;
-          break;
-        default:
-          result += domain[i];
-      }
-    }
-    result += '$';
-    return result;
-  };
-
   public output(
     span: Span,
     title: string,

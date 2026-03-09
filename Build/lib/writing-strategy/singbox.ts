@@ -71,29 +71,10 @@ export class SingboxSource extends BaseWriteStrategy {
     );
   }
 
-  writeDomainWildcard(wildcard: string): void {
-    this.singbox.domain_regex ??= [];
-    this.singbox.domain_regex.push(SingboxSource.domainWildCardToRegex(wildcard));
-  }
-
+  writeDomainWildcard = noop;
   writeUserAgents = noop;
-
   writeProcessNames = noop;
-  // writeProcessNames(processName: Set<string>): void {
-  //   appendArrayInPlace(
-  //     this.singbox.process_name ??= [],
-  //     Array.from(processName)
-  //   );
-  // }
-
   writeProcessPaths = noop;
-  // writeProcessPaths(processPath: Set<string>): void {
-  //   appendArrayInPlace(
-  //     this.singbox.process_path ??= [],
-  //     Array.from(processPath)
-  //   );
-  // }
-
   writeUrlRegexes = noop;
 
   writeIpCidrs(ipCidr: string[]): void {
@@ -111,65 +92,10 @@ export class SingboxSource extends BaseWriteStrategy {
   }
 
   writeGeoip = noop;
-
   writeIpAsns = noop;
-
   writeSourceIpCidrs = noop;
-  // writeSourceIpCidrs(sourceIpCidr: string[]): void {
-  //   this.singbox.source_ip_cidr ??= [];
-  //   for (let i = 0, len = sourceIpCidr.length; i < len; i++) {
-  //     const value = sourceIpCidr[i];
-  //     if (value.includes('/')) {
-  //       this.singbox.source_ip_cidr.push(value);
-  //       continue;
-  //     }
-  //     const v = fastIpVersion(value);
-  //     if (v === 4) {
-  //       this.singbox.source_ip_cidr.push(`${value}/32`);
-  //       continue;
-  //     }
-  //     if (v === 6) {
-  //       this.singbox.source_ip_cidr.push(`${value}/128`);
-  //       continue;
-  //     }
-  //   }
-  // }
-
   writeSourcePorts = noop;
-  // writeSourcePorts(port: Set<string>): void {
-  //   this.singbox.source_port ??= [];
-
-  //   for (const i of port) {
-  //     const tmp = Number(i);
-  //     if (!Number.isNaN(tmp)) {
-  //       this.singbox.source_port.push(tmp);
-  //     }
-  //   }
-  // }
-
   writeDestinationPorts = noop;
-  // writeDestinationPorts(port: Set<string>): void {
-  //   this.singbox.port ??= [];
-
-  //   for (const i of port) {
-  //     const tmp = Number(i);
-  //     if (!Number.isNaN(tmp)) {
-  //       this.singbox.port.push(tmp);
-  //     }
-  //   }
-  // }
-
   writeProtocols = noop;
-  // writeProtocols(protocol: Set<string>): void {
-  //   this.singbox.network ??= [];
-  //   // protocol has already be normalized and will only be uppercase
-  //   if (protocol.has('UDP')) {
-  //     this.singbox.network.push('udp');
-  //   }
-  //   if (protocol.has('TCP')) {
-  //     this.singbox.network.push('tcp');
-  //   }
-  // }
-
   writeOtherRules = noop;
 }
