@@ -11,6 +11,10 @@ import { promisify } from 'node:util';
 export const fileEqual = createCompareSource(fileEqualWithCommentComparator);
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
+  if (linesA[linesA.length - 1] !== '') {
+    linesA.push('');
+  }
+
   const isEqual = await span.traceChildAsync(`compare ${filePath}`, async () => {
     if (fs.existsSync(filePath)) {
       return fileEqual(linesA, readFileByLine(filePath));
@@ -41,7 +45,9 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
       // eslint-disable-next-line no-await-in-loop -- stream high water mark
       if (p) await p;
     }
-    await promisify(writeStream.end.bind(writeStream))();
+    await new Promise<void>(resolve => {
+      writeStream.end(resolve);
+    });
     await promisify(writeStream.close.bind(writeStream))();
   });
 }

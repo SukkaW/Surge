@@ -44,7 +44,7 @@ export function withBannerArray(title: string, description: string[] | readonly 
 
   appendArrayInPlace(result, content);
 
-  result.push('################## EOF ##################', '');
+  result.push('################## EOF ##################');
 
   return result;
 };
