@@ -11,8 +11,9 @@ import { promisify } from 'node:util';
 export const fileEqual = createCompareSource(fileEqualWithCommentComparator);
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
-  if (linesA[linesA.length - 1] !== '') {
-    linesA.push('');
+  // readFileByLine will not include last empty line. So we always pop the linesA for comparison purpose
+  if (linesA.length > 0 && linesA[linesA.length - 1] === '') {
+    linesA.pop();
   }
 
   const isEqual = await span.traceChildAsync(`compare ${filePath}`, async () => {
@@ -32,6 +33,8 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   return span.traceChildAsync<void>(`writing ${filePath}`, async () => {
     const linesALen = linesA.length;
 
+    console.log('writing', { linesA: fastStringArrayJoin(linesA, '\n').slice(-100) });
+
     // The default highwater mark is normally 16384,
     // So we make sure direct write to file if the content is
     // most likely less than 250 lines
@@ -40,13 +43,15 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     }
 
     const writeStream = fs.createWriteStream(filePath);
+    let p;
     for (let i = 0; i < linesALen; i++) {
-      const p = asyncWriteToStream(writeStream, linesA[i] + '\n');
+      p = asyncWriteToStream(writeStream, linesA[i] + '\n');
       // eslint-disable-next-line no-await-in-loop -- stream high water mark
       if (p) await p;
     }
     await new Promise<void>(resolve => {
-      writeStream.end(resolve);
+      // Since we previously poped the last empty line for comparison, we need to add it back here to ensure final EOF line
+      writeStream.end('\n', resolve);
     });
     await promisify(writeStream.close.bind(writeStream))();
   });
