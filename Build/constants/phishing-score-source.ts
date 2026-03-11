@@ -45,6 +45,7 @@ export const WHITELIST_MAIN_DOMAINS = new Set([
   'windows.net', // Microsoft refuses to add web.core.windows.net to the Public Suffix List
   'myqcloud.com', // curben phishing-filter contains many entries
   'surge.sh', // caused by phishing-filter, also no public suffix
+  'backblazeb2.com', // phishing-filter, no publicsuffix, too much abuse
 
   'pages.dev',
   'workers.dev'

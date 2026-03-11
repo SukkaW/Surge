@@ -33,8 +33,6 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
   return span.traceChildAsync<void>(`writing ${filePath}`, async () => {
     const linesALen = linesA.length;
 
-    console.log('writing', { linesA: fastStringArrayJoin(linesA, '\n').slice(-100) });
-
     // The default highwater mark is normally 16384,
     // So we make sure direct write to file if the content is
     // most likely less than 250 lines
