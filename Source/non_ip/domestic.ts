@@ -3,7 +3,7 @@ import type { DNSMapping } from './direct';
 export const DOMESTICS: Record<string, DNSMapping> = {
   ALIBABA: {
     hosts: {},
-    dns: 'quic://dns.alidns.com:853',
+    dns: 'https://dns.alidns.com/dns-query',
     realip: false,
     ruleset: true,
     domains: [
@@ -458,9 +458,9 @@ export const DOH_BOOTSTRAP: Record<string, DNSMapping> = {
 
 export const AdGuardHomeDNSMapping = {
   system: ['udp://10.10.1.1:53'],
-  'https://doh.pub/dns-query': ['tls://dot.pub', 'https://doh.pub/dns-query'],
-  'quic://dns.alidns.com:853': ['quic://223.5.5.5', 'quic://223.6.6.6', 'h3://223.5.5.5/dns-query', 'h3://223.6.6.6/dns-query'],
-  'https://doh.360.cn/dns-query': ['https://doh.360.cn/dns-query', 'tls://dot.360.cn'],
+  'https://doh.pub/dns-query': ['https://doh.pub/dns-query'],
+  'https://dns.alidns.com/dns-query': ['https://dns.alidns.com/dns-query'],
+  'https://doh.360.cn/dns-query': ['https://doh.360.cn/dns-query'],
   '180.76.76.76': ['udp://180.76.76.76'],
   '180.184.2.2': ['udp://180.184.2.2', 'udp://180.184.1.1']
 };

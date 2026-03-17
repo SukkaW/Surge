@@ -52,7 +52,8 @@ const HOSTNAMES = [
   '127.*.*.*.nip.io',
   '127-*-*-*.nip.io',
   '*.127.*.*.*.nip.io',
-  '*-127-*-*-*.nip.io'
+  '*-127-*-*-*.nip.io',
+  '127.atlas.skk.moe'
 ];
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {

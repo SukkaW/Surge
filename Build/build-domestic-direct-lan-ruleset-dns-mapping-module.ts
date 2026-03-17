@@ -12,8 +12,7 @@ import { once } from 'foxts/once';
 import * as yaml from 'yaml';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR, OUTPUT_MODULES_RULES_DIR, SOURCE_DIR } from './constants/dir';
-import { MihomoNameserverPolicyOutput, RulesetOutput } from './lib/rules/ruleset';
-import { SurgeOnlyRulesetOutput } from './lib/rules/ruleset';
+import { MihomoNameserverPolicyOutput, RulesetOutput, SurgeOnlyRulesetOutput } from './lib/rules/ruleset';
 import { $$fetch } from './lib/fetch-retry';
 
 export function createGetDnsMappingRule(allowWildcard: boolean) {
@@ -300,8 +299,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       span,
       [
         '# Local DNS Mapping for AdGuard Home',
-        'tls://dot.pub',
         'https://doh.pub/dns-query',
+        'https://dns.alidns.com/dns-query',
         '[//]udp://10.10.1.1:53',
         ...(([DOMESTICS, DIRECTS, LAN, HOSTS] as const).flatMap(Object.values) as DNSMapping[]).flatMap(({ domains, dns: _dns }) => domains.flatMap((domain) => {
           if (!_dns) {
