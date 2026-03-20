@@ -30,8 +30,8 @@ importers:
         specifier: ^3.12.0
         version: 3.12.0
       csv-parse:
-        specifier: ^6.1.0
-        version: 6.1.0
+        specifier: ^6.2.0
+        version: 6.2.0
       domain-alive:
         specifier: ^0.1.17
         version: 0.1.17
@@ -57,8 +57,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       null-prototype-object:
-        specifier: ^1.2.5
-        version: 1.2.5
+        specifier: ^1.2.6
+        version: 1.2.6
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -72,17 +72,17 @@ importers:
         specifier: ^0.2.15
         version: 0.2.15
       tldts:
-        specifier: ^7.0.25
-        version: 7.0.25
+        specifier: ^7.0.26
+        version: 7.0.26
       tldts-experimental:
-        specifier: ^7.0.25
-        version: 7.0.25
+        specifier: ^7.0.26
+        version: 7.0.26
       undici:
-        specifier: ^7.24.3
-        version: 7.24.3
+        specifier: ^7.24.4
+        version: 7.24.4
       undici-cache-store-better-sqlite3:
-        specifier: ^1.0.0
-        version: 1.0.0(undici@7.24.3)
+        specifier: ^1.0.1
+        version: 1.0.1(undici@7.24.4)
       why-is-node-running:
         specifier: ^3.2.2
         version: 3.2.2
@@ -894,8 +894,9 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  better-sqlite3@11.10.0:
-    resolution: {integrity: sha512-EwhOpyXiOEL/lKzHz9AW1msWFNzGc/z+LzeB3/jnFJpxu+th2yqvzsSWas1v9jgs9+xiXJcD5A8CJxAG2TaghQ==}
+  better-sqlite3@12.8.0:
+    resolution: {integrity: sha512-RxD2Vd96sQDjQr20kdP+F+dK/1OUNiVOl200vKBZY8u0vTwysfolF6Hq+3ZK2+h8My9YvZhHsF+RSGZW2VYrPQ==}
+    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x}
 
   big-integer@1.6.52:
     resolution: {integrity: sha512-QxD8cf2eVqJOOz63z6JIN9BzvVs/dlySa5HGSBH5xtR8dPteIRQnBxxKqkNTiT6jbDTF6jAfrd4oMcND9RGbQg==}
@@ -975,8 +976,8 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
-  csv-parse@6.1.0:
-    resolution: {integrity: sha512-CEE+jwpgLn+MmtCpVcPtiCZpVtB6Z2OKPTr34pycYYoL7sxdOkXDdQ4lRiw6ioC0q6BLqhc6cKweCVvral8yhw==}
+  csv-parse@6.2.0:
+    resolution: {integrity: sha512-Zv8KRHccD1q3BJlK4VcQiEn/+suOOp++89g/fpqOxB2U2tU66uC3yM+ZwU6nQQEJp8AqBIiNqB+pUTKNz4QzKg==}
 
   d@1.0.2:
     resolution: {integrity: sha512-MOqHvMWF9/9MX6nza0KgvFH4HpMU0EF5uUDXqX/BtxtU8NfB0QzRtJ8Oe/6SuS4kbhyzVJwjd97EA4PKrzJ8bw==}
@@ -1330,9 +1331,6 @@ packages:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
 
-  foxts@3.15.0:
-    resolution: {integrity: sha512-XaSnlPKgD23NGdfuUHAX50V9h17bavUEZthg3SBO8ajT3D0pFg6KhYRvKNOlB+t7MpKZ1fj22bUPssH5PY0h4w==}
-
   foxts@4.6.0:
     resolution: {integrity: sha512-Sq6k7CDUAz1/MOiwRiV59tblzsaWGOQitYxvF/l7H5Z/9gZNBvWKWsRcXLS7T7FLKRKO0LmETiefkVUm5omESg==}
 
@@ -1579,8 +1577,8 @@ packages:
     resolution: {integrity: sha512-vv8fJuOUCCvSPjDjBLlMqYMHob4aGjkmrkaE42/mZr0VT+ZAU10jRF8oTnX9+pgU9/vYJ8P7YT3Vd6ajkmzSCw==}
     engines: {node: '>=0.12'}
 
-  null-prototype-object@1.2.5:
-    resolution: {integrity: sha512-YAPMPwBVlXXmIx/eIHx/KwIL1Bsd8I+YHQdFpW0Ydvez6vu5Bx2CaP4GrEnH5c1huVWZD9MqEuFwAJoBMm5LJQ==}
+  null-prototype-object@1.2.6:
+    resolution: {integrity: sha512-m+HuHAqaOiqlxVAzI3GtRgS4JIk3aAZ5RbkYxxPiACXyQZzS5uxjOXMASlWNdPYZ/5d4/+YclUlI+XXNlyN7Jg==}
     engines: {node: '>= 20'}
 
   once@1.4.0:
@@ -1836,14 +1834,14 @@ packages:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
 
-  tldts-core@7.0.25:
-    resolution: {integrity: sha512-ZjCZK0rppSBu7rjHYDYsEaMOIbbT+nWF57hKkv4IUmZWBNrBWBOjIElc0mKRgLM8bm7x/BBlof6t2gi/Oq/Asw==}
+  tldts-core@7.0.26:
+    resolution: {integrity: sha512-5WJ2SqFsv4G2Dwi7ZFVRnz6b2H1od39QME1lc2y5Ew3eWiZMAeqOAfWpRP9jHvhUl881406QtZTODvjttJs+ew==}
 
-  tldts-experimental@7.0.25:
-    resolution: {integrity: sha512-rFB8lPWHAf4II9+Zdlc6dwcJLIe6sqEzndcjfbcv9PdsFTlNYBgRI4y9aJzo7VMHvg/GRaUlFK+qZUyKpcE6zA==}
+  tldts-experimental@7.0.26:
+    resolution: {integrity: sha512-TLdeL5GoJhcqwFrLEJGoMb4zrSmRHd0Lmx/o6SHFWEtdOQJXLQq4mThzm+P/GygUDSuwsGryaBlFTuN5A/0Aow==}
 
-  tldts@7.0.25:
-    resolution: {integrity: sha512-keinCnPbwXEUG3ilrWQZU+CqcTTzHq9m2HhoUP2l7Xmi8l1LuijAXLpAJ5zRW+ifKTNscs4NdCkfkDCBYm352w==}
+  tldts@7.0.26:
+    resolution: {integrity: sha512-WiGwQjr0qYdNNG8KpMKlSvpxz652lqa3Rd+/hSaDcY4Uo6SKWZq2LAF+hsAhUewTtYhXlorBKgNF3Kk8hnjGoQ==}
     hasBin: true
 
   ts-api-utils@2.4.0:
@@ -1889,16 +1887,16 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-cache-store-better-sqlite3@1.0.0:
-    resolution: {integrity: sha512-bYwnd02xu+q7UVCR20Cnb+tVJVB5f1cKP7BUc/sxafEMhgWbRQ5S/pRNZP9Ykl2sasy2bHzSJPGXlOF+/ju4+Q==}
+  undici-cache-store-better-sqlite3@1.0.1:
+    resolution: {integrity: sha512-UHrN400SOCqM3Lq59VSNMGnjr2M3GpdTNZPaGVmATsjEBMaBaCjPXfYycM5Dz7P+0RsJ3T/RD+oLpFsV1e8qPg==}
     peerDependencies:
       undici: '>=7.0.0'
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
-  undici@7.24.3:
-    resolution: {integrity: sha512-eJdUmK/Wrx2d+mnWWmwwLRyA7OQCkLap60sk3dOK4ViZR7DKwwptwuIvFBg2HaiP9ESaEdhtpSymQPvytpmkCA==}
+  undici@7.24.4:
+    resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
     engines: {node: '>=20.18.1'}
 
   unrs-resolver@1.11.1:
@@ -2105,11 +2103,11 @@ snapshots:
       '@remusao/guess-url-type': 2.1.0
       '@remusao/small': 2.1.0
       '@remusao/smaz': 2.2.0
-      tldts-experimental: 7.0.25
+      tldts-experimental: 7.0.26
 
   '@ghostery/url-parser@1.3.1':
     dependencies:
-      tldts-experimental: 7.0.25
+      tldts-experimental: 7.0.26
 
   '@henrygd/queue@1.2.0': {}
 
@@ -2635,7 +2633,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  better-sqlite3@11.10.0:
+  better-sqlite3@12.8.0:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
@@ -2719,7 +2717,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  csv-parse@6.1.0: {}
+  csv-parse@6.2.0: {}
 
   d@1.0.2:
     dependencies:
@@ -2773,7 +2771,7 @@ snapshots:
     dependencies:
       debug: 4.4.1
       foxts: 5.3.0
-      tldts: 7.0.25
+      tldts: 7.0.26
     transitivePeerDependencies:
       - supports-color
 
@@ -3135,11 +3133,6 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  foxts@3.15.0:
-    dependencies:
-      fast-escape-html: 1.1.0
-      fast-escape-regexp: 1.0.1
-
   foxts@4.6.0:
     dependencies:
       fast-escape-html: 1.1.0
@@ -3362,7 +3355,7 @@ snapshots:
     dependencies:
       write-file-atomic: 1.3.4
 
-  null-prototype-object@1.2.5: {}
+  null-prototype-object@1.2.6: {}
 
   once@1.4.0:
     dependencies:
@@ -3669,15 +3662,15 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
-  tldts-core@7.0.25: {}
+  tldts-core@7.0.26: {}
 
-  tldts-experimental@7.0.25:
+  tldts-experimental@7.0.26:
     dependencies:
-      tldts-core: 7.0.25
+      tldts-core: 7.0.26
 
-  tldts@7.0.25:
+  tldts@7.0.26:
     dependencies:
-      tldts-core: 7.0.25
+      tldts-core: 7.0.26
 
   ts-api-utils@2.4.0(typescript@5.9.3):
     dependencies:
@@ -3719,15 +3712,15 @@ snapshots:
 
   typescript@5.9.3: {}
 
-  undici-cache-store-better-sqlite3@1.0.0(undici@7.24.3):
+  undici-cache-store-better-sqlite3@1.0.1(undici@7.24.4):
     dependencies:
-      better-sqlite3: 11.10.0
-      foxts: 3.15.0
-      undici: 7.24.3
+      better-sqlite3: 12.8.0
+      foxts: 5.3.0
+      undici: 7.24.4
 
   undici-types@7.16.0: {}
 
-  undici@7.24.3: {}
+  undici@7.24.4: {}
 
   unrs-resolver@1.11.1:
     dependencies:
