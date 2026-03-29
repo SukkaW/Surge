@@ -19,7 +19,6 @@ import { buildRedirectModule } from './build-sgmodule-redirect';
 import { buildAlwaysRealIPModule } from './build-sgmodule-always-realip';
 
 import { buildMicrosoftCdn } from './build-microsoft-cdn';
-import { buildSSPanelUIMAppProfile } from './build-sspanel-appprofile';
 
 import { buildPublic } from './build-public';
 import { downloadMockAssets } from './download-mock-assets';
@@ -98,10 +97,6 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildStreamService(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildMicrosoftCdn(rootSpan)),
-      Promise.all([
-        downloadPreviousBuildPromise,
-        buildCommonPromise
-      ]).then(() => buildSSPanelUIMAppProfile(rootSpan)),
       downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan)),
       downloadMockAssets(rootSpan)
     ]);

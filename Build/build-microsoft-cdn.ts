@@ -3,7 +3,6 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { RulesetOutput } from './lib/rules/ruleset';
 import Worktank from 'worktank';
 import { RULES } from './constants/microsoft-cdn';
-import { wait } from 'foxts/wait';
 
 const pool = new Worktank({
   pool: {
@@ -48,10 +47,10 @@ const pool = new Worktank({
   }
 });
 
-export const getMicrosoftCdnRulesetPromise = wait(0).then(() => pool.exec(
+const getMicrosoftCdnRulesetPromise = pool.exec(
   'getMicrosoftCdnRuleset',
   [__filename]
-)).finally(() => pool.terminate());
+).finally(() => pool.terminate());
 
 export const buildMicrosoftCdn = task(require.main === module, __filename)(async (span) => {
   const [domains, domainSuffixes] = await span.traceChildPromise('get microsoft cdn domains', getMicrosoftCdnRulesetPromise);

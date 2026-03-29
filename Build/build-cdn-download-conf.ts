@@ -92,7 +92,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     span.traceChildAsync(
       'load public ipfs gateway list',
       async () => {
-        const data = await (await $$fetch('https://cdn.jsdelivr.net/gh/ipfs/public-gateway-checker@refs/heads/main/gateways.json')).json();
+        const data = await (await $$fetch('https://cdn.jsdelivr.net/gh/ipfs/public-gateway-checker@main/gateways.json')).json();
         if (!Array.isArray(data)) {
           console.error('Invalid IPFS gateway list format');
           return [];

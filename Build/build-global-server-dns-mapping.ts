@@ -9,7 +9,7 @@ import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { RulesetOutput } from './lib/rules/ruleset';
 
-export const getGlobalRulesetPromise = once(async () => {
+const getGlobalRulesetPromise = once(async () => {
   const globals = await readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/global.conf'));
   const getDnsMappingRuleWithWildcard = createGetDnsMappingRule(true);
 
