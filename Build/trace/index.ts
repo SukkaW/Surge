@@ -97,7 +97,7 @@ export function createSpan(name: string, parentTraceResult?: TraceResult): Span 
   return span;
 }
 
-export const dummySpan = createSpan('');
+export const dummySpan = createSpan('dummy');
 
 export function task(importMetaMain: boolean, importMetaPath: string) {
   return <T>(fn: (span: Span, onCleanup: (cb: () => Promise<void> | void) => void) => Promise<T>, customName?: string) => {
@@ -107,7 +107,7 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
       cleanup = cb;
     };
 
-    const dummySpan = createSpan(taskName);
+    const innerSpan = createSpan(taskName);
     if (importMetaMain) {
       process.on('uncaughtException', (error) => {
         console.error('Uncaught exception:', error);
@@ -118,20 +118,24 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
         process.exit(1);
       });
 
-      dummySpan.traceChildAsync('dummy', (childSpan) => fn(childSpan, onCleanup)).finally(() => {
-        dummySpan.stop();
-        printTraceResult(dummySpan.traceResult);
+      innerSpan.traceChildAsync('dummy', (childSpan) => fn(childSpan, onCleanup)).finally(() => {
+        innerSpan.stop();
+        printTraceResult(innerSpan.traceResult);
         process.nextTick(whyIsNodeRunning);
         process.nextTick(() => process.exit(0));
       });
     }
 
-    return async (span?: Span) => {
-      if (span) {
-        return span.traceChildAsync(taskName, (childSpan) => fn(childSpan, onCleanup).finally(() => cleanup()));
-      }
-      return fn(dummySpan, onCleanup).finally(() => cleanup());
-    };
+    function run(span?: Span | null): Promise<T> {
+      return fn(span || innerSpan, onCleanup).finally(() => {
+        (span || innerSpan).stop();
+        cleanup();
+      });
+    }
+
+    return Object.assign(run, {
+      getInternalTraceResult: () => innerSpan.traceResult
+    });
   };
 }
 
