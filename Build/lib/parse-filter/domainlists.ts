@@ -28,11 +28,11 @@ export function processDomainListsWithPreload(
   const downloadPromise = fetchAssets(domainListsUrl, mirrors, true, allowEmptyRemote);
   const lineCb = includeAllSubDomain ? domainListLineCbIncludeAllSubdomain : domainListLineCb;
 
-  return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (span) => {
-    const filterRules = await span.traceChildPromise('download', downloadPromise);
+  return (span: Span) => span.traceChildAsync(`process domainlist: ${domainListsUrl}`, async (childSpan) => {
+    const filterRules = await childSpan.traceChildPromise('download', downloadPromise);
     const domainSets: string[] = [];
 
-    span.traceChildSync('parse domain list', () => {
+    childSpan.traceChildSync('parse domain list', () => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
         lineCb(filterRules[i], domainSets, domainListsUrl, fastNormalizeDomainWithoutWww);
       }

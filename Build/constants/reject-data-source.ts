@@ -147,7 +147,7 @@ export const DOMAIN_LISTS_EXTRA: HostsSource[] = [
     true
   ],
   [
-    'https://raw.githubusercontent.com/DandelionSprout/adfilt/refs/heads/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareDomains.txt',
+    'https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareDomains.txt',
     [],
     true
   ]

@@ -25,7 +25,8 @@ import { downloadMockAssets } from './download-mock-assets';
 
 import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
-import { createSpan, printTraceResult, whyIsNodeRunning } from './trace';
+import { printStats, printTraceResult, whyIsNodeRunning } from './trace';
+import type { TraceResult } from './trace';
 import { buildDeprecateFiles } from './build-deprecate-files';
 import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
@@ -66,8 +67,6 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
 
   console.log(`Memory: ${os.totalmem() / (1024 * 1024)} MiB`);
 
-  const rootSpan = createSpan('root');
-
   if (fs.existsSync(buildFinishedLock)) {
     fs.unlinkSync(buildFinishedLock);
   }
@@ -78,38 +77,61 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       await import('why-is-node-running');
     }
 
-    const downloadPreviousBuildPromise = downloadPreviousBuild(rootSpan);
-    const buildCommonPromise = downloadPreviousBuildPromise.then(() => buildCommon(rootSpan));
+    const downloadPreviousBuildPromise = downloadPreviousBuild();
 
     await Promise.all([
       downloadPreviousBuildPromise,
-      buildCommonPromise,
-      downloadPreviousBuildPromise.then(() => buildRejectIPList(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildAppleCdn(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildCdnDownloadConf(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildRejectDomainSet(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildTelegramCIDR(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildChnCidr(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildDomesticRuleset(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildGlobalRuleset(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildRedirectModule(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildStreamService(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildMicrosoftCdn(rootSpan)),
-      downloadPreviousBuildPromise.then(() => buildCloudMounterRules(rootSpan)),
-      downloadMockAssets(rootSpan)
+      downloadPreviousBuildPromise.then(() => buildCommon()),
+      downloadPreviousBuildPromise.then(() => buildRejectIPList()),
+      downloadPreviousBuildPromise.then(() => buildAppleCdn()),
+      downloadPreviousBuildPromise.then(() => buildCdnDownloadConf()),
+      downloadPreviousBuildPromise.then(() => buildRejectDomainSet()),
+      downloadPreviousBuildPromise.then(() => buildTelegramCIDR()),
+      downloadPreviousBuildPromise.then(() => buildChnCidr()),
+      downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet()),
+      downloadPreviousBuildPromise.then(() => buildDomesticRuleset()),
+      downloadPreviousBuildPromise.then(() => buildGlobalRuleset()),
+      downloadPreviousBuildPromise.then(() => buildRedirectModule()),
+      downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule()),
+      downloadPreviousBuildPromise.then(() => buildStreamService()),
+      downloadPreviousBuildPromise.then(() => buildMicrosoftCdn()),
+      downloadPreviousBuildPromise.then(() => buildCloudMounterRules()),
+      downloadMockAssets()
     ]);
 
-    await buildDeprecateFiles(rootSpan);
-    await buildPublic(rootSpan);
-
-    rootSpan.stop();
-
-    printTraceResult(rootSpan.traceResult);
+    await buildDeprecateFiles();
+    await buildPublic();
 
     // write a file to demonstrate that the build is finished
     fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
+
+    const traces: TraceResult[] = [];
+    [
+      downloadPreviousBuild,
+      downloadMockAssets,
+      buildCommon,
+      buildRejectIPList,
+      buildAppleCdn,
+      buildCdnDownloadConf,
+      buildRejectDomainSet,
+      buildTelegramCIDR,
+      buildChnCidr,
+      buildSpeedtestDomainSet,
+      buildDomesticRuleset,
+      buildGlobalRuleset,
+      buildRedirectModule,
+      buildAlwaysRealIPModule,
+      buildStreamService,
+      buildMicrosoftCdn,
+      buildCloudMounterRules,
+      buildPublic,
+      buildDeprecateFiles
+    ].forEach((fn) => {
+      const trace = fn.getInternalTraceResult();
+      printTraceResult(trace);
+      traces.push(trace);
+    });
+    printStats(traces);
 
     // Finish the build to avoid leaking timer/fetch ref
     await whyIsNodeRunning();
