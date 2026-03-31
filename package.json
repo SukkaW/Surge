@@ -43,7 +43,6 @@
     "undici": "^7.24.5",
     "undici-cache-store-better-sqlite3": "^1.0.1",
     "why-is-node-running": "^3.2.2",
-    "worktank": "^3.0.2",
     "xbits": "^0.2.0",
     "yaml": "^2.8.3",
     "yauzl-promise": "^4.0.0"
@@ -62,6 +61,7 @@
     "eslint": "^10.1.0",
     "eslint-config-sukka": "^8.9.0",
     "eslint-formatter-sukka": "^8.9.0",
+    "jest-worker": "^30.3.0",
     "mitata": "^1.0.34",
     "mocha": "^11.7.5",
     "tinyexec": "^1.0.4",

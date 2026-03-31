@@ -6,9 +6,7 @@ import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
 import { buildRejectIPList } from './build-reject-ip-list';
 import { buildAppleCdn } from './build-apple-cdn';
-import { buildCdnDownloadConf } from './build-cdn-download-conf';
 import { buildRejectDomainSet } from './build-reject-domainset';
-import { buildTelegramCIDR } from './build-telegram-cidr';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
 import { buildDomesticRuleset } from './build-domestic-direct-lan-ruleset-dns-mapping-module';
@@ -18,11 +16,9 @@ import { buildStreamService } from './build-stream-service';
 import { buildRedirectModule } from './build-sgmodule-redirect';
 import { buildAlwaysRealIPModule } from './build-sgmodule-always-realip';
 
-import { buildMicrosoftCdn } from './build-microsoft-cdn';
+import { createWorker } from './lib/worker';
 
 import { buildPublic } from './build-public';
-import { downloadMockAssets } from './download-mock-assets';
-
 import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
 import { printStats, printTraceResult, whyIsNodeRunning } from './trace';
@@ -71,6 +67,22 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     fs.unlinkSync(buildFinishedLock);
   }
 
+  const microsoftCdnWorker = createWorker<typeof import('./build-microsoft-cdn.worker')>(
+    require.resolve('./build-microsoft-cdn.worker')
+  )(['buildMicrosoftCdn']);
+
+  const cdnDownloadWorker = createWorker<typeof import('./build-cdn-download-conf.worker')>(
+    require.resolve('./build-cdn-download-conf.worker')
+  )(['buildCdnDownloadConf']);
+
+  const telegramCidrWorker = createWorker<typeof import('./build-telegram-cidr.worker')>(
+    require.resolve('./build-telegram-cidr.worker')
+  )(['buildTelegramCIDR']);
+
+  const mockAssetsWorker = createWorker<typeof import('./download-mock-assets.worker')>(
+    require.resolve('./download-mock-assets.worker')
+  )(['downloadMockAssets']);
+
   try {
     // only enable why-is-node-running in GitHub Actions debug mode
     if (isCI && process.env.RUNNER_DEBUG === '1') {
@@ -79,14 +91,14 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
 
     const downloadPreviousBuildPromise = downloadPreviousBuild();
 
-    await Promise.all([
+    const traces: TraceResult[] = await Promise.all([
       downloadPreviousBuildPromise,
       downloadPreviousBuildPromise.then(() => buildCommon()),
       downloadPreviousBuildPromise.then(() => buildRejectIPList()),
       downloadPreviousBuildPromise.then(() => buildAppleCdn()),
-      downloadPreviousBuildPromise.then(() => buildCdnDownloadConf()),
+      downloadPreviousBuildPromise.then(() => cdnDownloadWorker.buildCdnDownloadConf()),
       downloadPreviousBuildPromise.then(() => buildRejectDomainSet()),
-      downloadPreviousBuildPromise.then(() => buildTelegramCIDR()),
+      downloadPreviousBuildPromise.then(() => telegramCidrWorker.buildTelegramCIDR()),
       downloadPreviousBuildPromise.then(() => buildChnCidr()),
       downloadPreviousBuildPromise.then(() => buildSpeedtestDomainSet()),
       downloadPreviousBuildPromise.then(() => buildDomesticRuleset()),
@@ -94,44 +106,28 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       downloadPreviousBuildPromise.then(() => buildRedirectModule()),
       downloadPreviousBuildPromise.then(() => buildAlwaysRealIPModule()),
       downloadPreviousBuildPromise.then(() => buildStreamService()),
-      downloadPreviousBuildPromise.then(() => buildMicrosoftCdn()),
+      downloadPreviousBuildPromise.then(() => microsoftCdnWorker.buildMicrosoftCdn()),
       downloadPreviousBuildPromise.then(() => buildCloudMounterRules()),
-      downloadMockAssets()
+      mockAssetsWorker.downloadMockAssets()
     ]);
 
-    await buildDeprecateFiles();
-    await buildPublic();
+    traces.push(
+      await buildDeprecateFiles(),
+      await buildPublic()
+    );
 
     // write a file to demonstrate that the build is finished
     fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
 
-    const traces: TraceResult[] = [];
-    [
-      downloadPreviousBuild,
-      downloadMockAssets,
-      buildCommon,
-      buildRejectIPList,
-      buildAppleCdn,
-      buildCdnDownloadConf,
-      buildRejectDomainSet,
-      buildTelegramCIDR,
-      buildChnCidr,
-      buildSpeedtestDomainSet,
-      buildDomesticRuleset,
-      buildGlobalRuleset,
-      buildRedirectModule,
-      buildAlwaysRealIPModule,
-      buildStreamService,
-      buildMicrosoftCdn,
-      buildCloudMounterRules,
-      buildPublic,
-      buildDeprecateFiles
-    ].forEach((fn) => {
-      const trace = fn.getInternalTraceResult();
-      printTraceResult(trace);
-      traces.push(trace);
+    traces.forEach((t) => {
+      printTraceResult(t);
     });
     printStats(traces);
+
+    await microsoftCdnWorker.end();
+    await cdnDownloadWorker.end();
+    await telegramCidrWorker.end();
+    await mockAssetsWorker.end();
 
     // Finish the build to avoid leaking timer/fetch ref
     await whyIsNodeRunning();

@@ -155,3 +155,5 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
     .bulkAddCIDR6NoResolve(ipcidr6)
     .write();
 });
+
+export const ___ = '';
