@@ -269,11 +269,11 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   });
 
   await Promise.all([
-    rejectDomainsetOutput.write(),
-    rejectExtraDomainsetOutput.write(),
-    rejectPhisingDomainsetOutput.write(),
-    rejectIPOutput.write(),
-    rejectNonIpRulesetOutput.write()
+    span.traceChildAsync('write reject domainset', () => rejectDomainsetOutput.write()),
+    span.traceChildAsync('write reject_extra domainset', () => rejectExtraDomainsetOutput.write()),
+    span.traceChildAsync('write reject_phishing domainset', () => rejectPhisingDomainsetOutput.write()),
+    span.traceChildAsync('write reject ip list', () => rejectIPOutput.write()),
+    span.traceChildAsync('write reject non-ip ruleset', () => rejectNonIpRulesetOutput.write())
   ]);
 
   // we are going to re-use rejectOutput's domainTrie and mutate it

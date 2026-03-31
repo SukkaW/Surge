@@ -49,7 +49,7 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     }
     await new Promise<void>(resolve => {
       // Since we previously poped the last empty line for comparison, we need to add it back here to ensure final EOF line
-      writeStream.end('\n', resolve);
+      writeStream.end(resolve);
     });
     await promisify(writeStream.close.bind(writeStream))();
   });
