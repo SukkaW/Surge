@@ -44,9 +44,11 @@
   - `/Surfboard/non_ip/`：`RULE-SET`，不会触发 DNS 解析的规则
   - `/Surfboard/ip/`：`RULE-SET`，会触发 DNS 解析的规则
 
-**请务必按照 `domainset`、`non_ip`、`ip`，和 README 中的顺序 将规则组添加到你的配置文件中，确保所有 `domainset` 或 `non_ip` 规则组 位于所有的 `ip` 规则组之前**。
+**请务必按照 `domainset`、`non_ip`、`ip`，和 README 中的顺序 将规则组添加到你的配置文件中，请 务必确保 所有 `domainset` 或 `non_ip` 规则组、以及你自己额外添加的 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD` 规则，必须放置在所有的 `ip` 规则组、你自己添加的 `IP-CIDR`、`IP-CIDR6`、`IP-ASN` 和 `GEOIP` 规则之前，没有任何例外。**
 
-> Surge、Clash、Surfboard 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照一定的顺序添加规则组，可以避免本地发生不必要的 DNS 解析、从而提供一定程度的所谓「DNS 污染」的保护。
+假如 你将任何一个 `ip` 规则组、或你自己的 `IP-CIDR`、`IP-CIDR6`、`IP-ASN` 和 `GEOIP` 规则放置在任何一个 `domainset` 或 `non_ip` 规则组、你自己额外添加的 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD` 规则之前，**那么你会立刻失去 Surge、Clash、Mihomo、Surfboard、以及本项目 为你提供的 DNS 污染保护，你将会彻底暴露在 GFW 的 DNS 污染之下。**
+
+> Surge、Clash、Mihomo、Surfboard 会按照规则在配置中的顺序、从上到下逐一匹配，当且仅当进行 IP 类规则的匹配、FINAL、或 direct 策略时，才会进行 DNS 解析。按照上述顺序添加规则组，可以尽可能避免你的设备对需要被代理的域名发起 DNS 解析、从而提供一定程度的所谓「DNS 污染」的保护。
 
 #### 广告拦截 / 隐私保护 / Malware 拦截 / Phishing 拦截
 
