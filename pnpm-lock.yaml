@@ -115,8 +115,8 @@ importers:
         specifier: ^10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^24.12.2
-        version: 24.12.2
+        specifier: ^25.6.0
+        version: 25.6.0
       '@types/tar-fs':
         specifier: ^2.0.4
         version: 2.0.4
@@ -673,8 +673,8 @@ packages:
   '@types/mocha@10.0.10':
     resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
-  '@types/node@24.12.2':
-    resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
+  '@types/node@25.6.0':
+    resolution: {integrity: sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ==}
 
   '@types/tar-fs@2.0.4':
     resolution: {integrity: sha512-ipPec0CjTmVDWE+QKr9cTmIIoTl7dFG/yARCM5MqK8i6CNLIG1P8x4kwDsOQY1ChZOZjH0wO9nvfgBvWl4R3kA==}
@@ -1935,8 +1935,8 @@ packages:
     peerDependencies:
       undici: '>=7.0.0'
 
-  undici-types@7.16.0:
-    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+  undici-types@7.19.2:
+    resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
 
   undici@8.0.3:
     resolution: {integrity: sha512-vTLEG/ceXgu/dMTQ8uNE2zgl7I7qEkx9l9tkz2H802AkgbBMvbmHMu4YqsrpGbUAMYKSQhCbmjsWMAeGu1dYXg==}
@@ -2177,7 +2177,7 @@ snapshots:
 
   '@jest/pattern@30.0.1':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       jest-regex-util: 30.0.1
 
   '@jest/schemas@30.0.5':
@@ -2190,7 +2190,7 @@ snapshots:
       '@jest/schemas': 30.0.5
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -2455,11 +2455,11 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
 
   '@types/cli-progress@3.11.6':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
 
   '@types/esrecurse@4.3.1': {}
 
@@ -2479,18 +2479,18 @@ snapshots:
 
   '@types/mocha@10.0.10': {}
 
-  '@types/node@24.12.2':
+  '@types/node@25.6.0':
     dependencies:
-      undici-types: 7.16.0
+      undici-types: 7.19.2
 
   '@types/tar-fs@2.0.4':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       '@types/tar-stream': 3.1.4
 
   '@types/tar-stream@3.1.4':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -2500,7 +2500,7 @@ snapshots:
 
   '@types/yauzl-promise@4.0.1':
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
 
   '@typescript-eslint/eslint-plugin@8.58.1(@typescript-eslint/parser@8.58.1(eslint@10.2.0)(typescript@6.0.2))(eslint@10.2.0)(typescript@6.0.2)':
     dependencies:
@@ -3329,7 +3329,7 @@ snapshots:
   jest-util@30.3.0:
     dependencies:
       '@jest/types': 30.3.0
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       chalk: 4.1.2
       ci-info: 4.4.0
       graceful-fs: 4.2.11
@@ -3337,7 +3337,7 @@ snapshots:
 
   jest-worker@30.3.0:
     dependencies:
-      '@types/node': 24.12.2
+      '@types/node': 25.6.0
       '@ungap/structured-clone': 1.3.0
       jest-util: 30.3.0
       merge-stream: 2.0.0
@@ -3812,7 +3812,7 @@ snapshots:
       foxts: 5.4.0
       undici: 8.0.3
 
-  undici-types@7.16.0: {}
+  undici-types@7.19.2: {}
 
   undici@8.0.3: {}
 
