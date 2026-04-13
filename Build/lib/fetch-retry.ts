@@ -24,9 +24,11 @@ if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
 
-const agent = new Agent({ allowH2: false });
+const agent = new Agent({
+  allowH2: true
+});
 
-(agent.compose(
+agent.compose(
   interceptors.dns({
     // disable IPv6
     dualStack: false,
@@ -126,7 +128,7 @@ const agent = new Agent({ allowH2: false });
     }),
     cacheByDefault: 600 // 10 minutes
   })
-));
+);
 
 function calculateRetryAfterHeader(retryAfter: string) {
   const current = Date.now();

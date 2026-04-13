@@ -12,7 +12,7 @@ import { AbortError } from 'foxts/abort-error';
 
 const reusedCustomAbortError = new AbortError();
 
-const queue = newQueue(16);
+const queue = newQueue(18);
 
 export async function fetchAssets(
   url: string, fallbackUrls: null | undefined | string[] | readonly string[],
@@ -29,6 +29,7 @@ export async function fetchAssets(
         throw reusedCustomAbortError;
       }
     }
+
     if (controller.signal.aborted) {
       throw reusedCustomAbortError;
     }
