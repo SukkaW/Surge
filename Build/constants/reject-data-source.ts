@@ -210,8 +210,8 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
       'https://filters.adtidy.org/extension/ublock/filters/118_optimized.txt',
       'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
       'https://secure.fanboy.co.nz/easyprivacy.txt',
-      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt',
-      'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt'
+      'https://ublockorigin.pages.dev/thirdparties/easyprivacy.txt',
+      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easyprivacy.txt'
     ]
     // 3p is included in AdGuardDNSFilter, which we will use that in reject_extra
   ],
@@ -253,9 +253,9 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   // ],
   // uBlock Origin Unbreak
   [
-    'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt',
+    'https://ublockorigin.pages.dev/filters/unbreak.min.txt',
     [
-      'https://ublockorigin.pages.dev/filters/unbreak.min.txt'
+      'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt'
     ]
   ]
   //
@@ -324,10 +324,8 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   ],
   // uBlock Origin Filter List
   [
-    'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt',
-    [
-      'https://ublockorigin.pages.dev/filters/filters.min.txt'
-    ]
+    'https://ublockorigin.pages.dev/filters/filters.min.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt']
   ],
   // AdGuard Popup Overlay - included in Annoyances filter
   // ['https://filters.adtidy.org/extension/ublock/filters/19_optimized.txt', null, true],
@@ -336,17 +334,13 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // ['https://filters.adtidy.org/extension/ublock/filters/20_optimized.txt', null],
   // uBlock Origin Badware Risk List
   [
-    'https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt',
-    [
-      'https://ublockorigin.pages.dev/filters/badware.min.txt'
-    ]
+    'https://ublockorigin.pages.dev/filters/badware.min.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/filters/badware.min.txt']
   ],
   // uBlock Origin Privacy List
   [
-    'https://ublockorigin.github.io/uAssetsCDN/filters/privacy.min.txt',
-    [
-      'https://ublockorigin.pages.dev/filters/privacy.min.txt'
-    ]
+    'https://ublockorigin.pages.dev/filters/privacy.min.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/filters/privacy.min.txt']
   ],
   // uBlock Origin Resource Abuse: merged in uBlock Origin Privacy List
   // [
@@ -355,29 +349,29 @@ export const ADGUARD_FILTERS_EXTRA: AdGuardFilterSource[] = [
   // ],
   // uBlock Origin Annoyances (the un-merged of Fanboy Annoyances List)
   [
-    'https://ublockorigin.github.io/uAssetsCDN/filters/annoyances.min.txt',
-    ['https://ublockorigin.pages.dev/filters/annoyances.min.txt']
+    'https://ublockorigin.pages.dev/filters/annoyances.min.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/filters/annoyances.min.txt']
   ],
   // EasyList Annoyances
   [
-    'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-annoyances.txt',
-    ['https://ublockorigin.pages.dev/thirdparties/easylist-annoyances.txt']
+    'https://ublockorigin.pages.dev/thirdparties/easylist-annoyances.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-annoyances.txt']
   ],
   // EasyList - Newsletters
   [
-    'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-newsletters.txt',
-    ['https://ublockorigin.pages.dev/thirdparties/easylist-newsletters.txt']
+    'https://ublockorigin.pages.dev/thirdparties/easylist-newsletters.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-newsletters.txt']
   ],
   // EasyList - Notifications
   [
-    'https://ublockorigin.github.io/uAssets/thirdparties/easylist-notifications.txt',
-    ['https://ublockorigin.pages.dev/thirdparties/easylist-notifications.txt']
+    'https://ublockorigin.pages.dev/thirdparties/easylist-notifications.txt',
+    ['https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-notifications.txt']
   ],
   // Fanboy Cookie Monster (EasyList Cookie List)
   [
-    'https://ublockorigin.github.io/uAssets/thirdparties/easylist-cookies.txt',
+    'https://ublockorigin.pages.dev/thirdparties/easylist-cookies.txt',
     [
-      'https://ublockorigin.pages.dev/thirdparties/easylist-cookies.txt',
+      'https://ublockorigin.github.io/uAssetsCDN/thirdparties/easylist-cookies.txt',
       'https://secure.fanboy.co.nz/fanboy-cookiemonster_ubo.txt'
     ]
   ],
