@@ -2,7 +2,8 @@ import picocolors from 'picocolors';
 import { parse } from 'tldts-experimental';
 import { appendArrayInPlaceCurried } from 'foxts/append-array-in-place';
 
-import { dummySpan } from '../trace';
+import { workerJob } from '../trace';
+import type { RawSpan, WorkerJobResult } from '../trace';
 import type { TldTsParsed } from './normalize-domain';
 
 import { loosTldOptWithPrivateDomains } from '../constants/loose-tldts-opt';
@@ -14,18 +15,18 @@ import { processDomainListsWithPreload } from './parse-filter/domainlists';
 
 import process from 'node:process';
 
-export function getPhishingDomains(isDebug = false): Promise<string[]> {
-  return dummySpan.traceChild('get phishing domains').traceAsyncFn(async (span) => span.traceChildAsync(
-    'process phishing domain set',
-    async () => {
-      const downloads = [
-        ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
-        ...PHISHING_HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry))
-      ];
+export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<WorkerJobResult<string[]>> {
+  return workerJob(rawSpan, async (childSpan) => {
+    const downloads = [
+      ...PHISHING_DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry)),
+      ...PHISHING_HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry))
+    ];
 
+    const domainGroups = await Promise.all(downloads.map(task => task(childSpan)));
+
+    return childSpan.traceChildSync<string[]>('calculate and handling mass phishing domains', () => {
       const domainArr: string[] = [];
 
-      const domainGroups = await Promise.all(downloads.map(task => task(dummySpan)));
       domainGroups.forEach(appendArrayInPlaceCurried(domainArr));
 
       const domainCountMap = new Map<string, number>();
@@ -117,8 +118,8 @@ export function getPhishingDomains(isDebug = false): Promise<string[]> {
       }
 
       return domainArr;
-    }
-  ));
+    });
+  });
 }
 
 function calcDomainAbuseScore(subdomain: string, fullDomain: string = subdomain) {
@@ -167,5 +168,5 @@ function calcDomainAbuseScore(subdomain: string, fullDomain: string = subdomain)
 }
 
 if (!process.env.JEST_WORKER_ID && require.main === module) {
-  getPhishingDomains(true).catch(console.error);
+  getPhishingDomains(undefined, true).catch(console.error);
 }

@@ -124,10 +124,12 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     });
     printStats(traces);
 
-    await microsoftCdnWorker.end();
-    await cdnDownloadWorker.end();
-    await telegramCidrWorker.end();
-    await mockAssetsWorker.end();
+    await Promise.all([
+      microsoftCdnWorker.end(),
+      cdnDownloadWorker.end(),
+      telegramCidrWorker.end(),
+      mockAssetsWorker.end()
+    ]);
 
     // Finish the build to avoid leaking timer/fetch ref
     await whyIsNodeRunning();

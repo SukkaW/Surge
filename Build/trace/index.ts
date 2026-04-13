@@ -24,6 +24,7 @@ export interface RawSpan {
 
 export interface Span {
   [spanTag]: true,
+  readonly rawSpan: RawSpan,
   readonly stop: (time?: number) => void,
   readonly traceChild: (name: string) => Span,
   readonly traceSyncFn: <T>(fn: (span: Span) => T) => T,
@@ -32,6 +33,7 @@ export interface Span {
   readonly traceChildSync: <T>(name: string, fn: (span: Span) => T) => T,
   readonly traceChildAsync: <T>(name: string, fn: (span: Span) => Promise<T>) => Promise<T>,
   readonly traceChildPromise: <T>(name: string, promise: Promise<T>) => Promise<T>,
+  readonly traceWorkerChild: <T>(name: string, factory: (rawSpan: RawSpan) => Promise<WorkerJobResult<T>>) => Promise<T>,
   readonly traceResult: TraceResult
 }
 
@@ -55,6 +57,7 @@ export function makeSpan(rawSpan: RawSpan): Span {
 
   const span: Span = {
     [spanTag]: true,
+    rawSpan,
     stop,
     traceChild,
     traceSyncFn<T>(fn: (span: Span) => T) {
@@ -75,7 +78,15 @@ export function makeSpan(rawSpan: RawSpan): Span {
     },
     traceChildSync: <T>(name: string, fn: (span: Span) => T): T => traceChild(name).traceSyncFn(fn),
     traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>): Promise<T> => traceChild(name).traceAsyncFn(fn),
-    traceChildPromise: <T>(name: string, promise: Promise<T>): Promise<T> => traceChild(name).tracePromise(promise)
+    traceChildPromise: <T>(name: string, promise: Promise<T>): Promise<T> => traceChild(name).tracePromise(promise),
+
+    async traceWorkerChild<T>(name: string, factory: (rawSpan: RawSpan) => Promise<WorkerJobResult<T>>): Promise<T> {
+      const childSpan = traceChild(name);
+      const { result, traceResult, workerTimeOrigin } = await factory(childSpan.rawSpan);
+      mergeWorkerTrace(childSpan, traceResult, workerTimeOrigin);
+      childSpan.stop();
+      return result;
+    }
   };
 
   // eslint-disable-next-line sukka/no-redundant-variable -- self reference
@@ -171,6 +182,58 @@ export async function whyIsNodeRunning() {
 //     return fn(...args);
 //   };
 // };
+
+function adjustTraceTimestamps(trace: TraceResult, offset: number): TraceResult {
+  return {
+    name: trace.name,
+    start: trace.start + offset,
+    end: trace.end + offset,
+    children: trace.children.map(child => adjustTraceTimestamps(child, offset))
+  };
+}
+
+function mergeWorkerTrace(
+  parentSpan: Span,
+  workerTraceResult: TraceResult,
+  workerTimeOrigin: number
+): void {
+  const offset = workerTimeOrigin - performance.timeOrigin;
+  for (const child of workerTraceResult.children) {
+    parentSpan.traceResult.children.push(adjustTraceTimestamps(child, offset));
+  }
+}
+
+/** The envelope that a worker function returns so the main thread can recover both the result and the trace. */
+export interface WorkerJobResult<T> {
+  result: T,
+  traceResult: TraceResult,
+  workerTimeOrigin: number
+}
+
+/**
+ * Worker-side wrapper.  Call this instead of manually constructing spans.
+ *
+ * - When `rawSpan` is provided (normal worker invocation from the main thread),
+ *   it is wrapped with {@link makeSpan} so all child spans are attached to the
+ *   caller's trace tree and can be recovered after the job finishes.
+ * - When `rawSpan` is `undefined` (standalone / CLI invocation), a fresh
+ *   child span of {@link dummySpan} is used instead.
+ *
+ * The impl function receives a full {@link Span} and returns its result
+ * normally; the wrapper packages everything into a {@link WorkerJobResult}.
+ */
+export async function workerJob<T>(
+  rawSpan: RawSpan | undefined,
+  impl: (span: Span) => Promise<T>
+): Promise<WorkerJobResult<T>> {
+  const span = rawSpan == null ? dummySpan.traceChild('worker-standalone') : makeSpan(rawSpan);
+  const result = await impl(span);
+  return {
+    result,
+    traceResult: span.traceResult,
+    workerTimeOrigin: performance.timeOrigin
+  };
+}
 
 export function printTraceResult(traceResult: TraceResult) {
   printTree(

@@ -99,6 +99,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   // It is faster to add base than add others first then whitelist
   rejectDomainsetOutput.addFromRuleset(readLocalRejectRulesetPromise);
   rejectExtraDomainsetOutput.addFromRuleset(readLocalRejectRulesetPromise);
+  rejectPhisingDomainsetOutput.addFromRuleset(readLocalRejectRulesetPromise);
 
   rejectNonIpRulesetOutput.addFromRuleset(readLocalRejectRulesetPromise);
 
@@ -130,7 +131,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
       arrayPushNonNullish(promises, domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)));
 
       rejectPhisingDomainsetOutput.addFromDomainset(
-        span.traceChildPromise('get phishing domains', phishingWorker.getPhishingDomains())
+        span.traceWorkerChild('get phishing domains', rawSpan => phishingWorker.getPhishingDomains(rawSpan))
       );
 
       arrayPushNonNullish(
@@ -212,10 +213,9 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
           for (let i = 0, len = arr.length; i < len; i++) {
             const line = arr[i];
             if (line.startsWith('bogus-nxdomain=')) {
-              // bogus nxdomain needs to be blocked even after resolved
               rejectIPOutput.addAnyCIDR(
                 line.slice(15).trim(),
-                false
+                false // bogus nxdomain needs to be blocked even after resolved
               );
             }
           }
