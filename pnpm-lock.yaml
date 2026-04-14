@@ -33,8 +33,8 @@ importers:
         specifier: ^6.2.1
         version: 6.2.1
       domain-alive:
-        specifier: ^0.1.17
-        version: 0.1.17
+        specifier: ^0.1.18
+        version: 0.1.18
       fast-cidr-tools:
         specifier: ^0.3.4
         version: 0.3.4
@@ -57,8 +57,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       null-prototype-object:
-        specifier: ^1.2.6
-        version: 1.2.6
+        specifier: ^1.2.7
+        version: 1.2.7
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -1090,8 +1090,8 @@ packages:
   dom-serializer@1.4.1:
     resolution: {integrity: sha512-VHwB3KfrcOOkelEG2ZOfxqLZdfkil8PtJi4P8N2MMXucZq2yLp75ClViUlOVwyoHEDjYU433Aq+5zWP61+RGag==}
 
-  domain-alive@0.1.17:
-    resolution: {integrity: sha512-ACL2WVZ5lldyBnrFjD4Jb9FeJd4SS4vhiKoIfq2qQrWXfAxM+go1WjjykceyjlCj8zqby3Ss0Nh5hDyl1/SFzw==}
+  domain-alive@0.1.18:
+    resolution: {integrity: sha512-m6cQhd2X3qBVfZ6qgKeMDJTAYwawom2bCScoUEgmBMsuNQuvl/s8DfnwQJA87meeLOmOzkLiWluGsm75yHwreg==}
 
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
@@ -1623,8 +1623,8 @@ packages:
     resolution: {integrity: sha512-vv8fJuOUCCvSPjDjBLlMqYMHob4aGjkmrkaE42/mZr0VT+ZAU10jRF8oTnX9+pgU9/vYJ8P7YT3Vd6ajkmzSCw==}
     engines: {node: '>=0.12'}
 
-  null-prototype-object@1.2.6:
-    resolution: {integrity: sha512-m+HuHAqaOiqlxVAzI3GtRgS4JIk3aAZ5RbkYxxPiACXyQZzS5uxjOXMASlWNdPYZ/5d4/+YclUlI+XXNlyN7Jg==}
+  null-prototype-object@1.2.7:
+    resolution: {integrity: sha512-pSZWCUew0zed2gxCerA4zdXRGg8ezLiWwvE8RvncezTcROXL0uz3PjSZXl5NsI04Egz0Uu46o1wyX6qr3u/ZWA==}
     engines: {node: '>= 20'}
 
   once@1.4.0:
@@ -2850,7 +2850,7 @@ snapshots:
       domhandler: 4.3.1
       entities: 2.2.0
 
-  domain-alive@0.1.17:
+  domain-alive@0.1.18:
     dependencies:
       debug: 4.4.1
       foxts: 5.4.0
@@ -3451,7 +3451,7 @@ snapshots:
     dependencies:
       write-file-atomic: 1.3.4
 
-  null-prototype-object@1.2.6: {}
+  null-prototype-object@1.2.7: {}
 
   once@1.4.0:
     dependencies:
