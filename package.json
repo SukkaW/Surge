@@ -40,7 +40,7 @@
     "tinyglobby": "^0.2.16",
     "tldts": "^7.0.28",
     "tldts-experimental": "^7.0.28",
-    "undici": "^8.0.3",
+    "undici": "^8.1.0",
     "undici-cache-store-better-sqlite3": "^1.0.1",
     "why-is-node-running": "^3.2.2",
     "xbits": "^0.2.0",
