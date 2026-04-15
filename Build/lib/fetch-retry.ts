@@ -1,11 +1,13 @@
 import picocolors from 'picocolors';
 import undici, {
   interceptors,
-  Agent
+  Agent,
+  Request as UndiciRequest
   // setGlobalDispatcher
 } from 'undici';
 
 import type {
+  BodyInit,
   Dispatcher,
   Response,
   RequestInit,
@@ -166,7 +168,25 @@ export const defaultRequestInit = {
   }
 };
 
-export async function $$fetch(url: RequestInfo, init: RequestInit = defaultRequestInit) {
+export async function $$fetch(input: RequestInfo, init: RequestInit = defaultRequestInit) {
+  // Workaround for https://github.com/nodejs/undici/issues/2155:
+  // If a Request object from a different undici instance (or Node.js globals) is passed,
+  // undici's internal instanceof check fails and it tries to parse "[object Request]" as a URL.
+  let url: RequestInfo = input;
+  if (typeof input === 'object' && 'url' in input) {
+    // Re-wrap as a proper undici Request so undici's instanceof checks pass.
+    // Headers follow WHATWG fetch spec: init.headers replaces input.headers if present,
+    // otherwise input.headers is used — a plain spread achieves exactly this.
+    url = new UndiciRequest(input.url, {
+      method: input.method,
+      body: input.body as BodyInit,
+      signal: input.signal,
+      headers: input.headers,
+      ...init
+    });
+    init = {};
+  }
+
   init.dispatcher = agent;
 
   try {
