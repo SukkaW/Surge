@@ -25,7 +25,7 @@
     "ci-info": "^4.4.0",
     "cli-progress": "^3.12.0",
     "csv-parse": "^6.2.1",
-    "domain-alive": "^0.1.20",
+    "domain-alive": "^0.1.22",
     "fast-cidr-tools": "^0.3.4",
     "fast-escape-regexp": "^1.0.1",
     "fast-uri": "^3.1.0",

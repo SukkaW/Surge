@@ -7,7 +7,6 @@ import undici, {
 } from 'undici';
 
 import type {
-  BodyInit,
   Dispatcher,
   Response,
   RequestInit,
@@ -168,25 +167,7 @@ export const defaultRequestInit = {
   }
 };
 
-export async function $$fetch(input: RequestInfo, init: RequestInit = defaultRequestInit) {
-  // Workaround for https://github.com/nodejs/undici/issues/2155:
-  // If a Request object from a different undici instance (or Node.js globals) is passed,
-  // undici's internal instanceof check fails and it tries to parse "[object Request]" as a URL.
-  let url: RequestInfo = input;
-  if (typeof input === 'object' && 'url' in input) {
-    // Re-wrap as a proper undici Request so undici's instanceof checks pass.
-    // Headers follow WHATWG fetch spec: init.headers replaces input.headers if present,
-    // otherwise input.headers is used — a plain spread achieves exactly this.
-    url = new UndiciRequest(input.url, {
-      method: input.method,
-      body: input.body as BodyInit,
-      signal: input.signal,
-      headers: input.headers,
-      ...init
-    });
-    init = {};
-  }
-
+export async function $$fetch(url: RequestInfo, init: RequestInit = defaultRequestInit) {
   init.dispatcher = agent;
 
   try {
@@ -204,7 +185,7 @@ export async function $$fetch(input: RequestInfo, init: RequestInit = defaultReq
     if (isAbortErrorLike(err)) {
       console.log(picocolors.gray('[fetch abort]'), url);
     } else {
-      console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
+      console.log(picocolors.gray('[fetch fail]'), url, err);
     }
 
     throw err;
@@ -212,6 +193,28 @@ export async function $$fetch(input: RequestInfo, init: RequestInit = defaultReq
 }
 
 export { $$fetch as '~fetch' };
+
+/**
+ * A fetch wrapper for DoH (DNS-over-HTTPS) usage where the input may be a
+ * `Request` object created by a different undici instance or Node.js globals.
+ * Without normalisation, undici's internal `instanceof Request` check fails and
+ * it tries to parse `[object Request]` as a URL.
+ * See https://github.com/nodejs/undici/issues/2155
+ */
+export async function fetchForDoH(input: RequestInfo, init?: RequestInit) {
+  if (typeof input === 'object' && 'url' in input) {
+    // Normalise the foreign Request into a proper undici Request, preserving all
+    // of its properties. init is passed separately so undici merges them itself,
+    // exactly as real fetch(request, init) would — no manual header handling needed.
+    input = new UndiciRequest(input.url, {
+      ...input,
+      // force no-referrer to avoid about:client
+      referrerPolicy: 'no-referrer',
+      referrer: ''
+    });
+  }
+  return $$fetch(input, init);
+}
 
 /** @deprecated -- undici.requests doesn't support gzip/br/deflate, and has difficulty w/ undidi cache */
 export async function requestWithLog(url: string, opt?: Parameters<typeof undici.request>[1]) {
@@ -233,7 +236,7 @@ export async function requestWithLog(url: string, opt?: Parameters<typeof undici
     if (isAbortErrorLike(err)) {
       console.log(picocolors.gray('[fetch abort]'), url);
     } else {
-      console.log(picocolors.gray('[fetch fail]'), url, { name: (err as any).name }, err);
+      console.log(picocolors.gray('[fetch fail]'), url, { name: err instanceof Error ? err.name : undefined }, err);
     }
 
     throw err;
