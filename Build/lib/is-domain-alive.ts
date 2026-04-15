@@ -72,7 +72,8 @@ export async function getMethods() {
   const isDomainAlive = createDomainAliveChecker({
     dns: {
       dnsServers,
-      maxAttempts: 6
+      maxAttempts: 6,
+      customFetchForDoH: $$fetch as typeof fetch
     },
     registerableDomainResultCache,
     resultCache,

@@ -8,7 +8,8 @@ import undici, {
 import type {
   Dispatcher,
   Response,
-  RequestInit
+  RequestInit,
+  RequestInfo
 } from 'undici';
 import { BetterSqlite3CacheStore } from 'undici-cache-store-better-sqlite3';
 
@@ -139,9 +140,17 @@ export class ResponseError<T extends UndiciResponseData | Response> extends Erro
   readonly code: number;
   readonly statusCode: number;
 
-  constructor(public readonly res: T, public readonly url: string, ...args: any[]) {
+  readonly url: string;
+
+  constructor(public readonly res: T, public readonly info: RequestInfo, ...args: any[]) {
     const statusCode = 'statusCode' in res ? res.statusCode : res.status;
     super('HTTP ' + statusCode + ' ' + args.map(_ => inspect(_)).join(' '));
+
+    this.url = typeof info === 'string'
+      ? info
+      : ('url' in info
+        ? info.url
+        : info.href);
 
     // eslint-disable-next-line sukka/unicorn/custom-error-definition -- deliberatly use previous name
     this.name = this.constructor.name;
@@ -157,7 +166,9 @@ export const defaultRequestInit = {
   }
 };
 
-export async function $$fetch(url: string, init: RequestInit = defaultRequestInit) {
+export async function $$fetch(url: RequestInfo, init: RequestInit = defaultRequestInit) {
+  init.dispatcher = agent;
+
   try {
     const res = await undici.fetch(url, init);
     if (res.status >= 400) {
@@ -184,6 +195,9 @@ export { $$fetch as '~fetch' };
 
 /** @deprecated -- undici.requests doesn't support gzip/br/deflate, and has difficulty w/ undidi cache */
 export async function requestWithLog(url: string, opt?: Parameters<typeof undici.request>[1]) {
+  opt ??= {};
+  opt.dispatcher = agent;
+
   try {
     const res = await undici.request(url, opt);
     if (res.statusCode >= 400) {
