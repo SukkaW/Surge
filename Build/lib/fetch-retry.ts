@@ -195,25 +195,53 @@ export async function $$fetch(url: RequestInfo, init: RequestInit = defaultReque
 export { $$fetch as '~fetch' };
 
 /**
- * A fetch wrapper for DoH (DNS-over-HTTPS) usage where the input may be a
- * `Request` object created by a different undici instance or Node.js globals.
- * Without normalisation, undici's internal `instanceof Request` check fails and
- * it tries to parse `[object Request]` as a URL.
- * See https://github.com/nodejs/undici/issues/2155
+ * dohdec constructs its own `Request` object for its `hooks` from `globalThis.Request`
+ *
+ * But we are using `undici.fetch` instead of `globalThis.fetch`, hence the version
+ * mismatch.
+ *
+ * undici, on the other hand, use `instanceof Request` internally for narrowing, resulting
+ * in it treats foreign `Request` objects as `URL` and try to parse them as URLs, causing
+ * `TypeError: Failed to construct 'URL': [object Request]`
+ *
+ * See also https://github.com/nodejs/undici/issues/2155
+ *
+ * We already know that dohdec will only pass one `Request` object to `fetch` because
+ * of its internal `hooks`:
+ *
+ * https://github.com/hildjj/dohdec/blob/d2f763db62d46f505d109be12bc697224cd42f93/pkg/dohdec/lib/doh.js#L291
  */
-export async function fetchForDoH(input: RequestInfo, init?: RequestInit) {
+export async function fetchForDoH(input: RequestInfo, _init?: RequestInit) {
   if (typeof input === 'object' && 'url' in input) {
-    // Normalise the foreign Request into a proper undici Request, preserving all
-    // of its properties. init is passed separately so undici merges them itself,
-    // exactly as real fetch(request, init) would — no manual header handling needed.
+    // Read body as ArrayBuffer before re-wrapping. The original body is a ReadableStream
+    // from a foreign context (different undici instance / Node.js globals). Passing it
+    // directly to new UndiciRequest fails undici's instanceof ReadableStream check and
+    // silently drops the body. ArrayBuffer is a plain value with no cross-context issues,
+    // and also allows the retry interceptor to re-send the body on retries.
+    const body = input.body === null ? null : await input.arrayBuffer();
+
     input = new UndiciRequest(input.url, {
-      ...input,
-      // force no-referrer to avoid about:client
+      method: input.method,
+      mode: input.mode,
+      credentials: input.credentials,
+      cache: input.cache,
+      redirect: input.redirect,
+      integrity: input.integrity,
+      keepalive: input.keepalive,
+      signal: input.signal,
+      headers: input.headers,
+      body,
+
+      referrer: '',
       referrerPolicy: 'no-referrer',
-      referrer: ''
+      dispatcher: agent
     });
   }
-  return $$fetch(input, init);
+
+  // DoH servers may return a valid DNS wire format body with a non-200 status
+  // (e.g. 503 with a DNS SERVFAIL). Let the DoH client parse the body and decide
+  // — never throw on HTTP status here.
+  return undici.fetch(input);
 }
 
 /** @deprecated -- undici.requests doesn't support gzip/br/deflate, and has difficulty w/ undidi cache */
