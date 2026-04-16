@@ -152,8 +152,8 @@ export async function parseGfwList() {
 
   whiteSet.forEach(domain => gfwListTrie.whitelist(domain, true));
 
-  let gfwListSize = 0;
-  gfwListTrie.dump(() => gfwListSize++);
+  let dedupedGfwListSize = 0;
+  gfwListTrie.dump(() => dedupedGfwListSize++);
 
   const kwfilter = createKeywordFilter([...keywordSet]);
 
@@ -166,7 +166,7 @@ export async function parseGfwList() {
   });
 
   console.log(Array.from(missingTop10000Gfwed).join('\n'));
-  console.log({ totalGfwSize, gfwListSize, missingSize: missingTop10000Gfwed.size });
+  console.log({ totalGfwSize, dedupedGfwListSize, missingSize: missingTop10000Gfwed.size });
 
   return [
     whiteSet,
