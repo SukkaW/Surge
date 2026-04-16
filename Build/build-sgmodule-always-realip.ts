@@ -35,7 +35,7 @@ const HOSTNAMES = [
   //
   // By having lancache.steamcontent.com in Real IP, we can avoid Steam client accidentally mistaking
   // the Fake IP as a local LAN cache. This also helps real LAN cache to work properly.
-  'lancache.steamcontent.com',
+  'lancache.steamcontent.com'
   // 'controlplane.tailscale.com',
   // NTP
   // 'time.*.com', 'time.*.gov', 'time.*.edu.cn', 'time.*.apple.com', 'time?.*.com', 'ntp.*.com', 'ntp?.*.com', '*.time.edu.cn', '*.ntp.org.cn', '*.pool.ntp.org'
@@ -44,16 +44,7 @@ const HOSTNAMES = [
   // 'localhost.*.qq.com'
   // 'localhost.ptlogin2.qq.com
   // 'localhost.sec.qq.com',
-  // 'localhost.work.weixin.qq.com',
-  '127.*.*.*.sslip.io',
-  '127-*-*-*.sslip.io',
-  '*.127.*.*.*.sslip.io',
-  '*-127-*-*-*.sslip.io',
-  '127.*.*.*.nip.io',
-  '127-*-*-*.nip.io',
-  '*.127.*.*.*.nip.io',
-  '*-127-*-*-*.nip.io',
-  '127.atlas.skk.moe'
+  // 'localhost.work.weixin.qq.com'
 ];
 
 export const buildAlwaysRealIPModule = task(require.main === module, __filename)(async (span) => {
