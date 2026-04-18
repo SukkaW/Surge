@@ -20,5 +20,6 @@ export const buildAppleCdn = task(require.main === module, __filename)(async (sp
       ' - https://github.com/felixonmars/dnsmasq-china-list'
     )
     .bulkAddDomainSuffix(res)
+    .whitelistDomain('apps.apple.com')
     .write();
 });
