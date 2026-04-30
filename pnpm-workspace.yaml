@@ -1,0 +1,21 @@
+allowBuilds:
+  '@swc/core': true
+  better-sqlite3: true
+  bufferutil: false
+  es5-ext: false
+  unrs-resolver: true
+  utf-8-validate: false
+ignoredBuiltDependencies:
+  - bufferutil
+  - es5-ext
+  - utf-8-validate
+onlyBuiltDependencies:
+  - '@swc/core'
+  - better-sqlite3
+  - oxc-resolver
+  - unrs-resolver
+overrides:
+  eslint>chalk: npm:picocolors@^1.1.1
+  globalthis: npm:@nolyfill/globalthis@^1.0.44
+  has: npm:@nolyfill/has@^1.0.44
+  safe-buffer: npm:@nolyfill/safe-buffer@^1.0.44
