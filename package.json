@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ghostery/adblocker": "^2.14.1",
+    "@ghostery/adblocker": "^2.14.3",
     "@henrygd/queue": "^1.2.0",
     "@mitata/counters": "^0.0.8",
     "ci-info": "^4.4.0",
@@ -30,7 +30,7 @@
     "fast-escape-regexp": "^1.0.1",
     "fast-uri": "^3.1.0",
     "fdir": "^6.5.0",
-    "foxts": "^5.4.0",
+    "foxts": "^5.4.1",
     "hash-wasm": "^4.12.0",
     "json-stringify-pretty-compact": "4.0.0",
     "null-prototype-object": "^1.2.7",
@@ -38,8 +38,8 @@
     "tar-fs": "^3.1.2",
     "telegram": "^2.26.22",
     "tinyglobby": "^0.2.16",
-    "tldts": "^7.0.28",
-    "tldts-experimental": "^7.0.28",
+    "tldts": "^7.0.29",
+    "tldts-experimental": "^7.0.29",
     "undici": "^8.1.0",
     "undici-cache-store-better-sqlite3": "^1.0.1",
     "why-is-node-running": "^3.2.2",
@@ -48,7 +48,7 @@
     "yauzl-promise": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^8.9.3",
+    "@eslint-sukka/node": "^8.10.0",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "1.13.5",
     "@types/better-sqlite3": "^7.6.13",
@@ -59,15 +59,15 @@
     "@types/yauzl-promise": "^4.0.1",
     "earl": "^2.0.0",
     "eslint": "^10.2.1",
-    "eslint-config-sukka": "^8.9.3",
-    "eslint-formatter-sukka": "^8.9.3",
+    "eslint-config-sukka": "^8.10.0",
+    "eslint-formatter-sukka": "^8.10.0",
     "jest-worker": "^30.3.0",
     "mitata": "^1.0.34",
     "mocha": "^11.7.5",
-    "tinyexec": "^1.1.1",
+    "tinyexec": "^1.1.2",
     "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core",
