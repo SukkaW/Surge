@@ -1,0 +1,68 @@
+name: Toggle Dist Repo Visibility
+on:
+  schedule:
+    # Runs at 22:47 UTC every Sunday
+    # This also avoids hitting our own auto build schedule at 05:17 and 17:17 UTC
+    - cron: '47 14 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  toggle_dist_repo_visibility:
+    name: Toggle Dist Repo Visibility
+    runs-on: ubuntu-slim
+    steps:
+      - name: Make dist repo private
+        env:
+          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          gh repo unarchive SukkaLab/ruleset.skk.moe --yes
+          gh repo edit SukkaLab/ruleset.skk.moe \
+            --visibility private \
+            --accept-visibility-change-consequences
+
+      - name: Wait for visibility change to settle
+        run: sleep 180
+
+      - name: Make dist repo public again
+        env:
+          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          gh repo edit SukkaLab/ruleset.skk.moe \
+            --visibility public \
+            --accept-visibility-change-consequences
+
+      - name: Restore GitHub Pages branch deployment
+        env:
+          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+        # After we toggle the visibility, GitHub Pages WILL get taken down
+        # But just in case, we still detect and use both PUT/POST
+        run: |
+          if gh api repos/SukkaLab/ruleset.skk.moe/pages >/dev/null 2>&1; then
+            gh api \
+              --method PUT \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2026-03-10" \
+              repos/SukkaLab/ruleset.skk.moe/pages \
+              -f "build_type=legacy" \
+              -f "source[branch]=master" \
+              -f "source[path]=/"
+          else
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2026-03-10" \
+              repos/SukkaLab/ruleset.skk.moe/pages \
+              -f "build_type=legacy" \
+              -f "source[branch]=master" \
+              -f "source[path]=/"
+          fi
+
+      - name: Archive dist repo again
+        env:
+          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          gh repo archive SukkaLab/ruleset.skk.moe --yes
