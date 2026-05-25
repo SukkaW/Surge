@@ -8,7 +8,8 @@ import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 const DEPRECATED_FILES = [
   ['non_ip/global_plus', 'This file has been merged with non_ip/global'],
-  ['domainset/reject_sukka', 'This file has been merged with domainset/reject']
+  ['domainset/reject_sukka', 'This file has been merged with domainset/reject'],
+  ['non_ip/apple_cdn', 'This file has been merged with domainset/apple_cdn']
 ];
 
 const REMOVED_FILES = [
