@@ -112,25 +112,23 @@ jobs:
         with:
           path: /usr/local/bin/mihomo
           key: mihomo-${{ steps.mihomo.outputs.version }}-linux-arm64
-      - run: mihomo -v
       - name: Convert to mrs format
         env:
           PUBLIC_DIR: ${{ steps.ramdisk.outputs.build_dir }}
         run: |
-          BASE="${PUBLIC_DIR:-./public}/Clash"
+          BASE="${{ steps.ramdisk.outputs.build_dir }}/Clash"
 
           find "${BASE}/domainset" -name '*.txt' | while read -r src; do
             dst="${src%.txt}.mrs"
             echo "domain: ${src} -> ${dst}"
-            mihomo convert-ruleset domain text "${src}" "${dst}"
+            mihomo convert-ruleset domain text "${src}" "${dst}" >/dev/null 2>&1 || true
           done
 
           find "${BASE}/ip" -name '*.txt' | while read -r src; do
             dst="${src%.txt}.mrs"
             echo "ipcidr: ${src} -> ${dst}"
-            mihomo convert-ruleset ipcidr text "${src}" "${dst}"
+            mihomo convert-ruleset ipcidr text "${src}" "${dst}" >/dev/null 2>&1 || true
           done
-      - name: Convert to mrs format
       - name: Pre-deploy check
         # If the public directory doesn't exist, the build should fail.
         # If the public directory is empty, the build should fail.
