@@ -87,6 +87,50 @@ jobs:
       - run: pnpm run build
         env:
           PUBLIC_DIR: ${{ steps.ramdisk.outputs.build_dir }}
+      - name: Get mihomo latest version
+        id: mihomo
+        run: |
+          LATEST=$(curl -fsSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest \
+            | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"\(.*\)".*/\1/')
+          echo "version=${LATEST}" >> $GITHUB_OUTPUT
+      - name: Restore mihomo cache
+        id: mihomo-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: /usr/local/bin/mihomo
+          key: mihomo-${{ steps.mihomo.outputs.version }}-linux-arm64
+      - name: Download mihomo binary
+        if: steps.mihomo-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL \
+            "https://github.com/MetaCubeX/mihomo/releases/download/${{ steps.mihomo.outputs.version }}/mihomo-linux-arm64-${{ steps.mihomo.outputs.version }}.gz" \
+            | gunzip -c > /usr/local/bin/mihomo
+          chmod +x /usr/local/bin/mihomo
+      - name: Save mihomo cache
+        if: steps.mihomo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: /usr/local/bin/mihomo
+          key: mihomo-${{ steps.mihomo.outputs.version }}-linux-arm64
+      - run: mihomo -v
+      - name: Convert to mrs format
+        env:
+          PUBLIC_DIR: ${{ steps.ramdisk.outputs.build_dir }}
+        run: |
+          BASE="${PUBLIC_DIR:-./public}/Clash"
+
+          find "${BASE}/domainset" -name '*.txt' | while read -r src; do
+            dst="${src%.txt}.mrs"
+            echo "domain: ${src} -> ${dst}"
+            mihomo convert-ruleset domain text "${src}" "${dst}"
+          done
+
+          find "${BASE}/ip" -name '*.txt' | while read -r src; do
+            dst="${src%.txt}.mrs"
+            echo "ipcidr: ${src} -> ${dst}"
+            mihomo convert-ruleset ipcidr text "${src}" "${dst}"
+          done
+      - name: Convert to mrs format
       - name: Pre-deploy check
         # If the public directory doesn't exist, the build should fail.
         # If the public directory is empty, the build should fail.
