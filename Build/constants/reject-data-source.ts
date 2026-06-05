@@ -232,7 +232,7 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
     [
       'https://ublockorigin.github.io/uAssetsCDN/filters/unbreak.min.txt'
     ]
-  ]
+  ],
   //
   // Stalkerware
   // [
@@ -241,6 +241,16 @@ export const ADGUARD_FILTERS: AdGuardFilterSource[] = [
   //     'https://adguardteam.github.io/HostlistsRegistry/assets/filter_31.txt'
   //   ]
   // ]
+  //
+  // CJX Annoyance List
+  [
+    // some times 3 update in a month, some times 3 months without update
+    // let's prefer GitHub raw as primary while jsDelivr as fallback
+    'https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt',
+    [
+      'https://cdn.jsdelivr.net/gh/cjx82630/cjxlist@master/cjx-annoyance.txt'
+    ]
+  ]
 ];
 
 export const ADGUARD_FILTERS_WHITELIST: AdGuardFilterSource[] = [
