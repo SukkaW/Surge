@@ -14,6 +14,7 @@ import { processHostsWithPreload } from './parse-filter/hosts';
 import { processDomainListsWithPreload } from './parse-filter/domainlists';
 
 import process from 'node:process';
+import { Counter } from 'foxts/counter';
 
 export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<WorkerJobResult<string[]>> {
   return workerJob(rawSpan, async (childSpan) => {
@@ -29,7 +30,7 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
 
       domainGroups.forEach(appendArrayInPlaceCurried(domainArr));
 
-      const domainCountMap = new Map<string, number>();
+      const domainCountMap = new Counter();
       const domainScoreMap: Record<string, number> = Object.create(null) as Record<string, number>;
 
       let line: string;
@@ -61,12 +62,7 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
           continue;
         }
 
-        domainCountMap.set(
-          apexDomain,
-          domainCountMap.has(apexDomain)
-            ? domainCountMap.get(apexDomain)! + 1
-            : 1
-        );
+        domainCountMap.incr(apexDomain);
 
         let score = 0;
 
