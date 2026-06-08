@@ -15,8 +15,8 @@ importers:
   .:
     dependencies:
       '@ghostery/adblocker':
-        specifier: ^2.17.3
-        version: 2.17.3
+        specifier: ^2.18.0
+        version: 2.18.0
       '@henrygd/queue':
         specifier: ^1.2.0
         version: 1.2.0
@@ -78,11 +78,11 @@ importers:
         specifier: ^7.4.2
         version: 7.4.2
       undici:
-        specifier: ^8.3.0
-        version: 8.3.0
+        specifier: ^8.4.0
+        version: 8.4.0
       undici-cache-store-better-sqlite3:
         specifier: ^1.0.1
-        version: 1.0.1(undici@8.3.0)
+        version: 1.0.1(undici@8.4.0)
       why-is-node-running:
         specifier: ^3.2.2
         version: 3.2.2
@@ -115,8 +115,8 @@ importers:
         specifier: ^10.0.10
         version: 10.0.10
       '@types/node':
-        specifier: ^25.9.1
-        version: 25.9.1
+        specifier: ^25.9.2
+        version: 25.9.2
       '@types/tar-fs':
         specifier: ^2.0.4
         version: 2.0.4
@@ -239,14 +239,14 @@ packages:
     resolution: {integrity: sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@ghostery/adblocker-content@2.17.3':
-    resolution: {integrity: sha512-Fm+hj0zhCkBzn3C3Ha/99dV0IRRW5gCP83ivya2JUgqb8styEBC62EGv6pPWOBEHqSvlLr4EygcWMlSZH4zISg==}
+  '@ghostery/adblocker-content@2.18.0':
+    resolution: {integrity: sha512-hO+SHBKzx8PBqppjO6Haj0d4h+4RUQ+0tpVZjs9wUgxLKZlvvYzlQ9sAHilzIT5ixSn+8LSlrYm+ngf2ugH9XQ==}
 
-  '@ghostery/adblocker-extended-selectors@2.17.3':
-    resolution: {integrity: sha512-LlKTpvD8mscNb6NXPJ0yqLv4qvMP9ZRf33HNuQvQxY+nf4nU+ipYjhoNjvPrKAIrvHtIT4DhE+FeD4pAtp5GXQ==}
+  '@ghostery/adblocker-extended-selectors@2.18.0':
+    resolution: {integrity: sha512-oeSb/1liYplCq76rrPDmR7A69kNB6WsWjPfcsJFkrPip+WUd83Xbc+I5fnZ36Id3IOyegozZG1ucr3ywwC7OyQ==}
 
-  '@ghostery/adblocker@2.17.3':
-    resolution: {integrity: sha512-E2jcCtlkdJFm0gUH1GL+99CgAGudlOpMfpWJqKUL9lfPFbEuw//xypbyLUdTJcz31eBJaHq1ql163dIJ00/m1A==}
+  '@ghostery/adblocker@2.18.0':
+    resolution: {integrity: sha512-u0XWX+kZtBTqjfa+saNXMI2ZLzaoeT3tASjDuBqQ3WYKquLh15Z3nCBIPruT63nMRr41MZLwB8F6jZPIhsM3dA==}
 
   '@ghostery/url-parser@1.3.1':
     resolution: {integrity: sha512-QKqGi+7aDQ4RcyHyCwgEk6B9vWnsBP4Q7htaN0zPJV3ATqTKEQDtSTb9c/AN586oJUDs24YXKcwFYwNweY/YjQ==}
@@ -673,8 +673,8 @@ packages:
   '@types/mocha@10.0.10':
     resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
-  '@types/node@25.9.1':
-    resolution: {integrity: sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg==}
+  '@types/node@25.9.2':
+    resolution: {integrity: sha512-G05zqtJhcDLb8uslf5EjCxXg9G1KQxiV8OS0R26IC//Eoyitzqe8z37I7cqvnZlrlSfgocQRfSn/AHBZJJFyGw==}
 
   '@types/tar-fs@2.0.4':
     resolution: {integrity: sha512-ipPec0CjTmVDWE+QKr9cTmIIoTl7dFG/yARCM5MqK8i6CNLIG1P8x4kwDsOQY1ChZOZjH0wO9nvfgBvWl4R3kA==}
@@ -1905,8 +1905,8 @@ packages:
   undici-types@7.24.6:
     resolution: {integrity: sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg==}
 
-  undici@8.3.0:
-    resolution: {integrity: sha512-TkUDgb6tl7KOGZ+7e8E3d2FYgUQgF6z5YypqjWmixVQSQERFcVrVg0ySADm2LVLRh5ljAaHTCR5Fmz3Q34rB7Q==}
+  undici@8.4.0:
+    resolution: {integrity: sha512-tDR4LgFBeV7YBWOFMlmbhtrnFVWuZ6HKbkG+88/csQdhK2tPlW78PnLI2VRjIQtTlslvgSZ4R43WBE+4g6rhng==}
     engines: {node: '>=22.19.0'}
 
   unrs-resolver@1.11.1:
@@ -2098,16 +2098,16 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@ghostery/adblocker-content@2.17.3':
+  '@ghostery/adblocker-content@2.18.0':
     dependencies:
-      '@ghostery/adblocker-extended-selectors': 2.17.3
+      '@ghostery/adblocker-extended-selectors': 2.18.0
 
-  '@ghostery/adblocker-extended-selectors@2.17.3': {}
+  '@ghostery/adblocker-extended-selectors@2.18.0': {}
 
-  '@ghostery/adblocker@2.17.3':
+  '@ghostery/adblocker@2.18.0':
     dependencies:
-      '@ghostery/adblocker-content': 2.17.3
-      '@ghostery/adblocker-extended-selectors': 2.17.3
+      '@ghostery/adblocker-content': 2.18.0
+      '@ghostery/adblocker-extended-selectors': 2.18.0
       '@ghostery/url-parser': 1.3.1
       '@remusao/guess-url-type': 2.1.0
       '@remusao/small': 2.1.0
@@ -2144,7 +2144,7 @@ snapshots:
 
   '@jest/pattern@30.4.0':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
       jest-regex-util: 30.4.0
 
   '@jest/schemas@30.4.1':
@@ -2157,7 +2157,7 @@ snapshots:
       '@jest/schemas': 30.4.1
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -2422,11 +2422,11 @@ snapshots:
 
   '@types/better-sqlite3@7.6.13':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
 
   '@types/cli-progress@3.11.6':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
 
   '@types/esrecurse@4.3.1': {}
 
@@ -2446,18 +2446,18 @@ snapshots:
 
   '@types/mocha@10.0.10': {}
 
-  '@types/node@25.9.1':
+  '@types/node@25.9.2':
     dependencies:
       undici-types: 7.24.6
 
   '@types/tar-fs@2.0.4':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
       '@types/tar-stream': 3.1.4
 
   '@types/tar-stream@3.1.4':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -2467,7 +2467,7 @@ snapshots:
 
   '@types/yauzl-promise@4.0.1':
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
 
   '@typescript-eslint/eslint-plugin@8.59.3(@typescript-eslint/parser@8.59.3(eslint@10.4.1)(typescript@6.0.3))(eslint@10.4.1)(typescript@6.0.3)':
     dependencies:
@@ -3267,7 +3267,7 @@ snapshots:
   jest-util@30.4.1:
     dependencies:
       '@jest/types': 30.4.1
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
       chalk: 4.1.2
       ci-info: 4.4.0
       graceful-fs: 4.2.11
@@ -3275,7 +3275,7 @@ snapshots:
 
   jest-worker@30.4.1:
     dependencies:
-      '@types/node': 25.9.1
+      '@types/node': 25.9.2
       '@ungap/structured-clone': 1.3.0
       jest-util: 30.4.1
       merge-stream: 2.0.0
@@ -3731,15 +3731,15 @@ snapshots:
 
   typescript@6.0.3: {}
 
-  undici-cache-store-better-sqlite3@1.0.1(undici@8.3.0):
+  undici-cache-store-better-sqlite3@1.0.1(undici@8.4.0):
     dependencies:
       better-sqlite3: 12.8.0
       foxts: 5.4.2
-      undici: 8.3.0
+      undici: 8.4.0
 
   undici-types@7.24.6: {}
 
-  undici@8.3.0: {}
+  undici@8.4.0: {}
 
   unrs-resolver@1.11.1:
     dependencies:
