@@ -5,8 +5,8 @@ on:
       - master
   pull_request:
   schedule:
-    - cron: '17 5 * * *'  # Runs at 05:17 UTC
-    - cron: '17 17 * * *' # Runs at 17:17 UTC
+    - cron: "17 5 * * *" # Runs at 05:17 UTC
+    - cron: "17 17 * * *" # Runs at 17:17 UTC
   workflow_dispatch:
 
 concurrency:
@@ -83,6 +83,7 @@ jobs:
             ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
             ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
             ${{ runner.os }}-v3-
+      - run: pnpm config set --location=global minimumReleaseAge 0
       - run: pnpm install
       - run: pnpm run build
         env:
@@ -152,7 +153,7 @@ jobs:
     # matrix is a tricky way to define a variable directly in the action yaml
     strategy:
       matrix:
-        wranglerVersion: ['3.114.12']
+        wranglerVersion: ["3.114.12"]
     steps:
       - name: Get NPM cache directory path
         id: npm_cache_path
