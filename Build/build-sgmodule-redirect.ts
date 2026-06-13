@@ -24,7 +24,7 @@ const REDIRECT_MIRROR_HEADER: Array<[from: string, to: string, canUboUriTransfor
   ['gapis.geekzu.org/g-themes/', 'https://themes.googleusercontent.com/', true],
   ['sdn.geekzu.org/', 'https://secure.gravatar.com/', true],
   // libravatar
-  ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/', true],
+  ['seccdn.libravatar.org/gravatarproxy/', 'https://secure.gravatar.com/avatar/', true],
   // 7ED Services
   ['use.sevencdn.com/css', 'https://fonts.googleapis.com/css', true],
   ['use.sevencdn.com/ajax/libs/', 'https://cdnjs.cloudflare.com/ajax/libs/', true],
