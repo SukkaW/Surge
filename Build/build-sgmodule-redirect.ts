@@ -100,7 +100,10 @@ const REDIRECT_MIRROR_307: Array<[from: string, to: string, canUboUriTransform?:
   ['minecraft.fandom.com/', 'https://minecraft.wiki/', true],
   // Hello, FANZA!
   ['missav.com/', 'https://missav.ai/', true],
-  ['thisav.com/', 'https://thisav.me/', true]
+  ['thisav.com/', 'https://thisav.me/', true],
+  // Kemono
+  ['kemono.su/', 'https://kemono.cr', true],
+  ['img.kemono.su/', 'https://img.kemono.cr', true]
 ];
 
 const REDIRECT_FAKEWEBSITES: Array<[from: string, to: string]> = [ // all REDIRECT_FAKEWEBSITES can be transformed by uBO uritransform
