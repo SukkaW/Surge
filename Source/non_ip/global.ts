@@ -100,6 +100,7 @@ export const GLOBAL: Record<string, DNSMapping> = {
       'dns.google',
       '$pki.goog', // ocsp.pki.goog and o.pki.goog is available in Mainland China
       'fish.audio',
+      'tenor.com', // accquired by Google
       //
       'gooogle.com',
       'firebase.com',
