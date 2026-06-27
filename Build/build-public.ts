@@ -70,7 +70,7 @@ export const buildPublic = task(require.main === module, __filename)(async (span
     .traceChild('generate index.html')
     .traceAsyncFn(() => treeDir(PUBLIC_DIR).then(generateHtml));
 
-  await Promise.all([
+  return Promise.all([
     compareAndWriteFile(
       span,
       appendArrayInPlace(
@@ -104,10 +104,10 @@ export const buildPublic = task(require.main === module, __filename)(async (span
         '![GitHub repo size](https://img.shields.io/github/repo-size/sukkalab/ruleset.skk.moe?style=flat-square)'
       ],
       path.join(PUBLIC_DIR, 'README.md')
-    )
+    ),
+    writeFile(path.join(PUBLIC_DIR, '.nojekyll'), ''),
+    writeFile(path.join(PUBLIC_DIR, 'index.html'), html)
   ]);
-
-  return writeFile(path.join(PUBLIC_DIR, 'index.html'), html);
 });
 
 const prioritySorter = (a: TreeType, b: TreeType) => ((priorityOrder[a.name] || priorityOrder.default) - (priorityOrder[b.name] || priorityOrder.default)) || fastStringCompare(a.name, b.name);
