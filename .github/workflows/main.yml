@@ -174,7 +174,7 @@ jobs:
       - name: Prepare GitHub Pages deployment marker
         id: deploy_marker
         run: |
-          echo "marker_file=deploy-check-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt" >> $GITHUB_OUTPUT
+          echo "marker_content=${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
       - name: Remove build artifact
         uses: geekyeggo/delete-artifact@v6
         background: true
@@ -224,7 +224,7 @@ jobs:
           rm -rf ./*
           cp -rf ../public/* ./
           echo "ruleset-mirror.skk.moe" > CNAME
-          : > "${{ steps.deploy_marker.outputs.marker_file }}"
+          echo "${{ steps.deploy_marker.outputs.marker_content }}" > deploy-check.txt
           git add --all .
           git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
           git push --quiet --force origin HEAD:master
@@ -239,18 +239,19 @@ jobs:
         if: steps.upload_dist_to_github.outcome == 'success'
         id: wait_for_github_pages
         run: |
-          marker_file="${{ steps.deploy_marker.outputs.marker_file }}"
-          marker_url="https://ruleset-mirror.skk.moe/${marker_file}"
+          expected="${{ steps.deploy_marker.outputs.marker_content }}"
+          marker_url="https://ruleset-mirror.skk.moe/deploy-check.txt"
 
           for _ in $(seq 1 30); do
-            if curl --fail --silent --show-error --location --head "${marker_url}" >/dev/null; then
-              echo "GitHub Pages is serving ${marker_file}"
+            content=$(curl --fail --silent --show-error --location "${marker_url}" || true)
+            if [ "${content}" = "${expected}" ]; then
+              echo "GitHub Pages is serving the correct deploy marker"
               exit 0
             fi
             sleep 10
           done
 
-          echo "Timed out waiting for GitHub Pages deployment: ${marker_url}"
+          echo "Timed out waiting for GitHub Pages deployment"
           exit 1
       - name: Archive dist repo
         if: steps.wait_for_github_pages.outcome == 'success'
