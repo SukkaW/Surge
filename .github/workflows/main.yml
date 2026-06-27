@@ -175,6 +175,11 @@ jobs:
         id: deploy_marker
         run: |
           echo "marker_file=deploy-check-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt" >> $GITHUB_OUTPUT
+      - name: Remove build artifact
+        uses: geekyeggo/delete-artifact@v6
+        background: true
+        with:
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
       # Deploy to Cloudflare, GitLab, and GitHub in parallel
       - name: Deploy to Cloudflare Pages
         id: deploy_cloudflare
@@ -254,12 +259,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GIT_TOKEN }}
       - wait-all:
-  remove_artifacts:
-    needs:
-      - deploy
-    name: Remove Artifacts after Deployment
-    runs-on: ubuntu-slim
-    steps:
-      - uses: geekyeggo/delete-artifact@v6
-        with:
-          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
