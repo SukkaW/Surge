@@ -69,7 +69,7 @@ jobs:
           echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
           echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
       - name: Restore cache.db
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         id: cache-db-restore
         with:
           path: |
@@ -115,7 +115,7 @@ jobs:
           include-hidden-files: false
       - name: Cache cache.db
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: |
             .cache
