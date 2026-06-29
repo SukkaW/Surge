@@ -550,6 +550,12 @@ export const PREDEFINED_WHITELIST = [
   'hbbtv.kika.de'
 ];
 
+export const ENFORCED_BLACKLIST_FROM_WHITELIST: string[] = [
+  // https://adguardteam.github.io/AdGuardSDNSFilter/Filters/exclusions.txt exclude entire ipinfo.io, not good
+  // we want to block a.ipinfo.io, pixel.ipinfo.io, and v.ipinfo.io
+  '.ipinfo.io'
+];
+
 export const BOGUS_NXDOMAIN_DNSMASQ = [
   'https://cdn.jsdelivr.net/gh/felixonmars/dnsmasq-china-list@master/bogus-nxdomain.china.conf',
   ['https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/bogus-nxdomain.china.conf']

@@ -6,7 +6,7 @@ import { processHostsWithPreload } from './lib/parse-filter/hosts';
 import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, BOGUS_NXDOMAIN_DNSMASQ } from './constants/reject-data-source';
+import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, BOGUS_NXDOMAIN_DNSMASQ, ENFORCED_BLACKLIST_FROM_WHITELIST } from './constants/reject-data-source';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
@@ -238,6 +238,10 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     rejectIPOutput.done(),
     rejectNonIpRulesetOutput.done()
   ]);
+
+  ENFORCED_BLACKLIST_FROM_WHITELIST.forEach(domain => {
+    filterRuleWhitelistDomainSets.delete(domain);
+  });
 
   // whitelist
   span.traceChildSync('whitelist', () => {
