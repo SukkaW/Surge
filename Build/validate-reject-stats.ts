@@ -3,23 +3,19 @@ import { OUTPUT_SURGE_DIR } from './constants/dir';
 import tldts from 'tldts-experimental';
 import { loosTldOptWithPrivateDomains } from './constants/loose-tldts-opt';
 import runAgainstSourceFile from './lib/run-against-source-file';
+import { Counter } from 'foxts/counter';
 
 (async () => {
-  const rejectDomainCountMap = new Map<string, number>();
-  const rejectExtraDomainCountMap = new Map<string, number>();
+  const rejectDomainCountMap = new Counter();
+  const rejectExtraDomainCountMap = new Counter();
 
-  const callback = (map: Map<string, number>) => (domain: string) => {
+  const callback = (map: Counter<string>) => (domain: string) => {
     const apexDomain = tldts.getDomain(domain, loosTldOptWithPrivateDomains);
     if (!apexDomain) {
       return;
     }
 
-    map.set(
-      apexDomain,
-      map.has(apexDomain)
-        ? map.get(apexDomain)! + 1
-        : 1
-    );
+    map.incr(apexDomain);
   };
 
   await runAgainstSourceFile(
