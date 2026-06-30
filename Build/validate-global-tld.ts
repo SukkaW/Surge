@@ -21,8 +21,8 @@ import { MARKER_DOMAIN } from './constants/description';
     }
   }, 'ruleset');
 
-  await runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip', 'global.conf'), (domain, includeAllSubDomain) => {
-    trie.add(domain, includeAllSubDomain);
+  await runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip', 'global.conf'), (domain, includeAllSubdomain) => {
+    trie.add(domain, includeAllSubdomain);
   }, 'ruleset');
 
   ICP_TLD.forEach(tld => trie.whitelist(tld, true));

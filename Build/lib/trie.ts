@@ -285,10 +285,9 @@ abstract class Triebase<Meta = unknown> {
     const suffixStack: string[][] = [initialSuffix];
 
     let node: TrieNode<Meta> = initialNode;
-    let r;
 
     do {
-      r = dfsImpl(nodeStack, suffixStack);
+      const r = dfsImpl(nodeStack, suffixStack);
       node = r[0]!;
       const suffix = r[1];
 
@@ -588,20 +587,20 @@ export class HostnameSmolTrie<Meta = unknown> extends Triebase<Meta> {
 }
 
 function cleanUpEmptyTrailNode(node: TrieNode<unknown>) {
-  if (
+  let current = node;
+  while (
     // the current node is not an "end node", a.k.a. not the start of a domain
-    missingBit(node[0], START)
+    missingBit(current[0], START)
     // also no leading "." (no subdomain)
-    && missingBit(node[0], INCLUDE_ALL_SUBDOMAIN)
+    && missingBit(current[0], INCLUDE_ALL_SUBDOMAIN)
     // child is empty
-    && node[2].size === 0
-    // has parent: we need to detele the cureent node from the parent
-    // we also need to recursively clean up the parent node
-    && node[1]
+    && current[2].size === 0
+    // has parent: we need to delete the current node from the parent
+    // we also need to clean up the parent node
+    && current[1]
   ) {
-    node[1][2].delete(node[3]);
-    // finish of the current stack
-    return cleanUpEmptyTrailNode(node[1]);
+    current[1][2].delete(current[3]);
+    current = current[1];
   }
 }
 

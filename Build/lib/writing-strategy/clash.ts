@@ -162,7 +162,6 @@ export class ClashClassicRuleSet extends BaseWriteStrategy {
       }
       if (v === 6) {
         this.result.push(`SRC-IP-CIDR6,${value}/128`);
-        continue;
       }
     }
   }

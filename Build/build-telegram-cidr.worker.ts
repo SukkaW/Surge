@@ -9,6 +9,7 @@ import dns from 'node:dns/promises';
 import { createReadlineInterfaceFromResponse } from './lib/fetch-text-by-line';
 import { fastIpVersion } from 'foxts/fast-ip-version';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
+import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 export const buildTelegramCIDR = task(require.main === module, __filename)(async (span) => {
   const { timestamp, ipcidr, ipcidr6 } = await span.traceChildAsync('get telegram cidr', async () => {
@@ -129,7 +130,7 @@ export const buildTelegramCIDR = task(require.main === module, __filename)(async
 
     console.log('[telegram backup ip]', `Found ${backupIPs.size} backup IPs:`, backupIPs);
 
-    ipcidr.push(...Array.from(backupIPs).map(i => i + '/32'));
+    appendArrayInPlace(ipcidr, Array.from(backupIPs).map(i => i + '/32'));
 
     return { timestamp: date.getTime(), ipcidr, ipcidr6 };
   });

@@ -92,11 +92,11 @@ export async function parseGfwList() {
       gfwListTrie.add('.' + line.slice(2));
       continue;
     }
-    if (line.startsWith('|')) {
+    if (line[0] === '|') {
       gfwListTrie.add(line.slice(1));
       continue;
     }
-    if (line.startsWith('.')) {
+    if (line[0] === '.') {
       gfwListTrie.add(line);
       continue;
     }
@@ -104,7 +104,6 @@ export async function parseGfwList() {
     if (d) {
       totalGfwSize++;
       gfwListTrie.add(d);
-      continue;
     }
   }
   for await (const l of await fetchRemoteTextByLine('https://raw.githubusercontent.com/Loyalsoldier/cn-blocked-domain/release/domains.txt', true)) {

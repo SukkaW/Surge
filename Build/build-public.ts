@@ -129,7 +129,7 @@ function treeHtml(tree: TreeTypeArray, level = 0, closedFolderList: string[] = [
           </details>
         </li>
       `;
-    } else if (/* entry.type === 'file' && */ !entry.name.endsWith('.html') && !entry.name.startsWith('_')) {
+    } else if (/* entry.type === 'file' && */ !entry.name.endsWith('.html') && entry.name[0] !== '_') {
       result += html`
         <li class="file"><a class="file-link" href="${entry.path}">${entry.name}</a></li>
       `;

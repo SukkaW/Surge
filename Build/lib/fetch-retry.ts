@@ -21,6 +21,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { CACHE_DIR } from '../constants/dir';
 import { isAbortErrorLike } from 'foxts/abort-error';
+import { isErrorLikeObject } from 'foxts/extract-error-message';
 
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -58,6 +59,7 @@ const agent = new Agent({
       if (
         errorCode === 'ERR_UNESCAPED_CHARACTERS'
         || errorCode === 'UND_ERR_DESTROYED'
+        // eslint-disable-next-line sukka/prefer-foxts-error-util -- we already know this is Error type
         || err.message === 'Request path contains unescaped characters'
         || err.name === 'AbortError'
       ) {
@@ -277,7 +279,7 @@ export async function requestWithLog(url: string, opt?: Parameters<typeof undici
     if (isAbortErrorLike(err)) {
       console.log(picocolors.gray('[fetch abort]'), url);
     } else {
-      console.log(picocolors.gray('[fetch fail]'), url, { name: err instanceof Error ? err.name : undefined }, err);
+      console.log(picocolors.gray('[fetch fail]'), url, { name: isErrorLikeObject(err) ? err.name : undefined }, err);
     }
 
     throw err;

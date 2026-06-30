@@ -113,9 +113,8 @@ export class FileOutput {
   }
 
   bulkAddDomain(domains: Array<string | null>) {
-    let d: string | null;
     for (let i = 0, len = domains.length; i < len; i++) {
-      d = domains[i];
+      const d = domains[i];
       if (d !== null) {
         this.domainTrie.add(d, false, null, 0);
       }

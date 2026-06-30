@@ -57,7 +57,6 @@ export async function treeDir(rootPath: string): Promise<TreeTypeArray> {
           path: childRelativeToRoot
         };
         node.push(newNode);
-        continue;
       }
     }
   };

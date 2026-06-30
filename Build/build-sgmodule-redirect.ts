@@ -251,7 +251,8 @@ function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]:
   }
 
   // unlike Surge, which processes rules form top to bottom, uBO treats later rules with higher priority (overriden-like behavior),
-  // so when doing uBO we need to prepend. Given the the rules count is small, the performance impact is negligible.
+  // so when doing uBO we need to prepend.
+  // eslint-disable-next-line sukka/unicorn/no-array-front-mutation -- Given the the rules count is small, the performance impact is negligible.
   acc.unshift(
     '||'
     + from
@@ -280,7 +281,7 @@ function uBOUriTransformGeneratorForFakeWebsites(acc: string[], [from, to]: [fro
     // https://www.formysql.com/en/products/navicat-for-mysql
     //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     // https://www.navicat.com.cn
-    + String.raw`\/.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + String.raw`.*`
+    + String.raw`\/.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + '.*'
     + '/'
     + to.replace('https://', '').replaceAll('/', String.raw`\/`)
     + '/'

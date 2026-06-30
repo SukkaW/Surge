@@ -28,7 +28,7 @@ import { xxhash3 } from 'hash-wasm';
     if (file.startsWith('domainset' + path.sep)) {
       await runHash((await readFileIntoProcessedArray(fullpath)).map(i => (i[0] === '.' ? i.slice(1) : i)));
     } else if (file.startsWith('non_ip' + path.sep)) {
-      await runHash((await readFileIntoProcessedArray(fullpath)).map(i => i.split(',')[1]));
+      await runHash((await readFileIntoProcessedArray(fullpath)).map(i => i.split(',', 2)[1]));
     }
   }
 
