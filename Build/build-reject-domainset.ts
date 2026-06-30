@@ -263,7 +263,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     }
 
     // Deduplicate reject_extra and reject_phishing from the base reject domainset
-    rejectDomainsetOutput.domainTrie.dump(arg => {
+    rejectDomainsetOutput.domainTrie.dump((domain, includeSubdomain) => {
+      const arg = includeSubdomain ? '.' + domain : domain;
       rejectExtraDomainsetOutput.whitelistDomain(arg);
       rejectPhisingDomainsetOutput.whitelistDomain(arg);
 

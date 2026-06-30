@@ -4,7 +4,8 @@ import { parseFelixDnsmasqFromResp } from './lib/parse-dnsmasq';
 import { $$fetch } from './lib/fetch-retry';
 import runAgainstSourceFile from './lib/run-against-source-file';
 import { getTopOneMillionDomains } from './validate-gfwlist';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
+import { domainToASCII } from 'node:url';
 import tldts from 'tldts-experimental';
 import { DOMESTICS } from '../Source/non_ip/domestic';
 
@@ -15,15 +16,15 @@ export async function parseDomesticList() {
 
   const resultTrie = new HostnameSmolTrie();
 
-  topDomainTrie.dumpWithoutDot((domain) => {
+  topDomainTrie.dump((domain) => {
     const apexDomain = tldts.getDomain(domain);
 
     if (apexDomain && allChinaDomains.has(apexDomain)) {
-      resultTrie.add(apexDomain, false);
+      resultTrie.add(apexDomain);
     }
   });
 
-  const callback = (domain: string, includeAllSubdomain: boolean) => resultTrie.whitelist(domain, includeAllSubdomain);
+  const callback = (domain: string, includeAllSubdomain: boolean) => resultTrie.whitelist(includeAllSubdomain ? '.' + domain : domain);
 
   // await Promise.all([
   await runAgainstSourceFile(
@@ -40,11 +41,11 @@ export async function parseDomesticList() {
       switch (domain[0]) {
         case '+':
         case '$': {
-          resultTrie.whitelist(domain.slice(1), true);
+          resultTrie.whitelist('.' + domain.slice(1));
           break;
         }
         default: {
-          resultTrie.whitelist(domain, true);
+          resultTrie.whitelist('.' + domain);
           break;
         }
       }
@@ -58,7 +59,12 @@ export async function parseDomesticList() {
   //   }
   // }
   // ]);
-  const dump = resultTrie.dump(null, true);
+  const dump: string[] = [];
+  resultTrie.dump((rawDomain, includeSubdomain) => {
+    const domain = domainToASCII(rawDomain);
+    if (domain) dump.push(includeSubdomain ? '.' + domain : domain);
+  });
+  dump.sort((a, b) => (a.length - b.length) || (a < b ? -1 : a > b ? 1 : 0));
 
   console.log(dump.join('\n') + '\n');
 

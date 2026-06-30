@@ -1,5 +1,6 @@
 import type { Span } from '../../trace';
-import { HostnameSmolTrie } from '../trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
+import { domainToASCII } from 'node:url';
 import { not, nullthrow } from 'foxts/guard';
 import { fastIpVersion } from 'foxts/fast-ip-version';
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
@@ -20,7 +21,7 @@ export class FileOutput {
 
   protected dataSource = new Set<string>();
 
-  public domainTrie = new HostnameSmolTrie(null);
+  public domainTrie = new HostnameSmolTrie();
   public wildcardSet = new Set<string>();
 
   protected domainKeywords = new Set<string>();
@@ -116,14 +117,18 @@ export class FileOutput {
     for (let i = 0, len = domains.length; i < len; i++) {
       const d = domains[i];
       if (d !== null) {
-        this.domainTrie.add(d, false, null, 0);
+        this.domainTrie.add(d);
       }
     }
     return this;
   }
 
-  addDomainSuffix(domain: string, lineFromDot = domain[0] === '.') {
-    this.domainTrie.add(domain, true, null, lineFromDot ? 1 : 0);
+  addDomainSuffix(domain: string) {
+    if (domain[0] === '.') {
+      this.domainTrie.add(domain);
+    } else {
+      this.domainTrie.addSubdomain(domain);
+    }
     return this;
   }
 
@@ -179,9 +184,9 @@ export class FileOutput {
       }
 
       if (line[0] === '.') {
-        this.addDomainSuffix(line, true);
+        this.addDomainSuffix(line);
       } else {
-        this.domainTrie.add(line, false, null, 0);
+        this.domainTrie.add(line);
       }
     }
   }
@@ -210,10 +215,10 @@ export class FileOutput {
 
       switch (type) {
         case 'DOMAIN':
-          this.domainTrie.add(value, false, null, 0);
+          this.domainTrie.add(value);
           break;
         case 'DOMAIN-SUFFIX':
-          this.addDomainSuffix(value, false);
+          this.domainTrie.addSubdomain(value);
           break;
         case 'DOMAIN-KEYWORD':
           this.addDomainKeyword(value);
@@ -416,9 +421,16 @@ export class FileOutput {
 
     const strategiesLen = this.strategies.length;
 
-    this.domainTrie.dumpWithoutDot((domain, includeAllSubdomain) => {
+    const domainEntries: Array<[domain: string, subdomain: boolean]> = [];
+    this.domainTrie.dump((domain, includeSubdomain) => {
+      const d = domainToASCII(domain);
+      if (d) domainEntries.push([d, includeSubdomain]);
+    });
+    domainEntries.sort((a, b) => (a[0].length - b[0].length) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    for (let j = 0, entriesLen = domainEntries.length; j < entriesLen; j++) {
+      const [domain, includeAllSubdomain] = domainEntries[j];
       if (kwfilter(domain)) {
-        return;
+        continue;
       }
 
       for (let i = 0; i < strategiesLen; i++) {
@@ -429,7 +441,7 @@ export class FileOutput {
           strategy.writeDomain(domain);
         }
       }
-    }, true);
+    }
 
     // Now, we whitelisted out DOMAIN-KEYWORD
     const whiteKwfilter = createKeywordFilter(Array.from(this.whitelistKeywords));

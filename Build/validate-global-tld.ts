@@ -1,5 +1,6 @@
 import path from 'node:path';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
+import { domainToASCII } from 'node:url';
 import { OUTPUT_SURGE_DIR } from './constants/dir';
 import { ICP_TLD } from './constants/domains';
 import tldts from 'tldts-experimental';
@@ -22,11 +23,20 @@ import { MARKER_DOMAIN } from './constants/description';
   }, 'ruleset');
 
   await runAgainstSourceFile(path.join(OUTPUT_SURGE_DIR, 'non_ip', 'global.conf'), (domain, includeAllSubdomain) => {
-    trie.add(domain, includeAllSubdomain);
+    if (includeAllSubdomain) {
+      trie.addSubdomain(domain);
+    } else {
+      trie.add(domain);
+    }
   }, 'ruleset');
 
-  ICP_TLD.forEach(tld => trie.whitelist(tld, true));
-  extraWhiteTLDs.forEach(tld => trie.whitelist(tld, true));
+  ICP_TLD.forEach(tld => trie.whitelist('.' + tld));
+  extraWhiteTLDs.forEach(tld => trie.whitelist('.' + tld));
 
-  console.log(trie.dump().join('\n'));
+  const dump: string[] = [];
+  trie.dump((rawDomain, includeSubdomain) => {
+    const domain = domainToASCII(rawDomain);
+    if (domain) dump.push(includeSubdomain ? '.' + domain : domain);
+  });
+  console.log(dump.join('\n'));
 })();

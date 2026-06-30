@@ -6,7 +6,7 @@ import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput } from './lib/rules/domainset';
 import { CRASHLYTICS_WHITELIST } from './constants/reject-data-source';
-import { HostnameTrie } from './lib/trie';
+import { HostnameTrie } from 'hntrie';
 import { $$fetch } from './lib/fetch-retry';
 import { fastUri } from 'fast-uri';
 

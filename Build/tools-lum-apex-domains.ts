@@ -1,6 +1,7 @@
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import tldts from 'tldts-experimental';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
+import { domainToASCII } from 'node:url';
 import path from 'node:path';
 import { SOURCE_DIR } from './constants/dir';
 import runAgainstSourceFile from './lib/run-against-source-file';
@@ -32,11 +33,16 @@ import runAgainstSourceFile from './lib/run-against-source-file';
   }
 
   await runAgainstSourceFile(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), (domain, includeAllSubDomain) => {
-    trie.whitelist(domain, includeAllSubDomain);
+    trie.whitelist(includeAllSubDomain ? '.' + domain : domain);
   }, 'domainset');
   await runAgainstSourceFile(path.join(SOURCE_DIR, 'non_ip', 'reject.conf'), (domain, includeAllSubDomain) => {
-    trie.whitelist(domain, includeAllSubDomain);
+    trie.whitelist(includeAllSubDomain ? '.' + domain : domain);
   }, 'ruleset');
 
-  console.log(trie.dump().map(i => '.' + i).join('\n'));
+  const dump: string[] = [];
+  trie.dump((rawDomain) => {
+    const domain = domainToASCII(rawDomain);
+    if (domain) dump.push(domain);
+  });
+  console.log(dump.map(i => '.' + i).join('\n'));
 })();

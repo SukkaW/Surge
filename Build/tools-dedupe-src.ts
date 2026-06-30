@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises';
 import { SOURCE_DIR } from './constants/dir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
 import { task } from './trace';
 
 const ENFORCED_WHITELIST = [
@@ -48,6 +48,15 @@ task(require.main === module, __filename)(async (span) => {
   await Promise.all(files.map(file => span.traceChildAsync('dedupe ' + file, () => dedupeFile(file, whiteTrie))));
 });
 
+function trieHasEntry(trie: HostnameSmolTrie, line: string): boolean {
+  if (line[0] === '.') return trie.hasSubdomain(line.slice(1));
+  return trie.has(line) || trie.hasSubdomain(line);
+}
+
+function trieContains(trie: HostnameSmolTrie, line: string): boolean {
+  return trie.match(line);
+}
+
 async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
   const result: string[] = [];
 
@@ -55,8 +64,7 @@ async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
 
   let line: string | null = '';
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method -- .call
-  let trieHasOrContains = HostnameSmolTrie.prototype.has;
+  let trieCheck = trieHasEntry;
 
   for await (const l of readFileByLine(file)) {
     line = processLine(l);
@@ -66,19 +74,18 @@ async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
         return;
       }
       if (l.startsWith('# $ dedupe_use_trie_contains')) {
-        // eslint-disable-next-line @typescript-eslint/unbound-method -- .call
-        trieHasOrContains = HostnameSmolTrie.prototype.contains;
+        trieCheck = trieContains;
       }
 
       result.push(l); // keep all comments and blank lines
       continue;
     }
 
-    if (trieHasOrContains.call(trie, line)) {
+    if (trieCheck(trie, line)) {
       continue; // drop duplicate
     }
 
-    if (whitelist.has(line)) {
+    if (trieHasEntry(whitelist, line)) {
       continue; // drop whitelisted items
     }
 

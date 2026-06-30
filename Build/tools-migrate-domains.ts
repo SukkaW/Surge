@@ -2,7 +2,8 @@
 import path from 'node:path';
 import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 import { processHosts } from './lib/parse-filter/hosts';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
+import { domainToASCII } from 'node:url';
 import { dummySpan } from './trace';
 import { SOURCE_DIR } from './constants/dir';
 import { PREDEFINED_WHITELIST } from './constants/reject-data-source';
@@ -15,7 +16,7 @@ import runAgainstSourceFile from './lib/run-against-source-file';
   // const { whiteDomainSuffixes, whiteDomains } = await writeFiltersToTrie(trie, 'https://cdn.jsdelivr.net/gh/Perflyst/PiHoleBlocklist@master/SmartTV-AGH.txt', true);
 
   const callback = (domain: string, includeAllSubDomain: boolean) => {
-    trie.whitelist(domain, includeAllSubDomain);
+    trie.whitelist(includeAllSubDomain ? '.' + domain : domain);
   };
 
   await runAgainstSourceFile(path.join(SOURCE_DIR, 'domainset', 'reject.conf'), callback, 'domainset');
@@ -26,7 +27,12 @@ import runAgainstSourceFile from './lib/run-against-source-file';
   }
 
   console.log('---------------------------');
-  console.log(trie.dump().join('\n'));
+  const dump: string[] = [];
+  trie.dump((rawDomain, includeSubdomain) => {
+    const domain = domainToASCII(rawDomain);
+    if (domain) dump.push(includeSubdomain ? '.' + domain : domain);
+  });
+  console.log(dump.join('\n'));
   console.log('---------------------------');
   // console.log('whitelist domain suffixes:');
   // console.log(whiteDomainSuffixes.join('\n'));
@@ -46,16 +52,16 @@ async function writeHostsToTrie(trie: HostnameSmolTrie, hostsUrl: string, includ
 async function writeFiltersToTrie(trie: HostnameSmolTrie, filterUrl: string, includeThirdParty = false) {
   const { whiteDomainSuffixes, whiteDomains, blackDomainSuffixes, blackDomains } = await processFilterRulesWithPreload(filterUrl, [], includeThirdParty)(dummySpan);
   for (let i = 0, len = blackDomainSuffixes.length; i < len; i++) {
-    trie.add(blackDomainSuffixes[i], true);
+    trie.addSubdomain(blackDomainSuffixes[i]);
   }
   for (let i = 0, len = blackDomains.length; i < len; i++) {
-    trie.add(blackDomains[i], false);
+    trie.add(blackDomains[i]);
   }
   for (let i = 0, len = whiteDomainSuffixes.length; i < len; i++) {
-    trie.whitelist(whiteDomainSuffixes[i], true);
+    trie.whitelist('.' + whiteDomainSuffixes[i]);
   }
   for (let i = 0, len = whiteDomains.length; i < len; i++) {
-    trie.whitelist(whiteDomains[i], false);
+    trie.whitelist(whiteDomains[i]);
   }
 
   return { whiteDomainSuffixes, whiteDomains };

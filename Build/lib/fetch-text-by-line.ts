@@ -30,6 +30,7 @@ export const createReadlineInterfaceFromResponse: ((resp: UndiciResponseData | U
   }
 
   const resultStream = webStream
+    // @ts-expect-error -- mismatched Node.js and web types
     .pipeThrough(new TextDecoderStream())
     .pipeThrough(new TextLineStream({ skipEmptyLines: processLine }));
 

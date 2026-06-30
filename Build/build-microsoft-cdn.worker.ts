@@ -2,7 +2,7 @@ import { task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { RULES, PROBE_DOMAINS, DOMAINS, DOMAIN_SUFFIXES, BLACKLIST } from './constants/microsoft-cdn';
-import { HostnameSmolTrie } from './lib/trie';
+import { HostnameSmolTrie } from 'hntrie/smol';
 import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { extractDomainsFromFelixDnsmasq } from './lib/parse-dnsmasq';
