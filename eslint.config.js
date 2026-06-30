@@ -12,6 +12,11 @@ module.exports = require('eslint-config-sukka').sukka({
   ts: true,
   yaml: false
 }, {
+  rules: {
+    'sukka/unicorn/filename-case': 'off',
+    'sukka/prefer-foxts-noop': 'off'
+  }
+}, {
   files: ['./Mock/**/*'],
   rules: {
     'sukka/unicorn/filename-case': 'off'

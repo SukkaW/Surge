@@ -276,7 +276,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
                 if (typeof acc.hosts[domain] === 'string') {
                   acc.hosts[domain] = [acc.hosts[domain]];
                 }
-                acc.hosts[domain].push(...dest);
+                appendArrayInPlace(acc.hosts[domain], dest);
               } else if (dest.length === 1) {
                 acc.hosts[domain] = dest[0];
               } else {
