@@ -96,6 +96,7 @@ const APPLE_TV: StreamService = {
     'DOMAIN,np-edge.itunes.apple.com',
     'DOMAIN,uts-api.itunes.apple.com',
     'DOMAIN,hls-amt.itunes.apple.com',
+    'DOMAIN,hls-svod.itunes.apple.com',
     'DOMAIN,hls.itunes.apple.com',
 
     'USER-AGENT,AppleTV*',
