@@ -59,7 +59,7 @@ const agent = new Agent({
       if (
         errorCode === 'ERR_UNESCAPED_CHARACTERS'
         || errorCode === 'UND_ERR_DESTROYED'
-        // eslint-disable-next-line sukka/prefer-foxts-error-util -- we already know this is Error type
+
         || err.message === 'Request path contains unescaped characters'
         || err.name === 'AbortError'
       ) {

@@ -64,7 +64,7 @@ export async function parseDomesticList() {
     const domain = domainToASCII(rawDomain);
     if (domain) dump.push(includeSubdomain ? '.' + domain : domain);
   });
-  dump.sort((a, b) => (a.length - b.length) || (a < b ? -1 : a > b ? 1 : 0));
+  dump.sort((a, b) => (a.length - b.length) || (a < b ? -1 : (a > b ? 1 : 0)));
 
   console.log(dump.join('\n') + '\n');
 

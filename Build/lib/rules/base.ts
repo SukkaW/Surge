@@ -426,7 +426,7 @@ export class FileOutput {
       const d = domainToASCII(domain);
       if (d) domainEntries.push([d, includeSubdomain]);
     });
-    domainEntries.sort((a, b) => (a[0].length - b[0].length) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    domainEntries.sort((a, b) => (a[0].length - b[0].length) || (a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0)));
     for (let j = 0, entriesLen = domainEntries.length; j < entriesLen; j++) {
       const [domain, includeAllSubdomain] = domainEntries[j];
       if (kwfilter(domain)) {
