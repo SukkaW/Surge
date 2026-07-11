@@ -202,7 +202,7 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
       [
         '#!name=[Sukka] URL Redirect (Minimum)',
         `#!desc=Last Updated: ${new Date().toISOString()} Size: ${minimumDomains.size}`,
-        '# This module only contains rules that doesn\'t work with/hasn\'t migrated to uBlock Origin\'s "uritransform" filter syntax',
+        '# This module only contains rules that doesn\'t work with/hasn\'t migrated to AdGuard/uBlock Origin\'s "uritransform" filter syntax',
         '# uBO/AdGuard filter can be found at https://ruleset.skk.moe/Internal/sukka_ubo_url_redirect_filters.txt',
         '# This reduces mitm-hostnames and improves performance, with the tradeoff of uBO/AdGuard filter only cover mostly in browser.',
         '',
@@ -228,7 +228,7 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
     compareAndWriteFile(
       span,
       [
-        '! Title: [sukka] Sukka URL Redirect',
+        '! Title: [sukka] Sukka URL Redirect (SukkaW/Surge @ GitHub)',
         `! Last modified: ${new Date().toUTCString()}`,
         '! Expires: 4 hours',
         '! Description: Redirect requests via uritransform network filter syntax.',
@@ -245,6 +245,11 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
   ]);
 });
 
+const modifiers = [
+  '$urltransform', // AdGuard
+  '$uritransform' // uBlock Origin
+];
+
 function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]: [from: string, to: string, canUboUriTransform?: boolean]): string[] {
   if (!canUboUriTransform) {
     return acc;
@@ -254,13 +259,13 @@ function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]:
   // so when doing uBO we need to prepend.
   // eslint-disable-next-line sukka/unicorn/no-array-front-mutation -- Given the the rules count is small, the performance impact is negligible.
   acc.unshift(
-    '||'
-    + from
-    + '$all,uritransform=/'
-    + escapeRegexp(from).replaceAll('/', String.raw`\/`)
-    + '/'
-    + to.replace('https://', '').replaceAll('/', String.raw`\/`)
-    + '/'
+    ...modifiers.map((modifier) => '||'
+      + from
+      + '$all,' + modifier + '=/'
+      + escapeRegexp(from).replaceAll('/', String.raw`\/`)
+      + '/'
+      + to.replace('https://', '').replaceAll('/', String.raw`\/`)
+      + '/')
   );
 
   return acc;
@@ -268,23 +273,24 @@ function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]:
 
 function uBOUriTransformGeneratorForFakeWebsites(acc: string[], [from, to]: [from: string, to: string]): string[] {
   // unlike Surge, which processes rules form top to bottom, uBO treats later rules with higher priority (overriden-like behavior),
-  // so when doing uBO we need to prepend. Given the the rules count is small, the performance impact is negligible.
+  // so when doing uBO we need to prepend.
+  // eslint-disable-next-line sukka/unicorn/no-array-front-mutation -- Given the the rules count is small, the performance impact is negligible.
   acc.unshift(
-    '||'
-    + from
-    + '$all,uritransform=/'
-    // \/.*formysql\.com\/.*
-    //
-    // By adding \/.* at the beginning and the end, we can avoid replace the protocol (https:// or http://),
-    // which will bork uBlock Origin's filter matching (requires final URL to be a valid URL):
-    //
-    // https://www.formysql.com/en/products/navicat-for-mysql
-    //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    // https://www.navicat.com.cn
-    + String.raw`\/.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + '.*'
-    + '/'
-    + to.replace('https://', '').replaceAll('/', String.raw`\/`)
-    + '/'
+    ...modifiers.map((modifier) => '||'
+      + from
+      + '$all,' + modifier + '=/'
+      // \/.*formysql\.com\/.*
+      //
+      // By adding \/.* at the beginning and the end, we can avoid replace the protocol (https:// or http://),
+      // which will bork uBlock Origin's filter matching (requires final URL to be a valid URL):
+      //
+      // https://www.formysql.com/en/products/navicat-for-mysql
+      //        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      // https://www.navicat.com.cn
+      + String.raw`\/.*` + escapeRegexp(from).replaceAll('/', String.raw`\/`) + '.*'
+      + '/'
+      + to.replace('https://', '').replaceAll('/', String.raw`\/`)
+      + '/')
   );
 
   return acc;
