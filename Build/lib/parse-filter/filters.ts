@@ -166,7 +166,7 @@ const kwfilter = createKeywordFilter([
   ']',
   ')',
   ',', // $3p,doc
-  '#',
+  '#', // ##+js
   '%',
   '&',
   // '=', // maybe we want to support some modifier?
@@ -301,14 +301,14 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
     if (
       // filter.isCosmeticFilter() // always false
       // filter.isNetworkFilter() // always true
-      filter.isElemHide()
-      || filter.isGenericHide()
-      || filter.isSpecificHide()
+      // filter.isElemHide() // just isGenericHide() || isSpecificHide()
+      filter.hasDomains()
+      || (!filter.fromHttp() && !filter.fromHttps())
       || filter.isRedirect()
       || filter.isRedirectRule()
-      || filter.hasDomains()
       || filter.isCSP() // must not be csp rule
-      || (!filter.fromHttp() && !filter.fromHttps())
+      || filter.isGenericHide()
+      || filter.isSpecificHide()
     ) {
       // not supported type
       result[1] = ParseType.Null;
@@ -400,7 +400,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
   // We now need to "salvage" the line as much as possible
 
   let white = false;
-  let includeAllSubDomain = false;
+  let includeAllSubdomain = false;
 
   if (
     line.charCodeAt(0) === 64 // 64 `@`
@@ -408,7 +408,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
   ) {
     sliceStart += 2;
     white = true;
-    includeAllSubDomain = true;
+    includeAllSubdomain = true;
   }
 
   /**
@@ -423,11 +423,11 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
     case 124: /** | */
       // line.startsWith('@@|') || line.startsWith('|')
       sliceStart += 1;
-      includeAllSubDomain = false;
+      includeAllSubdomain = false;
 
       if (line[sliceStart] === '|') { // line.startsWith('@@||') || line.startsWith('||')
         sliceStart += 1;
-        includeAllSubDomain = true;
+        includeAllSubdomain = true;
       }
 
       break;
@@ -439,7 +439,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
        * `.wap.x4399.com^`
        */
       sliceStart += 1;
-      includeAllSubDomain = true;
+      includeAllSubdomain = true;
       break;
     }
 
@@ -456,7 +456,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
        * `://say.ac^`
        */
       if (line[sliceStart + 1] === '/' && line[sliceStart + 2] === '/') {
-        includeAllSubDomain = false;
+        includeAllSubdomain = false;
         sliceStart += 3;
       }
       break;
@@ -465,10 +465,10 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
     case 104: { /** h */
       /** |http://x.o2.pl^ */
       if (line.startsWith('http://', sliceStart)) {
-        includeAllSubDomain = false;
+        includeAllSubdomain = false;
         sliceStart += 7;
       } else if (line.startsWith('https://', sliceStart)) {
-        includeAllSubDomain = false;
+        includeAllSubdomain = false;
         sliceStart += 8;
       }
       break;
@@ -506,7 +506,7 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
     white = true;
   }
   if (line.includes('all', indexOfDollar + 1)) {
-    includeAllSubDomain = true;
+    includeAllSubdomain = true;
   }
 
   /**
@@ -540,13 +540,13 @@ export function parse(line: string, result: [string, ParseType], includeThirdPar
     return result;
   }
 
-  return onHostname(sliced, white, includeAllSubDomain, line, result);
+  return onHostname(sliced, white, includeAllSubdomain, line, result);
 }
 
 function onHostname(
   input: string,
   white: boolean,
-  isIncludeAllSubDomain: boolean,
+  isIncludeAllSubdomain: boolean,
   rawLine: string,
   result: [string, ParseType]
 ) {
@@ -597,7 +597,7 @@ function onHostname(
 
     if (white) {
       result[0] = hostname;
-      result[1] = isIncludeAllSubDomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
+      result[1] = isIncludeAllSubdomain ? ParseType.WhiteIncludeSubdomain : ParseType.WhiteAbsolute;
       return result;
     }
 
@@ -617,7 +617,7 @@ function onHostname(
     }
 
     result[0] = hostname;
-    result[1] = isIncludeAllSubDomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
+    result[1] = isIncludeAllSubdomain ? ParseType.BlackIncludeSubdomain : ParseType.BlackAbsolute;
     return result;
   }
 
