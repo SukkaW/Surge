@@ -31,7 +31,7 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
       domainGroups.forEach(appendArrayInPlaceCurried(domainArr));
 
       const domainCountMap = new Counter();
-      const domainScoreMap: Record<string, number> = Object.create(null) as Record<string, number>;
+      const domainScoreMap = new Counter();
 
       let line: string;
       let tld: string | null;
@@ -62,13 +62,17 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
           continue;
         }
 
+        subdomain = parsed.subdomain;
+
+        if (subdomain === 'www') {
+          domainArr[i] = '.' + apexDomain;
+        }
+
         domainCountMap.incr(apexDomain);
 
-        let score = 0;
+        if (!domainScoreMap.has(apexDomain)) {
+          let score = 0;
 
-        if (apexDomain in domainScoreMap) {
-          score = domainScoreMap[apexDomain];
-        } else {
           if (BLACK_TLD.has(tld)) {
             score += 3;
           } else if (tld.length > 4) {
@@ -79,19 +83,17 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
           if (apexDomain.length >= 18) {
             score += 0.5;
           }
-        }
 
-        subdomain = parsed.subdomain;
+          domainScoreMap.incr(apexDomain, score);
+        }
 
         if (subdomain) {
-          score += calcDomainAbuseScore(subdomain, line);
+          domainScoreMap.incr(subdomain, calcDomainAbuseScore(subdomain, line));
         }
-
-        domainScoreMap[apexDomain] = score;
       }
 
       domainCountMap.forEach((count, apexDomain) => {
-        const score = domainScoreMap[apexDomain];
+        const score = domainScoreMap.get(apexDomain);
         if (
           (score >= 24)
           || (score >= 16 && count >= 7)
@@ -106,9 +108,8 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
 
       if (isDebug) {
         console.log({
-          v: 1,
-          score: domainScoreMap['com-ticketry.world'],
-          count: domainCountMap.get('com-ticketry.world'),
+          score: domainScoreMap.get('4556.de'),
+          count: domainCountMap.get('4556.de'),
           domainArrLen: domainArr.length
         });
       }
