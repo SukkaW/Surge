@@ -12,121 +12,129 @@ import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 export const buildTelegramCIDR = task(require.main === module, __filename)(async (span) => {
-  const { timestamp, ipcidr, ipcidr6 } = await span.traceChildAsync('get telegram cidr', async () => {
-    const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
-    const lastModified = resp.headers.get('last-modified');
-    const date = lastModified ? new Date(lastModified) : new Date();
-
+  const { timestamp, ipcidr, ipcidr6 } = await span.traceChildAsync('get telegram cidr', async (childSpan) => {
     const ipcidr: string[] = [
       // Unused secret Telegram backup CIDR, announced by AS62041
       '95.161.64.0/20'
     ];
     const ipcidr6: string[] = [];
 
-    for await (const cidr of createReadlineInterfaceFromResponse(resp, true)) {
-      const v = fastIpVersion(cidr);
-      if (v === 4) {
-        ipcidr.push(cidr);
-      } else if (v === 6) {
-        ipcidr6.push(cidr);
+    const date = await childSpan.traceChildAsync('fetch from official cidr list', async () => {
+      const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
+      const lastModified = resp.headers.get('last-modified');
+
+      for await (const cidr of createReadlineInterfaceFromResponse(resp, true)) {
+        const v = fastIpVersion(cidr);
+        if (v === 4) {
+          ipcidr.push(cidr);
+        } else if (v === 6) {
+          ipcidr6.push(cidr);
+        }
       }
-    }
 
-    const backupIPs = new Set<string>();
-
-    // https://github.com/tdlib/td/blob/master/td/telegram/ConfigManager.cpp
-
-    const resolvers = ['8.8.8.8', '1.0.0.1'].map((ip) => {
-      const resolver = new dns.Resolver();
-      resolver.setServers([ip]);
-      return Object.assign(resolver, { server: ip });
+      return lastModified ? new Date(lastModified) : new Date();
     });
 
-    // Backup IP Source 1 (DNS)
-    await Promise.all(resolvers.flatMap((resolver) => [
-      'apv3.stel.com', // prod
-      'tapv3.stel.com' // test
-    ].map(async (domain) => {
-      try {
+    // https://github.com/tdlib/td/blob/master/td/telegram/ConfigManager.cpp
+    const backupIPs = await childSpan.traceChildAsync('fetch backup ip', async (innerSpan) => {
+      const backupIPs = new Set<string>();
+      const resolvers = ['8.8.8.8', '1.0.0.1'].map((ip) => {
+        const resolver = new dns.Resolver();
+        resolver.setServers([ip]);
+        return Object.assign(resolver, { server: ip });
+      });
+
+      await innerSpan.traceChildAsync('backup source 1: DNS TXT', () => Promise.all(resolvers.flatMap((resolver) => [
+        'apv3.stel.com', // prod
+        'tapv3.stel.com' // test
+      ].map(async (domain) => {
+        try {
         // tapv3.stel.com was for testing server
-        const resp = await resolver.resolveTxt(domain);
-        const strings = resp.map(r => fastStringArrayJoin(r, '')); // flatten
-        if (strings.length !== 2) {
-          throw new TypeError(`Unexpected TXT record count: ${strings.length}`);
-        }
+          const resp = await resolver.resolveTxt(domain);
+          const strings = resp.map(r => fastStringArrayJoin(r, '')); // flatten
+          if (strings.length !== 2) {
+            throw new TypeError(`Unexpected TXT record count: ${strings.length}`);
+          }
 
-        const str = strings[0].length > strings[1].length
-          ? strings[0] + strings[1]
-          : strings[1] + strings[0];
+          const str = strings[0].length > strings[1].length
+            ? strings[0] + strings[1]
+            : strings[1] + strings[0];
 
-        const ips = getTelegramBackupIPFromBase64(str);
-        ips.forEach(i => backupIPs.add(i.ip));
-
-        console.log('[telegram backup ip]', picocolors.green('DNS TXT'), { domain, ips, server: resolver.server });
-      } catch (e) {
-        console.error('[telegram backup ip]', picocolors.red('DNS TXT error'), { domain }, e);
-      }
-    })));
-
-    // Backup IP Source 2: Firebase Realtime Database (test server not supported)
-    try {
-      const text = await (await $$fetch('https://reserve-5a846.firebaseio.com/ipconfigv3.json')).json();
-      if (typeof text === 'string' && text.length === 344) {
-        const ips = getTelegramBackupIPFromBase64(text);
-        ips.forEach(i => backupIPs.add(i.ip));
-
-        console.log('[telegram backup ip]', picocolors.green('Firebase Realtime DB'), { ips });
-      }
-    } catch (e) {
-      console.error('[telegram backup ip]', picocolors.red('Firebase Realtime DB error'), e);
-      // ignore all errors
-    }
-
-    // Backup IP Source 3: Firebase Value Store (test server not supported)
-    try {
-      const json = await (await $$fetch('https://firestore.googleapis.com/v1/projects/reserve-5a846/databases/(default)/documents/ipconfig/v3', {
-        headers: {
-          Accept: '*/*',
-          Origin: undefined // Without this line, Google API will return "Bad request: Origin doesn't match Host for XD3.". Probably have something to do with sqlite cache store
-        }
-      })).json();
-
-      if (
-        json && typeof json === 'object'
-        && 'fields' in json && typeof json.fields === 'object' && json.fields
-        && 'data' in json.fields && typeof json.fields.data === 'object' && json.fields.data
-        && 'stringValue' in json.fields.data && typeof json.fields.data.stringValue === 'string' && json.fields.data.stringValue.length === 344
-      ) {
-        const ips = getTelegramBackupIPFromBase64(json.fields.data.stringValue);
-        ips.forEach(i => backupIPs.add(i.ip));
-
-        console.log('[telegram backup ip]', picocolors.green('Firebase Value Store'), { ips });
-      } else {
-        console.error('[telegram backup ip]', picocolors.red('Firebase Value Store data format invalid'), { json });
-      }
-    } catch (e) {
-      console.error('[telegram backup ip]', picocolors.red('Firebase Value Store error'), e);
-    }
-
-    // Backup IP Source 4: Google App Engine
-    await Promise.all([
-      'https://dns-telegram.appspot.com',
-      'https://dns-telegram.appspot.com/test'
-    ].map(async (url) => {
-      try {
-        const text = await (await $$fetch(url)).text();
-        if (text.length === 344) {
-          const ips = getTelegramBackupIPFromBase64(text);
+          const ips = getTelegramBackupIPFromBase64(str);
           ips.forEach(i => backupIPs.add(i.ip));
 
-          console.log('[telegram backup ip]', picocolors.green('Google App Engine'), { url, ips });
+          console.log('[telegram backup ip]', picocolors.green('DNS TXT'), { domain, ips, server: resolver.server });
+        } catch (e) {
+          console.error('[telegram backup ip]', picocolors.red('DNS TXT error'), { domain }, e);
         }
-      } catch (e) {
-        console.error('[telegram backup ip]', picocolors.red('Google App Engine error'), { url }, e);
-      }
-    }));
+      }))));
 
-    // tcdnb.azureedge.net no longer works
+      // Backup IP Source 2: Firebase Realtime Database (test server not supported)
+      await innerSpan.traceChildAsync('backup source 2: Firebase Realtime DB', async () => {
+        try {
+          const text = await (await $$fetch('https://reserve-5a846.firebaseio.com/ipconfigv3.json')).json();
+          if (typeof text === 'string' && text.length === 344) {
+            const ips = getTelegramBackupIPFromBase64(text);
+            ips.forEach(i => backupIPs.add(i.ip));
+
+            console.log('[telegram backup ip]', picocolors.green('Firebase Realtime DB'), { ips });
+          }
+        } catch (e) {
+          console.error('[telegram backup ip]', picocolors.red('Firebase Realtime DB error'), e);
+          // ignore all errors
+        }
+      });
+
+      // Backup IP Source 3: Firebase Value Store (test server not supported)
+      await innerSpan.traceChildAsync('backup source 3: Firebase Value Store', async () => {
+        try {
+          const json = await (await $$fetch('https://firestore.googleapis.com/v1/projects/reserve-5a846/databases/(default)/documents/ipconfig/v3', {
+            headers: {
+              Accept: '*/*',
+              Origin: undefined // Without this line, Google API will return "Bad request: Origin doesn't match Host for XD3.". Probably have something to do with sqlite cache store
+            }
+          })).json();
+
+          if (
+            json && typeof json === 'object'
+            && 'fields' in json && typeof json.fields === 'object' && json.fields
+            && 'data' in json.fields && typeof json.fields.data === 'object' && json.fields.data
+            && 'stringValue' in json.fields.data && typeof json.fields.data.stringValue === 'string' && json.fields.data.stringValue.length === 344
+          ) {
+            const ips = getTelegramBackupIPFromBase64(json.fields.data.stringValue);
+            ips.forEach(i => backupIPs.add(i.ip));
+
+            console.log('[telegram backup ip]', picocolors.green('Firebase Value Store'), { ips });
+          } else {
+            console.error('[telegram backup ip]', picocolors.red('Firebase Value Store data format invalid'), { json });
+          }
+        } catch (e) {
+          console.error('[telegram backup ip]', picocolors.red('Firebase Value Store error'), e);
+        }
+      });
+
+      // Backup IP Source 4: Google App Engine
+      await innerSpan.traceChildAsync('backup source 4: Google App Engine', () => Promise.all([
+        'https://dns-telegram.appspot.com',
+        'https://dns-telegram.appspot.com/test'
+      ].map(async (url) => {
+        try {
+          const text = await (await $$fetch(url)).text();
+          if (text.length === 344) {
+            const ips = getTelegramBackupIPFromBase64(text);
+            ips.forEach(i => backupIPs.add(i.ip));
+
+            console.log('[telegram backup ip]', picocolors.green('Google App Engine'), { url, ips });
+          }
+        } catch (e) {
+          console.error('[telegram backup ip]', picocolors.red('Google App Engine error'), { url }, e);
+        }
+      })));
+
+      // tcdnb.azureedge.net no longer works
+
+      return backupIPs;
+    });
 
     console.log('[telegram backup ip]', `Found ${backupIPs.size} backup IPs:`, backupIPs);
 
