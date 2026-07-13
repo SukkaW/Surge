@@ -27,6 +27,31 @@ if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
 
+/**
+ * Origins like filters.adtidy.org (Qrator CDN) send Last-Modified/ETag with no
+ * Cache-Control/Expires, plus a large edge-dependent Age header and the ORIGINAL
+ * Date header of the stored edge copy (hours in the past). undici refuses to
+ * store a response whose Age exceeds its freshness lifetime (which, absent
+ * explicit caching headers, is the tiny last-modified heuristic — 10% of time
+ * since last modified), and separately drops any response already stale relative
+ * to its Date header — so those assets never enter the cache and can never be
+ * revalidated with HTTP 304. Dropping Age and Date makes undici treat the
+ * response as cached-at-receipt; the content is at most Age + freshness stale
+ * once, and the etag revalidation this enables is what we actually care about.
+ */
+const stripCdnStalenessHeaders: Dispatcher.DispatcherComposeInterceptor = dispatch => (opts, handler) => dispatch(opts, {
+  onRequestStart: (...args) => handler.onRequestStart?.(...args),
+  onRequestUpgrade: (...args) => handler.onRequestUpgrade?.(...args),
+  onResponseStart(controller, statusCode, headers, statusMessage) {
+    delete headers.age;
+    delete headers.date;
+    return handler.onResponseStart?.(controller, statusCode, headers, statusMessage);
+  },
+  onResponseData: (...args) => handler.onResponseData?.(...args),
+  onResponseEnd: (...args) => handler.onResponseEnd?.(...args),
+  onResponseError: (...args) => handler.onResponseError?.(...args)
+});
+
 const agent = new Agent({
   allowH2: false
 }).compose(
@@ -136,14 +161,16 @@ const agent = new Agent({
   interceptors.redirect({
     maxRedirections: 5
   }),
+  stripCdnStalenessHeaders,
   interceptors.cache({
     store: new BetterSqlite3CacheStore({
       loose: true,
       location: path.join(CACHE_DIR, 'undici-better-sqlite3-cache-store.db'),
       maxCount: 128,
-      maxEntrySize: 1024 * 1024 * 100 // 100 MiB
+      maxEntrySize: 1024 * 1024 * 100, // 100 MiB
+      revalidationRetention: 7 * 24 * 60 * 60 * 1000 // 7 days
     }),
-    cacheByDefault: 600 // 10 minutes
+    cacheByDefault: 10 * 60 * 1000 // 10 minutes
   })
 );
 
