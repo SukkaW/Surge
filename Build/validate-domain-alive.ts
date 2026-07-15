@@ -1,8 +1,10 @@
-import { SOURCE_DIR } from './constants/dir';
-import path from 'node:path';
+import fs from 'node:fs';
+import process from 'node:process';
 import { getMethods } from './lib/is-domain-alive';
-import { fdir as Fdir } from 'fdir';
-import runAgainstSourceFile from './lib/run-against-source-file';
+import { enumerateSourceDomains } from './lib/enumerate-source-domains';
+import { getShardConfigFromEnv, isInShard } from './lib/shard';
+import { getRunnerGeoIP } from './lib/get-runner-geoip';
+import type { RunnerGeoIP } from './lib/get-runner-geoip';
 
 import cliProgress from 'cli-progress';
 import { newQueue } from '@henrygd/queue';
@@ -11,66 +13,86 @@ const queue = newQueue(32);
 
 const deadDomains: string[] = [];
 
+/**
+ * Append this shard's result to the GitHub Actions job summary, if running in
+ * CI. Each shard writes its own summary (no dedicated merge job) — the union
+ * of all shards' summaries is the full dead-domain list.
+ */
+function formatGeo(geo: RunnerGeoIP | null): string {
+  if (!geo) return 'unknown (geoip lookup failed)';
+  return `${geo.ip} — ${geo.city}, ${geo.region}, ${geo.country} (AS${geo.asn} ${geo.asOrg})`;
+}
+
+function writeJobSummary(shardLabel: string, dead: string[], geo: RunnerGeoIP | null) {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+
+  let summary = `## Dead domains — shard ${shardLabel}\n\n`
+    + `Runner egress: \`${formatGeo(geo)}\`\n\n`
+    + `Found **${dead.length}** dead domain(s) in this shard.\n\n`;
+
+  if (dead.length > 0) {
+    summary += '<details><summary>Show list</summary>\n\n'
+      + '```\n'
+      + dead.join('\n') + '\n'
+      + '```\n\n'
+      + '</details>\n\n'
+      // Machine-recoverable copy so the union can be scraped from summaries.
+      + '```json\n'
+      + JSON.stringify(dead) + '\n'
+      + '```\n\n';
+  }
+
+  fs.appendFileSync(summaryPath, summary);
+}
+
 (async () => {
+  const shard = getShardConfigFromEnv();
+  const shardLabel = `${shard.index + 1}/${shard.total}`;
+
   const [
     { isDomainAlive, isRegisterableDomainAlive },
-    domainSets,
-    domainRules
+    allDomains,
+    geo
   ] = await Promise.all([
     getMethods(),
-    new Fdir()
-      .withFullPaths()
-      .filter((filePath, isDirectory) => {
-        if (isDirectory) return false;
-        const extname = path.extname(filePath);
-        return extname === '.txt' || extname === '.conf';
-      })
-      .crawl(SOURCE_DIR + path.sep + 'domainset')
-      .withPromise(),
-    new Fdir()
-      .withFullPaths()
-      .filter((filePath, isDirectory) => {
-        if (isDirectory) return false;
-        const extname = path.extname(filePath);
-        return extname === '.txt' || extname === '.conf';
-      })
-      .crawl(SOURCE_DIR + path.sep + 'non_ip')
-      .withPromise()
+    enumerateSourceDomains(),
+    getRunnerGeoIP()
   ]);
 
+  console.log(`[shard ${shardLabel}] runner egress: ${formatGeo(geo)}`);
+
+  const shardDomains = allDomains.filter(({ domain }) => isInShard(domain, shard));
+
+  console.log(
+    `[shard ${shardLabel}] checking ${shardDomains.length} of ${allDomains.length} domain(s)`
+  );
+
   const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-  bar.start(0, 0);
+  bar.start(shardDomains.length, 0);
 
-  await Promise.all([
-    ...domainRules,
-    ...domainSets
-  ].map(filepath => runAgainstSourceFile(
-    filepath,
-    (domain: string, includeAllSubdomain: boolean) => {
-      bar.setTotal(bar.getTotal() + 1);
+  for (const { domain, includeAllSubdomain } of shardDomains) {
+    queue.add(async () => {
+      let registerableDomainAlive, registerableDomain, alive: boolean | undefined;
 
-      return queue.add(async () => {
-        let registerableDomainAlive, registerableDomain, alive: boolean | undefined;
+      if (includeAllSubdomain) {
+        // we only need to check apex domain, because we don't know if there is any stripped subdomain
+        ({ alive: registerableDomainAlive, registerableDomain } = await isRegisterableDomainAlive(domain));
+      } else {
+        ({ alive, registerableDomainAlive, registerableDomain } = await isDomainAlive(domain));
+      }
 
-        if (includeAllSubdomain) {
-          // we only need to check apex domain, because we don't know if there is any stripped subdomain
-          ({ alive: registerableDomainAlive, registerableDomain } = await isRegisterableDomainAlive(domain));
-        } else {
-          ({ alive, registerableDomainAlive, registerableDomain } = await isDomainAlive(domain));
+      bar.increment();
+
+      if (!registerableDomainAlive) {
+        if (registerableDomain) {
+          deadDomains.push('.' + registerableDomain);
         }
-
-        bar.increment();
-
-        if (!registerableDomainAlive) {
-          if (registerableDomain) {
-            deadDomains.push('.' + registerableDomain);
-          }
-        } else if (!includeAllSubdomain && alive != null && !alive) {
-          deadDomains.push(domain);
-        }
-      });
-    }
-  ).then(() => console.log('[crawl]', filepath))));
+      } else if (!includeAllSubdomain && alive != null && !alive) {
+        deadDomains.push(domain);
+      }
+    });
+  }
 
   await queue.done();
 
@@ -78,5 +100,7 @@ const deadDomains: string[] = [];
 
   console.log();
   console.log();
-  console.log(JSON.stringify(deadDomains));
+  console.log(`[shard ${shardLabel}]`, JSON.stringify(deadDomains));
+
+  writeJobSummary(shardLabel, deadDomains, geo);
 })();

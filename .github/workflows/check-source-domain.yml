@@ -5,8 +5,17 @@ on:
 
 jobs:
   check:
-    name: Check
-    runs-on: ubuntu-24.04-arm
+    name: Check (shard ${{ matrix.shard }}/4)
+    runs-on: ubuntu-slim
+
+    strategy:
+      # Keep every shard running even if one hits a fatal error, so we still
+      # collect dead domains from the rest.
+      fail-fast: false
+      matrix:
+        # 4 shards -> 4 runners, each lands on a different Azure region / egress
+        # IP, spreading DoH load and reducing per-server rate limiting.
+        shard: [0, 1, 2, 3]
 
     steps:
       # - name: Tune GitHub-hosted runner network
@@ -38,24 +47,28 @@ jobs:
         with:
           path: |
             .cache
-          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+          # Cache is keyed per shard: each shard checks a disjoint subset of
+          # domains, so their DoH/whois caches don't overlap.
+          key: ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }}
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
-            ${{ runner.os }}-v3-
+            ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:
+            ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:
+            ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }}
+            ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
+            ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-
+            ${{ runner.os }}-shard${{ matrix.shard }}-v3-
       - run: pnpm config set --location=global minimumReleaseAge 0
       - run: pnpm install
       - run: pnpm run node Build/validate-domain-alive.ts
         env:
           DEBUG: domain-alive:dead-domain,domain-alive:error:*
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_TOTAL: 4
       - name: Cache cache.db
         if: always()
         uses: actions/cache/save@v5
         with:
           path: |
             .cache
-          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+          key: ${{ runner.os }}-shard${{ matrix.shard }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
