@@ -7,6 +7,8 @@ URL-REGEX,https?://music\.163\.com/eapi/osx/version,REJECT
 URL-REGEX,https?://music\.163\.com/eapi/cdns,REJECT
 URL-REGEX,https?://music\.163\.com/eapi/push/init,REJECT
 
+URL-REGEX,https?://music\.163\.com/api/feedback/client/log,REJECT
+
 # Reject Hot Patch
 URL-REGEX,https?://music\.163\.com/api/pccache/patch/get,REJECT
 
