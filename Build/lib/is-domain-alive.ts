@@ -19,7 +19,7 @@ const dnsServers = [
   // 'https://doh.sb/dns-query', // DNS.SB xTom Anycast IP
   // 'https://dns.sb/dns-query', // DNS.SB use same xTom Anycast IP as doh.sb
   // 'https://dns10.quad9.net/dns-query', // Quad9 unfiltered
-  'https://9.9.9.10/dns-query', 'https://149.112.112.10/dns-query', // Quad9 unfiltered
+  // 'https://9.9.9.10/dns-query', 'https://149.112.112.10/dns-query', // Quad9 unfiltered Error: Cannot decode name (bad label)
 
   // OpenDNS sandbox (unfiltered), doesn't support HTTP/2 properly
   // Error: Session closed without receiving a SETTINGS frame
@@ -43,7 +43,7 @@ const dnsServers = [
   // 'https://dns.mullvad.net/dns-query', empty HTTP body a lot
   'https://basic.rethinkdns.com/dns-query',
   'https://dns.surfsharkdns.com/dns-query',
-  'https://private.canadianshield.cira.ca/dns-query',
+  // 'https://private.canadianshield.cira.ca/dns-query', // Error: Cannot decode name (bad label)
   // 'https://unfiltered.joindns4.eu/dns-query', // too many ECONNRESET on GitHub Actions
   'https://public.dns.iij.jp/dns-query',
   // 'https://common.dot.dns.yandex.net/dns-query', // too many ECONNRESET on GitHub Actions
