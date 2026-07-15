@@ -5,7 +5,7 @@ on:
 
 jobs:
   check:
-    name: Check (shard ${{ matrix.shard }}/4)
+    name: Check (shard ${{ matrix.shard }}/6)
     runs-on: ubuntu-slim
 
     strategy:
@@ -13,9 +13,9 @@ jobs:
       # collect dead domains from the rest.
       fail-fast: false
       matrix:
-        # 4 shards -> 4 runners, each lands on a different Azure region / egress
+        # 6 shards -> 6 runners, each lands on a different Azure region / egress
         # IP, spreading DoH load and reducing per-server rate limiting.
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5]
 
     steps:
       # - name: Tune GitHub-hosted runner network
@@ -64,7 +64,7 @@ jobs:
         env:
           DEBUG: domain-alive:dead-domain,domain-alive:error:*
           SHARD_INDEX: ${{ matrix.shard }}
-          SHARD_TOTAL: 4
+          SHARD_TOTAL: 6
       - name: Cache cache.db
         if: always()
         uses: actions/cache/save@v5
