@@ -153,7 +153,7 @@ jobs:
     # matrix is a tricky way to define a variable directly in the action yaml
     strategy:
       matrix:
-        wranglerVersion: ["3.114.12"]
+        wranglerVersion: ["3.114.17"]
     steps:
       - name: Get NPM cache directory path
         id: npm_cache_path
