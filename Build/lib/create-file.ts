@@ -8,7 +8,7 @@ import { writeFile } from './misc';
 import { createCompareSource, fileEqualWithCommentComparator } from 'foxts/compare-source';
 import { promisify } from 'node:util';
 
-export const fileEqual = createCompareSource(fileEqualWithCommentComparator);
+const fileEqual = createCompareSource(fileEqualWithCommentComparator);
 
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   // readFileByLine will not include last empty line. So we always pop the linesA for comparison purpose
