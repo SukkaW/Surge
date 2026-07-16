@@ -21,22 +21,29 @@ jobs:
     steps:
       - uses: smorimoto/tune-github-hosted-runner-network@v1
         # https://github.com/actions/runner-images/issues/1187
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@v5
-        with:
-          run_install: false
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: ".node-version"
-          cache: "pnpm"
       - name: Grab Building Folder
         id: ramdisk
         run: |
           echo "build_dir=previous-build-${{ github.run_id }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
+      - name: Get current date
+        id: date
+        run: |
+          echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
+          echo "month=$(date +'%m')" >> $GITHUB_OUTPUT
+          echo "day=$(date +'%d')" >> $GITHUB_OUTPUT
+          echo "hour=$(date +'%H')" >> $GITHUB_OUTPUT
+          echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
+          echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
+      # Download previous build and restore cache.db in the background,
+      # while the Node.js toolchain is set up in the foreground
       - name: Download Previous Build
+        id: download_previous_build
         uses: actions/checkout@v6
+        background: true
         with:
           repository: SukkaLab/ruleset.skk.moe
           # during a race condition the dist repo may be private, use token to clone
@@ -45,6 +52,35 @@ jobs:
           filter: "tree:0" # we don't care about git history here
           fetch-tags: false
           path: ${{ steps.ramdisk.outputs.build_dir }}
+      - name: Restore cache.db
+        uses: actions/cache/restore@v6
+        id: cache-db-restore
+        background: true
+        with:
+          path: |
+            .cache
+          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }}
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
+            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
+            ${{ runner.os }}-v3-
+      # Setup Node.js and pnpm in foreground
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+      - run: pnpm config set --location=global minimumReleaseAge 0
+      - run: pnpm install
+      # Foreground pnpm + Node.js setup complete, ensure previous build and cache.db are ready
+      - wait: [download_previous_build, cache-db-restore]
+      # Double check build folder before starting build
       - name: Setup build folder
         run: |
           if [ ! -d ${{ steps.ramdisk.outputs.build_dir }}/.git ]; then
@@ -58,33 +94,6 @@ jobs:
             exit 1
           fi
           echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
-      - name: Get current date
-        id: date
-        run: |
-          echo "date=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
-          echo "year=$(date +'%Y')" >> $GITHUB_OUTPUT
-          echo "month=$(date +'%m')" >> $GITHUB_OUTPUT
-          echo "day=$(date +'%d')" >> $GITHUB_OUTPUT
-          echo "hour=$(date +'%H')" >> $GITHUB_OUTPUT
-          echo "minute=$(date +'%M')" >> $GITHUB_OUTPUT
-          echo "second=$(date +'%S')" >> $GITHUB_OUTPUT
-      - name: Restore cache.db
-        uses: actions/cache/restore@v6
-        id: cache-db-restore
-        with:
-          path: |
-            .cache
-          key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
-          restore-keys: |
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }}
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
-            ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
-            ${{ runner.os }}-v3-
-      - run: pnpm config set --location=global minimumReleaseAge 0
-      - run: pnpm install
       - run: pnpm run build
         env:
           PUBLIC_DIR: ${{ steps.ramdisk.outputs.build_dir }}
@@ -105,7 +114,10 @@ jobs:
             exit 1
           fi
           echo "public directory is ready: ${{ steps.ramdisk.outputs.build_dir }}"
+      # Upload artifact and save cache.db in parallel
       - uses: actions/upload-artifact@v7
+        id: upload_build_artifact
+        background: true
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: ${{ steps.ramdisk.outputs.build_dir }}
@@ -120,6 +132,7 @@ jobs:
           path: |
             .cache
           key: ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-${{ steps.date.outputs.day }} ${{ steps.date.outputs.hour }}:${{ steps.date.outputs.minute }}:${{ steps.date.outputs.second }}
+      - wait: upload_build_artifact
 
   diff_deployment_on_pr:
     if: github.ref != 'refs/heads/master'
