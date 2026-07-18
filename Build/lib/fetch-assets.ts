@@ -20,9 +20,10 @@ const MIN_HEDGE_DELAY = 3000;
 const HEDGE_DELAY_STEP = 1200;
 const HEDGE_SPEED_SAMPLE_INTERVAL = 1000;
 const HEDGE_QUEUE_POLL_INTERVAL = 250;
-// 1 MiB/s is about 8.4 Mbps. A source throttled to 5 Mbps will be hedged,
-// while larger responses making healthy progress will not be raced merely
-// because their total download time exceeds three seconds.
+// This threshold is evaluated against encoded response bytes, before fetch()
+// decompresses them. 1 MiB/s is about 8.4 Mbps on the network, so a source
+// throttled to 5 Mbps will be hedged, while a larger compressed response making
+// healthy progress will not be raced merely because decoding expands its body.
 const MIN_ACCEPTABLE_DOWNLOAD_BYTES_PER_SECOND = 1024 * 1024;
 
 export function isDownloadThroughputSlow(bytesReceived: number, elapsed: number) {
@@ -31,8 +32,10 @@ export function isDownloadThroughputSlow(bytesReceived: number, elapsed: number)
 
 interface PrimaryDownloadProgress {
   headersReceived: boolean,
-  bodyStartedAt: number | null,
-  bytesReceived: number,
+  bodyConsumptionStartedAt: number | null,
+  encodedBytesAtConsumptionStart: number,
+  encodedBytesReceived: number,
+  encodedBodyComplete: boolean,
   failed: boolean
 }
 
@@ -43,8 +46,10 @@ export async function fetchAssets(
   const controller = new AbortController();
   const primaryProgress: PrimaryDownloadProgress = {
     headersReceived: false,
-    bodyStartedAt: null,
-    bytesReceived: 0,
+    bodyConsumptionStartedAt: null,
+    encodedBytesAtConsumptionStart: 0,
+    encodedBytesReceived: 0,
+    encodedBodyComplete: false,
     failed: false
   };
 
@@ -61,7 +66,7 @@ export async function fetchAssets(
         return;
       }
 
-      if (primaryProgress.bodyStartedAt == null) {
+      if (primaryProgress.bodyConsumptionStartedAt == null) {
         // The response is waiting for our local body-consumption queue. This is
         // not an upstream slowdown and should not trigger a duplicate request.
         // eslint-disable-next-line no-await-in-loop -- poll until local consumption starts
@@ -69,7 +74,18 @@ export async function fetchAssets(
         continue;
       }
 
-      sampledAt ??= primaryProgress.bodyStartedAt;
+      if (primaryProgress.encodedBodyComplete) {
+        // The full encoded body is already local. Any remaining time belongs
+        // to decompression or parsing, which a fallback can not improve.
+        // eslint-disable-next-line no-await-in-loop -- wait for local processing to finish
+        await waitWithAbort(HEDGE_QUEUE_POLL_INTERVAL, controller.signal);
+        continue;
+      }
+
+      if (sampledAt == null) {
+        sampledAt = primaryProgress.bodyConsumptionStartedAt;
+        sampledBytes = primaryProgress.encodedBytesAtConsumptionStart;
+      }
       const now = performance.now();
       const sampleDuration = now - sampledAt;
 
@@ -79,12 +95,12 @@ export async function fetchAssets(
         continue;
       }
 
-      if (isDownloadThroughputSlow(primaryProgress.bytesReceived - sampledBytes, sampleDuration)) {
+      if (isDownloadThroughputSlow(primaryProgress.encodedBytesReceived - sampledBytes, sampleDuration)) {
         return;
       }
 
       sampledAt = now;
-      sampledBytes = primaryProgress.bytesReceived;
+      sampledBytes = primaryProgress.encodedBytesReceived;
       // eslint-disable-next-line no-await-in-loop -- periodically re-sample a healthy transfer
       await waitWithAbort(HEDGE_SPEED_SAMPLE_INTERVAL, controller.signal);
     }
@@ -111,8 +127,12 @@ export async function fetchAssets(
     const isPrimary = index < 0;
     const attemptStartedAt = downloadTimestamp();
     let headersAt: number | null = null;
-    let bodyStartedAt: number | null = null;
-    let attemptBytes = 0;
+    let decodedBodyStartedAt: number | null = null;
+    let encodedBodyStartedAt: number | null = null;
+    let encodedBodyEndedAt: number | null = null;
+    let decodedBytes = 0;
+    let encodedBytes = 0;
+    let contentEncoding: string | null = null;
     let finalized = false;
 
     const finalizeAttempt = (outcome: ExternalDownloadOutcome) => {
@@ -126,17 +146,42 @@ export async function fetchAssets(
         outcome,
         startedAt: attemptStartedAt,
         headersAt,
-        bodyStartedAt,
+        decodedBodyStartedAt,
+        encodedBodyStartedAt,
+        encodedBodyEndedAt,
         endedAt: downloadTimestamp(),
-        bytes: attemptBytes
+        decodedBytes,
+        encodedBytes,
+        contentEncoding
       });
     };
 
     try {
       // We intentionally acquire the body-consumption queue after receiving
       // headers. Request scheduling will be handled separately.
-      const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit });
-      headersAt = downloadTimestamp();
+      const res = await $$fetch(url, { signal: controller.signal, ...defaultRequestInit }, {
+        onResponseStart(encoding) {
+          headersAt = downloadTimestamp();
+          contentEncoding = encoding;
+          if (isPrimary) {
+            primaryProgress.headersReceived = true;
+          }
+        },
+        onEncodedBodyChunk(bytes) {
+          encodedBodyStartedAt ??= downloadTimestamp();
+          encodedBytes += bytes;
+          if (isPrimary) {
+            primaryProgress.encodedBytesReceived += bytes;
+          }
+        },
+        onEncodedBodyEnd(completed) {
+          encodedBodyEndedAt = downloadTimestamp();
+          if (isPrimary) {
+            primaryProgress.encodedBodyComplete = completed;
+          }
+        }
+      });
+      headersAt ??= downloadTimestamp();
 
       let body = nullthrow(res.body, url + ' has an empty body');
       if (isPrimary) {
@@ -144,10 +189,7 @@ export async function fetchAssets(
       }
       body = body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
         transform(chunk, streamController) {
-          attemptBytes += chunk.byteLength;
-          if (isPrimary) {
-            primaryProgress.bytesReceived += chunk.byteLength;
-          }
+          decodedBytes += chunk.byteLength;
           streamController.enqueue(chunk);
         }
       }));
@@ -163,9 +205,10 @@ export async function fetchAssets(
       }
 
       const arr = await queue.add(() => {
-        bodyStartedAt = downloadTimestamp();
+        decodedBodyStartedAt = downloadTimestamp();
         if (isPrimary) {
-          primaryProgress.bodyStartedAt = performance.now();
+          primaryProgress.bodyConsumptionStartedAt = performance.now();
+          primaryProgress.encodedBytesAtConsumptionStart = primaryProgress.encodedBytesReceived;
         }
         return Array.fromAsync(stream);
       });

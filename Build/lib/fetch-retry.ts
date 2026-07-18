@@ -174,6 +174,40 @@ const agent = new Agent({
   })
 );
 
+export interface FetchResponseProgress {
+  onResponseStart?: (contentEncoding: string | null) => void,
+  onEncodedBodyChunk?: (bytes: number) => void,
+  onEncodedBodyEnd?: (completed: boolean) => void
+}
+
+function createResponseProgressDispatcher(progress: FetchResponseProgress): Dispatcher {
+  return agent.compose(dispatch => (opts, handler) => dispatch(opts, {
+    onRequestStart: (...args) => handler.onRequestStart?.(...args),
+    onRequestUpgrade: (...args) => handler.onRequestUpgrade?.(...args),
+    onResponseStart(controller, statusCode, headers, statusMessage) {
+      const contentEncoding = headers['content-encoding'];
+      progress.onResponseStart?.(
+        contentEncoding == null
+          ? null
+          : (Array.isArray(contentEncoding) ? contentEncoding.join(', ') : contentEncoding)
+      );
+      return handler.onResponseStart?.(controller, statusCode, headers, statusMessage);
+    },
+    onResponseData(controller, chunk) {
+      progress.onEncodedBodyChunk?.(chunk.byteLength);
+      return handler.onResponseData?.(controller, chunk);
+    },
+    onResponseEnd(...args) {
+      progress.onEncodedBodyEnd?.(true);
+      return handler.onResponseEnd?.(...args);
+    },
+    onResponseError(...args) {
+      progress.onEncodedBodyEnd?.(false);
+      return handler.onResponseError?.(...args);
+    }
+  }));
+}
+
 function calculateRetryAfterHeader(retryAfter: string) {
   const current = Date.now();
   return new Date(retryAfter).getTime() - current;
@@ -209,8 +243,12 @@ export const defaultRequestInit = {
   }
 };
 
-export async function $$fetch(url: RequestInfo, init: RequestInit = defaultRequestInit) {
-  init.dispatcher = agent;
+export async function $$fetch(
+  url: RequestInfo,
+  init: RequestInit = defaultRequestInit,
+  progress?: FetchResponseProgress
+) {
+  init.dispatcher = progress == null ? agent : createResponseProgressDispatcher(progress);
 
   try {
     const res = await undici.fetch(url, init);

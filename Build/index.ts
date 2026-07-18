@@ -120,11 +120,11 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     // write a file to demonstrate that the build is finished
     fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
 
+    printExternalDownloadStats();
     traces.forEach((t) => {
       printTraceResult(t);
     });
     printStats(traces);
-    printExternalDownloadStats();
 
     await Promise.all([
       microsoftCdnWorker.end(),
