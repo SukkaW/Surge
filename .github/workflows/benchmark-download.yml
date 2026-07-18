@@ -1,0 +1,82 @@
+name: Benchmark Download Client
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Download client implementation to benchmark
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - fetch
+          - request
+      concurrency:
+        description: Maximum number of concurrent downloads
+        required: true
+        default: "18"
+        type: string
+      urls:
+        description: Optional URLs, one per line; empty uses the configured reject and phishing sources
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: ${{ inputs.mode }} at concurrency ${{ inputs.concurrency }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+
+    steps:
+      - uses: smorimoto/tune-github-hosted-runner-network@v1
+        # Keep the runner network setup comparable with the production build.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+      - run: pnpm config set --location=global minimumReleaseAge 0
+      - run: pnpm install
+      - name: Run download benchmark
+        shell: bash
+        env:
+          BENCHMARK_MODE: ${{ inputs.mode }}
+          BENCHMARK_CONCURRENCY: ${{ inputs.concurrency }}
+          BENCHMARK_URLS: ${{ inputs.urls }}
+        run: |
+          benchmark_args=(
+            "--mode=${BENCHMARK_MODE}"
+            "--concurrency=${BENCHMARK_CONCURRENCY}"
+          )
+
+          if [[ -n "${BENCHMARK_URLS}" ]]; then
+            while IFS= read -r url; do
+              url="${url%$'\r'}"
+              if [[ -n "${url}" ]]; then
+                benchmark_args+=("${url}")
+              fi
+            done <<< "${BENCHMARK_URLS}"
+          fi
+
+          pnpm run bench-download -- "${benchmark_args[@]}" | tee benchmark-output.txt
+
+          {
+            echo "## Download client benchmark"
+            echo
+            echo "- Runner: \`ubuntu-24.04-arm\`"
+            echo "- Mode: \`${BENCHMARK_MODE}\`"
+            echo "- Concurrency: \`${BENCHMARK_CONCURRENCY}\`"
+            echo
+            echo '```text'
+            cat benchmark-output.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
