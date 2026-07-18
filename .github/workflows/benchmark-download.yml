@@ -17,6 +17,25 @@ on:
         required: true
         default: "18"
         type: string
+      rounds:
+        description: Measured rounds; mode order alternates between rounds
+        required: true
+        default: "2"
+        type: string
+      warmup:
+        description: Warm shared DNS/CDN state with both clients before measuring
+        required: true
+        default: true
+        type: boolean
+      encoding:
+        description: Accepted response compression; all enables Brotli, gzip, deflate, and zstd
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - gzip
+          - identity
       urls:
         description: Optional URLs, one per line; empty uses the configured reject and phishing sources
         required: false
@@ -27,7 +46,7 @@ permissions:
 
 jobs:
   benchmark:
-    name: ${{ inputs.mode }} at concurrency ${{ inputs.concurrency }}
+    name: ${{ inputs.mode }} at concurrency ${{ inputs.concurrency }} (${{ inputs.rounds }} rounds)
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
 
@@ -51,11 +70,17 @@ jobs:
         env:
           BENCHMARK_MODE: ${{ inputs.mode }}
           BENCHMARK_CONCURRENCY: ${{ inputs.concurrency }}
+          BENCHMARK_ROUNDS: ${{ inputs.rounds }}
+          BENCHMARK_WARMUP: ${{ inputs.warmup }}
+          BENCHMARK_ENCODING: ${{ inputs.encoding }}
           BENCHMARK_URLS: ${{ inputs.urls }}
         run: |
           benchmark_args=(
             "--mode=${BENCHMARK_MODE}"
             "--concurrency=${BENCHMARK_CONCURRENCY}"
+            "--rounds=${BENCHMARK_ROUNDS}"
+            "--warmup=${BENCHMARK_WARMUP}"
+            "--encoding=${BENCHMARK_ENCODING}"
           )
 
           if [[ -n "${BENCHMARK_URLS}" ]]; then
@@ -75,6 +100,9 @@ jobs:
             echo "- Runner: \`ubuntu-24.04-arm\`"
             echo "- Mode: \`${BENCHMARK_MODE}\`"
             echo "- Concurrency: \`${BENCHMARK_CONCURRENCY}\`"
+            echo "- Measured rounds: \`${BENCHMARK_ROUNDS}\`"
+            echo "- Warm-up: \`${BENCHMARK_WARMUP}\`"
+            echo "- Accept-Encoding: \`${BENCHMARK_ENCODING}\`"
             echo
             echo '```text'
             cat benchmark-output.txt

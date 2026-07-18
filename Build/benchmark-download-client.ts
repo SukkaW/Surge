@@ -18,6 +18,7 @@ import {
 } from './constants/reject-data-source';
 
 type BenchmarkMode = 'fetch' | 'request';
+type BenchmarkEncoding = 'identity' | 'gzip' | 'all';
 
 interface DownloadResult {
   url: string,
@@ -25,14 +26,29 @@ interface DownloadResult {
   duration: number
 }
 
+interface BenchmarkResult {
+  decodedBytes: number,
+  wireBytes: number,
+  duration: number,
+  encodedResponses: number
+}
+
+interface WireMetrics {
+  bytes: number,
+  encodedResponses: number,
+  encodings: Map<string, number>
+}
+
 const DEFAULT_CONCURRENCY = 18;
-const BENCHMARK_HEADERS = {
-  // Keep the comparison focused on client and stream overhead. request() does
-  // not automatically decode content like fetch(), so identity encoding makes
-  // the transferred and consumed bytes equivalent between both modes.
-  'Accept-Encoding': 'identity',
-  'User-Agent': 'surge-download-benchmark'
-};
+const DEFAULT_ROUNDS = 2;
+const DEFAULT_ENCODING: BenchmarkEncoding = 'all';
+
+function getBenchmarkHeaders(encoding: BenchmarkEncoding) {
+  return {
+    'Accept-Encoding': encoding === 'all' ? 'br, gzip, deflate, zstd' : encoding,
+    'User-Agent': 'surge-download-benchmark'
+  };
+}
 
 function getDefaultUrls() {
   const sourceGroups = [
@@ -61,11 +77,15 @@ async function consumeBody(body: AsyncIterable<Uint8Array>) {
   return bytes;
 }
 
-async function downloadWithFetch(url: string, agent: Dispatcher): Promise<DownloadResult> {
+async function downloadWithFetch(
+  url: string,
+  agent: Dispatcher,
+  headers: ReturnType<typeof getBenchmarkHeaders>
+): Promise<DownloadResult> {
   const startedAt = performance.now();
   const response = await undiciFetch(url, {
     dispatcher: agent,
-    headers: BENCHMARK_HEADERS
+    headers
   });
   if (!response.ok || !response.body) {
     throw new Error(`HTTP ${response.status} ${url}`);
@@ -75,11 +95,15 @@ async function downloadWithFetch(url: string, agent: Dispatcher): Promise<Downlo
   return { url, bytes, duration: performance.now() - startedAt };
 }
 
-async function downloadWithRequest(url: string, agent: Dispatcher): Promise<DownloadResult> {
+async function downloadWithRequest(
+  url: string,
+  agent: Dispatcher,
+  headers: ReturnType<typeof getBenchmarkHeaders>
+): Promise<DownloadResult> {
   const startedAt = performance.now();
   const response = await undiciRequest(url, {
     dispatcher: agent,
-    headers: BENCHMARK_HEADERS
+    headers
   });
   if (response.statusCode < 200 || response.statusCode >= 300) {
     await response.body.dump();
@@ -90,11 +114,61 @@ async function downloadWithRequest(url: string, agent: Dispatcher): Promise<Down
   return { url, bytes, duration: performance.now() - startedAt };
 }
 
-async function runMode(mode: BenchmarkMode, urls: string[], concurrency: number) {
+function createWireMetricsInterceptor(metrics: WireMetrics): Dispatcher.DispatcherComposeInterceptor {
+  return dispatch => (opts, handler) => dispatch(opts, {
+    onRequestStart: (...args) => handler.onRequestStart?.(...args),
+    onRequestUpgrade: (...args) => handler.onRequestUpgrade?.(...args),
+    onResponseStart(controller, statusCode, headers, statusMessage) {
+      const contentEncoding = headers['content-encoding'];
+      if (contentEncoding && contentEncoding !== 'identity') {
+        const encoding = Array.isArray(contentEncoding) ? contentEncoding.join(', ') : contentEncoding;
+        metrics.encodedResponses++;
+        metrics.encodings.set(encoding, (metrics.encodings.get(encoding) ?? 0) + 1);
+      }
+      return handler.onResponseStart?.(controller, statusCode, headers, statusMessage);
+    },
+    onResponseData(controller, chunk) {
+      metrics.bytes += chunk.byteLength;
+      return handler.onResponseData?.(controller, chunk);
+    },
+    onResponseEnd: (...args) => handler.onResponseEnd?.(...args),
+    onResponseError: (...args) => handler.onResponseError?.(...args)
+  });
+}
+
+function formatEncodings(encodings: Map<string, number>) {
+  if (encodings.size === 0) {
+    return 'identity';
+  }
+  return Array.from(encodings, ([encoding, count]) => `${encoding}:${count}`).join(',');
+}
+
+async function runMode(
+  mode: BenchmarkMode,
+  urls: string[],
+  concurrency: number,
+  encoding: BenchmarkEncoding,
+  round: number | 'warmup',
+  printFiles = true
+): Promise<BenchmarkResult> {
   const baseAgent = new Agent({ allowH2: false });
-  const agent = mode === 'request'
-    ? baseAgent.compose(interceptors.redirect({ maxRedirections: 5 }))
-    : baseAgent;
+  const wireMetrics: WireMetrics = {
+    bytes: 0,
+    encodedResponses: 0,
+    encodings: new Map()
+  };
+  const agentInterceptors: Dispatcher.DispatcherComposeInterceptor[] = [
+    // Compose this closest to the network so it observes encoded bytes before
+    // the decompression interceptor transforms the body.
+    createWireMetricsInterceptor(wireMetrics),
+    // fetch() normally decompresses automatically while request() does not.
+    // Applying the interceptor before either API sees the response gives both
+    // modes the same decoded body semantics.
+    ...(encoding === 'identity' ? [] : [interceptors.decompress()]),
+    ...(mode === 'request' ? [interceptors.redirect({ maxRedirections: 5 })] : [])
+  ];
+  const agent = baseAgent.compose(agentInterceptors);
+  const headers = getBenchmarkHeaders(encoding);
   const results: DownloadResult[] = new Array(urls.length);
   let nextIndex = 0;
   const startedAt = performance.now();
@@ -104,8 +178,8 @@ async function runMode(mode: BenchmarkMode, urls: string[], concurrency: number)
       const index = nextIndex++;
       // eslint-disable-next-line no-await-in-loop -- bounded download worker
       results[index] = await (mode === 'fetch'
-        ? downloadWithFetch(urls[index], agent)
-        : downloadWithRequest(urls[index], agent));
+        ? downloadWithFetch(urls[index], agent, headers)
+        : downloadWithRequest(urls[index], agent, headers));
     }
   };
 
@@ -116,31 +190,78 @@ async function runMode(mode: BenchmarkMode, urls: string[], concurrency: number)
   }
 
   const duration = performance.now() - startedAt;
-  const bytes = results.reduce((total, result) => total + result.bytes, 0);
-  const bytesPerSecond = bytes / duration * 1000;
+  const decodedBytes = results.reduce((total, result) => total + result.bytes, 0);
+  const decodedBytesPerSecond = decodedBytes / duration * 1000;
+  const wireBytesPerSecond = wireMetrics.bytes / duration * 1000;
 
-  results.forEach((result) => {
-    const resultBytesPerSecond = result.bytes / result.duration * 1000;
-    console.log(
-      `[download benchmark:${mode}]`,
-      prettyTraffic(result.bytes),
-      prettyBandwidth(resultBytesPerSecond * 8),
-      `${result.duration.toFixed(1)}ms`,
-      result.url
-    );
-  });
+  if (printFiles) {
+    results.forEach((result) => {
+      const resultBytesPerSecond = result.bytes / result.duration * 1000;
+      console.log(
+        `[download benchmark:${mode}]`,
+        `round=${round}`,
+        prettyTraffic(result.bytes),
+        prettyBandwidth(resultBytesPerSecond * 8),
+        `${result.duration.toFixed(1)}ms`,
+        result.url
+      );
+    });
+  }
   console.log(
     `[download benchmark:${mode}:total]`,
+    `round=${round}`,
     `files=${results.length}`,
-    `transferred=${prettyTraffic(bytes)}`,
-    `avg=${prettyBandwidth(bytesPerSecond * 8)}`,
+    `wire=${prettyTraffic(wireMetrics.bytes)}`,
+    `decoded=${prettyTraffic(decodedBytes)}`,
+    `wire-avg=${prettyBandwidth(wireBytesPerSecond * 8)}`,
+    `decoded-avg=${prettyBandwidth(decodedBytesPerSecond * 8)}`,
+    `encoded-responses=${wireMetrics.encodedResponses}`,
+    `encodings=${formatEncodings(wireMetrics.encodings)}`,
     `wall=${duration.toFixed(1)}ms`,
     `concurrency=${concurrency}`
+  );
+
+  return {
+    decodedBytes,
+    wireBytes: wireMetrics.bytes,
+    duration,
+    encodedResponses: wireMetrics.encodedResponses
+  };
+}
+
+function median(values: number[]) {
+  const sorted = values.toSorted((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+}
+
+function printModeSummary(mode: BenchmarkMode, results: BenchmarkResult[]) {
+  const durations = results.map(result => result.duration);
+  const medianDuration = median(durations);
+  const medianDecodedBytes = median(results.map(result => result.decodedBytes));
+  const medianWireBytes = median(results.map(result => result.wireBytes));
+  const medianWireSpeed = median(results.map(result => result.wireBytes / result.duration * 1000));
+  const medianDecodedSpeed = median(results.map(result => result.decodedBytes / result.duration * 1000));
+  console.log(
+    `[download benchmark:${mode}:summary]`,
+    `rounds=${results.length}`,
+    `wire-per-round=${prettyTraffic(medianWireBytes)}`,
+    `decoded-per-round=${prettyTraffic(medianDecodedBytes)}`,
+    `median-wire=${prettyBandwidth(medianWireSpeed * 8)}`,
+    `median-decoded=${prettyBandwidth(medianDecodedSpeed * 8)}`,
+    `median-wall=${medianDuration.toFixed(1)}ms`,
+    `best-wall=${Math.min(...durations).toFixed(1)}ms`,
+    `worst-wall=${Math.max(...durations).toFixed(1)}ms`
   );
 }
 
 function parseArguments(args: string[]) {
   let concurrency = DEFAULT_CONCURRENCY;
+  let rounds = DEFAULT_ROUNDS;
+  let warmup = true;
+  let encoding: BenchmarkEncoding = DEFAULT_ENCODING;
   let modes: BenchmarkMode[] = ['fetch', 'request'];
   const urls: string[] = [];
 
@@ -150,6 +271,20 @@ function parseArguments(args: string[]) {
     }
     if (arg.startsWith('--concurrency=')) {
       concurrency = Number(arg.slice('--concurrency='.length));
+    } else if (arg.startsWith('--rounds=')) {
+      rounds = Number(arg.slice('--rounds='.length));
+    } else if (arg.startsWith('--warmup=')) {
+      const value = arg.slice('--warmup='.length);
+      if (value !== 'true' && value !== 'false') {
+        throw new TypeError(`Invalid warmup value: ${value}`);
+      }
+      warmup = value === 'true';
+    } else if (arg.startsWith('--encoding=')) {
+      const value = arg.slice('--encoding='.length);
+      if (value !== 'identity' && value !== 'gzip' && value !== 'all') {
+        throw new TypeError(`Invalid encoding: ${value}`);
+      }
+      encoding = value;
     } else if (arg.startsWith('--mode=')) {
       const mode = arg.slice('--mode='.length);
       if (mode !== 'fetch' && mode !== 'request' && mode !== 'both') {
@@ -167,21 +302,60 @@ function parseArguments(args: string[]) {
   if (!Number.isSafeInteger(concurrency) || concurrency < 1) {
     throw new TypeError(`Invalid concurrency: ${concurrency}`);
   }
+  if (!Number.isSafeInteger(rounds) || rounds < 1 || rounds > 10) {
+    throw new TypeError(`Invalid rounds: ${rounds}`);
+  }
 
   return {
     concurrency,
+    rounds,
+    warmup,
+    encoding,
     modes,
     urls: urls.length > 0 ? urls : getDefaultUrls()
   };
 }
 
 async function main() {
-  const { concurrency, modes, urls } = parseArguments(process.argv.slice(2));
-  console.log('[download benchmark]', `files=${urls.length}`, `concurrency=${concurrency}`, `modes=${modes.join(',')}`);
+  const { concurrency, rounds, warmup, encoding, modes, urls } = parseArguments(process.argv.slice(2));
+  console.log(
+    '[download benchmark]',
+    `files=${urls.length}`,
+    `concurrency=${concurrency}`,
+    `rounds=${rounds}`,
+    `warmup=${warmup}`,
+    `encoding=${encoding}`,
+    `modes=${modes.join(',')}`,
+    'http-cache-interceptor=disabled'
+  );
+
+  if (warmup) {
+    console.log('[download benchmark:warmup]', 'begin');
+    // Use fresh Agents and discard both results. This primes shared DNS/CDN
+    // state and initializes both APIs without carrying HTTP connections into
+    // measured rounds.
+    for (const mode of modes) {
+      // eslint-disable-next-line no-await-in-loop -- warm-up is intentionally isolated per mode
+      await runMode(mode, urls, concurrency, encoding, 'warmup', false);
+    }
+    console.log('[download benchmark:warmup]', 'complete');
+  }
+
+  const results = new Map<BenchmarkMode, BenchmarkResult[]>(modes.map(mode => [mode, []]));
+  for (let round = 1; round <= rounds; round++) {
+    // Reverse every other round so neither API always benefits from running
+    // later in the trial.
+    const roundModes = round % 2 === 0 ? modes.toReversed() : modes;
+    console.log('[download benchmark:round]', `round=${round}`, `order=${roundModes.join(',')}`);
+    for (const mode of roundModes) {
+      // eslint-disable-next-line no-await-in-loop -- modes intentionally run separately for comparable totals
+      const result = await runMode(mode, urls, concurrency, encoding, round);
+      results.get(mode)?.push(result);
+    }
+  }
 
   for (const mode of modes) {
-    // eslint-disable-next-line no-await-in-loop -- modes intentionally run separately for comparable totals
-    await runMode(mode, urls, concurrency);
+    printModeSummary(mode, results.get(mode) ?? []);
   }
 }
 
