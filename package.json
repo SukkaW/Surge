@@ -13,6 +13,7 @@
     "dexnode": "SWC_NODE_IGNORE_DYNAMIC=true dexnode -r @swc-node/register",
     "build": "pnpm run node ./Build/index.ts",
     "build-profile": "pnpm run dexnode -r @swc-node/register ./Build/index.ts",
+    "bench-download": "pnpm run node ./Build/benchmark-download-client.ts",
     "lint": "eslint --format=sukka .",
     "test": "SWC_NODE_IGNORE_DYNAMIC=true SWC_NODE_PROJECT=tsconfig.test.json mocha --require @swc-node/register --watch-extensions ts,tsx"
   },

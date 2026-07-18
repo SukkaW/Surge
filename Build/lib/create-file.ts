@@ -10,6 +10,11 @@ import { promisify } from 'node:util';
 
 const fileEqual = createCompareSource(fileEqualWithCommentComparator);
 
+/**
+ * To keep metadata comment `last updated` not change if real content is the same,
+ * we compare real content lines and only write if actual content is different,
+ * and the new `last updated` will be written along with new content.
+ */
 export async function compareAndWriteFile(span: Span, linesA: string[], filePath: string) {
   // readFileByLine will not include last empty line. So we always pop the linesA for comparison purpose
   if (linesA.length > 0 && linesA[linesA.length - 1] === '') {

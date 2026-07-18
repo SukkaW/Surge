@@ -27,6 +27,7 @@ import { buildDeprecateFiles } from './build-deprecate-files';
 import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
 import { isCI } from 'ci-info';
+import { printExternalDownloadStats } from './lib/download-stats';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -123,6 +124,7 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       printTraceResult(t);
     });
     printStats(traces);
+    printExternalDownloadStats();
 
     await Promise.all([
       microsoftCdnWorker.end(),
