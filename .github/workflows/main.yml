@@ -164,10 +164,8 @@ jobs:
     name: Deploy
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-slim
-    # matrix is a tricky way to define a variable directly in the action yaml
-    strategy:
-      matrix:
-        wranglerVersion: ["3.114.17"]
+    env:
+      WRANGLER_VERSION: "3.114.17"
     steps:
       - name: Get NPM cache directory path
         id: npm_cache_path
@@ -178,7 +176,7 @@ jobs:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
             node_modules
-          key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ matrix.wranglerVersion }}
+          key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ env.WRANGLER_VERSION }}
           restore-keys: |
             deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-
       - uses: actions/download-artifact@v8
@@ -203,7 +201,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-          wranglerVersion: ${{ matrix.wranglerVersion }}
+          wranglerVersion: ${{ env.WRANGLER_VERSION }}
       - name: Upload Dist to GitLab
         id: deploy_gitlab
         background: true
