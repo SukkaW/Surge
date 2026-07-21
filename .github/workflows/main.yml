@@ -68,15 +68,22 @@ jobs:
             ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-${{ steps.date.outputs.month }}-
             ${{ runner.os }}-v3-${{ steps.date.outputs.year }}-
             ${{ runner.os }}-v3-
-      # Setup Node.js and pnpm in foreground
-      - uses: pnpm/action-setup@v6
+      # Set up pnpm and Node.js in parallel; both must finish before pnpm runs.
+      - name: Set up pnpm
+        id: setup_pnpm
+        uses: pnpm/action-setup@v6
+        background: true
         with:
           run_install: false
           cache: true
-      - uses: actions/setup-node@v6
+      - name: Set up Node.js
+        id: setup_node
+        uses: actions/setup-node@v6
+        background: true
         with:
           node-version-file: ".node-version"
           package-manager-cache: false
+      - wait: [setup_pnpm, setup_node]
       - run: pnpm config set --location=global minimumReleaseAge 0
       - run: pnpm install
       # Foreground pnpm + Node.js setup complete, ensure previous build and cache.db are ready
