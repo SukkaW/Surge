@@ -29,7 +29,7 @@
     "domain-alive": "^0.1.23",
     "fast-cidr-tools": "^0.3.4",
     "fast-escape-regexp": "^1.0.1",
-    "fast-uri": "^4.1.0",
+    "fast-uri": "^4.1.1",
     "fdir": "^6.5.0",
     "hash-wasm": "^4.12.0",
     "hntrie": "^1.0.1",
@@ -39,9 +39,9 @@
     "tar-fs": "^3.1.3",
     "telegram": "^2.26.22",
     "tinyglobby": "^0.2.17",
-    "tldts": "^7.4.8",
-    "tldts-experimental": "^7.4.8",
-    "undici": "^8.7.0",
+    "tldts": "^7.4.9",
+    "tldts-experimental": "^7.4.9",
+    "undici": "^8.8.0",
     "undici-cache-store-better-sqlite3": "^1.1.0",
     "why-is-node-running": "^3.2.2",
     "xbits": "^0.2.0",
@@ -49,8 +49,8 @@
     "yauzl-promise": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^8.13.5",
-    "@swc-node/register": "^1.11.1",
+    "@eslint-sukka/node": "^8.13.6",
+    "@swc-node/register": "^1.12.1",
     "@swc/core": "1.13.5",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cli-progress": "^3.11.6",
@@ -60,8 +60,8 @@
     "@types/yauzl-promise": "^4.0.1",
     "earl": "^2.0.0",
     "eslint": "^10.7.0",
-    "eslint-config-sukka": "^8.13.5",
-    "eslint-formatter-sukka": "^8.13.5",
+    "eslint-config-sukka": "^8.13.6",
+    "eslint-formatter-sukka": "^8.13.6",
     "foxts": "^5.8.0",
     "jest-worker": "^30.4.1",
     "mitata": "^1.0.34",
@@ -69,5 +69,5 @@
     "tinyexec": "^1.2.4",
     "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@11.13.0"
+  "packageManager": "pnpm@11.15.1"
 }
