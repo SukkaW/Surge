@@ -72,10 +72,11 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           run_install: false
+          cache: true
       - uses: actions/setup-node@v6
         with:
           node-version-file: ".node-version"
-          cache: "pnpm"
+          package-manager-cache: false
       - run: pnpm config set --location=global minimumReleaseAge 0
       - run: pnpm install
       # Foreground pnpm + Node.js setup complete, ensure previous build and cache.db are ready
