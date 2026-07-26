@@ -213,7 +213,7 @@ export async function fetchAssets(
         return Array.fromAsync(stream);
       });
 
-      if (arr.length < 1 && !allowEmpty) {
+      if (!allowEmpty && arr.length < 1) {
         throw new ResponseError(res, url, 'empty response w/o 304');
       }
 

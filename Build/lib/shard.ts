@@ -19,7 +19,7 @@
  * matters.
  */
 
-import { fnv1a52 } from 'foxts/fnv1a52';
+import { fnv1a52 } from 'fnv1a52';
 import process from 'node:process';
 
 export interface ShardConfig {

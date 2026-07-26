@@ -409,15 +409,15 @@ export class FileOutput {
 
     this.strategiesWritten = true;
 
+    if (this.strategies.filter(not(false)).length === 0) {
+      throw new Error('No strategies to write ' + this.id);
+    }
+
     // We use both DOMAIN-KEYWORD and whitelisted keyword to whitelist DOMAIN and DOMAIN-SUFFIX
     const kwfilter = createKeywordFilter(
       Array.from(this.domainKeywords)
         .concat(Array.from(this.whitelistKeywords))
     );
-
-    if (this.strategies.filter(not(false)).length === 0) {
-      throw new Error('No strategies to write ' + this.id);
-    }
 
     const strategiesLen = this.strategies.length;
 

@@ -638,6 +638,7 @@ function onHostname(
 
     if (
       (char >= 97 && char <= 122) // 97-122 `a-z`
+      // eslint-disable-next-line sukka/unicorn/prefer-simple-condition-first -- dot is less common than char
       || char === 46 // 46 `.`
       || char === 45 // 45 `-`
       || (char >= 48 && char <= 57) // 48-57 `0-9`

@@ -9,6 +9,10 @@ import { OUTPUT_MODULES_DIR, OUTPUT_SURGE_DIR } from '../../constants/dir';
 import { withBannerArray, withIdentityContent } from '../misc';
 import { MARKER_DOMAIN } from '../../constants/description';
 
+const rChar = /([a-z])\?/g;
+const rWildcard = /\*+/g;
+const rPattern = /\((?:([^()|]+)\|)+([^()|]*)\)/g;
+
 export class SurgeDomainSet extends BaseWriteStrategy {
   public readonly name = 'surge domainset';
 
@@ -204,15 +208,15 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
         // pre process regex
         .replaceAll(String.raw`\.`, '.')
         .replaceAll('.+', '*')
-        .replaceAll(/([a-z])\?/g, '($1|)')
+        .replaceAll(rChar, '($1|)')
         // convert regex to surge hostlist syntax
         .replaceAll('([a-z])', '?')
         .replaceAll(String.raw`\d`, '?')
-        .replaceAll(/\*+/g, '*');
+        .replaceAll(rWildcard, '*');
 
       let processed: string[] = [potentialHostname];
 
-      const matches = [...potentialHostname.matchAll(/\((?:([^()|]+)\|)+([^()|]*)\)/g)];
+      const matches = [...potentialHostname.matchAll(rPattern)];
 
       if (matches.length > 0) {
         const replaceVariant = (combinations: string[], fullMatch: string, options: string[]): string[] => {

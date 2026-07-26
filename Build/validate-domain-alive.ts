@@ -88,7 +88,7 @@ function writeJobSummary(shardLabel: string, dead: string[], geo: RunnerGeoIP | 
         if (registerableDomain) {
           deadDomains.push('.' + registerableDomain);
         }
-      } else if (!includeAllSubdomain && alive != null && !alive) {
+      } else if (!alive && !includeAllSubdomain && alive != null) {
         deadDomains.push(domain);
       }
     });
