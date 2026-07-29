@@ -73,7 +73,8 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
 
   const getDnsMappingRuleWithoutWildcard = createGetDnsMappingRule(false);
 
-  for (const { domains } of dataset) {
+  for (let i = 0, len = dataset.length; i < len; i++) {
+    const { domains } = dataset[i];
     clashFakeIpFilter.addFromRuleset(domains.flatMap(getDnsMappingRuleWithoutWildcard));
   }
 

@@ -231,7 +231,7 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
           return newCombinations;
         };
 
-        for (let i = 0; i < matches.length; i++) {
+        for (let i = 0, len = matches.length; i < len; i++) {
           const match = matches[i];
           const [_, ...options] = match;
 
@@ -245,8 +245,10 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
       });
     }
 
-    for (const i of urlRegexResults) {
-      for (const processed of i.processed) {
+    for (let i = 0, len = urlRegexResults.length; i < len; i++) {
+      const result = urlRegexResults[i];
+      for (let j = 0, len2 = result.processed.length; j < len2; j++) {
+        const processed = result.processed[j];
         if (
           normalizeDomain(
             processed
@@ -254,9 +256,9 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
               .replaceAll('?', 'b')
           )
         ) {
-          parsed.push([i.origin, processed]);
+          parsed.push([result.origin, processed]);
         } else if (!isProbablyIpv4(processed)) {
-          parsedFailures.push([i.origin, processed]);
+          parsedFailures.push([result.origin, processed]);
         }
       }
     }

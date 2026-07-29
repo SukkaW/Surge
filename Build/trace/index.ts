@@ -201,7 +201,8 @@ function mergeWorkerTrace(
   workerTimeOrigin: number
 ): void {
   const offset = workerTimeOrigin - performance.timeOrigin;
-  for (const child of workerTraceResult.children) {
+  for (let i = 0, len = workerTraceResult.children.length; i < len; i++) {
+    const child = workerTraceResult.children[i];
     parentSpan.traceResult.children.push(adjustTraceTimestamps(child, offset));
   }
 }

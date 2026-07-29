@@ -1338,8 +1338,8 @@ packages:
       '@typescript-eslint/eslint-plugin':
         optional: true
 
-  eslint-plugin-vibe-proof@1.0.0:
-    resolution: {integrity: sha512-vEjcAyzylbTmXhAo9eOuhgEM8cs0OG+Rs2L45yhehhtS466sDV0QyiJB8VzQdAGyLNMZQ1EfrdpINAdg5XBodQ==}
+  eslint-plugin-vibe-proof@1.2.0:
+    resolution: {integrity: sha512-lC/pxwfj1ARdRiFsGzi4OD8IHkHjJWBKbgwfoSsevDDOA8TRiIFp+8+KriGj5X3/sfi7epqYJOCRv8hTb9Ympw==}
     peerDependencies:
       eslint: '>=9.29.0'
       typescript: '*'
@@ -3204,7 +3204,7 @@ snapshots:
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       eslint: 10.8.0(supports-color@8.1.1)
-      eslint-plugin-vibe-proof: 1.0.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
+      eslint-plugin-vibe-proof: 1.2.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       foxts: 5.8.0
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -3216,12 +3216,12 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.65.0(@typescript-eslint/parser@8.65.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
 
-  eslint-plugin-vibe-proof@1.0.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3):
+  eslint-plugin-vibe-proof@1.2.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3):
     dependencies:
       '@typescript-eslint/types': 8.65.0
       '@typescript-eslint/utils': 8.65.0(eslint@10.8.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       eslint: 10.8.0(supports-color@8.1.1)
-      foxts: 5.8.0
+      foxts: 5.8.1
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color

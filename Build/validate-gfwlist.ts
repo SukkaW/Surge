@@ -70,7 +70,9 @@ export async function parseGfwList() {
   ]);
 
   const text = await (await $$fetch('https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt')).text();
-  for (const l of atob(text).split('\n')) {
+  const lines = atob(text).split('\n');
+  for (let i = 0, len = lines.length; i < len; i++) {
+    const l = lines[i];
     const line = processLine(l);
     if (!line) continue;
 

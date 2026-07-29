@@ -71,7 +71,8 @@ export class AdGuardHome extends BaseWriteStrategy {
       // So we can't do noResolve
       return;
     }
-    for (const ipcidr of ipGroup) {
+    for (let i = 0, len = ipGroup.length; i < len; i++) {
+      const ipcidr = ipGroup[i];
       if (ipcidr.endsWith('/32')) {
         this.result.push(`||${ipcidr.slice(0, -3)}`);
         /* else if (ipcidr.endsWith('.0/24')) {
@@ -89,7 +90,8 @@ export class AdGuardHome extends BaseWriteStrategy {
       // So we can't do noResolve
       return;
     }
-    for (const ipcidr of ipGroup) {
+    for (let i = 0, len = ipGroup.length; i < len; i++) {
+      const ipcidr = ipGroup[i];
       if (ipcidr.endsWith('/128')) {
         this.result.push(`||${ipcidr.slice(0, -4)}`);
       } else {

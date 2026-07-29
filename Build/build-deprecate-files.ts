@@ -35,7 +35,8 @@ export const buildDeprecateFiles = task(require.main === module, __filename)((sp
 
   appendArrayInPlace(promises, REMOVED_FOLDERS.map(folder => fsp.rm(path.join(PUBLIC_DIR, folder), { force: true, recursive: true })));
 
-  for (const [filePath, description] of DEPRECATED_FILES) {
+  for (let i = 0, len = DEPRECATED_FILES.length; i < len; i++) {
+    const [filePath, description] = DEPRECATED_FILES[i];
     const content = [
       '#########################################',
       '# Sukka\'s Ruleset - Deprecated',

@@ -71,7 +71,8 @@ function writeJobSummary(shardLabel: string, dead: string[], geo: RunnerGeoIP | 
   const bar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   bar.start(shardDomains.length, 0);
 
-  for (const { domain, includeAllSubdomain } of shardDomains) {
+  for (let i = 0, len = shardDomains.length; i < len; i++) {
+    const { domain, includeAllSubdomain } = shardDomains[i];
     queue.add(async () => {
       let registerableDomainAlive, registerableDomain, alive: boolean | undefined;
 

@@ -265,7 +265,8 @@ function parseArguments(args: string[]) {
   let modes: BenchmarkMode[] = ['fetch', 'request'];
   const urls: string[] = [];
 
-  for (const arg of args) {
+  for (let i = 0, len = args.length; i < len; i++) {
+    const arg = args[i];
     if (arg === '--') {
       continue;
     }
@@ -334,7 +335,8 @@ async function main() {
     // Use fresh Agents and discard both results. This primes shared DNS/CDN
     // state and initializes both APIs without carrying HTTP connections into
     // measured rounds.
-    for (const mode of modes) {
+    for (let i = 0, len = modes.length; i < len; i++) {
+      const mode = modes[i];
       // eslint-disable-next-line no-await-in-loop -- warm-up is intentionally isolated per mode
       await runMode(mode, urls, concurrency, encoding, 'warmup', false);
     }
@@ -347,14 +349,16 @@ async function main() {
     // later in the trial.
     const roundModes = round % 2 === 0 ? modes.toReversed() : modes;
     console.log('[download benchmark:round]', `round=${round}`, `order=${roundModes.join(',')}`);
-    for (const mode of roundModes) {
+    for (let i = 0, len = roundModes.length; i < len; i++) {
+      const mode = roundModes[i];
       // eslint-disable-next-line no-await-in-loop -- modes intentionally run separately for comparable totals
       const result = await runMode(mode, urls, concurrency, encoding, round);
       results.get(mode)?.push(result);
     }
   }
 
-  for (const mode of modes) {
+  for (let i = 0, len = modes.length; i < len; i++) {
+    const mode = modes[i];
     printModeSummary(mode, results.get(mode) ?? []);
   }
 }
