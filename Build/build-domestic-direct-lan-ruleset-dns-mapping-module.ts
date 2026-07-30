@@ -207,6 +207,10 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
             const ruleset_name = cur[0].toLowerCase();
             const { domains, dns, hosts, ruleset } = cur[1];
 
+            if (dns == null) {
+              return acc;
+            }
+
             Object.entries(hosts).forEach(([dns, ips]) => {
               acc[dns] ||= ips.join(', ');
             });
