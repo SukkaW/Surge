@@ -30,7 +30,7 @@ export const writeFile: Write = async (destination: string, input, dir = dirname
   return fsp.writeFile(destination, input, { encoding: 'utf-8' });
 };
 
-export function withBannerArray(title: string, description: string[] | readonly string[], date: Date, content: string[]) {
+export function withBannerArray(title: string, description: string[] | readonly string[], date: Date, content: string[], contentHash: string | null = null) {
   const result: string[] = [
     '#########################################',
     `# ${title}`,
@@ -39,6 +39,10 @@ export function withBannerArray(title: string, description: string[] | readonly 
   ];
 
   appendArrayInPlace(result, description.map(line => (line ? `# ${line}` : '#')));
+
+  if (contentHash) {
+    result.push('#', `# ${contentHash}`);
+  }
 
   result.push('#########################################');
 

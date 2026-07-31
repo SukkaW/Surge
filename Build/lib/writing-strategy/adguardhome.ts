@@ -13,7 +13,7 @@ export class AdGuardHome extends BaseWriteStrategy {
   protected result: string[] = [];
 
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- abstract method
-  withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[] {
+  withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[], contentHash: string | null): string[] {
     return [
       `! Title: ${title}`,
       '! Last modified: ' + date.toUTCString(),
@@ -21,6 +21,7 @@ export class AdGuardHome extends BaseWriteStrategy {
       '! License: https://github.com/SukkaW/Surge/blob/master/LICENSE',
       '! Homepage: https://github.com/SukkaW/Surge',
       `! Description: ${description.join(' ')}`,
+      ...(contentHash ? [`! ${contentHash}`] : []),
       '!',
       ...content,
       '! EOF'

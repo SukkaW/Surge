@@ -1,4 +1,5 @@
 import type { Span } from '../../trace';
+import { calculateContentHash } from '../content-hash';
 import { compareAndWriteFile } from '../create-file';
 
 /**
@@ -44,7 +45,7 @@ export abstract class BaseWriteStrategy {
   abstract writeProtocols(protocol: Set<string>): void;
   abstract writeOtherRules(rule: string[]): void;
 
-  protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[]): string[];
+  protected abstract withPadding(title: string, description: string[] | readonly string[], date: Date, content: string[], contentHash: string | null): string[];
 
   public output(
     span: Span,
@@ -53,9 +54,16 @@ export abstract class BaseWriteStrategy {
     date: Date,
     filePath: string
   ): void | Promise<void> {
-    if (!this.result) {
+    const result = this.result;
+    if (!result) {
       return;
     }
+
+    // The hash covers the real content (title, description and rules) but not the
+    // volatile date, so compareAndWriteFile can bail out by only reading the head
+    // of the previous output. Strategies whose withPadding doesn't embed the marker
+    // (e.g. JSON output) simply fall back to the full comparison.
+    const contentHash = calculateContentHash(title, description, result);
 
     return compareAndWriteFile(
       span,
@@ -63,9 +71,11 @@ export abstract class BaseWriteStrategy {
         title,
         description,
         date,
-        this.result
+        result,
+        contentHash
       ),
-      filePath
+      filePath,
+      contentHash
     );
   };
 
