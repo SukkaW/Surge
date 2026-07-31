@@ -6,6 +6,7 @@ import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { HostnameSmolTrie } from 'hntrie/smol';
 import { task } from './trace';
+import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 
 const ENFORCED_WHITELIST = [
   'hola.sk',
@@ -93,7 +94,7 @@ async function dedupeFile(file: string, whitelist: HostnameSmolTrie) {
     result.push(line);
   }
 
-  return fsp.writeFile(file, result.join('\n') + '\n');
+  return fsp.writeFile(file, fastStringArrayJoin(result, '\n') + '\n');
 }
 
 // function isDomainSuffix(whiteItem: string, incomingItem: string) {

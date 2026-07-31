@@ -29,7 +29,7 @@
     "domain-alive": "^0.1.23",
     "fast-cidr-tools": "^0.3.4",
     "fast-escape-regexp": "^1.0.1",
-    "fast-uri": "^4.1.1",
+    "fast-uri": "^4.1.2",
     "fdir": "^6.5.0",
     "fnv1a52": "^1.0.0",
     "hash-wasm": "^4.12.0",
@@ -40,8 +40,8 @@
     "tar-fs": "^3.1.3",
     "telegram": "^2.26.22",
     "tinyglobby": "^0.2.17",
-    "tldts": "^7.4.9",
-    "tldts-experimental": "^7.4.9",
+    "tldts": "^7.4.10",
+    "tldts-experimental": "^7.4.10",
     "undici": "^8.9.0",
     "undici-cache-store-better-sqlite3": "^1.1.0",
     "why-is-node-running": "^3.2.2",
@@ -70,5 +70,5 @@
     "tinyexec": "^1.2.4",
     "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@11.17.0"
+  "packageManager": "pnpm@11.18.0"
 }
