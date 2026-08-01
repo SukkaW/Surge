@@ -2,7 +2,8 @@
 // apv3.stel.com tapv3.stel.com
 import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
-import { Api, extensions as TgExtensions } from 'telegram';
+import { BinaryReader as TgBinaryReader } from 'telegram/extensions/BinaryReader';
+import { Api as TgApi } from 'telegram/tl/api';
 import { bigint2ip } from 'fast-cidr-tools';
 
 import { base64ToUint8Array, concatUint8Arrays } from 'foxts/uint8array-utils';
@@ -76,24 +77,24 @@ export function getTelegramBackupIPFromBase64(base64: string) {
     throw new Error('SHA256 hash mismatch');
   }
 
-  const parser = new TgExtensions.BinaryReader(Buffer.from(decryptedCbc.buffer, decryptedCbc.byteOffset, decryptedCbc.byteLength));
+  const parser = new TgBinaryReader(Buffer.from(decryptedCbc.buffer, decryptedCbc.byteOffset, decryptedCbc.byteLength));
   const len = parser.readInt();
   if (len < 8 || len > 208) throw new Error(`Invalid TL data length: ${len}`);
 
   const constructorId = parser.readInt();
 
-  if (constructorId !== Api.help.ConfigSimple.CONSTRUCTOR_ID) {
+  if (constructorId !== TgApi.help.ConfigSimple.CONSTRUCTOR_ID) {
     throw new Error(`Invalid constructor ID: ${constructorId.toString(16)}`);
   }
 
   const payload = decryptedCbc.subarray(8, len);
 
-  const configSimple = Api.help.ConfigSimple.fromReader(new TgExtensions.BinaryReader(Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength)));
+  const configSimple = TgApi.help.ConfigSimple.fromReader(new TgBinaryReader(Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength)));
 
   return configSimple.rules.flatMap(rule => rule.ips.map(ip => {
     switch (ip.CONSTRUCTOR_ID) {
-      case Api.IpPort.CONSTRUCTOR_ID:
-      case Api.IpPortSecret.CONSTRUCTOR_ID:
+      case TgApi.IpPort.CONSTRUCTOR_ID:
+      case TgApi.IpPortSecret.CONSTRUCTOR_ID:
         return {
           ip: bigint2ip(
             ip.ipv4 > 0
