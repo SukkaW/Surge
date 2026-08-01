@@ -246,8 +246,8 @@ export const buildRedirectModule = task(require.main === module, __filename)(asy
 });
 
 const modifiers = [
-  '$urltransform', // AdGuard
-  '$uritransform' // uBlock Origin
+  'urltransform', // AdGuard
+  'uritransform' // uBlock Origin
 ];
 
 function uBOUriTransformGenerator(acc: string[], [from, to, canUboUriTransform]: [from: string, to: string, canUboUriTransform?: boolean]): string[] {
