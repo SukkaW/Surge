@@ -28,6 +28,7 @@ import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
 import { isCI } from 'ci-info';
 import { printExternalDownloadStats } from './lib/download-stats';
+import { endOutputWorkerFarm } from './lib/rules/output-worker-farm';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -130,7 +131,9 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       microsoftCdnWorker.end(),
       cdnDownloadWorker.end(),
       telegramCidrWorker.end(),
-      mockAssetsWorker.end()
+      mockAssetsWorker.end(),
+      // defensive: no-op unless some FileOutput crossed the offload threshold
+      endOutputWorkerFarm()
     ]);
 
     // Finish the build to avoid leaking timer/fetch ref

@@ -1,7 +1,7 @@
 import { isCI } from 'ci-info';
 import type { Span } from '../../trace';
 import { calculateContentHash } from '../content-hash';
-import { compareAndWriteFile, writeFileLines } from '../create-file';
+import { compareAndWriteFile, compareAndWriteFileInWorker, writeFileLines, writeFileLinesSync } from '../create-file';
 
 /**
  * The class is not about holding rule data, instead it determines how the
@@ -97,6 +97,47 @@ export abstract class BaseWriteStrategy {
       contentHash
     );
   };
+
+  /**
+   * Worker-thread twin of {@link output}: identical comparison, but the write is
+   * synchronous since blocking a dedicated worker costs nothing.
+   */
+  public async outputInWorker(
+    span: Span,
+    title: string,
+    description: string[] | readonly string[],
+    date: Date,
+    filePath: string
+  ): Promise<void> {
+    const result = this.result;
+    if (!result) {
+      return;
+    }
+
+    if (isCI && this.skipCompareOnCI) {
+      writeFileLinesSync(
+        span,
+        this.withPadding(title, description, date, result, null),
+        filePath
+      );
+      return;
+    }
+
+    const contentHash = calculateContentHash(title, description, result);
+
+    await compareAndWriteFileInWorker(
+      span,
+      this.withPadding(
+        title,
+        description,
+        date,
+        result,
+        contentHash
+      ),
+      filePath,
+      contentHash
+    );
+  }
 
   public get content() {
     return this.result;

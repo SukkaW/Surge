@@ -1,16 +1,24 @@
 import type { Span } from '../../trace';
 import { HostnameSmolTrie } from 'hntrie/smol';
-import { domainToASCII } from 'node:url';
 import { not, nullthrow } from 'foxts/guard';
 import { fastIpVersion } from 'foxts/fast-ip-version';
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import type { MaybePromise } from '../misc';
 import type { BaseWriteStrategy } from '../writing-strategy/base';
-import { merge as mergeCidr } from 'fast-cidr-tools';
-import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
-import path from 'node:path';
 import { SurgeMitmSgmodule } from '../writing-strategy/surge';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
+import { isMainThread } from 'node:worker_threads';
+import { resolveStrategyOutputPath, serializeStrategy, writeDataToStrategies } from './strategy-write-data';
+import type { OutputWorkerPayload, StrategyWriteData } from './strategy-write-data';
+import { getOutputWorkerFarm } from './output-worker-farm';
+
+/**
+ * Below this many dumped domain entries, formatting + hashing + writing inline is
+ * cheaper than a worker round trip (and avoids tiny outputs queueing behind big
+ * jobs in the farm). Today only the reject domainsets / adguardhome outputs cross
+ * this threshold.
+ */
+const OUTPUT_WORKER_THRESHOLD = 20000;
 
 /**
  * Holds the universal rule data (domain, ip, url-regex, etc. etc.)
@@ -399,7 +407,42 @@ export class FileOutput {
   // }
   private strategiesWritten = false;
 
-  private writeToStrategies() {
+  /** Collect the trie content, '.'-prefix encoded, WITHOUT punycoding (that happens in the fanout) */
+  private dumpDomains(): string[] {
+    const domains: string[] = [];
+    this.domainTrie.dump((domain, includeSubdomain) => {
+      domains.push(includeSubdomain ? '.' + domain : domain);
+    });
+    return domains;
+  }
+
+  private buildStrategyWriteData(domains: string[]): StrategyWriteData {
+    return {
+      domains,
+      domainKeywords: Array.from(this.domainKeywords),
+      whitelistKeywords: Array.from(this.whitelistKeywords),
+      wildcards: Array.from(this.wildcardSet),
+      userAgents: Array.from(this.userAgent),
+      processNames: Array.from(this.processName),
+      processPaths: Array.from(this.processPath),
+      urlRegexes: Array.from(this.urlRegex),
+      ipcidr: Array.from(this.ipcidr),
+      ipcidrNoResolve: Array.from(this.ipcidrNoResolve),
+      ipcidr6: Array.from(this.ipcidr6),
+      ipcidr6NoResolve: Array.from(this.ipcidr6NoResolve),
+      ipasn: Array.from(this.ipasn),
+      ipasnNoResolve: Array.from(this.ipasnNoResolve),
+      geoip: Array.from(this.geoip),
+      geoipNoResolve: Array.from(this.groipNoResolve),
+      sourceIpOrCidr: Array.from(this.sourceIpOrCidr),
+      sourcePort: Array.from(this.sourcePort),
+      destPort: Array.from(this.destPort),
+      protocol: Array.from(this.protocol),
+      otherRules: this.otherRules
+    };
+  }
+
+  private guardBeforeWritingToStrategies() {
     if (this.pendingPromise) {
       throw new Error('You should call done() before calling writeToStrategies()');
     }
@@ -412,186 +455,73 @@ export class FileOutput {
     if (this.strategies.filter(not(false)).length === 0) {
       throw new Error('No strategies to write ' + this.id);
     }
+  }
 
-    // We use both DOMAIN-KEYWORD and whitelisted keyword to whitelist DOMAIN and DOMAIN-SUFFIX
-    const kwfilter = createKeywordFilter(
-      Array.from(this.domainKeywords)
-        .concat(Array.from(this.whitelistKeywords))
-    );
-
-    const strategiesLen = this.strategies.length;
-
-    const domainEntries: Array<[domain: string, subdomain: boolean]> = [];
-    this.domainTrie.dump((domain, includeSubdomain) => {
-      const d = domainToASCII(domain);
-      if (d) domainEntries.push([d, includeSubdomain]);
-    });
-    domainEntries.sort((a, b) => (a[0].length - b[0].length) || (a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0)));
-    for (let j = 0, entriesLen = domainEntries.length; j < entriesLen; j++) {
-      const [domain, includeAllSubdomain] = domainEntries[j];
-      if (kwfilter(domain)) {
-        continue;
-      }
-
-      for (let i = 0; i < strategiesLen; i++) {
-        const strategy = this.strategies[i];
-        if (includeAllSubdomain) {
-          strategy.writeDomainSuffix(domain);
-        } else {
-          strategy.writeDomain(domain);
-        }
-      }
-    }
-
-    // Now, we whitelisted out DOMAIN-KEYWORD
-    const whiteKwfilter = createKeywordFilter(Array.from(this.whitelistKeywords));
-    const whitelistedKeywords = Array.from(this.domainKeywords).filter(kw => !whiteKwfilter(kw));
-
-    for (let i = 0; i < strategiesLen; i++) {
-      const strategy = this.strategies[i];
-      if (whitelistedKeywords.length) {
-        strategy.writeDomainKeywords(this.domainKeywords);
-      }
-
-      if (this.protocol.size) {
-        strategy.writeProtocols(this.protocol);
-      }
-    }
-
-    if (this.wildcardSet.size) {
-      this.wildcardSet.forEach((wildcard) => {
-        // Overlapped w/ DOMAIN-kEYWORD
-        if (kwfilter(wildcard)) {
-          return;
-        }
-
-        for (let i = 0; i < strategiesLen; i++) {
-          const strategy = this.strategies[i];
-          strategy.writeDomainWildcard(wildcard);
-        }
-      });
-    }
-
-    const sourceIpOrCidr = Array.from(this.sourceIpOrCidr);
-
-    for (let i = 0; i < strategiesLen; i++) {
-      const strategy = this.strategies[i];
-
-      if (this.userAgent.size) {
-        strategy.writeUserAgents(this.userAgent);
-      }
-      if (this.processName.size) {
-        strategy.writeProcessNames(this.processName);
-      }
-      if (this.processPath.size) {
-        strategy.writeProcessPaths(this.processPath);
-      }
-
-      if (this.sourceIpOrCidr.size) {
-        strategy.writeSourceIpCidrs(sourceIpOrCidr);
-      }
-
-      if (this.sourcePort.size) {
-        strategy.writeSourcePorts(this.sourcePort);
-      }
-      if (this.destPort.size) {
-        strategy.writeDestinationPorts(this.destPort);
-      }
-      if (this.otherRules.length) {
-        strategy.writeOtherRules(this.otherRules);
-      }
-      if (this.urlRegex.size) {
-        strategy.writeUrlRegexes(this.urlRegex);
-      }
-    }
-
-    let ipcidr: string[] | null = null;
-    let ipcidrNoResolve: string[] | null = null;
-    let ipcidr6: string[] | null = null;
-    let ipcidr6NoResolve: string[] | null = null;
-
-    if (this.ipcidr.size) {
-      ipcidr = mergeCidr(Array.from(this.ipcidr), true);
-    }
-    if (this.ipcidrNoResolve.size) {
-      ipcidrNoResolve = mergeCidr(Array.from(this.ipcidrNoResolve), true);
-    }
-    if (this.ipcidr6.size) {
-      ipcidr6 = Array.from(this.ipcidr6);
-    }
-    if (this.ipcidr6NoResolve.size) {
-      ipcidr6NoResolve = Array.from(this.ipcidr6NoResolve);
-    }
-
-    for (let i = 0; i < strategiesLen; i++) {
-      const strategy = this.strategies[i];
-      // no-resolve
-      if (ipcidrNoResolve) {
-        strategy.writeIpCidrs(ipcidrNoResolve, true);
-      }
-      if (ipcidr6NoResolve) {
-        strategy.writeIpCidr6s(ipcidr6NoResolve, true);
-      }
-      if (this.ipasnNoResolve.size) {
-        strategy.writeIpAsns(this.ipasnNoResolve, true);
-      }
-      if (this.groipNoResolve.size) {
-        strategy.writeGeoip(this.groipNoResolve, true);
-      }
-
-      // triggers DNS resolution
-      if (ipcidr?.length) {
-        strategy.writeIpCidrs(ipcidr, false);
-      }
-      if (ipcidr6?.length) {
-        strategy.writeIpCidr6s(ipcidr6, false);
-      }
-      if (this.ipasn.size) {
-        strategy.writeIpAsns(this.ipasn, false);
-      }
-      if (this.geoip.size) {
-        strategy.writeGeoip(this.geoip, false);
-      }
-    }
+  private writeToStrategies(domains: string[]) {
+    this.guardBeforeWritingToStrategies();
+    writeDataToStrategies(this.buildStrategyWriteData(domains), this.strategies);
   }
 
   write(): Promise<unknown> {
     return this.span.traceChildAsync('write all', async (childSpan) => {
       await childSpan.traceChildAsync('done', () => this.done());
 
-      childSpan.traceChildSync('write to strategies', () => this.writeToStrategies());
+      const domains = childSpan.traceChildSync('dump domain trie', () => this.dumpDomains());
+
+      const title = nullthrow(this.title, 'Missing title');
+      const descriptions = nullthrow(this.description, 'Missing description');
+
+      if (this.dataSource.size) {
+        descriptions.push(
+          '',
+          'This file contains data from:'
+        );
+        appendArrayInPlace(descriptions, Array.from(this.dataSource).sort().map((source) => `  - ${source}`));
+      }
+
+      // Big outputs offload everything from punycode to the write onto a worker
+      // thread: the payload crosses in a few ms (flat string arrays structured-clone
+      // cheaply), the main-thread event loop stays free, and the worker writes
+      // synchronously so no completion ever waits on a busy main thread.
+      //
+      // Only worth doing from the main thread -- tasks that already run entirely on
+      // a worker (build-microsoft-cdn, build-telegram-cidr, build-cdn-download-conf)
+      // are not contending with anything, and must not spawn a nested worker farm.
+      if (isMainThread && domains.length >= OUTPUT_WORKER_THRESHOLD) {
+        this.guardBeforeWritingToStrategies();
+
+        const payload: OutputWorkerPayload = {
+          id: this.id,
+          title,
+          description: descriptions,
+          dateMs: this.date.getTime(),
+          strategies: this.strategies.map(serializeStrategy),
+          data: this.buildStrategyWriteData(domains)
+        };
+
+        return childSpan.traceWorkerChild(
+          'write via output worker',
+          rawSpan => getOutputWorkerFarm().writeOutput(rawSpan, payload)
+        );
+      }
+
+      childSpan.traceChildSync('write to strategies', () => this.writeToStrategies(domains));
 
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
         const promises: Array<Promise<void>> = [];
 
-        const descriptions = nullthrow(this.description, 'Missing description');
-
-        if (this.dataSource.size) {
-          descriptions.push(
-            '',
-            'This file contains data from:'
-          );
-          appendArrayInPlace(descriptions, Array.from(this.dataSource).sort().map((source) => `  - ${source}`));
-        }
-
         for (let i = 0, len = this.strategies.length; i < len; i++) {
           const strategy = this.strategies[i];
-
-          const basename = (strategy.overwriteFilename || this.id) + '.' + strategy.fileExtension;
+          const filePath = resolveStrategyOutputPath(strategy, this.id);
 
           promises.push(
-            childSpan.traceChildAsync('write ' + strategy.name, (childSpan) => Promise.resolve(strategy.output(
-              childSpan,
-              nullthrow(this.title, 'Missing title'),
-              descriptions,
-              this.date,
-              path.join(
-                strategy.outputDir,
-                strategy.type
-                  ? path.join(strategy.type, basename)
-                  : basename
-              )
-            )))
+            childSpan.traceChildAsync('write ' + strategy.name, (childSpan) => Promise.resolve(
+              // Already off the main thread: block on the write instead of handing
+              // the completion back through libuv.
+              isMainThread
+                ? strategy.output(childSpan, title, descriptions, this.date, filePath)
+                : strategy.outputInWorker(childSpan, title, descriptions, this.date, filePath)
+            ))
           );
         }
 
@@ -602,7 +532,7 @@ export class FileOutput {
 
   async compile(): Promise<Array<string[] | null>> {
     await this.done();
-    this.writeToStrategies();
+    this.writeToStrategies(this.dumpDomains());
 
     return this.strategies.reduce<Array<string[] | null>>((acc, strategy) => {
       acc.push(strategy.content);
