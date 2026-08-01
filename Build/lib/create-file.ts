@@ -1,4 +1,3 @@
-import { asyncWriteToStream } from 'foxts/async-write-to-stream';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import fs from 'node:fs';
 import picocolors from 'picocolors';
@@ -6,7 +5,6 @@ import type { Span } from '../trace';
 import { readFileByLine } from './fetch-text-by-line';
 import { writeFile } from './misc';
 import { createCompareSource, fileEqualWithCommentComparator } from 'foxts/compare-source';
-import { promisify } from 'node:util';
 import { extractContentHashFromFile } from './content-hash';
 
 const fileEqual = createCompareSource(fileEqualWithCommentComparator);
@@ -49,26 +47,12 @@ export async function compareAndWriteFile(span: Span, linesA: string[], filePath
     return;
   }
 
-  return span.traceChildAsync<void>(`writing ${filePath}`, async () => {
-    const linesALen = linesA.length;
+  return writeFileLines(span, linesA, filePath);
+}
 
-    // The default highwater mark is normally 16384,
-    // So we make sure direct write to file if the content is
-    // most likely less than 250 lines
-    if (linesALen < 250) {
-      return writeFile(filePath, fastStringArrayJoin(linesA, '\n'));
-    }
-
-    const writeStream = fs.createWriteStream(filePath);
-    for (let i = 0; i < linesALen; i++) {
-      const p = asyncWriteToStream(writeStream, linesA[i] + '\n');
-      // eslint-disable-next-line no-await-in-loop -- stream high water mark
-      if (p) await p;
-    }
-    await new Promise<void>(resolve => {
-      // Since we previously poped the last empty line for comparison, we need to add it back here to ensure final EOF line
-      writeStream.end(resolve);
-    });
-    await promisify(writeStream.close.bind(writeStream))();
-  });
+export function writeFileLines(span: Span, linesA: string[], filePath: string): Promise<void> {
+  return span.traceChildAsync<void>(
+    `writing ${filePath}`,
+    () => writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n')
+  );
 }
