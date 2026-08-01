@@ -1,6 +1,7 @@
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 
 /**
@@ -62,6 +63,21 @@ async function readFileHead(filePath: string): Promise<string> {
  */
 export async function extractContentHashFromFile(filePath: string): Promise<string | null> {
   return extractContentHash(await readFileHead(filePath));
+}
+
+/** Synchronous variant of {@link extractContentHashFromFile}, for worker threads where blocking is fine */
+export function extractContentHashFromFileSync(filePath: string): string | null {
+  let fd: number | null = null;
+  try {
+    fd = fs.openSync(filePath, 'r');
+    const buf = Buffer.allocUnsafe(FILE_HEAD_CHUNK_SIZE);
+    const bytesRead = fs.readSync(fd, buf, 0, FILE_HEAD_CHUNK_SIZE, 0);
+    return extractContentHash(buf.toString('utf8', 0, bytesRead));
+  } finally {
+    if (fd !== null) {
+      fs.closeSync(fd);
+    }
+  }
 }
 
 function extractContentHash(fileHead: string): string | null {
