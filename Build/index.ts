@@ -28,7 +28,7 @@ import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
 import { isCI } from 'ci-info';
 import { printExternalDownloadStats } from './lib/download-stats';
-import { endOutputWorkerFarm } from './lib/rules/output-worker-farm';
+import { endOutputWorkerFarm, warmOutputWorkerFarm } from './lib/rules/output-worker-farm';
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
@@ -85,6 +85,11 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     require.resolve('./download-mock-assets.worker')
   )(['downloadMockAssets']);
 
+  // Shared by any task whose FileOutput crosses the offload threshold. Booted here
+  // rather than inside a task so the ~250ms thread spin-up overlaps the downloads
+  // instead of landing on the critical path when the writes finally dispatch.
+  warmOutputWorkerFarm();
+
   try {
     // only enable why-is-node-running in GitHub Actions debug mode
     if (isCI && process.env.RUNNER_DEBUG === '1') {
@@ -132,7 +137,6 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       cdnDownloadWorker.end(),
       telegramCidrWorker.end(),
       mockAssetsWorker.end(),
-      // defensive: no-op unless some FileOutput crossed the offload threshold
       endOutputWorkerFarm()
     ]);
 

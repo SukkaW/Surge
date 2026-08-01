@@ -21,6 +21,16 @@ export function getOutputWorkerFarm(): OutputWorkerFarm {
   return farm;
 }
 
+/**
+ * Boot the farm ahead of time. Spawning the threads costs ~200-300ms (each loads
+ * @swc-node/register and compiles the module graph), and since every big output
+ * dispatches at the very end of a task, that cost otherwise lands entirely on the
+ * critical path. Call this as early as the task starts so it overlaps the downloads.
+ */
+export function warmOutputWorkerFarm(): void {
+  getOutputWorkerFarm();
+}
+
 export async function endOutputWorkerFarm(): Promise<void> {
   if (farm) {
     const f = farm;

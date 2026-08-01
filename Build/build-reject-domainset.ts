@@ -19,7 +19,6 @@ import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput, AdGuardHomeOutput } from './lib/rules/domainset';
 import { foundDebugDomain } from './lib/parse-filter/shared';
 import { createWorker } from './lib/worker';
-import { endOutputWorkerFarm } from './lib/rules/output-worker-farm';
 import type { MaybePromise } from './lib/misc';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
@@ -308,8 +307,5 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/my_reject.conf')))
     .write();
 
-  await Promise.all([
-    phishingWorker.end(),
-    endOutputWorkerFarm()
-  ]);
+  await phishingWorker.end();
 });
