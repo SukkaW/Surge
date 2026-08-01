@@ -154,6 +154,9 @@ export class SurgeMitmSgmodule extends BaseWriteStrategy {
 
   private readonly rules = new Set<string>();
 
+  // #!desc only carries a size derived from the rules, no volatile date
+  protected override readonly skipCompareOnCI = true;
+
   protected get result() {
     if (this.rules.size === 0) {
       return null;

@@ -1,6 +1,7 @@
+import { isCI } from 'ci-info';
 import type { Span } from '../../trace';
 import { calculateContentHash } from '../content-hash';
-import { compareAndWriteFile } from '../create-file';
+import { compareAndWriteFile, writeFileLines } from '../create-file';
 
 /**
  * The class is not about holding rule data, instead it determines how the
@@ -26,6 +27,14 @@ export abstract class BaseWriteStrategy {
   constructor(public readonly outputDir: string) {}
 
   protected abstract result: string[] | null;
+
+  /**
+   * Whether the output has no volatile metadata (e.g. "Last Updated") to preserve,
+   * so on CI the previous file can simply be overwritten without comparison (the
+   * comparison would only serve to reduce SSD wear, which CI doesn't care about).
+   * Only enable this when withPadding emits neither a banner nor any date.
+   */
+  protected readonly skipCompareOnCI: boolean = false;
 
   abstract writeDomain(domain: string): void;
   abstract writeDomainSuffix(domain: string): void;
@@ -57,6 +66,16 @@ export abstract class BaseWriteStrategy {
     const result = this.result;
     if (!result) {
       return;
+    }
+
+    // Without volatile metadata to preserve, the compare-before-write only serves
+    // to reduce SSD wear -- irrelevant on CI, so skip hashing and comparison alike.
+    if (isCI && this.skipCompareOnCI) {
+      return writeFileLines(
+        span,
+        this.withPadding(title, description, date, result, null),
+        filePath
+      );
     }
 
     // The hash covers the real content (title, description and rules) but not the

@@ -34,6 +34,9 @@ export class SingboxSource extends BaseWriteStrategy {
 
   static readonly jsonToLines = (json: unknown): string[] => stringify(json).split('\n');
 
+  // JSON output has no metadata comment at all, nothing to preserve
+  protected override readonly skipCompareOnCI = true;
+
   private readonly singbox: SingboxHeadlessRule = {
     domain: [MARKER_DOMAIN],
     domain_suffix: [MARKER_DOMAIN]
