@@ -54,8 +54,8 @@ importers:
         specifier: ^4.12.0
         version: 4.12.0
       hntrie:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.1.0
+        version: 1.1.0
       json-stringify-pretty-compact:
         specifier: 4.0.0
         version: 4.0.0
@@ -1509,8 +1509,8 @@ packages:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
 
-  hntrie@1.0.1:
-    resolution: {integrity: sha512-k3OIFupPUGL1WrAiZ0Xa5on/vE/MKlub7ZQtEH0AfzfskMqq4/H6xgSqMeCXzVgNDWruP/Ff+9O5mHRzL4XZyg==}
+  hntrie@1.1.0:
+    resolution: {integrity: sha512-OQcAZvpOKpwFOq30q93YgpaE3EEcTMnU2+QMuLuwat1RXasAfPV7F/SUQI8z1vJLVxIJshLphRlXMnF+tvRpDQ==}
 
   htmlparser2@6.1.0:
     resolution: {integrity: sha512-gyyPk6rgonLFEDGoeRgQNaEUvdJ4ktTmmUh/h2t7s+M8oPpIPxgNACWa+6ESR57kXstwqPiCut0V8NRpcwgU7A==}
@@ -3380,7 +3380,7 @@ snapshots:
 
   he@1.2.0: {}
 
-  hntrie@1.0.1:
+  hntrie@1.1.0:
     dependencies:
       foxts: 5.8.1
 

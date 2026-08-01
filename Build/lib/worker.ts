@@ -3,7 +3,6 @@ import type { JestWorkerFarm } from 'jest-worker';
 import { Worker as JestWorker } from 'jest-worker';
 
 const sharedWorkerOptions = {
-  numWorkers: 1,
   enableWorkerThreads: true,
   forkOptions: {
     env: {
@@ -13,10 +12,11 @@ const sharedWorkerOptions = {
   }
 } satisfies ConstructorParameters<typeof JestWorker>[1];
 
-export function createWorker<T extends Record<string, unknown>>(workerPath: string) {
+export function createWorker<T extends Record<string, unknown>>(workerPath: string, numWorkers = 1) {
   return <const K extends ReadonlyArray<keyof T & string>>(exposedMethods: K): JestWorkerFarm<Pick<T, K[number]>> => {
     const worker = new JestWorker(workerPath, {
       ...sharedWorkerOptions,
+      numWorkers,
       exposedMethods
     }) as JestWorkerFarm<Pick<T, K[number]>>;
 
