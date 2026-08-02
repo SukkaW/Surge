@@ -6,6 +6,7 @@ import { downloadPreviousBuild } from './download-previous-build';
 import { buildCommon } from './build-common';
 import { buildRejectIPList } from './build-reject-ip-list';
 import { buildAppleCdn } from './build-apple-cdn';
+import { buildAICIDR } from './build-ai-cidr';
 import { buildRejectDomainSet } from './build-reject-domainset';
 import { buildChnCidr } from './build-chn-cidr';
 import { buildSpeedtestDomainSet } from './build-speedtest-domainset';
@@ -103,6 +104,7 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
       downloadPreviousBuildPromise.then(() => buildCommon()),
       downloadPreviousBuildPromise.then(() => buildRejectIPList()),
       downloadPreviousBuildPromise.then(() => buildAppleCdn()),
+      downloadPreviousBuildPromise.then(() => buildAICIDR()),
       downloadPreviousBuildPromise.then(() => cdnDownloadWorker.buildCdnDownloadConf()),
       downloadPreviousBuildPromise.then(() => buildRejectDomainSet()),
       downloadPreviousBuildPromise.then(() => telegramCidrWorker.buildTelegramCIDR()),
