@@ -423,14 +423,20 @@ rules:
 
 #### AI
 
-- 域名规则 人工维护
+- 域名和 IP 规则，人工维护 + 自动更新
 - 包含 OpenAI、Google Gemini、Claude、Perplexity 等
 
 **Surge**
 
 ```ini
+# Non IP
 RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,[Replace with your policy],extended-matching
+```
+
+```ini
+# IP
+RULE-SET,https://ruleset.skk.moe/List/ip/ai.conf,[Replace with your policy]
 ```
 
 **Mihomo**
@@ -451,10 +457,19 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/apple_intelligence.txt
     path: ./sukkaw_ruleset/apple_intelligence_non_ip.txt
+  ai_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/ai.txt
+    path: ./sukkaw_ruleset/ai_ip.txt
 
 rules:
   - RULE-SET,ai_non_ip,[Replace with your policy]
   - RULE-SET,apple_intelligence_non_ip,[Replace with your policy]
+
+  - RULE-SET,ai_ip,[Replace with your policy]
 ```
 
 #### Telegram
