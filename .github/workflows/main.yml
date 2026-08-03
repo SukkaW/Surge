@@ -174,11 +174,22 @@ jobs:
     env:
       WRANGLER_VERSION: "3.114.17"
     steps:
+      # Download the artifact in the background while the npm cache path is queried
+      - uses: actions/download-artifact@v8
+        id: download_build_artifact
+        background: true
+        with:
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
+          path: public
       - name: Get NPM cache directory path
         id: npm_cache_path
         shell: sh
         run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
-      - uses: actions/cache@v6
+      # Only the Cloudflare deploy needs this cache, restore in background
+      - name: Wrangler CLI npm cache
+        id: wrangler_npm_cache
+        uses: actions/cache@v6
+        background: true
         with:
           path: |
             ${{ steps.npm_cache_path.outputs.dir }}
@@ -186,29 +197,18 @@ jobs:
           key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ env.WRANGLER_VERSION }}
           restore-keys: |
             deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-
-      - uses: actions/download-artifact@v8
-        with:
-          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
-          path: public
       - name: Prepare GitHub Pages deployment marker
         id: deploy_marker
         run: |
           echo "marker_content=${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
+      # Wait for the artifact to be downloaded before deploying
+      - wait: download_build_artifact
       - name: Remove build artifact
         uses: geekyeggo/delete-artifact@v6
         background: true
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
       # Deploy to Cloudflare, GitLab, and GitHub in parallel
-      - name: Deploy to Cloudflare Pages
-        id: deploy_cloudflare
-        uses: cloudflare/wrangler-action@v3
-        background: true
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-          wranglerVersion: ${{ env.WRANGLER_VERSION }}
       - name: Upload Dist to GitLab
         id: deploy_gitlab
         background: true
@@ -253,6 +253,18 @@ jobs:
           GH_EMAIL: ${{ secrets.GIT_EMAIL }}
           GH_USER: ${{ secrets.GIT_USER }}
           GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+      # Cloudflare deploy needs its npm cache restored first
+      - wait: wrangler_npm_cache
+      - name: Deploy to Cloudflare Pages
+        id: deploy_cloudflare
+        uses: cloudflare/wrangler-action@v3
+        background: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
+          wranglerVersion: ${{ env.WRANGLER_VERSION }}
+      # We wait for GitHub Dist to be deployed before checking its deployment status
       - wait: upload_dist_to_github
       - name: Wait for GitHub Pages to serve deployed marker
         if: steps.upload_dist_to_github.outcome == 'success'
