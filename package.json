@@ -41,7 +41,7 @@
     "tinyglobby": "^0.2.17",
     "tldts": "^7.4.10",
     "tldts-experimental": "^7.4.10",
-    "undici": "^8.9.0",
+    "undici": "^8.10.0",
     "undici-cache-store-better-sqlite3": "^1.1.0",
     "why-is-node-running": "^3.2.2",
     "xbits": "^0.2.0",
@@ -62,11 +62,11 @@
     "eslint": "^10.8.0",
     "eslint-config-sukka": "^8.14.2",
     "eslint-formatter-sukka": "^8.14.2",
-    "foxts": "^5.8.1",
+    "foxts": "^5.9.0",
     "jest-worker": "^30.4.1",
     "mitata": "^1.0.34",
     "mocha": "^11.8.0",
     "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@11.18.0"
+  "packageManager": "pnpm@11.20.0"
 }
