@@ -8,10 +8,18 @@ import type { RunnerGeoIP } from './lib/get-runner-geoip';
 
 import cliProgress from 'cli-progress';
 import { newQueue } from '@henrygd/queue';
+import { DOMAIN_ALIVE_REASON_MESSAGES } from 'domain-alive';
+import type { DomainAliveReason } from 'domain-alive';
 
 const queue = newQueue(32);
+const domainCollator = new Intl.Collator('en');
 
-const deadDomains: string[] = [];
+interface DeadDomain {
+  domain: string,
+  reason: DomainAliveReason
+}
+
+const deadDomains: DeadDomain[] = [];
 
 /**
  * Append this shard's result to the GitHub Actions job summary, if running in
@@ -23,23 +31,27 @@ function formatGeo(geo: RunnerGeoIP | null): string {
   return `${geo.ip} — ${geo.city}, ${geo.region}, ${geo.country} (AS${geo.asn} ${geo.asOrg})`;
 }
 
-function writeJobSummary(shardLabel: string, dead: string[], geo: RunnerGeoIP | null) {
+function writeJobSummary(shardLabel: string, dead: DeadDomain[], geo: RunnerGeoIP | null) {
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (!summaryPath) return;
+
+  const sortedDead = dead.toSorted((a, b) => domainCollator.compare(a.domain, b.domain));
 
   let summary = `## Dead domains — shard ${shardLabel}\n\n`
     + `Runner egress: \`${formatGeo(geo)}\`\n\n`
     + `Found **${dead.length}** dead domain(s) in this shard.\n\n`;
 
   if (dead.length > 0) {
-    summary += '<details><summary>Show list</summary>\n\n'
-      + '```\n'
-      + dead.join('\n') + '\n'
-      + '```\n\n'
+    summary += '<details><summary>Show list and reasons</summary>\n\n'
+      + '| Domain | Reason | Explanation |\n'
+      + '| --- | --- | --- |\n'
+      + sortedDead.map(({ domain, reason }) => (
+        `| \`${domain}\` | \`${reason}\` | ${DOMAIN_ALIVE_REASON_MESSAGES[reason]} |`
+      )).join('\n') + '\n\n'
       + '</details>\n\n'
-      // Machine-recoverable copy so the union can be scraped from summaries.
+      // Preserve the original machine-recoverable domain list format.
       + '```json\n'
-      + JSON.stringify(dead) + '\n'
+      + JSON.stringify(sortedDead.map(({ domain }) => domain)) + '\n'
       + '```\n\n';
   }
 
@@ -74,23 +86,26 @@ function writeJobSummary(shardLabel: string, dead: string[], geo: RunnerGeoIP | 
   for (let i = 0, len = shardDomains.length; i < len; i++) {
     const { domain, includeAllSubdomain } = shardDomains[i];
     queue.add(async () => {
-      let registerableDomainAlive, registerableDomain, alive: boolean | undefined;
-
       if (includeAllSubdomain) {
         // we only need to check apex domain, because we don't know if there is any stripped subdomain
-        ({ alive: registerableDomainAlive, registerableDomain } = await isRegisterableDomainAlive(domain));
-      } else {
-        ({ alive, registerableDomainAlive, registerableDomain } = await isDomainAlive(domain));
+        const { alive, registerableDomain, reason } = await isRegisterableDomainAlive(domain);
+        bar.increment();
+
+        if (!alive && registerableDomain) {
+          deadDomains.push({ domain: '.' + registerableDomain, reason });
+        }
+        return;
       }
 
+      const { alive, registerableDomainAlive, registerableDomain, reason } = await isDomainAlive(domain);
       bar.increment();
 
       if (!registerableDomainAlive) {
         if (registerableDomain) {
-          deadDomains.push('.' + registerableDomain);
+          deadDomains.push({ domain: '.' + registerableDomain, reason });
         }
-      } else if (!alive && !includeAllSubdomain && alive != null) {
-        deadDomains.push(domain);
+      } else if (!alive) {
+        deadDomains.push({ domain, reason });
       }
     });
   }
@@ -101,7 +116,7 @@ function writeJobSummary(shardLabel: string, dead: string[], geo: RunnerGeoIP | 
 
   console.log();
   console.log();
-  console.log(`[shard ${shardLabel}]`, JSON.stringify(deadDomains));
+  console.log(`[shard ${shardLabel}]`, JSON.stringify(deadDomains.map(({ domain }) => domain)));
 
   writeJobSummary(shardLabel, deadDomains, geo);
 })();
