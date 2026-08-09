@@ -174,6 +174,8 @@ const agent = new Agent({
   })
 );
 
+export { agent as fetchAgent };
+
 export interface FetchResponseProgress {
   onResponseStart?: (contentEncoding: string | null) => void,
   onEncodedBodyChunk?: (bytes: number) => void,

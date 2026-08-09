@@ -1,5 +1,5 @@
 import { createDomainAliveChecker, createRegisterableDomainAliveChecker } from 'domain-alive';
-import { $$fetch, fetchForDoH } from './fetch-retry';
+import { $$fetch, fetchAgent, fetchForDoH } from './fetch-retry';
 
 const dnsServers = [
   'https://8.8.8.8/dns-query', 'https://8.8.4.4/dns-query',
@@ -55,14 +55,13 @@ const dnsServers = [
 const resultCache = new Map();
 const registerableDomainResultCache = new Map();
 
-export async function getMethods() {
-  const customWhoisServersMapping = await (await ($$fetch('https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json'))).json() as any;
-
+export function createDomainAliveMethods(customWhoisServersMapping: Record<string, string>) {
   const isRegisterableDomainAlive = createRegisterableDomainAliveChecker({
     dns: {
       dnsServers,
       maxAttempts: 6,
-      customFetchForDoH: fetchForDoH as typeof fetch
+      customFetchForDoH: fetchForDoH as typeof fetch,
+      customAgentForDoH: fetchAgent
     },
     registerableDomainResultCache,
     whois: {
@@ -74,7 +73,8 @@ export async function getMethods() {
     dns: {
       dnsServers,
       maxAttempts: 6,
-      customFetchForDoH: fetchForDoH as typeof fetch
+      customFetchForDoH: fetchForDoH as typeof fetch,
+      customAgentForDoH: fetchAgent
     },
     registerableDomainResultCache,
     resultCache,
@@ -84,4 +84,10 @@ export async function getMethods() {
   });
 
   return { isRegisterableDomainAlive, isDomainAlive };
+}
+
+export async function getMethods() {
+  const customWhoisServersMapping = await (await ($$fetch('https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json'))).json() as Record<string, string>;
+
+  return createDomainAliveMethods(customWhoisServersMapping);
 };
