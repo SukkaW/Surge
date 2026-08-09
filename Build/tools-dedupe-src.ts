@@ -20,13 +20,11 @@ const ENFORCED_WHITELIST = [
   'samsungcloudsolution.com',
   'samsungcloudsolution.net',
   'samsungqbe.com',
-  'ntp.api.bz',
-  'cdn.tuk.dev',
-  'vocadb-analytics.fly.dev',
-  'img.vim-cn.com'
+  'vocadb-analytics.fly.dev'
 ];
 
-const DEDUPE_LIST: string[] = ['127.atlas.skk.moe', 'ntp.api.bz', 'httpdns.bilivideo.com', 'dns.qiyipic.iqiyi.com', 'cdn.graph.office.net', 'dns.iqiyi.com', 'img.vim-cn.com', 'image.westinyou.com', 'edge1.certona.net', 'certona.gap.com', 'yep.video.yahoo.com', 'static.opensea.io', 'shopify.cleverecommerce.com', 'tile.mapzen.com', 'cdn.cracked.sh', 'images.idgesg.net', 'drive.massgrave.dev', 'alt.idgesg.net', 'mirror.ghproxy.com', 'mirror.nl.datapacket.com', 'mirror.anigil.com', 'mirror.nus.edu.sg', 'mirror.timkevin.us', 'mirrors.nic.cz', 'cpan.tetaneutral.net', 'mirror.datapacket.com', 'client.hikarifield.co.jp', 'a.macked.app', 'apache.tt.co.kr', 'fm.p0y.cn', 'iyes.youku.com', 'ad.api.mobile.youku.com', 'c.yes.youku.com', 'ad.jamster.co.uk', 'fumiad.dxys.pro', 'ad.leadboltapps.net', 'ems.cp12.wasu.tv', 'creative1cdn.mobfox.com', 'mycommerce.akamaized.net', 'js-cdn.blockchair.io', 'loutre.blockchair.io', 'static.namebeta.com', 'fs2.onlyhentaistuff.com', 'file.izanmei.net', 'play.xiaoh.ai', 'file.xiaohai.ai', 'tiles.wmflabs.org', 'image.stheadline.com', 'vod.jfly.xyz', 'assets.wikiwand.com', 'cdn.wikiwand.com', 'cloudfront.codeproject.com', 'assets-cdn.anh.moe', 'media.d.tube', 'media.remax-prod.eng.remax.tech', 'static-landing.probiplacehold.cot.com'];
+const DEDUPE_LIST: string[] = ['adx-static.ksosoft.com', 'dns.iqiyi.com', 'domain.expiring-soon.xyz', 'img.catwvod.xyz', 'img.vim-cn.com', 's3-zen.mds.yandex.net'];
+
 task(require.main === module, __filename)(async (span) => {
   const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
     .withFullPaths()
