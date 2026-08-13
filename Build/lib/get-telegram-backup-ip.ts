@@ -19,6 +19,42 @@ xwIDAQAB
 -----END RSA PUBLIC KEY-----
 `;
 
+export interface TelegramBackupEndpoint {
+  dcId: number,
+  ip: string,
+  port: number,
+  secret?: Uint8Array
+}
+
+// Telegram's original, pre-AccessPointRule backup schema:
+// help.configSimple#d997c3c5 date:int expires:int dc_id:int
+//   ip_port_list:Vector<ipPort> = help.ConfigSimple;
+// It applies one DC ID to a bare vector of (ipv4, port) pairs. GramJS only
+// generates TgApi.help.ConfigSimple for the current #5a592a6c rule-based schema,
+// so the removed legacy constructor has no TgApi symbol to reference.
+const LEGACY_CONFIG_SIMPLE_CONSTRUCTOR_ID = 0xD9_97_C3_C5;
+
+// The legacy vector contains bare ipPort values, so TgBinaryReader#tgReadVector
+// cannot decode it as a vector of boxed TL objects. GramJS does not export the
+// core vector constructor ID, either, so validate it explicitly before reading.
+const TL_VECTOR_CONSTRUCTOR_ID = 0x1C_B5_C4_15;
+
+function ipv4ToString(ipv4: number) {
+  return bigint2ip(
+    ipv4 > 0
+      ? BigInt(ipv4)
+      : (2n ** 32n) + BigInt(ipv4),
+    4
+  );
+}
+
+function validateBackupEndpoint(endpoint: TelegramBackupEndpoint) {
+  if (endpoint.dcId < 1 || endpoint.dcId > 5 || endpoint.port < 1 || endpoint.port > 65535) {
+    throw new TypeError(`Invalid Telegram backup endpoint: DC ${endpoint.dcId}, port ${endpoint.port}`);
+  }
+  return endpoint;
+}
+
 export function getTelegramBackupIPFromBase64(base64: string) {
   // 1. Check base64 size
   if (base64.length !== 344) {
@@ -31,7 +67,7 @@ export function getTelegramBackupIPFromBase64(base64: string) {
   // 3. Decode base64 to Buffer
   const decoded = base64ToUint8Array(base64);
   if (decoded.length !== 256) {
-    throw new TypeError('Decoded buffer length is not 344 bytes, received ' + decoded.length);
+    throw new TypeError('Decoded buffer length is not 256 bytes, received ' + decoded.length);
   }
 
   // 4. RSA decrypt (public key, "decrypt signature" - usually means "verify and extract")
@@ -79,33 +115,58 @@ export function getTelegramBackupIPFromBase64(base64: string) {
 
   const parser = new TgBinaryReader(Buffer.from(decryptedCbc.buffer, decryptedCbc.byteOffset, decryptedCbc.byteLength));
   const len = parser.readInt();
-  if (len < 8 || len > 208) throw new Error(`Invalid TL data length: ${len}`);
+  if (len < 4 || len > 204 || len % 4 !== 0) throw new Error(`Invalid TL data length: ${len}`);
 
-  const constructorId = parser.readInt();
+  const constructorId = parser.readInt() >>> 0;
 
-  if (constructorId !== TgApi.help.ConfigSimple.CONSTRUCTOR_ID) {
-    throw new Error(`Invalid constructor ID: ${constructorId.toString(16)}`);
+  const endpoints: TelegramBackupEndpoint[] = [];
+  let date: number;
+  let expires: number;
+
+  if (constructorId === TgApi.help.ConfigSimple.CONSTRUCTOR_ID) {
+    const payload = decryptedCbc.subarray(8, 4 + len);
+    const configSimple = TgApi.help.ConfigSimple.fromReader(new TgBinaryReader(Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength)));
+
+    date = configSimple.date;
+    expires = configSimple.expires;
+    for (let ruleIndex = 0, ruleCount = configSimple.rules.length; ruleIndex < ruleCount; ruleIndex++) {
+      const rule = configSimple.rules[ruleIndex];
+      for (let ipIndex = 0, ipCount = rule.ips.length; ipIndex < ipCount; ipIndex++) {
+        const ip = rule.ips[ipIndex];
+        endpoints.push(validateBackupEndpoint({
+          dcId: rule.dcId,
+          ip: ipv4ToString(ip.ipv4),
+          port: ip.port,
+          ...((ip instanceof TgApi.IpPortSecret) && { secret: ip.secret })
+        }));
+      }
+    }
+  } else if (constructorId === LEGACY_CONFIG_SIMPLE_CONSTRUCTOR_ID) {
+    date = parser.readInt();
+    expires = parser.readInt();
+    const dcId = parser.readInt();
+    const vectorConstructorId = parser.readInt() >>> 0;
+    const count = parser.readInt();
+
+    if (vectorConstructorId !== TL_VECTOR_CONSTRUCTOR_ID || count < 1 || count > 1024) {
+      throw new Error('Invalid legacy Telegram backup endpoint vector');
+    }
+
+    for (let i = 0; i < count; i++) {
+      endpoints.push(validateBackupEndpoint({
+        dcId,
+        ip: ipv4ToString(parser.readInt()),
+        port: parser.readInt()
+      }));
+    }
+  } else {
+    throw new Error(`Invalid constructor ID: 0x${constructorId.toString(16)}`);
   }
 
-  const payload = decryptedCbc.subarray(8, len);
+  const now = Math.floor(Date.now() / 1000);
+  if (date >= now + 20 * 60 || expires <= now - 20 * 60) {
+    throw new Error(`Telegram backup configuration is outside its validity interval (${date}...${expires}, now ${now})`);
+  }
 
-  const configSimple = TgApi.help.ConfigSimple.fromReader(new TgBinaryReader(Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength)));
-
-  return configSimple.rules.flatMap(rule => rule.ips.map(ip => {
-    switch (ip.CONSTRUCTOR_ID) {
-      case TgApi.IpPort.CONSTRUCTOR_ID:
-      case TgApi.IpPortSecret.CONSTRUCTOR_ID:
-        return {
-          ip: bigint2ip(
-            ip.ipv4 > 0
-              ? BigInt(ip.ipv4)
-              : (2n ** 32n) + BigInt(ip.ipv4),
-            4
-          ),
-          port: ip.port
-        };
-      default:
-        throw new TypeError(`Unknown IP type: 0x${ip.CONSTRUCTOR_ID.toString(16)}`);
-    }
-  }));
+  return endpoints;
 }
