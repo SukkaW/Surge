@@ -1,9 +1,9 @@
 name: Toggle Dist Repo Visibility
 on:
   schedule:
-    # Runs at 22:47 UTC every Sunday
+    # Runs at 14:47 UTC on the 1st of every month
     # This also avoids hitting our own auto build schedule at 05:17 and 17:17 UTC
-    - cron: '47 14 * * 0'
+    - cron: "47 14 12 * *"
   workflow_dispatch:
 
 concurrency:
