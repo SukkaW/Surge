@@ -7,6 +7,7 @@ import type { TelegramBackupEndpoint } from './get-telegram-backup-ip';
 import { setBit, getBit } from 'foxts/bitwise';
 import { bigint2ip, ip2bigint } from 'fast-cidr-tools';
 import { isProbablyIpv6 } from 'foxts/is-probably-ip';
+import { fastIpVersion } from 'foxts/fast-ip-version';
 
 export const DC_OPTION_FLAG_IPV6 = 1 << 0;
 export const DC_OPTION_FLAG_MEDIA_ONLY = 1 << 1;
@@ -148,6 +149,39 @@ function mergeEndpoint(config: MTProtoDCConfig, endpoint: MTProtoEndpoint) {
   return !matched;
 }
 
+/**
+ * The output order is otherwise a mix of whatever help.getConfig returned and
+ * the order the concurrent backup-endpoint lookups happened to resolve in, so
+ * two builds over identical upstream data can produce a spurious diff. Sort on
+ * the full option identity to keep the committed JSON reviewable.
+ */
+function sortOptions(config: MTProtoDCConfig) {
+  config.options.sort((a, b) => {
+    if (a.id !== b.id) return a.id - b.id;
+
+    // IPv4 before IPv6, each ordered numerically rather than lexically so
+    // 149.154.167.51 sorts before 149.154.167.222.
+    const aVersion = fastIpVersion(a.ip);
+    const bVersion = fastIpVersion(b.ip);
+    if (aVersion !== bVersion) return aVersion - bVersion;
+
+    if (aVersion === 0 || bVersion === 0) return 0; // how is invalid ip even here? just leave them in their original order
+
+    const aIp = ip2bigint(a.ip, aVersion);
+    const bIp = ip2bigint(b.ip, bVersion);
+    if (aIp !== bIp) return aIp < bIp ? -1 : 1;
+
+    if (a.port !== b.port) return a.port - b.port;
+    if (a.flags !== b.flags) return a.flags - b.flags;
+
+    // Secrets are base64, so a plain code-unit compare is stable and locale-free.
+    const aSecret = a.secret ?? '';
+    const bSecret = b.secret ?? '';
+    if (aSecret === bSecret) return 0;
+    return aSecret < bSecret ? -1 : 1;
+  });
+}
+
 function deduplicateOptions(config: MTProtoDCConfig) {
   const previousCount = config.options.length;
   const seen = new Set<string>();
@@ -186,9 +220,12 @@ export function mergeFallbackEndpoints(
     if (mergeEndpoint(config, endpoint)) bootstrapAdded++;
   }
 
+  const duplicatesRemoved = deduplicateOptions(config);
+  sortOptions(config);
+
   return {
     backupAdded,
     bootstrapAdded,
-    duplicatesRemoved: deduplicateOptions(config)
+    duplicatesRemoved
   };
 }

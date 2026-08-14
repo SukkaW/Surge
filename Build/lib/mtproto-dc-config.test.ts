@@ -3,6 +3,7 @@ import { expect } from 'earl';
 
 import {
   DC_OPTION_FLAG_IPV6,
+  DC_OPTION_FLAG_MEDIA_ONLY,
   DC_OPTION_FLAG_STATIC,
   mergeFallbackEndpoints,
   TELEGRAM_BOOTSTRAP_ENDPOINTS
@@ -67,6 +68,53 @@ describe('MTProto DC config', () => {
     ))).toEqual(true);
     // DC2-5 IPv6 bootstraps are still absent from the config, so they get added.
     expect(result.bootstrapAdded).toEqual(TELEGRAM_BOOTSTRAP_ENDPOINTS.length - 1);
+  });
+
+  it('emits a deterministic option order regardless of input order', () => {
+    const options = [
+      { id: 2, ip: '149.154.167.222', port: 443, flags: DC_OPTION_FLAG_MEDIA_ONLY },
+      { id: 1, ip: '2001:0b28:f23d:f001:0000:0000:0000:000a', port: 443, flags: DC_OPTION_FLAG_IPV6 },
+      // Numerically before .222 but lexically after it.
+      { id: 2, ip: '149.154.167.41', port: 443, flags: DC_OPTION_FLAG_STATIC },
+      { id: 1, ip: '149.154.175.56', port: 443, flags: 0 }
+    ];
+
+    const build = (input: typeof options) => {
+      const config: MTProtoDCConfig = {
+        version: 1,
+        date: 1,
+        expires: 2,
+        this_dc: 1,
+        options: structuredClone(input)
+      };
+      mergeFallbackEndpoints(config, []);
+      return config.options;
+    };
+
+    const forward = build(options);
+    expect(build([...options].reverse())).toEqual(forward);
+
+    const ipsOfDc = (id: number) => forward.reduce<string[]>((acc, option) => {
+      if (option.id === id) acc.push(option.ip);
+      return acc;
+    }, []);
+
+    // IPv4 sorts numerically and precedes IPv6 within the same DC.
+    expect(ipsOfDc(1)).toEqual([
+      '149.154.175.50',
+      '149.154.175.56',
+      '2001:b28:f23d:f001::a'
+    ]);
+    expect(ipsOfDc(2)).toEqual([
+      '95.161.76.100',
+      '149.154.167.41',
+      '149.154.167.50',
+      '149.154.167.51',
+      '149.154.167.222',
+      '2001:67c:4e8:f002::a'
+    ]);
+    // DC ids are non-decreasing across the whole array.
+    expect(forward.every((option, i) => i === 0 || forward[i - 1].id <= option.id)).toEqual(true);
   });
 
   it('keeps functional variants separate and preserves backup secrets', () => {
