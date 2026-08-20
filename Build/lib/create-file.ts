@@ -18,7 +18,7 @@ const fileEqual = createCompareSource(fileEqualWithCommentComparator);
  */
 async function isPreviousOutputEqual(span: Span, linesA: string[], filePath: string, contentHash: string | null) {
   // readFileByLine will not include last empty line. So we always pop the linesA for comparison purpose
-  if (linesA.length > 0 && linesA[linesA.length - 1] === '') {
+  if (linesA.length > 0 && linesA.at(-1) === '') {
     linesA.pop();
   }
 

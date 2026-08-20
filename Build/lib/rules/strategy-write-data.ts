@@ -56,7 +56,7 @@ export function writeDataToStrategies(data: StrategyWriteData, strategies: BaseW
   const domainEntries: Array<[domain: string, subdomain: boolean]> = [];
   for (let j = 0, len = data.domains.length; j < len; j++) {
     const line = data.domains[j];
-    const includeSubdomain = line.codePointAt(0) === 46; /* '.' */
+    const includeSubdomain = line.charCodeAt(0) === 46; /* '.' */
     const d = domainToASCII(includeSubdomain ? line.slice(1) : line);
     if (d) domainEntries.push([d, includeSubdomain]);
   }

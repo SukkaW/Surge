@@ -52,7 +52,7 @@
   "devDependencies": {
     "@eslint-sukka/node": "^9.0.1",
     "@swc-node/register": "^1.12.1",
-    "@swc/core": "1.15.47",
+    "@swc/core": "1.16.1",
     "@types/cli-progress": "^3.11.6",
     "@types/mocha": "^10.0.10",
     "@types/node": "^26.2.0",
@@ -68,5 +68,5 @@
     "mocha": "^11.8.0",
     "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@11.20.0"
+  "packageManager": "pnpm@11.22.0"
 }
