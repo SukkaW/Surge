@@ -43,7 +43,7 @@
     "tldts": "^7.4.10",
     "tldts-experimental": "^7.4.10",
     "undici": "^8.10.0",
-    "undici-cache-store-better-sqlite3": "^1.1.0",
+    "undici-cache-store-better-sqlite3": "^1.1.1",
     "why-is-node-running": "^3.2.2",
     "xbits": "^0.2.0",
     "yaml": "^2.9.0",
