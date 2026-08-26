@@ -71,10 +71,10 @@ jobs:
       # Set up pnpm and Node.js in parallel; both must finish before pnpm runs.
       - name: Set up pnpm
         id: setup_pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/setup@v2
         background: true
         with:
-          run_install: false
+          install: false
           cache: true
       - name: Set up Node.js
         id: setup_node
