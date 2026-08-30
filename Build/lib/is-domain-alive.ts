@@ -87,7 +87,7 @@ export function createDomainAliveMethods(customWhoisServersMapping: Record<strin
 }
 
 export async function getMethods() {
-  const customWhoisServersMapping = await (await ($$fetch('https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json'))).json() as Record<string, string>;
+  const customWhoisServersMapping = await (await ($$fetch('https://cdn.jsdelivr.net/gh/WooMai/whois-servers@master/list.json'))).json() as Record<string, string>;
 
   return createDomainAliveMethods(customWhoisServersMapping);
 };
