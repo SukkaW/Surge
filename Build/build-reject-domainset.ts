@@ -15,7 +15,7 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput, AdGuardHomeOutput } from './lib/rules/domainset';
-import { createWorker } from './lib/worker';
+import { getBuildWorkerFarm } from './lib/build-worker-farm';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
 import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
@@ -25,17 +25,12 @@ const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.joi
 const readLocalRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
 const readLocalRejectIpListPromise = readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'ip/reject.conf'));
 
-// Downloading + parsing the remote sources is ~1s of CPU that used to sit on the
-// main thread's critical path; the parsed arrays cross back in ~25ms (see
-// lib/worker-transfer.bench.ts). Two threads because jest-worker runs one call at
-// a time per thread and the two jobs must overlap. Booted at import time so the
-// thread spin-up (loading the module graph) overlaps with the rest of startup.
-const rejectWorker = createWorker<typeof import('./lib/reject.worker')>(
-  require.resolve('./lib/reject.worker'),
-  2
-)(['getPhishingDomains', 'getRejectSources']);
-
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
+  // Downloading + parsing the remote sources is ~1s of CPU that used to sit on the
+  // main thread's critical path; the parsed arrays cross back in ~25ms (see
+  // lib/worker-transfer.bench.ts). The farm is shared with the rest of the build
+  // and ended by whoever booted it (index.ts, or process exit in standalone runs).
+  const rejectWorker = getBuildWorkerFarm();
   const rejectDomainsetOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
     .appendDescription(
@@ -286,6 +281,4 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   await myRejectOutputAdGuardHome
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/my_reject.conf')))
     .write();
-
-  await rejectWorker.end();
 });
