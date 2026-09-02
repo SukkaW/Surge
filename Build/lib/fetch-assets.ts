@@ -2,9 +2,8 @@ import picocolors from 'picocolors';
 import { $$fetch, defaultRequestInit, ResponseError } from './fetch-retry';
 import { waitWithAbort } from 'foxts/wait';
 import { nullthrow } from 'foxts/guard';
-import { TextLineStream } from 'foxts/text-line-stream';
-import { ProcessLineStream } from './process-line';
-import { AdGuardFilterIgnoreUnsupportedLinesStream } from './parse-filter/filters';
+import { ignoreAdGuardUnsupportedLine } from './parse-filter/filters';
+import { splitTextIntoLines } from './fetch-text-by-line';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
 import { newQueue } from '@henrygd/queue';
@@ -13,6 +12,7 @@ import { downloadTimestamp, recordExternalDownloadAttempt } from './download-sta
 import type { ExternalDownloadOutcome } from './download-stats';
 
 const reusedCustomAbortError = new AbortError();
+const textDecoder = new TextDecoder();
 
 const queue = newQueue(18);
 
@@ -183,34 +183,24 @@ export async function fetchAssets(
       });
       headersAt ??= downloadTimestamp();
 
-      let body = nullthrow(res.body, url + ' has an empty body');
+      nullthrow(res.body, url + ' has an empty body');
       if (isPrimary) {
         primaryProgress.headersReceived = true;
       }
-      body = body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
-        transform(chunk, streamController) {
-          decodedBytes += chunk.byteLength;
-          streamController.enqueue(chunk);
-        }
-      }));
 
-      let stream = body
-        .pipeThrough(new TextDecoderStream())
-        .pipeThrough(new TextLineStream({ skipEmptyLines: processLine }));
-      if (processLine) {
-        stream = stream.pipeThrough(new ProcessLineStream());
-      }
-      if (filterAdGuardUnsupportedLines) {
-        stream = stream.pipeThrough(new AdGuardFilterIgnoreUnsupportedLinesStream());
-      }
-
-      const arr = await queue.add(() => {
+      const arr = await queue.add(async () => {
         decodedBodyStartedAt = downloadTimestamp();
         if (isPrimary) {
           primaryProgress.bodyConsumptionStartedAt = performance.now();
           primaryProgress.encodedBytesAtConsumptionStart = primaryProgress.encodedBytesReceived;
         }
-        return Array.fromAsync(stream);
+        const buf = await res.arrayBuffer();
+        decodedBytes = buf.byteLength;
+        return splitTextIntoLines(
+          textDecoder.decode(buf),
+          processLine,
+          filterAdGuardUnsupportedLines ? ignoreAdGuardUnsupportedLine : null
+        );
       });
 
       if (!allowEmpty && arr.length < 1) {

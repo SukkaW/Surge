@@ -1,4 +1,4 @@
-import { fetchRemoteTextByLine } from './lib/fetch-text-by-line';
+import { fetchRemoteTextLines } from './lib/fetch-text-by-line';
 import tldts from 'tldts-experimental';
 import { HostnameSmolTrie } from 'hntrie/smol';
 import { domainToASCII } from 'node:url';
@@ -7,8 +7,8 @@ import { SOURCE_DIR } from './constants/dir';
 import runAgainstSourceFile from './lib/run-against-source-file';
 
 (async () => {
-  const lines1 = await Array.fromAsync(await fetchRemoteTextByLine('https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true));
-  const lines2 = await Array.fromAsync(await fetchRemoteTextByLine('https://raw.githubusercontent.com/durablenapkin/block/master/tvstream.txt', true));
+  const lines1 = await fetchRemoteTextLines('https://raw.githubusercontent.com/durablenapkin/block/master/luminati.txt', true);
+  const lines2 = await fetchRemoteTextLines('https://raw.githubusercontent.com/durablenapkin/block/master/tvstream.txt', true);
 
   const trie = new HostnameSmolTrie();
 

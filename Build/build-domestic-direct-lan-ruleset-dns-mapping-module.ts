@@ -3,7 +3,7 @@ import path from 'node:path';
 import { DOMESTICS, DOH_BOOTSTRAP, AdGuardHomeDNSMapping } from '../Source/non_ip/domestic';
 import { DIRECTS, HOSTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
-import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
+import { fetchRemoteTextLines, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
 import { SpanCategory, task } from './trace';
 import type { Span } from './trace';
@@ -386,9 +386,9 @@ async function buildLANCacheRuleset(span: Span) {
   const allDomains = (
     await Promise.all(
       allDomainFiles.map(
-        async (file) => childSpan.traceChildAsync(
+        (file) => childSpan.traceChildAsync(
           'download ' + file,
-          async () => Array.fromAsync(await fetchRemoteTextByLine('https://cdn.jsdelivr.net/gh/uklans/cache-domains@master/' + file, true)),
+          () => fetchRemoteTextLines('https://cdn.jsdelivr.net/gh/uklans/cache-domains@master/' + file, true),
           SpanCategory.Network
         )
       )
