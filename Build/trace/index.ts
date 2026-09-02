@@ -65,22 +65,30 @@ export function makeSpan(rawSpan: RawSpan): Span {
       return span;
     },
     traceChild,
+    // Spans are stopped in `finally` so a throwing function is still measured
+    // (and the tree does not end up with an "(unfinished)" hole where it failed).
     traceSyncFn<T>(fn: (span: Span) => T) {
       traceResult.sync = true;
-      const res = fn(span);
-      span.stop();
-      return res;
+      try {
+        return fn(span);
+      } finally {
+        span.stop();
+      }
     },
     async traceAsyncFn<T>(fn: (span: Span) => T | Promise<T>): Promise<T> {
-      const res = await fn(span);
-      span.stop();
-      return res;
+      try {
+        return await fn(span);
+      } finally {
+        span.stop();
+      }
     },
     traceResult,
     async tracePromise<T>(promise: Promise<T>): Promise<T> {
-      const res = await promise;
-      span.stop();
-      return res;
+      try {
+        return await promise;
+      } finally {
+        span.stop();
+      }
     },
     traceChildSync: <T>(name: string, fn: (span: Span) => T, category?: SpanCategory): T => traceChild(name, category).traceSyncFn(fn),
     traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>, category?: SpanCategory): Promise<T> => traceChild(name, category).traceAsyncFn(fn),
