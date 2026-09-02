@@ -49,8 +49,7 @@ export function makeSpan(rawSpan: RawSpan): Span {
     }
     traceResult.end = time ?? performance.now();
     if (rawSpan.eluStart) {
-      const elu = performance.eventLoopUtilization(rawSpan.eluStart);
-      traceResult.elu = { idle: elu.idle, active: elu.active };
+      traceResult.loopIdle = { atStart: rawSpan.eluStart.idle, atEnd: performance.eventLoopUtilization().idle };
     }
     rawSpan.status = SPAN_STATUS_END;
   };

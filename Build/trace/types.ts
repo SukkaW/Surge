@@ -38,11 +38,14 @@ export interface TraceResult {
   start: number,
   end: number,
   /**
-   * Event loop utilization of the thread that ran this span, over the span's
-   * lifetime. `active` is an upper bound of this span's own CPU time: on a shared
-   * event loop it also includes work done by concurrently running spans.
+   * Cumulative event-loop idle time (ms, `performance.eventLoopUtilization().idle`)
+   * of the thread that ran this span, sampled when the span started and stopped.
+   * Only differences within the same thread are meaningful. Together with the
+   * start/stop timestamps of every other span on that thread this yields, for each
+   * segment between two span events, how long the loop was busy (CPU) vs idle
+   * (waiting on I/O) -- which is how the report attributes wall-clock to categories.
    */
-  elu?: SpanEventLoopUtilization,
+  loopIdle?: { atStart: number, atEnd: number },
   /**
    * Set when the span wrapped a synchronous function: its whole self time is
    * CPU time on its thread, never queueing behind other work on the event loop.

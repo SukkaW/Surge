@@ -60,44 +60,66 @@ export function normalizeTraceClock(trace: TraceResult): TraceResult {
 // Analysis
 // ---------------------------------------------------------------------------
 
+/** Wall-clock attributed to something, split by what the event loop was doing meanwhile */
+export interface Attribution {
+  /** loop was busy: CPU on that thread */
+  cpu: number,
+  /** loop was idle: waiting on I/O, a timer, another thread... */
+  wait: number
+}
+
 export interface AnalyzedSpan {
   node: TraceResult,
   /** Ancestor names, root task first, this span last */
   path: string[],
   category: ReportedSpanCategory,
   duration: number,
-  /** Duration not covered by any traced child */
-  self: number
+  /** Wall-clock attributed to this span (i.e. while it was innermost in flight on its thread) */
+  attributed: Attribution
 }
 
 export interface CategoryStat {
   category: ReportedSpanCategory,
-  /** Sum of self time of all spans with this category (across all threads, concurrency included) */
-  selfTotal: number,
-  /** Wall-clock during which at least one span of this category was in flight */
-  coverage: number,
   spans: number,
-  selfOnMainThread: number,
-  selfOnWorkers: number,
-  /** Self time of synchronous spans: guaranteed CPU, no event-loop queueing inside */
-  selfSync: number,
+  /** Wall-clock during which at least one span of this category was in flight, on any thread */
+  coverage: number,
+  /** Attributed time on the main thread -- the one whose wall-clock is the build's */
+  main: Attribution,
+  /** Attributed time on worker threads, which run in parallel to the main thread */
+  workers: Attribution,
   top: AnalyzedSpan[]
 }
 
 export interface TaskStat {
   node: TraceResult,
   duration: number,
-  /** Self time of all descendants (and the task itself) bucketed by category */
-  byCategory: Record<ReportedSpanCategory, number>
+  attributed: Attribution,
+  byCategory: Record<ReportedSpanCategory, Attribution>
+}
+
+export interface ThreadStat {
+  thread: number,
+  /** wall-clock from the first to the last span event on this thread */
+  span: number,
+  attributed: Attribution,
+  /** time between span events with no span in flight on this thread */
+  untraced: Attribution,
+  byCategory: Record<ReportedSpanCategory, Attribution>
 }
 
 export interface TraceAnalysis {
+  /** the input traces, shifted onto the local clock; `attribution` is keyed by these nodes */
+  traces: TraceResult[],
   wallStart: number,
   wallEnd: number,
   wall: number,
+  /** thread 0 first, then workers by id */
+  threads: ThreadStat[],
   categories: CategoryStat[],
   tasks: TaskStat[],
   topSpans: AnalyzedSpan[],
+  /** per node, so the tree printer can annotate without recomputing */
+  attribution: Map<TraceResult, Attribution>,
   unfinishedSpans: number
 }
 
@@ -105,6 +127,26 @@ type Interval = [start: number, end: number];
 
 function isFinished(node: TraceResult) {
   return node.end >= node.start;
+}
+
+function zeroAttribution(): Attribution {
+  return { cpu: 0, wait: 0 };
+}
+
+function attributionTotal(a: Attribution) {
+  return a.cpu + a.wait;
+}
+
+function emptyByCategory(): Record<ReportedSpanCategory, Attribution> {
+  return {
+    [SpanCategory.Network]: zeroAttribution(),
+    [SpanCategory.FsRead]: zeroAttribution(),
+    [SpanCategory.FsWrite]: zeroAttribution(),
+    [SpanCategory.Compute]: zeroAttribution(),
+    [SpanCategory.Worker]: zeroAttribution(),
+    [SpanCategory.Wait]: zeroAttribution(),
+    [UNCATEGORIZED]: zeroAttribution()
+  };
 }
 
 /** Total length covered by the union of the intervals (handles overlap, which async children routinely do) */
@@ -131,97 +173,174 @@ function unionLength(intervals: Interval[]): number {
   return total + (curEnd - curStart);
 }
 
-function selfTime(node: TraceResult): number {
-  const duration = node.end - node.start;
-  if (node.children.length === 0) {
-    return duration;
-  }
-
-  const covered: Interval[] = [];
-  for (let i = 0, len = node.children.length; i < len; i++) {
-    const child = node.children[i];
-    if (!isFinished(child)) {
-      continue;
-    }
-    // clip to the parent's own window: a child stopped after its parent
-    // (fire-and-forget) must not produce negative self time
-    const start = Math.max(child.start, node.start);
-    const end = Math.min(child.end, node.end);
-    if (end > start) {
-      covered.push([start, end]);
-    }
-  }
-
-  return Math.max(0, duration - unionLength(covered));
+interface SpanRecord {
+  node: TraceResult,
+  parent: SpanRecord | null,
+  task: TaskStat,
+  category: ReportedSpanCategory,
+  path: string[],
+  /** number of in-flight children on the same thread; the span is "innermost" while this is 0 */
+  activeChildren: number
 }
 
-function emptyByCategory(): Record<ReportedSpanCategory, number> {
-  return {
-    [SpanCategory.Network]: 0,
-    [SpanCategory.FsRead]: 0,
-    [SpanCategory.FsWrite]: 0,
-    [SpanCategory.Compute]: 0,
-    [SpanCategory.Worker]: 0,
-    [SpanCategory.Wait]: 0,
-    [UNCATEGORIZED]: 0
+interface SpanEvent {
+  time: number,
+  /** cumulative loop idle of the thread at this moment */
+  idle: number,
+  record: SpanRecord,
+  isStart: boolean
+}
+
+/**
+ * Sweep one thread's span events and attribute every segment between two
+ * consecutive events to the spans that were innermost in flight at that time:
+ *
+ * - the loop-idle delta of the segment is time spent waiting, the rest is CPU;
+ * - if a synchronous span is innermost it owns the whole segment (nothing else
+ *   can run on the thread meanwhile);
+ * - otherwise the segment is split equally among the innermost async spans;
+ * - a segment with nothing in flight is "untraced".
+ *
+ * Because every instant of the thread's timeline is handed out exactly once,
+ * the per-category totals add up to the thread's wall-clock -- unlike summing
+ * span durations, which counts a queued span's wait once per queued span.
+ */
+function sweepThread(events: SpanEvent[], threadStat: ThreadStat, attribution: Map<TraceResult, Attribution>) {
+  // ends before starts at equal timestamps, so a back-to-back sibling pair never overlaps
+  events.sort((a, b) => a.time - b.time || (a.isStart ? 1 : 0) - (b.isStart ? 1 : 0));
+
+  const inFlight = new Set<SpanRecord>();
+  const innermost: SpanRecord[] = [];
+
+  const attribute = (record: SpanRecord | null, cpu: number, wait: number) => {
+    threadStat.attributed.cpu += cpu;
+    threadStat.attributed.wait += wait;
+
+    if (record === null) {
+      threadStat.untraced.cpu += cpu;
+      threadStat.untraced.wait += wait;
+      return;
+    }
+
+    const own = attribution.get(record.node);
+    if (own) {
+      own.cpu += cpu;
+      own.wait += wait;
+    } else {
+      attribution.set(record.node, { cpu, wait });
+    }
+
+    const taskBucket = record.task.byCategory[record.category];
+    taskBucket.cpu += cpu;
+    taskBucket.wait += wait;
+    record.task.attributed.cpu += cpu;
+    record.task.attributed.wait += wait;
+
+    const threadBucket = threadStat.byCategory[record.category];
+    threadBucket.cpu += cpu;
+    threadBucket.wait += wait;
   };
+
+  for (let i = 0, len = events.length; i < len; i++) {
+    const event = events[i];
+
+    if (i > 0) {
+      const prev = events[i - 1];
+      const duration = event.time - prev.time;
+      if (duration > 0) {
+        // the idle counter is only advanced when the loop leaves poll, so a
+        // segment inside one synchronous tick correctly reads as all-cpu
+        const wait = Math.min(duration, Math.max(0, event.idle - prev.idle));
+        const cpu = duration - wait;
+
+        innermost.length = 0;
+        let sync: SpanRecord | null = null;
+        for (const record of inFlight) {
+          if (record.activeChildren === 0) {
+            innermost.push(record);
+            if (record.node.sync) {
+              sync = record;
+            }
+          }
+        }
+
+        if (sync) {
+          attribute(sync, cpu, wait);
+        } else if (innermost.length === 0) {
+          attribute(null, cpu, wait);
+        } else {
+          const share = 1 / innermost.length;
+          for (let j = 0, jlen = innermost.length; j < jlen; j++) {
+            attribute(innermost[j], cpu * share, wait * share);
+          }
+        }
+      }
+    }
+
+    const { record } = event;
+    const sameThreadParent = record.parent?.node.thread === record.node.thread ? record.parent : null;
+    if (event.isStart) {
+      inFlight.add(record);
+      if (sameThreadParent) {
+        sameThreadParent.activeChildren++;
+      }
+    } else {
+      inFlight.delete(record);
+      if (sameThreadParent) {
+        sameThreadParent.activeChildren--;
+      }
+    }
+  }
+
+  if (events.length > 0) {
+    threadStat.span = events.at(-1)!.time - events[0].time;
+  }
 }
 
 export function analyzeTraces(rawTraces: TraceResult[]): TraceAnalysis {
   const traces = rawTraces.map(normalizeTraceClock);
 
-  const spans: AnalyzedSpan[] = [];
+  const records: SpanRecord[] = [];
+  const eventsByThread = new Map<number, SpanEvent[]>();
   const coverageIntervals = new Map<ReportedSpanCategory, Interval[]>();
-  const categoryStats = new Map<ReportedSpanCategory, CategoryStat>();
+  const spanCount = new Map<ReportedSpanCategory, number>();
   for (let i = 0, len = CATEGORY_ORDER.length; i < len; i++) {
-    const category = CATEGORY_ORDER[i];
-    coverageIntervals.set(category, []);
-    categoryStats.set(category, {
-      category,
-      selfTotal: 0,
-      coverage: 0,
-      spans: 0,
-      selfOnMainThread: 0,
-      selfOnWorkers: 0,
-      selfSync: 0,
-      top: []
-    });
+    coverageIntervals.set(CATEGORY_ORDER[i], []);
+    spanCount.set(CATEGORY_ORDER[i], 0);
   }
 
   let unfinishedSpans = 0;
   let wallStart = Infinity;
   let wallEnd = -Infinity;
 
-  const walk = (node: TraceResult, path: string[], task: TaskStat) => {
-    const ownPath = path.concat(node.name);
+  const walk = (node: TraceResult, parent: SpanRecord | null, task: TaskStat) => {
+    const path = parent ? parent.path.concat(node.name) : [node.name];
+    const category = node.category ?? UNCATEGORIZED;
+    const record: SpanRecord = { node, parent, task, category, path, activeChildren: 0 };
 
     if (isFinished(node)) {
-      const category = node.category ?? UNCATEGORIZED;
-      const self = selfTime(node);
-      spans.push({ node, path: ownPath, category, duration: node.end - node.start, self });
-
-      const stat = categoryStats.get(category)!;
-      stat.selfTotal += self;
-      stat.spans++;
-      if (node.thread === 0) {
-        stat.selfOnMainThread += self;
-      } else {
-        stat.selfOnWorkers += self;
-      }
-      if (node.sync) {
-        stat.selfSync += self;
-      }
+      records.push(record);
+      spanCount.set(category, spanCount.get(category)! + 1);
       coverageIntervals.get(category)!.push([node.start, node.end]);
-      task.byCategory[category] += self;
-
       if (node.start < wallStart) wallStart = node.start;
       if (node.end > wallEnd) wallEnd = node.end;
+
+      let events = eventsByThread.get(node.thread);
+      if (!events) {
+        events = [];
+        eventsByThread.set(node.thread, events);
+      }
+      // a span without loop samples (a hand-built trace) reads as all-cpu
+      events.push(
+        { time: node.start, idle: node.loopIdle?.atStart ?? 0, record, isStart: true },
+        { time: node.end, idle: node.loopIdle?.atEnd ?? 0, record, isStart: false }
+      );
     } else {
       unfinishedSpans++;
     }
 
     for (let i = 0, len = node.children.length; i < len; i++) {
-      walk(node.children[i], ownPath, task);
+      walk(node.children[i], record, task);
     }
   };
 
@@ -229,28 +348,66 @@ export function analyzeTraces(rawTraces: TraceResult[]): TraceAnalysis {
     const task: TaskStat = {
       node: trace,
       duration: isFinished(trace) ? trace.end - trace.start : 0,
+      attributed: zeroAttribution(),
       byCategory: emptyByCategory()
     };
-    walk(trace, [], task);
+    walk(trace, null, task);
     return task;
   });
 
-  spans.sort((a, b) => b.self - a.self);
+  const attribution = new Map<TraceResult, Attribution>();
+  const threads: ThreadStat[] = Array.from(eventsByThread.keys())
+    .sort((a, b) => a - b)
+    .map((thread) => {
+      const threadStat: ThreadStat = {
+        thread,
+        span: 0,
+        attributed: zeroAttribution(),
+        untraced: zeroAttribution(),
+        byCategory: emptyByCategory()
+      };
+      sweepThread(eventsByThread.get(thread)!, threadStat, attribution);
+      return threadStat;
+    });
 
-  const categories = CATEGORY_ORDER.map((category) => {
-    const stat = categoryStats.get(category)!;
-    stat.coverage = unionLength(coverageIntervals.get(category)!);
-    stat.top = spans.filter(s => s.category === category && s.self > 0).slice(0, TOP_SPANS_PER_CATEGORY);
-    return stat;
+  const spans: AnalyzedSpan[] = records.map(record => ({
+    node: record.node,
+    path: record.path,
+    category: record.category,
+    duration: record.node.end - record.node.start,
+    attributed: attribution.get(record.node) ?? zeroAttribution()
+  }));
+  spans.sort((a, b) => attributionTotal(b.attributed) - attributionTotal(a.attributed));
+
+  const categories: CategoryStat[] = CATEGORY_ORDER.map((category) => {
+    const main = zeroAttribution();
+    const workers = zeroAttribution();
+    for (let i = 0, len = threads.length; i < len; i++) {
+      const source = threads[i].byCategory[category];
+      const target = threads[i].thread === 0 ? main : workers;
+      target.cpu += source.cpu;
+      target.wait += source.wait;
+    }
+    return {
+      category,
+      spans: spanCount.get(category)!,
+      coverage: unionLength(coverageIntervals.get(category)!),
+      main,
+      workers,
+      top: spans.filter(s => s.category === category && attributionTotal(s.attributed) > 0).slice(0, TOP_SPANS_PER_CATEGORY)
+    };
   });
 
   return {
+    traces,
     wallStart,
     wallEnd,
     wall: wallEnd > wallStart ? wallEnd - wallStart : 0,
+    threads,
     categories,
     tasks,
-    topSpans: spans.filter(s => s.self > 0).slice(0, TOP_SPANS_OVERALL),
+    topSpans: spans.filter(s => attributionTotal(s.attributed) > 0).slice(0, TOP_SPANS_OVERALL),
+    attribution,
     unfinishedSpans
   };
 }
@@ -276,21 +433,12 @@ function fmtPercent(part: number, whole: number): string {
   return `${(part / whole * 100).toFixed(0)}%`;
 }
 
-function categoryTag(category: ReportedSpanCategory): string {
-  return CATEGORY_COLOR[category](`[${category}]`);
+function fmtAttribution(a: Attribution): string {
+  return `cpu=${fmtMs(a.cpu)} wait=${fmtMs(a.wait)}`;
 }
 
-function loopBusy(node: TraceResult): string | null {
-  const { elu } = node;
-  // a sync span never yields to the loop, so the number would be a trivial 100%
-  if (!elu || node.sync) {
-    return null;
-  }
-  const total = elu.idle + elu.active;
-  if (total < 1) {
-    return null;
-  }
-  return `loop-busy=${fmtPercent(elu.active, total)}`;
+function categoryTag(category: ReportedSpanCategory): string {
+  return CATEGORY_COLOR[category](`[${category}]`);
 }
 
 function threadLabel(thread: number): string {
@@ -327,11 +475,13 @@ function pad(s: string, width: number, alignRight: boolean): string {
   return alignRight ? fill + s : s + fill;
 }
 
-function table(header: string[], rows: string[][], rightAlignFrom = 1): string[] {
+/** Columns in [rightAlignFrom, rightAlignTo) are numeric and right-aligned, the rest left-aligned */
+function table(header: string[], rows: string[][], rightAlignFrom = 1, rightAlignTo = Infinity): string[] {
   const widths = header.map((h, col) => Math.max(visibleLength(h), ...rows.map(r => visibleLength(r[col]))));
   const fmtRow = (row: string[]) => row
-    .map((cell, col) => pad(cell, widths[col], col >= rightAlignFrom))
-    .join('  ');
+    .map((cell, col) => pad(cell, widths[col], col >= rightAlignFrom && col < rightAlignTo))
+    .join('  ')
+    .trimEnd();
   return [
     picocolors.bold(fmtRow(header)),
     picocolors.dim(widths.map(w => '─'.repeat(w)).join('  ')),
@@ -339,13 +489,22 @@ function table(header: string[], rows: string[][], rightAlignFrom = 1): string[]
   ];
 }
 
+function dotIfZero(value: number): string {
+  return value > 0 ? fmtMs(value) : picocolors.dim('·');
+}
+
+function fmtCpuWait(a: Attribution): string {
+  return attributionTotal(a) > 0 ? `${fmtMs(a.cpu)}/${fmtMs(a.wait)}` : picocolors.dim('·');
+}
+
 // ---------------------------------------------------------------------------
 // Printing
 // ---------------------------------------------------------------------------
 
-export function printTraceResult(traceResult: TraceResult) {
+export function printTraceResult(traceResult: TraceResult, analysis: TraceAnalysis = analyzeTraces([traceResult])) {
+  const { attribution } = analysis;
   printTree(
-    normalizeTraceClock(traceResult),
+    analysis.traces.find(t => t === traceResult) ?? normalizeTraceClock(traceResult),
     (node, parentThread) => {
       const parts: string[] = [node.name];
 
@@ -360,13 +519,10 @@ export function printTraceResult(traceResult: TraceResult) {
 
       parts.push(picocolors.bold(fmtMs(node.end - node.start)));
 
-      if (node.children.length > 0) {
-        parts.push(picocolors.dim(`self=${fmtMs(selfTime(node))}`));
-      }
-
-      const busy = loopBusy(node);
-      if (busy) {
-        parts.push(picocolors.dim(busy));
+      // a sync span is trivially all-cpu for its whole duration
+      const own = attribution.get(node);
+      if (own && !node.sync && attributionTotal(own) >= 0.1) {
+        parts.push(picocolors.dim(`self(${fmtAttribution(own)})`));
       }
 
       if (node.thread !== parentThread) {
@@ -473,42 +629,102 @@ function printOverview(analysis: TraceAnalysis, usage: BuildResourceUsage | unde
   console.log(picocolors.bold('[build]'), parts.filter(Boolean).join(' '));
 }
 
-function printCategoryBreakdown(analysis: TraceAnalysis) {
-  const grandTotal = analysis.categories.reduce((acc, c) => acc + c.selfTotal, 0);
+function printMainThreadBreakdown(analysis: TraceAnalysis) {
+  const main = analysis.threads.find(t => t.thread === 0);
+  if (!main) {
+    return;
+  }
+
+  const total = attributionTotal(main.attributed);
 
   console.log();
-  console.log(picocolors.bold('[time by category]'));
+  console.log(
+    picocolors.bold('[main thread: where did the wall-clock go]'),
+    `${fmtMs(total)} = cpu ${fmtMs(main.attributed.cpu)} (${fmtPercent(main.attributed.cpu, total)}) + wait ${fmtMs(main.attributed.wait)} (${fmtPercent(main.attributed.wait, total)})`
+  );
   console.log(picocolors.dim(
-    '  self = span time not covered by traced children, summed across concurrent spans (so it exceeds wall;\n'
-    + '         an async span on a busy event loop also includes time queued behind other work);\n'
-    + '  coverage = wall-clock during which at least one span of that category was in flight;\n'
-    + '  sync = the part of self that came from synchronous spans, i.e. guaranteed CPU on that thread'
+    '  every instant is handed to the innermost spans in flight on the main thread (a synchronous span takes all\n'
+    + '  of it, async spans split it equally), and classified as cpu (event loop busy) or wait (event loop idle);\n'
+    + '  coverage = wall-clock during which at least one span of that category was in flight, on any thread'
   ));
 
   const rows = analysis.categories.reduce<string[][]>((acc, c) => {
     if (c.spans > 0) {
+      const t = attributionTotal(c.main);
       acc.push([
         CATEGORY_COLOR[c.category](c.category),
-        fmtMs(c.selfTotal),
-        fmtPercent(c.selfTotal, grandTotal),
+        fmtMs(t),
+        fmtPercent(t, total),
+        dotIfZero(c.main.cpu),
+        dotIfZero(c.main.wait),
         fmtMs(c.coverage),
-        fmtPercent(c.coverage, analysis.wall),
-        String(c.spans),
-        fmtMs(c.selfOnMainThread),
-        fmtMs(c.selfOnWorkers),
-        fmtMs(c.selfSync)
+        String(c.spans)
       ]);
     }
     return acc;
   }, []);
+  const untraced = attributionTotal(main.untraced);
+  if (untraced > 0) {
+    rows.push([
+      picocolors.dim('(no span in flight)'),
+      fmtMs(untraced),
+      fmtPercent(untraced, total),
+      dotIfZero(main.untraced.cpu),
+      dotIfZero(main.untraced.wait),
+      picocolors.dim('·'),
+      picocolors.dim('·')
+    ]);
+  }
 
-  table(['category', 'self', 'share', 'coverage', 'of wall', 'spans', 'main', 'workers', 'sync'], rows)
+  table(['category', 'total', 'share', 'cpu', 'wait', 'coverage', 'spans'], rows)
+    .forEach(line => console.log('  ' + line));
+}
+
+function printWorkerThreads(analysis: TraceAnalysis) {
+  const workers = analysis.threads.filter(t => t.thread !== 0);
+  if (workers.length === 0) {
+    return;
+  }
+
+  console.log();
+  console.log(picocolors.bold('[worker threads]'), picocolors.dim('(run in parallel to the main thread; same attribution, per thread; cpu / wait)'));
+
+  const rows = workers.map((t) => {
+    const byCategory = CATEGORY_ORDER.reduce<string[]>((acc, category) => {
+      const a = t.byCategory[category];
+      if (attributionTotal(a) > 0) {
+        acc.push(`${CATEGORY_COLOR[category](category)} ${fmtCpuWait(a)}`);
+      }
+      return acc;
+    }, []);
+    return [
+      threadLabel(t.thread),
+      fmtMs(t.span),
+      fmtMs(t.attributed.cpu),
+      fmtMs(t.attributed.wait),
+      byCategory.join(', ')
+    ];
+  });
+
+  table(['thread', 'active for', 'cpu', 'wait', 'by category'], rows, 1, 4)
     .forEach(line => console.log('  ' + line));
 }
 
 function printTopSpans(analysis: TraceAnalysis) {
+  const describe = (span: AnalyzedSpan) => {
+    const extra: string[] = [span.node.sync ? 'sync' : fmtAttribution(span.attributed)];
+    // only worth showing when it differs from what was attributed (children or concurrency)
+    if (attributionTotal(span.attributed) < span.duration * 0.98) {
+      extra.push(`wall=${fmtMs(span.duration)}`);
+    }
+    if (span.node.thread !== 0) {
+      extra.push(`@${threadLabel(span.node.thread)}`);
+    }
+    return picocolors.dim(extra.join(' '));
+  };
+
   console.log();
-  console.log(picocolors.bold('[top spans by self time, per category]'));
+  console.log(picocolors.bold('[top spans by attributed time, per category]'));
   for (let i = 0, len = analysis.categories.length; i < len; i++) {
     const stat = analysis.categories[i];
     if (stat.top.length === 0) {
@@ -517,35 +733,25 @@ function printTopSpans(analysis: TraceAnalysis) {
     console.log('  ' + categoryTag(stat.category));
     for (let j = 0, jlen = stat.top.length; j < jlen; j++) {
       const span = stat.top[j];
-      const extra: string[] = [];
-      if (span.node.children.length > 0) {
-        extra.push(`wall=${fmtMs(span.duration)}`);
-      }
-      const busy = loopBusy(span.node);
-      if (busy) {
-        extra.push(busy);
-      }
-      if (span.node.thread !== 0) {
-        extra.push(`@${threadLabel(span.node.thread)}`);
-      }
       console.log(
         '    ',
-        picocolors.bold(fmtMs(span.self).padStart(9)),
+        picocolors.bold(fmtMs(attributionTotal(span.attributed)).padStart(9)),
         fmtPath(span.path, 110),
-        extra.length ? picocolors.dim(extra.join(' ')) : ''
+        describe(span)
       );
     }
   }
 
   console.log();
-  console.log(picocolors.bold('[top spans by self time, overall]'));
+  console.log(picocolors.bold('[top spans by attributed time, overall]'));
   for (let i = 0, len = analysis.topSpans.length; i < len; i++) {
     const span = analysis.topSpans[i];
     console.log(
       '    ',
-      picocolors.bold(fmtMs(span.self).padStart(9)),
-      categoryTag(span.category).padEnd(16),
-      fmtPath(span.path, 110)
+      picocolors.bold(fmtMs(attributionTotal(span.attributed)).padStart(9)),
+      pad(categoryTag(span.category), 15, false),
+      fmtPath(span.path, 100),
+      describe(span)
     );
   }
 }
@@ -556,23 +762,24 @@ function printTaskMatrix(analysis: TraceAnalysis) {
   }
 
   console.log();
-  console.log(picocolors.bold('[time by task × category]'), picocolors.dim('(self time of the task and all its descendants)'));
+  console.log(
+    picocolors.bold('[time by task × category]'),
+    picocolors.dim('(wall-clock attributed to the task\'s spans, on whichever thread they ran; cpu / wait)')
+  );
 
-  const usedCategories = CATEGORY_ORDER.filter(c => analysis.tasks.some(t => t.byCategory[c] > 0));
+  const usedCategories = CATEGORY_ORDER.filter(c => analysis.tasks.some(t => attributionTotal(t.byCategory[c]) > 0));
 
   const rows = analysis.tasks
     .toSorted((a, b) => b.duration - a.duration)
-    .map((task) => {
-      const busy = task.node.elu ? fmtPercent(task.node.elu.active, task.node.elu.active + task.node.elu.idle) : 'n/a';
-      return [
-        task.node.name + (task.node.thread === 0 ? '' : picocolors.dim(` @${threadLabel(task.node.thread)}`)),
-        fmtMs(task.duration),
-        busy,
-        ...usedCategories.map(c => (task.byCategory[c] > 0 ? fmtMs(task.byCategory[c]) : picocolors.dim('·')))
-      ];
-    });
+    .map(task => [
+      task.node.name + (task.node.thread === 0 ? '' : picocolors.dim(` @${threadLabel(task.node.thread)}`)),
+      fmtMs(task.duration),
+      dotIfZero(task.attributed.cpu),
+      dotIfZero(task.attributed.wait),
+      ...usedCategories.map(c => fmtCpuWait(task.byCategory[c]))
+    ]);
 
-  table(['task', 'wall', 'loop-busy', ...usedCategories], rows)
+  table(['task', 'wall', 'cpu', 'wait', ...usedCategories], rows)
     .forEach(line => console.log('  ' + line));
 }
 
@@ -582,13 +789,14 @@ function printTaskMatrix(analysis: TraceAnalysis) {
  * the shared timeline).
  */
 export function printBuildReport(traces: TraceResult[], usage?: BuildResourceUsage) {
-  traces.forEach(printTraceResult);
-
   const analysis = analyzeTraces(traces);
+
+  analysis.traces.forEach(trace => printTraceResult(trace, analysis));
 
   console.log();
   printOverview(analysis, usage);
-  printCategoryBreakdown(analysis);
+  printMainThreadBreakdown(analysis);
+  printWorkerThreads(analysis);
   printTopSpans(analysis);
   printTaskMatrix(analysis);
   console.log();
