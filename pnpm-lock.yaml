@@ -155,8 +155,8 @@ importers:
         specifier: ^4.12.0
         version: 4.12.0
       hntrie:
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.2.0
+        version: 1.2.0
       null-prototype-object:
         specifier: ^1.2.7
         version: 1.2.7
@@ -1506,8 +1506,8 @@ packages:
   hash-wasm@4.12.0:
     resolution: {integrity: sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ==}
 
-  hntrie@1.1.0:
-    resolution: {integrity: sha512-OQcAZvpOKpwFOq30q93YgpaE3EEcTMnU2+QMuLuwat1RXasAfPV7F/SUQI8z1vJLVxIJshLphRlXMnF+tvRpDQ==}
+  hntrie@1.2.0:
+    resolution: {integrity: sha512-p/I3J3JWdPcvVASK0SEEHNut9WaeGzAjyw90agTqBUUU/GZZeZoEnPKbHsid1UvtlBSOZn9yXFCEwXo0pEKOmw==}
 
   htmlparser2@6.1.0:
     resolution: {integrity: sha512-gyyPk6rgonLFEDGoeRgQNaEUvdJ4ktTmmUh/h2t7s+M8oPpIPxgNACWa+6ESR57kXstwqPiCut0V8NRpcwgU7A==}
@@ -3169,7 +3169,7 @@ snapshots:
 
   hash-wasm@4.12.0: {}
 
-  hntrie@1.1.0:
+  hntrie@1.2.0:
     dependencies:
       foxts: 5.9.1
 

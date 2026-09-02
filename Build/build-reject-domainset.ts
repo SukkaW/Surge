@@ -15,7 +15,6 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput, AdGuardHomeOutput } from './lib/rules/domainset';
-import { HostnameSmolTrie } from 'hntrie/smol';
 import { getBuildWorkerFarm } from './lib/build-worker-farm';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
@@ -249,9 +248,9 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   });
 
   // reject-adguardhome starts from the (whitelisted) reject trie and adds to it.
-  // Cloning (~70ms, ~25ms once hntrie ships a native clone()) instead of sharing
-  // the trie lets its write run alongside the others instead of waiting for the
-  // reject write to finish first (~0.4s serial on CI). See lib/trie-clone.bench.ts.
+  // Cloning (~25ms for ~135k entries) instead of sharing the trie lets its write
+  // run alongside the others instead of waiting for the reject write to finish
+  // first (~0.4s serial on CI).
   const rejectOutputAdGuardHome = new AdGuardHomeOutput(span, 'reject-adguardhome', OUTPUT_INTERNAL_DIR)
     .withTitle('Sukka\'s Ruleset - AdGuardHome Blocklist')
     .withDescription([
@@ -260,8 +259,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
 
   rejectOutputAdGuardHome.domainTrie = span.traceChildSync(
     'clone reject trie for adguardhome',
-    // TODO: HostnameSmolTrie#clone() once available, the binary round trip is the public-API stand-in
-    () => HostnameSmolTrie.deserializeTransferable(rejectDomainsetOutput.domainTrie.serializeTransferable()),
+    () => rejectDomainsetOutput.domainTrie.clone(),
     SpanCategory.Compute
   );
 
