@@ -2,11 +2,9 @@
 import path from 'node:path';
 import process from 'node:process';
 
-import { processHostsWithPreload } from './lib/parse-filter/hosts';
-import { processDomainListsWithPreload } from './lib/parse-filter/domainlists';
-import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
+import type { ProcessFilterRulesResult } from './lib/parse-filter/filters';
 
-import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, BOGUS_NXDOMAIN_DNSMASQ, ENFORCED_BLACKLIST_FROM_WHITELIST } from './constants/reject-data-source';
+import { HOSTS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, BOGUS_NXDOMAIN_DNSMASQ, ENFORCED_BLACKLIST_FROM_WHITELIST } from './constants/reject-data-source';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { SpanCategory, task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
@@ -17,31 +15,27 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput, AdGuardHomeOutput } from './lib/rules/domainset';
-import { foundDebugDomain } from './lib/parse-filter/shared';
 import { createWorker } from './lib/worker';
-import type { MaybePromise } from './lib/misc';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
 import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
-import { arrayPushNonNullish } from 'foxts/array-push-non-nullish';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_extra.conf'));
 const readLocalRejectRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject.conf'));
 const readLocalRejectIpListPromise = readFileIntoProcessedArray(path.resolve(SOURCE_DIR, 'ip/reject.conf'));
 
-const hostsDownloads = HOSTS.map(entry => processHostsWithPreload(...entry));
-const hostsExtraDownloads = HOSTS_EXTRA.map(entry => processHostsWithPreload(...entry));
-const domainListsDownloads = DOMAIN_LISTS.map(entry => processDomainListsWithPreload(...entry));
-const domainListsExtraDownloads = DOMAIN_LISTS_EXTRA.map(entry => processDomainListsWithPreload(...entry));
-const adguardFiltersDownloads = ADGUARD_FILTERS.map(entry => processFilterRulesWithPreload(...entry));
-const adguardFiltersExtraDownloads = ADGUARD_FILTERS_EXTRA.map(entry => processFilterRulesWithPreload(...entry));
-const adguardFiltersWhitelistsDownloads = ADGUARD_FILTERS_WHITELIST.map(entry => processFilterRulesWithPreload(...entry));
+// Downloading + parsing the remote sources is ~1s of CPU that used to sit on the
+// main thread's critical path; the parsed arrays cross back in ~25ms (see
+// lib/worker-transfer.bench.ts). Two threads because jest-worker runs one call at
+// a time per thread and the two jobs must overlap. Booted at import time so the
+// thread spin-up (loading the module graph) overlaps with the rest of startup.
+const rejectWorker = createWorker<typeof import('./lib/reject.worker')>(
+  require.resolve('./lib/reject.worker'),
+  2
+)(['getPhishingDomains', 'getRejectSources']);
 
 export const buildRejectDomainSet = task(require.main === module, __filename)(async (span) => {
-  const phishingWorker = createWorker<typeof import('./lib/get-phishing-domains')>(
-    require.resolve('./lib/get-phishing-domains')
-  )(['getPhishingDomains']);
   const rejectDomainsetOutput = new DomainsetOutput(span, 'reject')
     .withTitle('Sukka\'s Ruleset - Reject Base')
     .appendDescription(
@@ -111,123 +105,107 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
 
   rejectIPOutput.addFromRuleset(readLocalRejectIpListPromise);
 
-  const appendArrayToRejectOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectDomainsetOutput.addFromDomainset(source);
-  const appendArrayToRejectExtraOutput = (source: MaybePromise<AsyncIterable<string> | Iterable<string> | string[]>) => rejectExtraDomainsetOutput.addFromDomainset(source);
-
   /** Whitelists */
   const filterRuleWhitelistDomainSets = new Set(PREDEFINED_WHITELIST);
   const filterRuleWhiteKeywords = new Set<string>();
 
-  // Parse from AdGuard Filters
-  await span
+  const mergeAdGuardFilter = (
+    domainsetOutput: DomainsetOutput,
+    {
+      filterRulesUrl,
+      whiteDomains, whiteDomainSuffixes,
+      blackDomains, blackDomainSuffixes,
+      blackIPs, blackWildcard,
+      whiteKeyword, blackKeyword
+    }: ProcessFilterRulesResult
+  ) => {
+    addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+    addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+
+    addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+
+    domainsetOutput.bulkAddDomain(blackDomains);
+    domainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
+
+    domainsetOutput.bulkAddDomainKeyword(blackKeyword);
+
+    domainsetOutput.appendDataSource(filterRulesUrl);
+
+    rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
+    rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
+
+    rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
+    rejectIPOutput.appendDataSource(filterRulesUrl);
+  };
+
+  const mergeAdGuardWhitelistFilter = ({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, whiteKeyword, blackKeyword }: ProcessFilterRulesResult) => {
+    addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
+    addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+    addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
+    addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
+    addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
+    addArrayElementsToSet(filterRuleWhiteKeywords, blackKeyword);
+  };
+
+  const foundDebugDomain = await span
     .traceChild('download and process hosts / adblock filter rules')
-    .traceAsyncFn((childSpan) => {
-      const promises: Array<Promise<void>> = [];
-      // Parse from remote hosts & domain lists
-
-      arrayPushNonNullish(promises, hostsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)));
-      arrayPushNonNullish(promises, hostsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)));
-      arrayPushNonNullish(promises, domainListsDownloads.map(task => task(childSpan).then(appendArrayToRejectOutput)));
-      arrayPushNonNullish(promises, domainListsExtraDownloads.map(task => task(childSpan).then(appendArrayToRejectExtraOutput)));
-
+    .traceAsyncFn(async (childSpan) => {
       rejectPhisingDomainsetOutput.addFromDomainset(
-        span.traceWorkerChild('get phishing domains', rawSpan => phishingWorker.getPhishingDomains(rawSpan))
+        childSpan.traceWorkerChild('get phishing domains', rawSpan => rejectWorker.getPhishingDomains(rawSpan))
       );
 
-      arrayPushNonNullish(
-        promises,
-        adguardFiltersDownloads.map(
-          task => task(childSpan).then(({
-            filterRulesUrl,
-            whiteDomains, whiteDomainSuffixes,
-            blackDomains, blackDomainSuffixes,
-            blackIPs, blackWildcard,
-            whiteKeyword, blackKeyword
-          }) => {
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
+      const [sources] = await Promise.all([
+        childSpan.traceWorkerChild('get reject sources', rawSpan => rejectWorker.getRejectSources(rawSpan)),
 
-            addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
-
-            rejectDomainsetOutput.bulkAddDomain(blackDomains);
-            rejectDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
-
-            rejectDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
-
-            rejectDomainsetOutput.appendDataSource(filterRulesUrl);
-
-            rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
-            rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
-
-            rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
-            rejectIPOutput.appendDataSource(filterRulesUrl);
-          })
-        )
-      );
-
-      arrayPushNonNullish(
-        promises,
-        adguardFiltersExtraDownloads.map(
-          task => task(childSpan).then(({
-            filterRulesUrl,
-            whiteDomains, whiteDomainSuffixes,
-            blackDomains, blackDomainSuffixes,
-            blackIPs, blackWildcard, whiteKeyword, blackKeyword
-          }) => {
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
-            addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
-
-            rejectExtraDomainsetOutput.bulkAddDomain(blackDomains);
-            rejectExtraDomainsetOutput.bulkAddDomainSuffix(blackDomainSuffixes);
-
-            rejectExtraDomainsetOutput.bulkAddDomainKeyword(blackKeyword);
-
-            rejectExtraDomainsetOutput.appendDataSource(filterRulesUrl);
-
-            rejectIPOutput.bulkAddAnyCIDR(blackIPs, false);
-            rejectIPOutput.appendDataSource(filterRulesUrl);
-
-            rejectNonIpRulesetOutput.bulkAddDomainWildcard(blackWildcard);
-            rejectNonIpRulesetOutput.appendDataSource(filterRulesUrl);
-          })
-        )
-      );
-      arrayPushNonNullish(
-        promises,
-        adguardFiltersWhitelistsDownloads.map(
-          task => task(childSpan).then(({ whiteDomains, whiteDomainSuffixes, blackDomains, blackDomainSuffixes, whiteKeyword, blackKeyword }) => {
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomains);
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, whiteDomainSuffixes, suffix => '.' + suffix);
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomains);
-            addArrayElementsToSet(filterRuleWhitelistDomainSets, blackDomainSuffixes, suffix => '.' + suffix);
-            addArrayElementsToSet(filterRuleWhiteKeywords, whiteKeyword);
-            addArrayElementsToSet(filterRuleWhiteKeywords, blackKeyword);
-          })
-        )
-      );
-
-      promises.push(span.traceChildAsync(
-        'get bogus nxdomain ips',
-        () => fetchAssets(...BOGUS_NXDOMAIN_DNSMASQ, true, false).then(arr => {
-          for (let i = 0, len = arr.length; i < len; i++) {
-            const line = arr[i];
-            if (line.startsWith('bogus-nxdomain=')) {
-              rejectIPOutput.addAnyCIDR(
-                line.slice(15).trim(),
-                false // bogus nxdomain needs to be blocked even after resolved
-              );
+        childSpan.traceChildAsync(
+          'get bogus nxdomain ips',
+          () => fetchAssets(...BOGUS_NXDOMAIN_DNSMASQ, true, false).then(arr => {
+            for (let i = 0, len = arr.length; i < len; i++) {
+              const line = arr[i];
+              if (line.startsWith('bogus-nxdomain=')) {
+                rejectIPOutput.addAnyCIDR(
+                  line.slice(15).trim(),
+                  false // bogus nxdomain needs to be blocked even after resolved
+                );
+              }
             }
-          }
-          // return arr;
-        }),
-        SpanCategory.Network
-      ));
+            // return arr;
+          }),
+          SpanCategory.Network
+        )
+      ]);
 
-      return Promise.all(promises);
+      // Everything below is trie / set insertion on the main thread -- the part
+      // that can not move, since the tries live here.
+      childSpan.traceChildSync('merge reject sources', () => {
+        for (let i = 0, len = sources.hosts.length; i < len; i++) {
+          rejectDomainsetOutput.addFromDomainset(sources.hosts[i]);
+        }
+        for (let i = 0, len = sources.domainLists.length; i < len; i++) {
+          rejectDomainsetOutput.addFromDomainset(sources.domainLists[i]);
+        }
+        for (let i = 0, len = sources.hostsExtra.length; i < len; i++) {
+          rejectExtraDomainsetOutput.addFromDomainset(sources.hostsExtra[i]);
+        }
+        for (let i = 0, len = sources.domainListsExtra.length; i < len; i++) {
+          rejectExtraDomainsetOutput.addFromDomainset(sources.domainListsExtra[i]);
+        }
+
+        for (let i = 0, len = sources.adguardFilters.length; i < len; i++) {
+          mergeAdGuardFilter(rejectDomainsetOutput, sources.adguardFilters[i]);
+        }
+        for (let i = 0, len = sources.adguardFiltersExtra.length; i < len; i++) {
+          mergeAdGuardFilter(rejectExtraDomainsetOutput, sources.adguardFiltersExtra[i]);
+        }
+        for (let i = 0, len = sources.adguardFiltersWhitelist.length; i < len; i++) {
+          mergeAdGuardWhitelistFilter(sources.adguardFiltersWhitelist[i]);
+        }
+      }, SpanCategory.Compute);
+
+      return sources.foundDebugDomain;
     });
 
-  if (foundDebugDomain.value) {
+  if (foundDebugDomain) {
     // eslint-disable-next-line sukka/unicorn/no-process-exit -- cli App
     process.exit(1);
   }
@@ -309,5 +287,5 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/my_reject.conf')))
     .write();
 
-  await phishingWorker.end();
+  await rejectWorker.end();
 });

@@ -25,6 +25,21 @@ const enum ParseType {
 
 export { type ParseType };
 
+/** Plain data: safe to hand across a worker thread boundary */
+export type ProcessFilterRulesResult = Record<
+  'whiteDomains'
+  | 'whiteDomainSuffixes'
+  | 'blackDomains'
+  | 'blackDomainSuffixes'
+  | 'blackIPs'
+  | 'blackWildcard'
+  | 'whiteKeyword'
+  | 'blackKeyword',
+  string[]
+> & {
+  filterRulesUrl: string
+};
+
 export function processFilterRulesWithPreload(
   filterRulesUrl: string,
   fallbackUrls?: string[] | null,
@@ -35,21 +50,7 @@ export function processFilterRulesWithPreload(
     true, false, true
   );
 
-  return (span: Span) => span.traceChildAsync<
-    Record<
-      'whiteDomains'
-      | 'whiteDomainSuffixes'
-      | 'blackDomains'
-      | 'blackDomainSuffixes'
-      | 'blackIPs'
-      | 'blackWildcard'
-      | 'whiteKeyword'
-      | 'blackKeyword',
-      string[]
-    > & {
-      filterRulesUrl: string
-    }
-  >(`process filter rules: ${filterRulesUrl}`, async (span) => {
+  return (span: Span) => span.traceChildAsync<ProcessFilterRulesResult>(`process filter rules: ${filterRulesUrl}`, async (span) => {
     const filterRules = await span.traceChildPromise('download', downloadPromise, SpanCategory.Network);
 
     const whiteDomains = new Set<string>();
