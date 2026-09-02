@@ -22,8 +22,9 @@ import { createWorker } from './lib/worker';
 import { buildPublic } from './build-public';
 import { buildCloudMounterRules } from './build-cloudmounter-rules';
 
-import { printStats, printTraceResult, whyIsNodeRunning } from './trace';
+import { printBuildReport, whyIsNodeRunning } from './trace';
 import type { TraceResult } from './trace';
+import { performance } from 'node:perf_hooks';
 import { buildDeprecateFiles } from './build-deprecate-files';
 import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
@@ -70,6 +71,12 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
   if (fs.existsSync(buildFinishedLock)) {
     fs.unlinkSync(buildFinishedLock);
   }
+
+  // Build-wide resource baselines: how busy the main thread's event loop was
+  // (CPU vs. waiting on I/O) and how much CPU the whole process (incl. worker
+  // threads) burned relative to wall-clock.
+  const eluAtStart = performance.eventLoopUtilization();
+  const cpuAtStart = process.cpuUsage();
 
   const microsoftCdnWorker = createWorker<typeof import('./build-microsoft-cdn.worker')>(
     require.resolve('./build-microsoft-cdn.worker')
@@ -130,10 +137,10 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
 
     printExternalDownloadStats();
-    traces.forEach((t) => {
-      printTraceResult(t);
+    printBuildReport(traces, {
+      elu: performance.eventLoopUtilization(eluAtStart),
+      cpu: process.cpuUsage(cpuAtStart)
     });
-    printStats(traces);
 
     await Promise.all([
       microsoftCdnWorker.end(),

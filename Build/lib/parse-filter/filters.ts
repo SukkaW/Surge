@@ -1,4 +1,5 @@
 import picocolors from 'picocolors';
+import { SpanCategory } from '../../trace';
 import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
 import { onBlackFound, onWhiteFound } from './shared';
@@ -49,7 +50,7 @@ export function processFilterRulesWithPreload(
       filterRulesUrl: string
     }
   >(`process filter rules: ${filterRulesUrl}`, async (span) => {
-    const filterRules = await span.traceChildPromise('download', downloadPromise);
+    const filterRules = await span.traceChildPromise('download', downloadPromise, SpanCategory.Network);
 
     const whiteDomains = new Set<string>();
     const whiteDomainSuffixes = new Set<string>();
@@ -121,7 +122,7 @@ export function processFilterRulesWithPreload(
       }
     };
 
-    span.traceChild('parse adguard filter').traceSyncFn(() => {
+    span.traceChild('parse adguard filter', SpanCategory.Compute).traceSyncFn(() => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
         lineCb(filterRules[i]);
       }

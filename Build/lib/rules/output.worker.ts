@@ -1,4 +1,4 @@
-import { workerJob } from '../../trace';
+import { SpanCategory, workerJob } from '../../trace';
 import type { RawSpan, WorkerJobResult } from '../../trace';
 import { resolveStrategyOutputPath, reviveStrategy, writeDataToStrategies } from './strategy-write-data';
 import type { OutputWorkerPayload } from './strategy-write-data';
@@ -15,7 +15,7 @@ export function writeOutput(rawSpan: RawSpan | undefined, payload: OutputWorkerP
   return workerJob(rawSpan, (span) => {
     const strategies = payload.strategies.map(reviveStrategy);
 
-    span.traceChildSync('write to strategies', () => writeDataToStrategies(payload.data, strategies));
+    span.traceChildSync('write to strategies', () => writeDataToStrategies(payload.data, strategies), SpanCategory.Compute);
 
     const date = new Date(payload.dateMs);
 
@@ -29,7 +29,9 @@ export function writeOutput(rawSpan: RawSpan | undefined, payload: OutputWorkerP
         // eslint-disable-next-line no-await-in-loop -- see above
         await childSpan.traceChildAsync(
           'write ' + strategy.name,
-          (strategySpan) => strategy.outputInWorker(strategySpan, payload.title, payload.description, date, filePath)
+          (strategySpan) => strategy.outputInWorker(strategySpan, payload.title, payload.description, date, filePath),
+          // self time here is banner + content hash; compare / writing are traced as children
+          SpanCategory.Compute
         );
       }
     });

@@ -2,7 +2,7 @@ import { fastIpVersion } from 'foxts/fast-ip-version';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { $$fetch } from './lib/fetch-retry';
 import { RulesetOutput } from './lib/rules/ruleset';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 
 const OPENAI_VOICE_IP_URL = 'https://openai.com/chatgpt-voice.json';
 
@@ -67,7 +67,7 @@ export const buildAICIDR = task(require.main === module, __filename)(async (span
   const { cidr4, cidr6, lastUpdated } = await span.traceChildAsync('get OpenAI Voice IP ranges', async () => {
     const response = await $$fetch(OPENAI_VOICE_IP_URL);
     return parseOpenAIVoiceJSON(await response.json());
-  });
+  }, SpanCategory.Network);
 
   return new RulesetOutput(span, 'ai', 'ip')
     .withTitle('Sukka\'s Ruleset - ChatGPT Voice IP CIDR')

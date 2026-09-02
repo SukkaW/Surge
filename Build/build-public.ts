@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import { treeDir, TreeFileType } from './lib/tree-dir';
 import type { TreeType, TreeTypeArray } from './lib/tree-dir';
 
@@ -54,7 +54,7 @@ async function copyDirContents(srcDir: string, destDir: string, promises: Array<
 }
 
 export const buildPublic = task(require.main === module, __filename)(async (span) => {
-  await span.traceChildAsync('copy rest of the files', async () => {
+  await span.traceChild('copy rest of the files', SpanCategory.FsWrite).traceAsyncFn(async () => {
     const p: Array<Promise<any>> = [];
 
     fs.mkdirSync(OUTPUT_MODULES_DIR, { recursive: true });
@@ -67,7 +67,8 @@ export const buildPublic = task(require.main === module, __filename)(async (span
   });
 
   const html = await span
-    .traceChild('generate index.html')
+    // crawls the whole public dir; the html templating itself is trivial
+    .traceChild('generate index.html', SpanCategory.FsRead)
     .traceAsyncFn(() => treeDir(PUBLIC_DIR).then(generateHtml));
 
   return Promise.all([

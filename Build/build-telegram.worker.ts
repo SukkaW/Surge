@@ -1,5 +1,5 @@
 // @ts-check
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { $$fetch } from './lib/fetch-retry';
@@ -16,7 +16,7 @@ const buildTelegramCIDR = task(require.main === module, __filename)(async (span)
     ];
     const ipcidr6: string[] = [];
 
-    const date = await childSpan.traceChildAsync('fetch from official cidr list', async () => {
+    const date = await childSpan.traceChild('fetch from official cidr list', SpanCategory.Network).traceAsyncFn(async () => {
       const resp = await $$fetch('https://core.telegram.org/resources/cidr.txt');
       const lastModified = resp.headers.get('last-modified');
 
@@ -148,7 +148,8 @@ async function fetchConfigFromBootstrapEndpoints() {
 export const buildMTProtoDCConfig = task(require.main === module, __filename)(async (span) => {
   const config = await span.traceChildAsync(
     'fetch help.getConfig',
-    fetchConfigFromBootstrapEndpoints
+    fetchConfigFromBootstrapEndpoints,
+    SpanCategory.Network
   );
 
   const backupEndpoints = await span.traceChildAsync(

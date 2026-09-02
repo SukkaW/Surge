@@ -1,6 +1,6 @@
 import { OUTPUT_CLASH_DIR, OUTPUT_SURGE_DIR, PUBLIC_DIR } from './constants/dir';
 import { compareAndWriteFile } from './lib/create-file';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import path from 'node:path';
 import fsp from 'node:fs/promises';
 import { globSync } from 'tinyglobby';
@@ -29,7 +29,7 @@ const REMOVED_FOLDERS = [
   'Clash/Internal'
 ];
 
-export const buildDeprecateFiles = task(require.main === module, __filename)((span) => span.traceChildAsync('create deprecated files', async (childSpan) => {
+export const buildDeprecateFiles = task(require.main === module, __filename)((span) => span.traceChild('create deprecated files', SpanCategory.FsWrite).traceAsyncFn(async (childSpan) => {
   const promises: Array<Promise<unknown>> = globSync(REMOVED_FILES, { cwd: PUBLIC_DIR, absolute: true })
     .map(f => fsp.rm(f, { force: true, recursive: true }));
 

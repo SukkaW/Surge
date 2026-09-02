@@ -1,3 +1,4 @@
+import { SpanCategory } from '../../trace';
 import type { Span } from '../../trace';
 import { fetchAssets } from '../fetch-assets';
 import { fastNormalizeDomainWithoutWww } from '../normalize-domain';
@@ -42,11 +43,11 @@ export function processHosts(
   const cb = includeAllSubDomain ? hostsLineCbIncludeAllSubdomain : hostsLineCb;
 
   return span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
-    const filterRules = await span.traceChild('download').traceAsyncFn(() => fetchAssets(hostsUrl, mirrors, true));
+    const filterRules = await span.traceChild('download', SpanCategory.Network).traceAsyncFn(() => fetchAssets(hostsUrl, mirrors, true));
 
     const domainSets: string[] = [];
 
-    span.traceChild('parse hosts').traceSyncFn(() => {
+    span.traceChild('parse hosts', SpanCategory.Compute).traceSyncFn(() => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
         cb(filterRules[i], domainSets, hostsUrl);
       }
@@ -61,11 +62,11 @@ export function processHostsWithPreload(hostsUrl: string, mirrors: string[] | nu
   const cb = includeAllSubDomain ? hostsLineCbIncludeAllSubdomain : hostsLineCb;
 
   return (span: Span) => span.traceChildAsync(`process hosts: ${hostsUrl}`, async (span) => {
-    const filterRules = await span.traceChild('download').tracePromise(downloadPromise);
+    const filterRules = await span.traceChild('download', SpanCategory.Network).tracePromise(downloadPromise);
 
     const domainSets: string[] = [];
 
-    span.traceChild('parse hosts').traceSyncFn(() => {
+    span.traceChild('parse hosts', SpanCategory.Compute).traceSyncFn(() => {
       for (let i = 0, len = filterRules.length; i < len; i++) {
         cb(filterRules[i], domainSets, hostsUrl);
       }

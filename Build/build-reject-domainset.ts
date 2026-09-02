@@ -8,7 +8,7 @@ import { processFilterRulesWithPreload } from './lib/parse-filter/filters';
 
 import { HOSTS, ADGUARD_FILTERS, PREDEFINED_WHITELIST, DOMAIN_LISTS, HOSTS_EXTRA, DOMAIN_LISTS_EXTRA, ADGUARD_FILTERS_EXTRA, ADGUARD_FILTERS_WHITELIST, PHISHING_HOSTS_EXTRA, PHISHING_DOMAIN_LISTS_EXTRA, BOGUS_NXDOMAIN_DNSMASQ, ENFORCED_BLACKLIST_FROM_WHITELIST } from './constants/reject-data-source';
 import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 // tldts-experimental is way faster than tldts, but very little bit inaccurate
 // (since it is hashes based). But the result is still deterministic, which is
 // enough when creating a simple stat of reject hosts.
@@ -220,7 +220,8 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
             }
           }
           // return arr;
-        })
+        }),
+        SpanCategory.Network
       ));
 
       return Promise.all(promises);
@@ -244,7 +245,7 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   });
 
   // whitelist
-  span.traceChildSync('whitelist', () => {
+  span.traceChild('whitelist', SpanCategory.Compute).traceSyncFn(() => {
     for (const domain of filterRuleWhitelistDomainSets) {
       rejectDomainsetOutput.whitelistDomain(domain);
       rejectExtraDomainsetOutput.whitelistDomain(domain);
@@ -273,12 +274,13 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     });
   });
 
+  // each write() opens its own RuleOutput#<id> span under the task span
   await Promise.all([
-    span.traceChildAsync('write reject domainset', () => rejectDomainsetOutput.write()),
-    span.traceChildAsync('write reject_extra domainset', () => rejectExtraDomainsetOutput.write()),
-    span.traceChildAsync('write reject_phishing domainset', () => rejectPhisingDomainsetOutput.write()),
-    span.traceChildAsync('write reject ip list', () => rejectIPOutput.write()),
-    span.traceChildAsync('write reject non-ip ruleset', () => rejectNonIpRulesetOutput.write())
+    rejectDomainsetOutput.write(),
+    rejectExtraDomainsetOutput.write(),
+    rejectPhisingDomainsetOutput.write(),
+    rejectIPOutput.write(),
+    rejectNonIpRulesetOutput.write()
   ]);
 
   // we are going to re-use rejectOutput's domainTrie and mutate it

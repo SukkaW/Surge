@@ -2,7 +2,7 @@ import picocolors from 'picocolors';
 import { parse } from 'tldts-experimental';
 import { appendArrayInPlaceCurried } from 'foxts/append-array-in-place';
 
-import { workerJob } from '../trace';
+import { SpanCategory, workerJob } from '../trace';
 import type { RawSpan, WorkerJobResult } from '../trace';
 import type { TldTsParsed } from './normalize-domain';
 
@@ -25,7 +25,7 @@ export function getPhishingDomains(rawSpan?: RawSpan, isDebug = false): Promise<
 
     const domainGroups = await Promise.all(downloads.map(task => task(childSpan)));
 
-    return childSpan.traceChildSync<string[]>('calculate and handling mass phishing domains', () => {
+    return childSpan.traceChild('calculate and handling mass phishing domains', SpanCategory.Compute).traceSyncFn<string[]>(() => {
       const domainArr: string[] = [];
 
       domainGroups.forEach(appendArrayInPlaceCurried(domainArr));

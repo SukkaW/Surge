@@ -2,6 +2,7 @@ import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import fs from 'node:fs';
 import path from 'node:path';
 import picocolors from 'picocolors';
+import { SpanCategory } from '../trace';
 import type { Span } from '../trace';
 import { readFileByLine } from './fetch-text-by-line';
 import { writeFile } from './misc';
@@ -37,7 +38,7 @@ async function isPreviousOutputEqual(span: Span, linesA: string[], filePath: str
     }
 
     return fileEqual(linesA, readFileByLine(filePath));
-  });
+  }, SpanCategory.FsRead);
 
   if (isEqual) {
     console.log(picocolors.gray(picocolors.dim(`same content, bail out writing: ${filePath}`)));
@@ -81,7 +82,8 @@ export async function compareAndWriteFileInWorker(span: Span, linesA: string[], 
 export function writeFileLines(span: Span, linesA: string[], filePath: string): Promise<void> {
   return span.traceChildAsync<void>(
     `writing ${filePath}`,
-    () => writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n')
+    () => writeFile(filePath, fastStringArrayJoin(linesA, '\n') + '\n'),
+    SpanCategory.FsWrite
   );
 }
 
@@ -89,5 +91,5 @@ export function writeFileLinesSync(span: Span, linesA: string[], filePath: strin
   span.traceChildSync(`writing ${filePath}`, () => {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, fastStringArrayJoin(linesA, '\n') + '\n');
-  });
+  }, SpanCategory.FsWrite);
 }

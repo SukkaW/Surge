@@ -5,7 +5,7 @@ import { DIRECTS, HOSTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
 import { fetchRemoteTextByLine, readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { compareAndWriteFile } from './lib/create-file';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import type { Span } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { once } from 'foxts/once';
@@ -372,7 +372,7 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
 async function buildLANCacheRuleset(span: Span) {
   const childSpan = span.traceChild('build LAN cache ruleset');
 
-  const cacheDomainsData = await childSpan.traceChildAsync('fetch cache_domains.json', async () => (await $$fetch('https://cdn.jsdelivr.net/gh/uklans/cache-domains@master/cache_domains.json')).json());
+  const cacheDomainsData = await childSpan.traceChildAsync('fetch cache_domains.json', async () => (await $$fetch('https://cdn.jsdelivr.net/gh/uklans/cache-domains@master/cache_domains.json')).json(), SpanCategory.Network);
   if (!cacheDomainsData || typeof cacheDomainsData !== 'object' || !('cache_domains' in cacheDomainsData) || !Array.isArray(cacheDomainsData.cache_domains)) {
     throw new TypeError('Invalid cache domains data');
   }
@@ -388,7 +388,8 @@ async function buildLANCacheRuleset(span: Span) {
       allDomainFiles.map(
         async (file) => childSpan.traceChildAsync(
           'download ' + file,
-          async () => Array.fromAsync(await fetchRemoteTextByLine('https://cdn.jsdelivr.net/gh/uklans/cache-domains@master/' + file, true))
+          async () => Array.fromAsync(await fetchRemoteTextByLine('https://cdn.jsdelivr.net/gh/uklans/cache-domains@master/' + file, true)),
+          SpanCategory.Network
         )
       )
     )
@@ -443,6 +444,8 @@ async function buildLANCacheRuleset(span: Span) {
     surgeOutput.addDomain(domain);
     mihomoOutput.addDomain(domain);
   }
+
+  childSpan.stop();
 
   return Promise.all([
     surgeOutput.write(),

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { readFileIntoProcessedArray, fetchRemoteTextByLine } from './lib/fetch-text-by-line';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 import { SOURCE_DIR } from './constants/dir';
@@ -22,8 +22,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
     downloadDomainSet,
     steamDomainSet
   ] = await Promise.all([
-    span.traceChildAsync(
-      'download public suffix list for s3',
+    span.traceChild('download public suffix list for s3', SpanCategory.Network).traceAsyncFn(
       async () => {
         const trie = new HostnameTrie();
 
@@ -63,8 +62,7 @@ export const buildCdnDownloadConf = task(require.main === module, __filename)(as
         return S3OSSDomains;
       }
     ),
-    span.traceChildAsync(
-      'load public ipfs gateway list',
+    span.traceChild('load public ipfs gateway list', SpanCategory.Network).traceAsyncFn(
       async () => {
         const data = await (await $$fetch('https://cdn.jsdelivr.net/gh/ipfs/public-gateway-checker@main/gateways.json')).json();
         if (!Array.isArray(data)) {

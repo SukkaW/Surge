@@ -1,3 +1,4 @@
+import { SpanCategory } from '../../trace';
 import type { Span } from '../../trace';
 import { HostnameSmolTrie } from 'hntrie/smol';
 import { not, nullthrow } from 'foxts/guard';
@@ -68,10 +69,15 @@ export class FileOutput {
     return this;
   };
 
-  protected readonly span: Span;
+  /**
+   * The `RuleOutput#id` span is only opened by write(): between construction and
+   * write() this object merely accumulates sources, and that time already belongs
+   * to the sibling spans doing the downloading / reading.
+   */
+  protected readonly parentSpan: Span;
 
   constructor($span: Span, protected readonly id: string) {
-    this.span = $span.traceChild('RuleOutput#' + id);
+    this.parentSpan = $span;
   }
 
   protected title: string | null = null;
@@ -463,10 +469,12 @@ export class FileOutput {
   }
 
   write(): Promise<unknown> {
-    return this.span.traceChildAsync('write all', async (childSpan) => {
-      await childSpan.traceChildAsync('done', () => this.done());
+    return this.parentSpan.traceChildAsync('RuleOutput#' + this.id, async (childSpan) => {
+      // pendingPromise is the (untraced) reading + parsing of every source added
+      // via addFromRuleset / addFromDomainset, so this is waiting on fs + compute
+      await childSpan.traceChildAsync('done', () => this.done(), SpanCategory.Wait);
 
-      const domains = childSpan.traceChildSync('dump domain trie', () => this.dumpDomains());
+      const domains = childSpan.traceChildSync('dump domain trie', () => this.dumpDomains(), SpanCategory.Compute);
 
       const title = nullthrow(this.title, 'Missing title');
       const descriptions = nullthrow(this.description, 'Missing description');
@@ -505,7 +513,7 @@ export class FileOutput {
         );
       }
 
-      childSpan.traceChildSync('write to strategies', () => this.writeToStrategies(domains));
+      childSpan.traceChildSync('write to strategies', () => this.writeToStrategies(domains), SpanCategory.Compute);
 
       return childSpan.traceChildAsync('output to disk', (childSpan) => {
         const promises: Array<Promise<void>> = [];
@@ -521,7 +529,8 @@ export class FileOutput {
               isMainThread
                 ? strategy.output(childSpan, title, descriptions, this.date, filePath)
                 : strategy.outputInWorker(childSpan, title, descriptions, this.date, filePath)
-            ))
+            // self time here is banner + content hash; compare / writing are traced as children
+            ), SpanCategory.Compute)
           );
         }
 

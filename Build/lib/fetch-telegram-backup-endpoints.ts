@@ -5,6 +5,7 @@ import picocolors from 'picocolors';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 import { stableHash } from 'stable-hash';
 
+import { SpanCategory } from '../trace';
 import type { Span } from '../trace';
 import { $$fetch } from './fetch-retry';
 import { getTelegramBackupIPFromBase64 } from './get-telegram-backup-ip';
@@ -37,7 +38,7 @@ async function fetchDnsEndpoints(span: Span, domain: string, traceName: string) 
     return Object.assign(resolver, { server: ip });
   });
 
-  await span.traceChildAsync(traceName, () => Promise.all(resolvers.map(async (resolver) => {
+  await span.traceChild(traceName, SpanCategory.Network).traceAsyncFn(() => Promise.all(resolvers.map(async (resolver) => {
     try {
       const response = await resolver.resolveTxt(domain);
       const strings = response.map(result => fastStringArrayJoin(result, ''));
@@ -61,7 +62,7 @@ async function fetchDnsEndpoints(span: Span, domain: string, traceName: string) 
 }
 
 async function fetchRealtimeDatabaseEndpoints(span: Span) {
-  return span.traceChildAsync('backup source 2: Firebase Realtime DB', async () => {
+  return span.traceChild('backup source 2: Firebase Realtime DB', SpanCategory.Network).traceAsyncFn(async () => {
     try {
       const data = await (await $$fetch('https://reserve-5a846.firebaseio.com/ipconfigv3.json')).json();
       if (typeof data !== 'string' || data.length !== 344) {
@@ -79,7 +80,7 @@ async function fetchRealtimeDatabaseEndpoints(span: Span) {
 }
 
 async function fetchValueStoreEndpoints(span: Span) {
-  return span.traceChildAsync('backup source 3: Firebase Value Store', async () => {
+  return span.traceChild('backup source 3: Firebase Value Store', SpanCategory.Network).traceAsyncFn(async () => {
     try {
       const json = await (await $$fetch('https://firestore.googleapis.com/v1/projects/reserve-5a846/databases/(default)/documents/ipconfig/v3', {
         headers: {
@@ -110,7 +111,7 @@ async function fetchValueStoreEndpoints(span: Span) {
 }
 
 async function fetchAppEngineEndpoints(span: Span, url: string, traceName: string) {
-  return span.traceChildAsync(traceName, async () => {
+  return span.traceChild(traceName, SpanCategory.Network).traceAsyncFn(async () => {
     try {
       const data = (await (await $$fetch(url)).text()).trim();
       if (data.length !== 344) {
@@ -147,7 +148,7 @@ async function fetchTestEndpoints(span: Span) {
 
 function getProductionEndpoints(span: Span) {
   if (productionEndpointsPromise) {
-    return span.traceChildAsync('reuse production backup endpoints', () => productionEndpointsPromise!);
+    return span.traceChildAsync('reuse production backup endpoints', () => productionEndpointsPromise!, SpanCategory.Wait);
   }
   productionEndpointsPromise = fetchProductionEndpoints(span);
   return productionEndpointsPromise;
@@ -155,7 +156,7 @@ function getProductionEndpoints(span: Span) {
 
 function getTestEndpoints(span: Span) {
   if (testEndpointsPromise) {
-    return span.traceChildAsync('reuse test backup endpoints', () => testEndpointsPromise!);
+    return span.traceChildAsync('reuse test backup endpoints', () => testEndpointsPromise!, SpanCategory.Wait);
   }
   testEndpointsPromise = fetchTestEndpoints(span);
   return testEndpointsPromise;

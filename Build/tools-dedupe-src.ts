@@ -5,7 +5,7 @@ import { SOURCE_DIR } from './constants/dir';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import { HostnameSmolTrie } from 'hntrie/smol';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import { fastStringArrayJoin } from 'foxts/fast-string-array-join';
 
 const ENFORCED_WHITELIST = [
@@ -26,7 +26,7 @@ const ENFORCED_WHITELIST = [
 const DEDUPE_LIST: string[] = ['adx-static.ksosoft.com', 'dns.iqiyi.com', 'domain.expiring-soon.xyz', 'img.catwvod.xyz', 'img.vim-cn.com', 's3-zen.mds.yandex.net'];
 
 task(require.main === module, __filename)(async (span) => {
-  const files = await span.traceChildAsync('crawl thru all files', () => new Fdir()
+  const files = await span.traceChild('crawl thru all files', SpanCategory.FsRead).traceAsyncFn(() => new Fdir()
     .withFullPaths()
     .filter((filepath, isDirectory) => {
       if (isDirectory) return true;
@@ -38,7 +38,7 @@ task(require.main === module, __filename)(async (span) => {
     .crawl(SOURCE_DIR)
     .withPromise());
 
-  const whiteTrie = span.traceChildSync('build whitelist trie', () => {
+  const whiteTrie = span.traceChild('build whitelist trie', SpanCategory.Compute).traceSyncFn(() => {
     const trie = new HostnameSmolTrie(DEDUPE_LIST);
     ENFORCED_WHITELIST.forEach((item) => trie.whitelist(item));
     return trie;

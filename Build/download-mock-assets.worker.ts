@@ -1,4 +1,4 @@
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import path from 'node:path';
 import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
@@ -22,7 +22,9 @@ export const downloadMockAssets = task(require.main === module, __filename)(asyn
 
   return Promise.all(Object.entries(ASSETS_LIST).map(
     ([filename, url]) => span
-      .traceChildAsync(url, async () => {
+      // fetch + stream straight to disk; the transfer dominates
+      .traceChild(url, SpanCategory.Network)
+      .traceAsyncFn(async () => {
         const res = await $$fetch(url);
         if (!res.ok) {
           console.error(`Failed to download ${url}`);

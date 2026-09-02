@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import { readFileByLine } from './lib/fetch-text-by-line';
 import { processLine } from './lib/process-line';
 import type { Span } from './trace';
-import { task } from './trace';
+import { SpanCategory, task } from './trace';
 import { SHARED_DESCRIPTION } from './constants/description';
 import { fdir as Fdir } from 'fdir';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
@@ -95,7 +95,7 @@ function processFile(span: Span, sourcePath: string) {
     }
 
     return [title, descriptions, lines, sgmodulePathname] as const;
-  });
+  }, SpanCategory.FsRead);
 }
 
 async function transform(parentSpan: Span, sourcePath: string, relativePath: string) {

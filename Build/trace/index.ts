@@ -1,40 +1,36 @@
 import { isCI } from 'ci-info';
 import { noop } from 'foxts/noop';
 import { basename, extname } from 'node:path';
+import { performance } from 'node:perf_hooks';
 import process from 'node:process';
-import picocolors from 'picocolors';
+import { threadId } from 'node:worker_threads';
 import { mergeExternalDownloadStats, takeExternalDownloadStats } from '../lib/download-stats';
 import type { ExternalDownloadStatsSnapshot } from '../lib/download-stats';
+import { SPAN_STATUS_END, SPAN_STATUS_START, SpanCategory } from './types';
+import type { RawSpan, TraceResult } from './types';
+import { adjustTraceTimestamps, printBuildReport } from './report';
 
-export const SPAN_STATUS_START = 0;
-export const SPAN_STATUS_END = 1;
+export { SPAN_STATUS_START, SPAN_STATUS_END, SpanCategory, UNCATEGORIZED } from './types';
+export type { RawSpan, TraceResult, ReportedSpanCategory, SpanEventLoopUtilization } from './types';
+export { printTraceResult, printStats, printBuildReport, analyzeTraces } from './report';
+export type { BuildResourceUsage, TraceAnalysis } from './report';
 
 const spanTag = Symbol('span');
-
-export interface TraceResult {
-  name: string,
-  start: number,
-  end: number,
-  children: TraceResult[]
-}
-
-/** Pure data object — safe to transfer across Worker Thread boundaries. */
-export interface RawSpan {
-  traceResult: TraceResult,
-  status: typeof SPAN_STATUS_START | typeof SPAN_STATUS_END
-}
 
 export interface Span {
   [spanTag]: true,
   readonly rawSpan: RawSpan,
   readonly stop: (time?: number) => void,
-  readonly traceChild: (name: string) => Span,
+  /** Tag (or re-tag) what this span's self time is spent on */
+  readonly setCategory: (category: SpanCategory) => Span,
+  readonly traceChild: (name: string, category?: SpanCategory) => Span,
   readonly traceSyncFn: <T>(fn: (span: Span) => T) => T,
   readonly traceAsyncFn: <T>(fn: (span: Span) => T | Promise<T>) => Promise<T>,
   readonly tracePromise: <T>(promise: Promise<T>) => Promise<T>,
-  readonly traceChildSync: <T>(name: string, fn: (span: Span) => T) => T,
-  readonly traceChildAsync: <T>(name: string, fn: (span: Span) => Promise<T>) => Promise<T>,
-  readonly traceChildPromise: <T>(name: string, promise: Promise<T>) => Promise<T>,
+  readonly traceChildSync: <T>(name: string, fn: (span: Span) => T, category?: SpanCategory) => T,
+  readonly traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>, category?: SpanCategory) => Promise<T>,
+  readonly traceChildPromise: <T>(name: string, promise: Promise<T>, category?: SpanCategory) => Promise<T>,
+  /** Always tagged {@link SpanCategory.Worker}: the self time is the IPC + waiting on the worker */
   readonly traceWorkerChild: <T>(name: string, factory: (rawSpan: RawSpan) => Promise<WorkerJobResult<T>>) => Promise<T>,
   readonly traceResult: TraceResult
 }
@@ -52,17 +48,26 @@ export function makeSpan(rawSpan: RawSpan): Span {
       throw new Error(`span already stopped: ${traceResult.name}`);
     }
     traceResult.end = time ?? performance.now();
+    if (rawSpan.eluStart) {
+      const elu = performance.eventLoopUtilization(rawSpan.eluStart);
+      traceResult.elu = { idle: elu.idle, active: elu.active };
+    }
     rawSpan.status = SPAN_STATUS_END;
   };
 
-  const traceChild = (name: string) => createSpan(name, traceResult);
+  const traceChild = (name: string, category?: SpanCategory) => createSpan(name, traceResult, category);
 
   const span: Span = {
     [spanTag]: true,
     rawSpan,
     stop,
+    setCategory(category) {
+      traceResult.category = category;
+      return span;
+    },
     traceChild,
     traceSyncFn<T>(fn: (span: Span) => T) {
+      traceResult.sync = true;
       const res = fn(span);
       span.stop();
       return res;
@@ -78,12 +83,12 @@ export function makeSpan(rawSpan: RawSpan): Span {
       span.stop();
       return res;
     },
-    traceChildSync: <T>(name: string, fn: (span: Span) => T): T => traceChild(name).traceSyncFn(fn),
-    traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>): Promise<T> => traceChild(name).traceAsyncFn(fn),
-    traceChildPromise: <T>(name: string, promise: Promise<T>): Promise<T> => traceChild(name).tracePromise(promise),
+    traceChildSync: <T>(name: string, fn: (span: Span) => T, category?: SpanCategory): T => traceChild(name, category).traceSyncFn(fn),
+    traceChildAsync: <T>(name: string, fn: (span: Span) => T | Promise<T>, category?: SpanCategory): Promise<T> => traceChild(name, category).traceAsyncFn(fn),
+    traceChildPromise: <T>(name: string, promise: Promise<T>, category?: SpanCategory): Promise<T> => traceChild(name, category).tracePromise(promise),
 
     async traceWorkerChild<T>(name: string, factory: (rawSpan: RawSpan) => Promise<WorkerJobResult<T>>): Promise<T> {
-      const childSpan = traceChild(name);
+      const childSpan = traceChild(name, SpanCategory.Worker);
       const { result, traceResult, workerTimeOrigin, externalDownloadStats } = await factory(childSpan.rawSpan);
       mergeWorkerTrace(childSpan, traceResult, workerTimeOrigin);
       mergeExternalDownloadStats(externalDownloadStats);
@@ -96,18 +101,25 @@ export function makeSpan(rawSpan: RawSpan): Span {
   return span;
 }
 
-export function createSpan(name: string, parentTraceResult?: TraceResult): Span {
+export function createSpan(name: string, parentTraceResult?: TraceResult, category?: SpanCategory): Span {
+  const traceResult: TraceResult = {
+    name,
+    start: performance.now(),
+    end: 0,
+    thread: threadId,
+    children: []
+  };
+  if (category !== undefined) {
+    traceResult.category = category;
+  }
+
   const rawSpan: RawSpan = {
-    traceResult: {
-      name,
-      start: performance.now(),
-      end: 0,
-      children: []
-    },
-    status: SPAN_STATUS_START
+    traceResult,
+    status: SPAN_STATUS_START,
+    eluStart: performance.eventLoopUtilization()
   };
 
-  parentTraceResult?.children.push(rawSpan.traceResult);
+  parentTraceResult?.children.push(traceResult);
 
   return makeSpan(rawSpan);
 }
@@ -123,6 +135,8 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
     };
 
     if (importMetaMain) {
+      const eluAtStart = performance.eventLoopUtilization();
+      const cpuAtStart = process.cpuUsage();
       const innerSpan = createSpan(taskName);
 
       process.on('uncaughtException', (error) => {
@@ -136,7 +150,11 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
 
       innerSpan.traceChildAsync('dummy', (childSpan) => fn(childSpan, onCleanup)).finally(() => {
         innerSpan.stop();
-        printTraceResult(innerSpan.traceResult);
+        innerSpan.traceResult.timeOrigin = performance.timeOrigin;
+        printBuildReport([innerSpan.traceResult], {
+          elu: performance.eventLoopUtilization(eluAtStart),
+          cpu: process.cpuUsage(cpuAtStart)
+        });
         process.nextTick(whyIsNodeRunning);
         process.nextTick(() => process.exit(0));
       });
@@ -157,6 +175,9 @@ export function task(importMetaMain: boolean, importMetaPath: string) {
         cleanup();
       }
 
+      // A task may run on a worker thread (via jest-worker) and hand its trace
+      // back to the main thread, which then needs this to re-align the clock.
+      runSpan.traceResult.timeOrigin = performance.timeOrigin;
       return runSpan.traceResult;
     }
 
@@ -185,15 +206,6 @@ export async function whyIsNodeRunning() {
 //     return fn(...args);
 //   };
 // };
-
-function adjustTraceTimestamps(trace: TraceResult, offset: number): TraceResult {
-  return {
-    name: trace.name,
-    start: trace.start + offset,
-    end: trace.end + offset,
-    children: trace.children.map(child => adjustTraceTimestamps(child, offset))
-  };
-}
 
 function mergeWorkerTrace(
   parentSpan: Span,
@@ -239,68 +251,4 @@ export async function workerJob<T>(
     workerTimeOrigin: performance.timeOrigin,
     externalDownloadStats: takeExternalDownloadStats()
   };
-}
-
-export function printTraceResult(traceResult: TraceResult) {
-  printTree(
-    traceResult,
-    node => {
-      if (node.end - node.start < 0) {
-        return node.name;
-      }
-      return `${node.name} ${picocolors.bold(`${(node.end - node.start).toFixed(3)}ms`)}`;
-    }
-  );
-}
-
-function printTree(initialTree: TraceResult, printNode: (node: TraceResult, branch: string) => string) {
-  function printBranch(tree: TraceResult, branch: string, isGraphHead: boolean, isChildOfLastBranch: boolean) {
-    const children = tree.children;
-
-    let branchHead = '';
-
-    if (!isGraphHead) {
-      branchHead = children.length > 0 ? '┬ ' : '─ ';
-    }
-
-    const toPrint = printNode(tree, `${branch}${branchHead}`);
-
-    if (typeof toPrint === 'string') {
-      console.log(`${branch}${branchHead}${toPrint}`);
-    }
-
-    let baseBranch = branch;
-
-    if (!isGraphHead) {
-      baseBranch = branch.slice(0, -2) + (isChildOfLastBranch ? '  ' : '│ ');
-    }
-
-    const nextBranch = `${baseBranch}├─`;
-    const lastBranch = `${baseBranch}└─`;
-
-    children.forEach((child, index) => {
-      const last = children.length - 1 === index;
-      printBranch(child, last ? lastBranch : nextBranch, false, last);
-    });
-  }
-
-  printBranch(initialTree, '', true, false);
-}
-
-export function printStats(stats: TraceResult[]): void {
-  const longestTaskName = Math.max(...stats.map(i => i.name.length));
-  const realStart = Math.min(...stats.map(i => i.start));
-  const realEnd = Math.max(...stats.map(i => i.end));
-
-  const statsStep = ((realEnd - realStart) / 120) | 0;
-
-  stats
-    .sort((a, b) => a.start - b.start)
-    .forEach(stat => {
-      console.log(
-        `[${stat.name}]${' '.repeat(longestTaskName - stat.name.length)}`,
-        ' '.repeat(((stat.start - realStart) / statsStep) | 0),
-        '='.repeat(Math.max(((stat.end - stat.start) / statsStep) | 0, 1))
-      );
-    });
 }
