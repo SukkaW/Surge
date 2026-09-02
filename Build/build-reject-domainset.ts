@@ -15,6 +15,7 @@ import { SHARED_DESCRIPTION } from './constants/description';
 import { addArrayElementsToSet } from 'foxts/add-array-elements-to-set';
 import { OUTPUT_INTERNAL_DIR, SOURCE_DIR } from './constants/dir';
 import { DomainsetOutput, AdGuardHomeOutput } from './lib/rules/domainset';
+import { HostnameSmolTrie } from 'hntrie/smol';
 import { getBuildWorkerFarm } from './lib/build-worker-farm';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
@@ -247,32 +248,39 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     });
   });
 
-  // each write() opens its own RuleOutput#<id> span under the task span
-  await Promise.all([
-    rejectDomainsetOutput.write(),
-    rejectExtraDomainsetOutput.write(),
-    rejectPhisingDomainsetOutput.write(),
-    rejectIPOutput.write(),
-    rejectNonIpRulesetOutput.write()
-  ]);
-
-  // we are going to re-use rejectOutput's domainTrie and mutate it
-  // so we must wait until we write rejectOutput to disk after we can mutate its trie
+  // reject-adguardhome starts from the (whitelisted) reject trie and adds to it.
+  // Cloning (~70ms, ~25ms once hntrie ships a native clone()) instead of sharing
+  // the trie lets its write run alongside the others instead of waiting for the
+  // reject write to finish first (~0.4s serial on CI). See lib/trie-clone.bench.ts.
   const rejectOutputAdGuardHome = new AdGuardHomeOutput(span, 'reject-adguardhome', OUTPUT_INTERNAL_DIR)
     .withTitle('Sukka\'s Ruleset - AdGuardHome Blocklist')
     .withDescription([
       'The AdGuardHome ruleset supports AD blocking, tracking protection, privacy protection, anti-mining'
     ]);
 
-  rejectOutputAdGuardHome.domainTrie = rejectDomainsetOutput.domainTrie;
+  rejectOutputAdGuardHome.domainTrie = span.traceChildSync(
+    'clone reject trie for adguardhome',
+    // TODO: HostnameSmolTrie#clone() once available, the binary round trip is the public-API stand-in
+    () => HostnameSmolTrie.deserializeTransferable(rejectDomainsetOutput.domainTrie.serializeTransferable()),
+    SpanCategory.Compute
+  );
 
-  await rejectOutputAdGuardHome
+  rejectOutputAdGuardHome
     // .addFromRuleset(readLocalMyRejectRulesetPromise)
     .addFromRuleset(readLocalRejectRulesetPromise)
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-drop.conf')))
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-no-drop.conf')))
-    .addFromDomainset(readLocalRejectExtraDomainsetPromise)
-    .write();
+    .addFromDomainset(readLocalRejectExtraDomainsetPromise);
+
+  // each write() opens its own RuleOutput#<id> span under the task span
+  await Promise.all([
+    rejectDomainsetOutput.write(),
+    rejectExtraDomainsetOutput.write(),
+    rejectPhisingDomainsetOutput.write(),
+    rejectIPOutput.write(),
+    rejectNonIpRulesetOutput.write(),
+    rejectOutputAdGuardHome.write()
+  ]);
 
   const myRejectOutputAdGuardHome = new AdGuardHomeOutput(span, 'my-reject-adguardhome', OUTPUT_INTERNAL_DIR)
     .withTitle('Sukka\'s Ruleset - AdGuardHome Blocklist for Myself (Sukka)')
