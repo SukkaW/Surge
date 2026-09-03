@@ -171,7 +171,7 @@ const agent = new Agent({
     store: new BetterSqlite3CacheStore({
       loose: true,
       location: path.join(CACHE_DIR, 'undici-better-sqlite3-cache-store.db'),
-      maxCount: 128,
+      maxCount: 256,
       maxEntrySize: 1024 * 1024 * 100, // 100 MiB
       revalidationRetention: 7 * 24 * 60 * 60 * 1000 // 7 days
     }),
