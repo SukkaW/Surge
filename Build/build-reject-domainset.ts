@@ -270,14 +270,15 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
     .addFromRuleset(readFileIntoProcessedArray(path.join(SOURCE_DIR, 'non_ip/reject-no-drop.conf')))
     .addFromDomainset(readLocalRejectExtraDomainsetPromise);
 
-  // each write() opens its own RuleOutput#<id> span under the task span
+  await rejectOutputAdGuardHome.done();
   await Promise.all([
+    rejectOutputAdGuardHome.write(),
+    rejectPhisingDomainsetOutput.write(),
     rejectDomainsetOutput.write(),
     rejectExtraDomainsetOutput.write(),
-    rejectPhisingDomainsetOutput.write(),
+    // below the offload threshold: written inline, never touch the farm
     rejectIPOutput.write(),
-    rejectNonIpRulesetOutput.write(),
-    rejectOutputAdGuardHome.write()
+    rejectNonIpRulesetOutput.write()
   ]);
 
   const myRejectOutputAdGuardHome = new AdGuardHomeOutput(span, 'my-reject-adguardhome', OUTPUT_INTERNAL_DIR)
