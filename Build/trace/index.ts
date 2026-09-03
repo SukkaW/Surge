@@ -6,6 +6,8 @@ import process from 'node:process';
 import { threadId } from 'node:worker_threads';
 import { mergeExternalDownloadStats, takeExternalDownloadStats } from '../lib/download-stats';
 import type { ExternalDownloadStatsSnapshot } from '../lib/download-stats';
+import { mergeWireStats, takeWireStats } from '../lib/download-wire-stats';
+import type { WireStatsSnapshot } from '../lib/download-wire-stats';
 import { SPAN_STATUS_END, SPAN_STATUS_START, SpanCategory } from './types';
 import type { RawSpan, TraceResult } from './types';
 import { adjustTraceTimestamps, printBuildReport } from './report';
@@ -96,9 +98,10 @@ export function makeSpan(rawSpan: RawSpan): Span {
 
     async traceWorkerChild<T>(name: string, factory: (rawSpan: RawSpan) => Promise<WorkerJobResult<T>>): Promise<T> {
       const childSpan = traceChild(name, SpanCategory.Worker);
-      const { result, traceResult, workerTimeOrigin, externalDownloadStats } = await factory(childSpan.rawSpan);
+      const { result, traceResult, workerTimeOrigin, externalDownloadStats, wireStats } = await factory(childSpan.rawSpan);
       mergeWorkerTrace(childSpan, traceResult, workerTimeOrigin);
       mergeExternalDownloadStats(externalDownloadStats);
+      mergeWireStats(wireStats);
       childSpan.stop();
       return result;
     }
@@ -231,7 +234,8 @@ export interface WorkerJobResult<T> {
   result: T,
   traceResult: TraceResult,
   workerTimeOrigin: number,
-  externalDownloadStats: ExternalDownloadStatsSnapshot
+  externalDownloadStats: ExternalDownloadStatsSnapshot,
+  wireStats: WireStatsSnapshot
 }
 
 /**
@@ -256,6 +260,7 @@ export async function workerJob<T>(
     result,
     traceResult: span.traceResult,
     workerTimeOrigin: performance.timeOrigin,
-    externalDownloadStats: takeExternalDownloadStats()
+    externalDownloadStats: takeExternalDownloadStats(),
+    wireStats: takeWireStats()
   };
 }

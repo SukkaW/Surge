@@ -31,6 +31,7 @@ import path from 'node:path';
 import { ROOT_DIR } from './constants/dir';
 import { isCI } from 'ci-info';
 import { printExternalDownloadStats } from './lib/download-stats';
+import { printWireStats } from './lib/download-wire-stats';
 import { endBuildWorkerFarm, getBuildWorkerFarm, warmBuildWorkerFarm } from './lib/build-worker-farm';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
 
@@ -125,6 +126,7 @@ const buildFinishedLock = path.join(ROOT_DIR, '.BUILD_FINISHED');
     fs.writeFileSync(buildFinishedLock, 'BUILD_FINISHED\n');
 
     printExternalDownloadStats();
+    printWireStats();
     printBuildReport(traces, {
       elu: performance.eventLoopUtilization(eluAtStart),
       cpu: process.cpuUsage(cpuAtStart)

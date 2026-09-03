@@ -14,9 +14,13 @@ export const HOSTS: HostsSource[] = [
 
 export const HOSTS_EXTRA: HostsSource[] = [
   // This stupid hosts blocks t.co, so we determine that this is also bullshit, so it is extra
+  // pgl.yoyo.org is also the slowest origin in the whole build, prefer mirrors
   [
-    'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext',
-    ['https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/pgl.yoyo.org/as/serverlist'],
+    'https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/pgl.yoyo.org/as/serverlist',
+    [
+      'https://proxy.cdn.skk.moe/https/pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext',
+      'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext'
+    ],
     true
   ],
   // Dan Pollock's hosts file, 0.0.0.0 version is 30 KiB smaller

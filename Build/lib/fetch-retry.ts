@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import { CACHE_DIR } from '../constants/dir';
 import { isAbortErrorLike } from 'foxts/abort-error';
 import { isErrorLikeObject } from 'foxts/extract-error-message';
+import { wireTapInterceptor, countCacheableRequest } from './download-wire-stats';
 
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -162,6 +163,10 @@ const agent = new Agent({
     maxRedirections: 5
   }),
   stripCdnStalenessHeaders,
+  // Below the cache: only runs when a request actually reaches an origin, so it
+  // separates a free cache hit from a 304 revalidation round trip from a real
+  // download. See download-wire-stats.ts.
+  wireTapInterceptor,
   interceptors.cache({
     store: new BetterSqlite3CacheStore({
       loose: true,
@@ -171,7 +176,13 @@ const agent = new Agent({
       revalidationRetention: 7 * 24 * 60 * 60 * 1000 // 7 days
     }),
     cacheByDefault: 10 * 60 * 1000 // 10 minutes
-  })
+  }),
+  // Above the cache, so it counts every request the build makes. Subtracting the
+  // wire-tap's count from this yields the number served without any network I/O.
+  dispatch => (opts, handler) => {
+    countCacheableRequest();
+    return dispatch(opts, handler);
+  }
 );
 
 export { agent as fetchAgent };
