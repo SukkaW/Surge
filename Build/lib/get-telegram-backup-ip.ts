@@ -2,8 +2,8 @@
 // apv3.stel.com tapv3.stel.com
 import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
-import { BinaryReader as TgBinaryReader } from 'telegram/extensions/BinaryReader';
-import { Api as TgApi } from 'telegram/tl/api';
+import { BinaryReader as TgBinaryReader } from 'teleproto/extensions/BinaryReader';
+import { Api as TgApi } from 'teleproto/tl/api';
 import { bigint2ip } from 'fast-cidr-tools';
 
 import { base64ToUint8Array, concatUint8Arrays } from 'foxts/uint8array-utils';

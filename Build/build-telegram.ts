@@ -32,7 +32,7 @@ const buildTelegramCIDR = task(require.main === module, 'build-telegram-cidr')(a
       return lastModified ? new Date(lastModified) : new Date();
     });
 
-    // https://github.com/tdlib/td/blob/master/td/telegram/ConfigManager.cpp
+    // https://github.com/tdlib/td/blob/master/td/ConfigManager.cpp
     const backupEndpoints = await childSpan.traceChildAsync(
       'fetch backup ip',
       innerSpan => fetchTelegramBackupEndpoints(innerSpan, { includeTestServers: true })
@@ -56,7 +56,7 @@ const buildTelegramCIDR = task(require.main === module, 'build-telegram-cidr')(a
     ' - https://core.telegram.org/resources/cidr.txt'
   ];
 
-  return new RulesetOutput(span, 'telegram', 'ip')
+  return new RulesetOutput(span, 'teleproto', 'ip')
     .withTitle('Sukka\'s Ruleset - Telegram IP CIDR')
     .withDescription(description)
     // .withDate(date) // With extra data source, we no longer use last-modified for file date
@@ -72,11 +72,11 @@ const buildTelegramCIDR = task(require.main === module, 'build-telegram-cidr')(a
 import path from 'node:path';
 import process from 'node:process';
 
-import { Api as TgApi, TelegramClient as TgClient } from 'telegram';
-import { AuthKey as TgAuthKey } from 'telegram/crypto/AuthKey';
-import { Logger as TgLogger, LogLevel as TgLogLevel } from 'telegram/extensions/Logger';
-import { ConnectionTCPAbridged as TgConnectionTCPAbridged } from 'telegram/network/connection';
-import { MemorySession as TgMemorySession } from 'telegram/sessions';
+import { Api as TgApi, TelegramClient as TgClient } from 'teleproto';
+import { AuthKey as TgAuthKey } from 'teleproto/crypto/AuthKey';
+import { Logger as TgLogger, LogLevel as TgLogLevel } from 'teleproto/extensions/Logger';
+import { ConnectionTCPAbridged as TgConnectionTCPAbridged } from 'teleproto/network/connection';
+import { MemorySession as TgMemorySession } from 'teleproto/sessions';
 import type { Buffer } from 'node:buffer';
 import type { Span } from './trace';
 import { mtprotoAuthKeyStore } from './lib/mtproto-auth-key-store';
@@ -136,9 +136,7 @@ async function fetchConfig(host: string, port: number, dcId: number, persistedAu
     securityChecks: true,
     systemLangCode: 'en',
     systemVersion: process.platform,
-    timeout: 10,
-    // GramJS uses this option to select port 443 even for a raw TCP connection.
-    useWSS: true
+    timeout: 10
   });
 
   const work = async () => {
