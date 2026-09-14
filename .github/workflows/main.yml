@@ -203,11 +203,6 @@ jobs:
           echo "marker_content=${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
       # Wait for the artifact to be downloaded before deploying
       - wait: download_build_artifact
-      - name: Remove build artifact
-        uses: geekyeggo/delete-artifact@v6
-        background: true
-        with:
-          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
       # Deploy to Cloudflare, GitLab, and GitHub in parallel
       - name: Upload Dist to GitLab
         id: deploy_gitlab
@@ -266,6 +261,12 @@ jobs:
           wranglerVersion: ${{ env.WRANGLER_VERSION }}
       # We wait for GitHub Dist to be deployed before checking its deployment status
       - wait: upload_dist_to_github
+      - name: Remove build artifact
+        uses: geekyeggo/delete-artifact@v6
+        background: true
+        with:
+          name: build-artifact-${{ github.sha }}-${{ github.run_number }}
+          failOnError: false
       - name: Wait for GitHub Pages to serve deployed marker
         if: steps.upload_dist_to_github.outcome == 'success'
         id: wait_for_github_pages
