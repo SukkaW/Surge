@@ -60,7 +60,7 @@ export function createDomainAliveMethods(customWhoisServersMapping: Record<strin
     dns: {
       dnsServers,
       maxAttempts: 6,
-      customFetchForDoH: fetchForDoH as typeof fetch,
+      customFetchForDoH: fetchForDoH,
       customAgentForDoH: fetchAgent
     },
     registerableDomainResultCache,
@@ -73,7 +73,7 @@ export function createDomainAliveMethods(customWhoisServersMapping: Record<strin
     dns: {
       dnsServers,
       maxAttempts: 6,
-      customFetchForDoH: fetchForDoH as typeof fetch,
+      customFetchForDoH: fetchForDoH,
       customAgentForDoH: fetchAgent
     },
     registerableDomainResultCache,
