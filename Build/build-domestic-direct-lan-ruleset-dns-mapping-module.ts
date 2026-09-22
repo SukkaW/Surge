@@ -122,9 +122,8 @@ export const buildDomesticRuleset = task(require.main === module, __filename)(as
       .appendDescription(
         SHARED_DESCRIPTION,
         '',
-        'This file contains CDN domains of domestic services that should use DIRECT both in China and abroad.',
-        'Place this ruleset before domestic when routing other domestic traffic back to China.',
-        'All entries are also included in the domestic ruleset.'
+        'This file contains CDN domains of domestic services that have somewhat optimal performance both in China and abroad.',
+        'All entries are included in the domestic ruleset as well.'
       )
       .addFromRuleset(domesticCdn)
       .write(),

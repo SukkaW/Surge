@@ -356,9 +356,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     realip: false,
     ruleset: true,
     domains: [
-      '+qhimg.com',
-      '+qhimgs.com',
-      '+qhimgs?.com',
       // '+qhimgs0.com',
       // '+qhimgs1.com',
       // '+qhimgs2.com',
@@ -366,8 +363,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       // '+qhimgs4.com',
       // '+qhimgs5.com',
       // '+qhimgs6.com',
-      '+qhres.com',
-      '+qhres2.com',
       '+qhmsg.com',
       '+qhstatic.com',
       '+qhupdate.com',
