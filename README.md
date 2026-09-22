@@ -797,7 +797,65 @@ rules:
   - RULE-SET,lan_ip,DIRECT
 ```
 
-#### Misc
+#### 中国大陆常见服务
+
+- 人工维护
+
+**Surge**
+
+```ini
+# 中国大陆境内：仅需配置 domestic
+# Non IP
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT
+
+# IP
+RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,DIRECT
+```
+
+```ini
+# 其余国家和地区：domestic_cdn 优先直连，domestic 使用代理
+# Non IP
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic_cdn.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,Proxy
+
+# IP
+RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,Proxy
+```
+
+**Mihomo**
+
+在下方 `domestic_non_ip` 等 `rule-providers` 的基础上添加：
+
+```yaml
+rule-providers:
+  domestic_cdn_non_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/non_ip/domestic_cdn.txt
+    path: ./sukkaw_ruleset/domestic_cdn_non_ip.txt
+  domestic_ip:
+    type: http
+    behavior: classical
+    format: text
+    interval: 43200
+    url: https://ruleset.skk.moe/Clash/ip/domestic.txt
+    path: ./sukkaw_ruleset/domestic_ip.txt
+rules:
+  - RULE-SET,domestic_cdn_non_ip,DIRECT
+  - RULE-SET,domestic_non_ip,Back To China Proxy
+  - MATCH,DIRECT
+```
+
+
+```yaml
+# IP
+rules:
+  - RULE-SET,domestic_ip,[Replace with your policy]
+```
+
+#### 其他国家和地区常见服务、需直连的服务
 
 - 人工维护
 
@@ -805,14 +863,8 @@ rules:
 
 ```ini
 # Non IP
-RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,[Replace with your policy]
 RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,[Replace with your policy]
-```
-
-```ini
-# IP
-RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy]
 ```
 
 **Mihomo**
@@ -820,12 +872,6 @@ RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,[Replace with your policy
 ```yaml
 rule-providers:
   domestic_non_ip:
-    type: http
-    behavior: classical
-    format: text
-    interval: 43200
-    url: https://ruleset.skk.moe/Clash/non_ip/domestic.txt
-    path: ./sukkaw_ruleset/domestic_non_ip.txt
   direct_non_ip:
     type: http
     behavior: classical
@@ -840,27 +886,13 @@ rule-providers:
     interval: 43200
     url: https://ruleset.skk.moe/Clash/non_ip/global.txt
     path: ./sukkaw_ruleset/global_non_ip.txt
-  domestic_ip:
-    type: http
-    behavior: classical
-    format: text
-    interval: 43200
-    url: https://ruleset.skk.moe/Clash/ip/domestic.txt
-    path: ./sukkaw_ruleset/domestic_ip.txt
 ```
 
 ```yaml
 # Non IP
 rules:
-  - RULE-SET,domestic_non_ip,[Replace with your policy]
   - RULE-SET,direct_non_ip,[Replace with your policy]
   - RULE-SET,global_non_ip,[Replace with your policy]
-```
-
-```yaml
-# IP
-rules:
-  - RULE-SET,domestic_ip,[Replace with your policy]
 ```
 
 #### chnroute CIDR

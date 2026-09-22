@@ -4,6 +4,7 @@ import { compareAndWriteFile } from './lib/create-file';
 import { DIRECTS, LAN } from '../Source/non_ip/direct';
 import type { DNSMapping } from '../Source/non_ip/direct';
 import { DOMESTICS, DOH_BOOTSTRAP } from '../Source/non_ip/domestic';
+import { DOMESTIC_CDN } from '../Source/non_ip/domestic_cdn';
 import * as yaml from 'yaml';
 import { OUTPUT_INTERNAL_DIR, OUTPUT_MODULES_DIR } from './constants/dir';
 import { appendArrayInPlace } from 'foxts/append-array-in-place';
@@ -61,7 +62,7 @@ export const buildAlwaysRealIPModule = task(require.main === module, __filename)
     ]);
 
   // Intranet, Router Setup, and mant more
-  const dataset = [DIRECTS, LAN, DOMESTICS, DOH_BOOTSTRAP].reduce<DNSMapping[]>((acc, item) => {
+  const dataset = [DIRECTS, LAN, DOMESTICS, DOMESTIC_CDN, DOH_BOOTSTRAP].reduce<DNSMapping[]>((acc, item) => {
     Object.values(item).forEach((i: DNSMapping) => {
       if (i.realip) {
         acc.push(i);

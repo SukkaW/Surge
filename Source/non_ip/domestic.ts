@@ -188,7 +188,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+bilivideo.com',
       '+bilivideo.cn',
       '+bilivideo.net',
-      '+hdslb.com',
       '+biliimg.com',
       '+biliapi.com',
       '+biliapi.net',
