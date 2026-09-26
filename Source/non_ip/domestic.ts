@@ -10,7 +10,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'uc.cn',
       // 'ucweb.com', // UC International
       'alibaba.com',
-      '+alicdn.com',
       '+ialicdn.com',
       '+myalicdn.com',
       '+alidns.com',
@@ -24,7 +23,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'alipay.cn',
       'alipay.com.cn',
       'alipaydev.com',
-      '+alipayobjects.com',
       'alibaba-inc.com',
       '+alibabausercontent.com',
       '+alibabadns.com',
@@ -48,7 +46,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'mxhichina.com',
       'soku.com',
       'tb.cn',
-      '+tbcdn.cn',
       'taobao.com',
       'taobao.org',
       '+taobaocdn.com',
@@ -188,7 +185,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       '+bilivideo.com',
       '+bilivideo.cn',
       '+bilivideo.net',
-      '+biliimg.com',
       '+biliapi.com',
       '+biliapi.net',
       // 'biligame.cn', // not owned by bilibili, was put on sale by ename
