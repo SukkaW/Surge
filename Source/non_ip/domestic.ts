@@ -162,10 +162,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'coding.net',
       '+codehub.cn',
       'cnb.cool',
-      'webank.com',
-
-      // AcFun QCloud CDN
-      '$tx-safety-video.acfun.cn'
+      'webank.com'
     ]
   },
   BILIBILI: {
@@ -352,13 +349,6 @@ export const DOMESTICS: Record<string, DNSMapping> = {
     realip: false,
     ruleset: true,
     domains: [
-      // '+qhimgs0.com',
-      // '+qhimgs1.com',
-      // '+qhimgs2.com',
-      // '+qhimgs3.com',
-      // '+qhimgs4.com',
-      // '+qhimgs5.com',
-      // '+qhimgs6.com',
       '+qhmsg.com',
       '+qhstatic.com',
       '+qhupdate.com',
