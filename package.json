@@ -26,7 +26,7 @@
     "cacache": "^21.0.1",
     "ci-info": "^4.4.0",
     "cli-progress": "^3.12.0",
-    "csv-parse": "^7.0.2",
+    "csv-parse": "^7.0.3",
     "domain-alive": "^0.1.25",
     "fast-cidr-tools": "^0.3.4",
     "fast-escape-regexp": "^1.0.1",
@@ -41,9 +41,9 @@
     "tar-fs": "^3.1.3",
     "teleproto": "1.229.0",
     "tinyglobby": "^0.2.17",
-    "tldts": "^7.4.13",
-    "tldts-experimental": "^7.4.13",
-    "undici": "^8.10.2",
+    "tldts": "^7.4.15",
+    "tldts-experimental": "^7.4.15",
+    "undici": "^8.11.2",
     "undici-cache-store-better-sqlite3": "^1.1.1",
     "why-is-node-running": "^3.2.2",
     "xbits": "^0.2.0",
@@ -57,11 +57,11 @@
     "@types/cacache": "^20.0.1",
     "@types/cli-progress": "^3.11.6",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^26.6.1",
+    "@types/node": "^26.6.3",
     "@types/tar-fs": "^2.0.4",
     "@types/yauzl-promise": "^4.0.1",
     "earl": "^2.0.0",
-    "eslint": "^10.10.0",
+    "eslint": "^10.11.0",
     "eslint-config-sukka": "^9.1.0",
     "eslint-formatter-sukka": "^9.1.0",
     "foxts": "^5.9.1",
@@ -70,5 +70,5 @@
     "mocha": "^12.0.2",
     "typescript": "^6.0.3"
   },
-  "packageManager": "pnpm@12.4.2"
+  "packageManager": "pnpm@12.6.0"
 }
