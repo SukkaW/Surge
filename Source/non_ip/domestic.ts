@@ -96,10 +96,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
 
       // Bilibili Aliyun CDN
       '$upos-sz-mirrorali.bilivideo.com',
-      '$upos-sz-estgoss.bilivideo.com',
-
-      // AcFun CDN
-      '$ali-safety-video.acfun.cn'
+      '$upos-sz-estgoss.bilivideo.com'
     ]
   },
   TENCENT: {
