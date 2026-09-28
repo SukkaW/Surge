@@ -531,8 +531,6 @@ export const PREDEFINED_WHITELIST = [
   'email.strava.com', // EasyList
   'insideruser.microsoft.com', // WindowsSpyBlocker
 
-  'sr-client-cfg.amplitude.com', // Amplitude A/B config
-
   // Doesn't make sense: CNAME domains
   '.cdn.cloudflare.net',
   '.apple-dns.net',
