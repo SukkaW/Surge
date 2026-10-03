@@ -1,10 +1,15 @@
+import path from 'node:path';
 import { fastIpVersion } from 'foxts/fast-ip-version';
 import { SHARED_DESCRIPTION } from './constants/description';
+import { SOURCE_DIR } from './constants/dir';
 import { $$fetch } from './lib/fetch-retry';
+import { readFileIntoProcessedArray } from './lib/fetch-text-by-line';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { SpanCategory, task } from './trace';
 
 const OPENAI_VOICE_IP_URL = 'https://openai.com/chatgpt-voice.json';
+
+const localAIIPRulesetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'ip/ai.conf'));
 
 function parseOpenAIVoiceJSON(data: unknown) {
   if (
@@ -70,14 +75,15 @@ export const buildAICIDR = task(require.main === module, __filename)(async (span
   }, SpanCategory.Network);
 
   return new RulesetOutput(span, 'ai', 'ip')
-    .withTitle('Sukka\'s Ruleset - ChatGPT Voice IP CIDR')
+    .withTitle('Sukka\'s Ruleset - AI IP CIDR')
     .appendDescription(
       SHARED_DESCRIPTION,
       '',
-      'This file contains IP ranges used by ChatGPT Voice.'
+      'This file contains IP ranges used by AI services, including ChatGPT Voice.'
     )
-    .withDate(lastUpdated)
+    // .withDate(lastUpdated) // With local source, we no longer use the upstream date for file date
     .appendDataSource(`${OPENAI_VOICE_IP_URL} (last updated: ${lastUpdated.toISOString()})`)
+    .addFromRuleset(localAIIPRulesetPromise)
     .bulkAddCIDR4NoResolve(cidr4)
     .bulkAddCIDR6NoResolve(cidr6)
     .write();
