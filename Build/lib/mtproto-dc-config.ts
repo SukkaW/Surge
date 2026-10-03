@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { stableHash } from 'stable-hash';
 
-import type { Api as TgApi } from 'telegram';
+import type { Api as TgApi } from 'teleproto';
 
 import type { TelegramBackupEndpoint } from './get-telegram-backup-ip';
 import { setBit, getBit } from 'foxts/bitwise';

@@ -31,7 +31,7 @@ import { split1st } from 'foxts/split-nth';
     if (file.startsWith('domainset' + path.sep)) {
       await runHash((await readFileIntoProcessedArray(fullpath)).map(i => (i[0] === '.' ? i.slice(1) : i)));
     } else if (file.startsWith('non_ip' + path.sep)) {
-      await runHash((await readFileIntoProcessedArray(fullpath)).map(i => split1st(i, ',')));
+      await runHash((await readFileIntoProcessedArray(fullpath)).map(i => split1st(i, ',')!));
     }
   }
 
