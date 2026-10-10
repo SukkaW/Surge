@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "**/Source/non_ip/*.conf": "surge-ruleset",
+    "**/Source/ip/*.conf": "surge-ruleset"
+  }
+}
