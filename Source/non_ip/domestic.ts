@@ -247,6 +247,7 @@ export const DOMESTICS: Record<string, DNSMapping> = {
       'zjurl.cn',
       'okr.com',
       'douyin.com',
+      'amemv.com',
       'douyinpay.com',
       '+douyinpic.com',
       '+douyinstatic.com',
