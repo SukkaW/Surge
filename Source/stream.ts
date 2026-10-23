@@ -311,7 +311,6 @@ const HBO_ASIA: StreamService = {
 
     'DOMAIN,44wilhpljf.execute-api.ap-southeast-1.amazonaws.com',
     // 'DOMAIN,bcbolthboa-a.akamaihd.net',
-    // 'DOMAIN,cf-images.ap-southeast-1.prod.boltdns.net',
     // 'DOMAIN,dai3fd1oh325y.cloudfront.net',
     // 'DOMAIN,hboasia1-i.akamaihd.net',
     // 'DOMAIN,hboasia2-i.akamaihd.net',
