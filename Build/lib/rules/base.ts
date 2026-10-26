@@ -263,11 +263,13 @@ export class FileOutput {
             this.processName.add(value);
           }
           break;
-        case 'URL-REGEX': {
-          const [, ...rest] = splitted;
-          this.urlRegex.add(rest.join(','));
+        case 'URL-REGEX':
+          // Surge splits rule lines on `,`, a comma in the regex (e.g. `\d{1,3}`) truncates the pattern
+          if (splitted.length > 2) {
+            throw new TypeError(`URL-REGEX must not contain ",": ${line}`);
+          }
+          this.urlRegex.add(value);
           break;
-        }
         case 'IP-CIDR':
           (arg === 'no-resolve' ? this.ipcidrNoResolve : this.ipcidr).add(value);
           break;
