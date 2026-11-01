@@ -33,16 +33,13 @@ const dnsServers = [
   'https://v.recipes/dns/dns.google/dns-query', // Proxy Google, claims to not limited by Google 1500 QPS limit
   'https://freedns.controld.com/p0', // ControlD unfiltered
   // 'https://dns.bebasid.com/unfiltered', // BebasID, cause loads of RangeError: Attempt to access memory outside buffer bounds, possibly caused by timeout
-  // 'https://193.110.81.0/dns-query', // dns0.eu
-  // 'https://185.253.5.0/dns-query', // dns0.eu
-  // 'https://zero.dns0.eu/dns-query',
+  'https://unfiltered.joindns4.eu/dns-query',
   'https://dns.nextdns.io/dns-query',
   'https://anycast.dns.nextdns.io/dns-query',
   'https://wikimedia-dns.org/dns-query',
   // 'https://ordns.he.net/dns-query',
   // 'https://dns.mullvad.net/dns-query', empty HTTP body a lot
   'https://basic.rethinkdns.com/dns-query',
-  'https://dns.surfsharkdns.com/dns-query',
   // 'https://private.canadianshield.cira.ca/dns-query', // Error: Cannot decode name (bad label)
   // 'https://unfiltered.joindns4.eu/dns-query', // too many ECONNRESET on GitHub Actions
   'https://public.dns.iij.jp/dns-query',
