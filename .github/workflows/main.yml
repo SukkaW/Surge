@@ -172,7 +172,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-slim
     env:
-      WRANGLER_VERSION: "3.114.17"
+      WRANGLER_VERSION: "4.156.1"
     steps:
       # Download the artifact in the background while the npm cache path is queried
       - uses: actions/download-artifact@v8
@@ -252,7 +252,7 @@ jobs:
       - wait: wrangler_npm_cache
       - name: Deploy to Cloudflare Pages
         id: deploy_cloudflare
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         background: true
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
