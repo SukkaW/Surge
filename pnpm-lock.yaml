@@ -185,8 +185,8 @@ importers:
         specifier: ^21.0.1
         version: 21.0.1
       ci-info:
-        specifier: ^4.4.0
-        version: 4.4.0
+        specifier: ^4.5.0
+        version: 4.5.0
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
@@ -1260,8 +1260,8 @@ packages:
     resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
     engines: {node: '>= 20.19.0'}
 
-  ci-info@4.4.0:
-    resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
+  ci-info@4.5.0:
+    resolution: {integrity: sha512-d1uM8k5UZEyPza1n/MG3ko8nKupKN0KJpFsipgPcgaCCvV+IqIfJ+NzTjetlLM+UcXZx3+cLrNr76+eAO7G1Mw==}
     engines: {node: '>=8'}
 
   cifrante@0.6.0:
@@ -1705,10 +1705,6 @@ packages:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
     engines: {node: '>=10.0.0'}
     hasBin: true
-
-  minimatch@10.2.5:
-    resolution: {integrity: sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==}
-    engines: {node: 18 || 20 || >=22}
 
   minimatch@10.2.6:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
@@ -2699,7 +2695,7 @@ snapshots:
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/visitor-keys': 8.72.0
       debug: 4.4.3(supports-color@8.1.1)
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       semver: 7.7.3
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@6.0.3)
@@ -2878,7 +2874,7 @@ snapshots:
     dependencies:
       readdirp: 5.1.1
 
-  ci-info@4.4.0: {}
+  ci-info@4.5.0: {}
 
   cifrante@0.6.0:
     optionalDependencies:
@@ -2971,7 +2967,7 @@ snapshots:
       '@eslint/js': 10.0.1(eslint@10.14.0(supports-color@8.1.1))
       '@typescript-eslint/eslint-plugin': 8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
       '@typescript-eslint/parser': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
-      ci-info: 4.4.0
+      ci-info: 4.5.0
       defu: 6.1.7
       eslint: 10.14.0(supports-color@8.1.1)
       eslint-import-resolver-typescript: 4.4.5(eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2995,7 +2991,7 @@ snapshots:
 
   eslint-formatter-sukka@9.2.1(eslint@10.14.0(supports-color@8.1.1)):
     dependencies:
-      ci-info: 4.4.0
+      ci-info: 4.5.0
       eslint: 10.14.0(supports-color@8.1.1)
       foxts: 5.9.1
       picocolors: 1.1.1
@@ -3043,7 +3039,7 @@ snapshots:
       eslint: 10.14.0(supports-color@8.1.1)
       eslint-import-context: 0.1.9(unrs-resolver@1.11.1)
       is-glob: 4.0.3
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       semver: 7.7.3
       stable-hash-x: 0.2.0
       unrs-resolver: 1.11.1
@@ -3257,7 +3253,7 @@ snapshots:
 
   glob@13.0.6:
     dependencies:
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       minipass: 7.1.3
       path-scurry: 2.0.2
 
@@ -3320,7 +3316,7 @@ snapshots:
       '@jest/types': 30.5.1
       '@types/node': 26.6.6
       chalk: 4.1.2
-      ci-info: 4.4.0
+      ci-info: 4.5.0
       graceful-fs: 4.2.11
       picomatch: 4.0.4
 
@@ -3372,10 +3368,6 @@ snapshots:
 
   mime@3.0.0: {}
 
-  minimatch@10.2.5:
-    dependencies:
-      brace-expansion: 5.0.8
-
   minimatch@10.2.6:
     dependencies:
       brace-expansion: 5.0.8
@@ -3411,7 +3403,7 @@ snapshots:
       is-path-inside: 4.0.0
       is-unicode-supported: 0.1.0
       js-yaml: 5.4.1
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       ms: 2.1.3
       picocolors: 1.1.1
       serialize-javascript: 7.1.1
