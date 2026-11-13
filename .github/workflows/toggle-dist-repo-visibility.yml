@@ -25,7 +25,7 @@ jobs:
             --accept-visibility-change-consequences
 
       - name: Wait for visibility change to settle
-        run: sleep 180
+        run: sleep 360
 
       - name: Make dist repo public again
         env:
