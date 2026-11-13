@@ -19,6 +19,7 @@ import { getBuildWorkerFarm } from './lib/build-worker-farm';
 import { RulesetOutput } from './lib/rules/ruleset';
 import { fetchAssets } from './lib/fetch-assets';
 import { AUGUST_ASN, HUIZE_ASN } from '../Source/ip/badboy_asn';
+import { getClickaduDgaDomains } from './lib/clickadu-dga';
 
 const readLocalRejectDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject.conf'));
 const readLocalRejectExtraDomainsetPromise = readFileIntoProcessedArray(path.join(SOURCE_DIR, 'domainset/reject_extra.conf'));
@@ -97,6 +98,15 @@ export const buildRejectDomainSet = task(require.main === module, __filename)(as
   rejectPhisingDomainsetOutput.addFromDomainset(readLocalRejectDomainsetPromise);
 
   rejectExtraDomainsetOutput.addFromDomainset(readLocalRejectExtraDomainsetPromise);
+
+  const hour = 60 * 60 * 1000;
+  const ciBuildInterval = 12 * hour;
+  const clientUpdateInterval = 24 * hour;
+  const lateBuildMargin = 12 * hour;
+  const now = Date.now();
+  rejectDomainsetOutput.bulkAddDomain(
+    getClickaduDgaDomains(now, now + ciBuildInterval + clientUpdateInterval + lateBuildMargin)
+  );
 
   rejectIPOutput.addFromRuleset(readLocalRejectIpListPromise);
 
