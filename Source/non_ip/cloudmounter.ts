@@ -8,7 +8,10 @@ export const DOMAINS = [
   'DOMAIN-SUFFIX,my.microsoftpersonalcontent.com',
   'DOMAIN-WILDCARD,*-medi*.svc.ms',
   'DOMAIN-SUFFIX,upload.box.com',
-  'DOMAIN-SUFFIX,upload.app.box.com'
+  'DOMAIN-SUFFIX,upload.app.box.com',
+  'DOMAIN,app.drime.cloud',
+  'DOMAIN-SUFFIX,r2.cloudflarestorage.com',
+  'DOMAIN-SUFFIX,r2.dev'
 ];
 
 export const PROCESS_NAMES = [
