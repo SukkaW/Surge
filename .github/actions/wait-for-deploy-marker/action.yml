@@ -1,0 +1,12 @@
+name: Wait for deploy marker
+description: Poll a URL until it serves the expected deploy marker
+inputs:
+  url:
+    description: URL of the deploy marker file
+    required: true
+  expected:
+    description: Expected deploy marker content
+    required: true
+runs:
+  using: node24
+  main: index.js

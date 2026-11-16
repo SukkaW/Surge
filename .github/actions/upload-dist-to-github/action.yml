@@ -1,0 +1,44 @@
+name: Upload Dist to GitHub
+description: Push the build output to SukkaLab/ruleset.skk.moe and wait for GitHub Pages to serve it
+inputs:
+  gh-email:
+    description: Git commit author email
+    required: true
+  gh-user:
+    description: Git commit author name and GitHub username
+    required: true
+  gh-token:
+    description: GitHub token with push access to SukkaLab/ruleset.skk.moe
+    required: true
+  marker:
+    description: Expected deploy marker content
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Upload Dist to GitHub
+      shell: bash
+      run: |
+        gh repo unarchive SukkaLab/ruleset.skk.moe --yes
+        git clone --filter=tree:0 --no-tags https://${GH_USER}:${GH_TOKEN}@github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git-github
+        cd ./deploy-git-github
+        git config push.default matching
+        git config user.email "${GH_EMAIL}"
+        git config user.name "${GH_USER}"
+        rm -rf ./*
+        cp -rf ../public/* ./
+        echo "ruleset-mirror.skk.moe" > CNAME
+        git add --all .
+        git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
+        git push --quiet --force origin HEAD:master
+        cd ..
+        rm -rf ./deploy-git-github
+      env:
+        GH_EMAIL: ${{ inputs.gh-email }}
+        GH_USER: ${{ inputs.gh-user }}
+        GH_TOKEN: ${{ inputs.gh-token }}
+    - name: Wait for GitHub Pages to serve deployed marker
+      uses: $/.github/actions/wait-for-deploy-marker
+      with:
+        url: https://ruleset-mirror.skk.moe/deploy-check.txt
+        expected: ${{ inputs.marker }}

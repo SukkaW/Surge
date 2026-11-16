@@ -6,7 +6,7 @@ module.exports = require('eslint-config-sukka').sukka({
     '**/*.txt'
   ],
   js: {
-    disableNoConsoleInCLI: ['Build/**']
+    disableNoConsoleInCLI: ['Build/**', '.github/actions/**']
   },
   node: true,
   ts: true,

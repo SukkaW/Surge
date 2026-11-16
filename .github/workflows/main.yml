@@ -197,12 +197,15 @@ jobs:
           key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ env.WRANGLER_VERSION }}
           restore-keys: |
             deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-
-      - name: Prepare GitHub Pages deployment marker
+      - name: Prepare deployment marker
         id: deploy_marker
         run: |
           echo "marker_content=${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
       # Wait for the artifact to be downloaded before deploying
       - wait: download_build_artifact
+      - name: Write deployment marker
+        run: |
+          echo "${{ steps.deploy_marker.outputs.marker_content }}" > public/deploy-check.txt
       # Deploy to Cloudflare, GitLab, and GitHub in parallel
       - name: Upload Dist to GitLab
         id: deploy_gitlab
@@ -227,66 +230,37 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
       - name: Upload Dist to GitHub
         id: upload_dist_to_github
+        uses: $/.github/actions/upload-dist-to-github
         background: true
-        run: |
-          gh repo unarchive SukkaLab/ruleset.skk.moe --yes
-          git clone --filter=tree:0 --no-tags https://${GH_USER}:${GH_TOKEN}@github.com/SukkaLab/ruleset.skk.moe.git ./deploy-git-github
-          cd ./deploy-git-github
-          git config push.default matching
-          git config user.email "${GH_EMAIL}"
-          git config user.name "${GH_USER}"
-          rm -rf ./*
-          cp -rf ../public/* ./
-          echo "ruleset-mirror.skk.moe" > CNAME
-          echo "${{ steps.deploy_marker.outputs.marker_content }}" > deploy-check.txt
-          git add --all .
-          git commit -m "deploy: https://github.com/SukkaW/Surge/commit/${GITHUB_SHA}"
-          git push --quiet --force origin HEAD:master
-          cd ..
-          rm -rf ./deploy-git-github
-        env:
-          GH_EMAIL: ${{ secrets.GIT_EMAIL }}
-          GH_USER: ${{ secrets.GIT_USER }}
-          GH_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          gh-email: ${{ secrets.GIT_EMAIL }}
+          gh-user: ${{ secrets.GIT_USER }}
+          gh-token: ${{ secrets.GIT_TOKEN }}
+          marker: ${{ steps.deploy_marker.outputs.marker_content }}
       # Cloudflare deploy needs its npm cache restored first
       - wait: wrangler_npm_cache
       - name: Deploy to Cloudflare Pages
         id: deploy_cloudflare
-        uses: cloudflare/wrangler-action@v4
+        uses: $/.github/actions/deploy-cloudflare-pages
         background: true
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
-          wranglerVersion: ${{ env.WRANGLER_VERSION }}
-      # We wait for GitHub Dist to be deployed before checking its deployment status
+          api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wrangler-version: ${{ env.WRANGLER_VERSION }}
+          marker: ${{ steps.deploy_marker.outputs.marker_content }}
+
+      # We wait for GitHub Dist to be deployed and served before archiving it
       - wait: upload_dist_to_github
+
       - name: Remove build artifact
         uses: geekyeggo/delete-artifact@v6
         background: true
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           failOnError: false
-      - name: Wait for GitHub Pages to serve deployed marker
-        if: steps.upload_dist_to_github.outcome == 'success'
-        id: wait_for_github_pages
-        run: |
-          expected="${{ steps.deploy_marker.outputs.marker_content }}"
-          marker_url="https://ruleset-mirror.skk.moe/deploy-check.txt"
 
-          for _ in $(seq 1 30); do
-            content=$(curl --fail --silent --show-error --location "${marker_url}" || true)
-            if [ "${content}" = "${expected}" ]; then
-              echo "GitHub Pages is serving the correct deploy marker"
-              exit 0
-            fi
-            sleep 10
-          done
-
-          echo "Timed out waiting for GitHub Pages deployment"
-          exit 1
       - name: Archive dist repo
-        if: steps.wait_for_github_pages.outcome == 'success'
+        if: steps.upload_dist_to_github.outcome == 'success'
         run: |
           gh repo archive SukkaLab/ruleset.skk.moe --yes
         env:

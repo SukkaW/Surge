@@ -1,0 +1,30 @@
+name: Deploy to Cloudflare Pages
+description: Deploy the build output to Cloudflare Pages and wait for it to be served
+inputs:
+  api-token:
+    description: Cloudflare API token
+    required: true
+  account-id:
+    description: Cloudflare account ID
+    required: true
+  wrangler-version:
+    description: Wrangler version to use
+    required: true
+  marker:
+    description: Expected deploy marker content
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/wrangler-action@v4
+      with:
+        apiToken: ${{ inputs.api-token }}
+        accountId: ${{ inputs.account-id }}
+        command: pages deploy public --project-name=sukkaw-ruleset --commit-dirty=true --branch=main
+        wranglerVersion: ${{ inputs.wrangler-version }}
+    - name: Wait for Cloudflare Pages to serve deployed marker
+      uses: $/.github/actions/wait-for-deploy-marker
+      with:
+        url: https://ruleset.skk.moe/deploy-check.txt
+        expected: ${{ inputs.marker }}
