@@ -211,7 +211,6 @@ rules:
 - 包含所有常见静态资源 CDN 域名、对象存储域名
 - 如果你正在使用商业性质的公共代理服务、且你的服务商提供按低倍率结算流量消耗的节点，可使用上述规则组将流量分配给这部分节点
 - 包含部分未包含在 `global.conf` 的域名，因此即使你用不到商业性质的公共代理服务提供的低倍率节点也不需要分流，也依然建议使用这部分规则，此时分配与 `global.conf` 相同的策略即可
-- 同时使用 AI 规则组时，在下方的 CDN 规则之前添加 `DOMAIN,bridge.claudeusercontent.com,[Replace with your AI policy]`，让 Claude in Chrome 的 WebSocket 连接走 AI 策略
 
 **Surge**
 
