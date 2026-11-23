@@ -4,7 +4,7 @@
 const process = require('node:process');
 const { setTimeout: sleep } = require('node:timers/promises');
 
-const MAX_ATTEMPTS = 30;
+const MAX_ATTEMPTS = 75;
 const INTERVAL = 4 * 1000;
 
 (async () => {
@@ -24,11 +24,13 @@ const INTERVAL = 4 * 1000;
         console.log(`${url} is serving the correct deploy marker`);
         return;
       }
-      console.log(`[${attempt}/${MAX_ATTEMPTS}] HTTP ${res.status}: ${content}`);
+      console.log(`[${attempt}/${MAX_ATTEMPTS}] HTTP ${res.status}: ${content.slice(0, 120)}`);
     } catch (e) {
       console.log(`[${attempt}/${MAX_ATTEMPTS}]`, e);
     }
-    await sleep(INTERVAL);
+    if (attempt < MAX_ATTEMPTS) {
+      await sleep(INTERVAL);
+    }
   }
 
   console.error(`Timed out waiting for ${url}`);

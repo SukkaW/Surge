@@ -42,7 +42,7 @@ jobs:
       # while the Node.js toolchain is set up in the foreground
       - name: Download Previous Build
         id: download_previous_build
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         background: true
         with:
           repository: SukkaLab/ruleset.skk.moe
@@ -174,29 +174,13 @@ jobs:
     env:
       WRANGLER_VERSION: "4.156.1"
     steps:
-      # Download the artifact in the background while the npm cache path is queried
+      # Download the artifact in the background while the deployment marker is prepared
       - uses: actions/download-artifact@v8
         id: download_build_artifact
         background: true
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           path: public
-      - name: Get NPM cache directory path
-        id: npm_cache_path
-        shell: sh
-        run: echo dir=$(npm config get cache) >> $GITHUB_OUTPUT
-      # Only the Cloudflare deploy needs this cache, restore in background
-      - name: Wrangler CLI npm cache
-        id: wrangler_npm_cache
-        uses: actions/cache@v6
-        background: true
-        with:
-          path: |
-            ${{ steps.npm_cache_path.outputs.dir }}
-            node_modules
-          key: deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ env.WRANGLER_VERSION }}
-          restore-keys: |
-            deploy-to-cloudflare-npm-${{ runner.os }}-${{ runner.arch }}-wrangler-
       - name: Prepare deployment marker
         id: deploy_marker
         run: |
@@ -216,8 +200,6 @@ jobs:
           gh-user: ${{ secrets.GIT_USER }}
           gh-token: ${{ secrets.GIT_TOKEN }}
           marker: ${{ steps.deploy_marker.outputs.marker_content }}
-      # Cloudflare deploy needs its npm cache restored first
-      - wait: wrangler_npm_cache
       - name: Deploy to Cloudflare Pages
         id: deploy_cloudflare
         uses: $/.github/actions/deploy-cloudflare-pages
@@ -252,17 +234,16 @@ jobs:
       # We wait for GitHub Dist to be deployed and served before archiving it
       - wait: upload_dist_to_github
       - name: Archive dist repo
-        if: steps.upload_dist_to_github.outcome == 'success'
+        if: always() && steps.upload_dist_to_github.outcome == 'success'
         run: |
           gh repo archive SukkaLab/ruleset.skk.moe --yes
         env:
           GH_TOKEN: ${{ secrets.GIT_TOKEN }}
 
+      - wait-all:
+
       - name: Remove build artifact
         uses: geekyeggo/delete-artifact@v6
-        # background: true
         with:
           name: build-artifact-${{ github.sha }}-${{ github.run_number }}
           failOnError: false
-
-      - wait-all:

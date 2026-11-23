@@ -16,7 +16,14 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Restore Wrangler CLI cache
+      id: wrangler_cache
+      uses: actions/cache/restore@v6
+      with:
+        path: node_modules
+        key: deploy-to-cloudflare-node-modules-${{ runner.os }}-${{ runner.arch }}-wrangler-${{ inputs.wrangler-version }}
     - name: Deploy to Cloudflare Pages
+      id: wrangler_deploy
       uses: cloudflare/wrangler-action@v4
       with:
         apiToken: ${{ inputs.api-token }}
@@ -28,3 +35,9 @@ runs:
       with:
         url: https://ruleset.skk.moe/deploy-check.txt
         expected: ${{ inputs.marker }}
+    - name: Save Wrangler CLI cache
+      if: ${{ !cancelled() && steps.wrangler_deploy.outcome == 'success' && steps.wrangler_cache.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v6
+      with:
+        path: node_modules
+        key: ${{ steps.wrangler_cache.outputs.cache-primary-key }}
