@@ -255,11 +255,11 @@ importers:
         specifier: ^0.2.17
         version: 0.2.17
       tldts:
-        specifier: ^7.6.0
-        version: 7.6.0
+        specifier: ^7.6.2
+        version: 7.6.2
       tldts-experimental:
-        specifier: ^7.6.0
-        version: 7.6.0
+        specifier: ^7.6.2
+        version: 7.6.2
       undici:
         specifier: ^8.13.1
         version: 8.13.1
@@ -1996,14 +1996,14 @@ packages:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
 
-  tldts-core@7.6.0:
-    resolution: {integrity: sha512-0By9U6fw2hNzfJAbBMuo1bsX/OyVlsj0wjGyMPV50RZKoLCRwXBOX0FQqgZDaMo2WjjaEW/ZGyVXicLUFTmXqQ==}
+  tldts-core@7.6.2:
+    resolution: {integrity: sha512-/ZG+gignPzfgtpWNnbS7AKcU1ptt9jDqhIlr7vHOaw/Psz6HjXyB2CeFS3RrUGYwER/Q4F6IS8+9rZuYfRUz+Q==}
 
-  tldts-experimental@7.6.0:
-    resolution: {integrity: sha512-i2jS+wLay2EcY0R0zoi9LBKxIxHqCn0XS7G1MmbR0oDPvdvHdKdXZrRARBJK2o3Qjk+FcfgPyKaGsFR68+KAVw==}
+  tldts-experimental@7.6.2:
+    resolution: {integrity: sha512-zhduBW7Ufme0YNK9AGWPNkjgpvdfNyDPgWDAIc7hyzGnOS5nsPJAcCyIYDpwUeZgEK0e5HRidk4h/F/ydQvgow==}
 
-  tldts@7.6.0:
-    resolution: {integrity: sha512-IFk9SJW/EhTZMpJA1zRdP+69JK4NmJbMx1aRdJvLBR9em1k62eWiwolSWlDRpRdkaAnZ1dDCwFPmRPBNuLGGHA==}
+  tldts@7.6.2:
+    resolution: {integrity: sha512-IylRLICacWmPVf5tQIOvKkZzf2Vp8qJT3bAZox+3bWXj5P/pn45PC1a9l86loP7D/ywbSt/h/NnyIoR0fg4utA==}
     hasBin: true
 
   ts-api-utils@2.5.0:
@@ -2249,11 +2249,11 @@ snapshots:
       '@remusao/guess-url-type': 2.1.0
       '@remusao/small': 2.1.0
       '@remusao/smaz': 2.2.0
-      tldts-experimental: 7.6.0
+      tldts-experimental: 7.6.2
 
   '@ghostery/url-parser@1.3.1':
     dependencies:
-      tldts-experimental: 7.6.0
+      tldts-experimental: 7.6.2
 
   '@henrygd/queue@1.2.0': {}
 
@@ -2990,7 +2990,7 @@ snapshots:
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
       foxts: 5.9.2
-      tldts: 7.6.0
+      tldts: 7.6.2
     transitivePeerDependencies:
       - supports-color
 
@@ -3715,15 +3715,15 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
 
-  tldts-core@7.6.0: {}
+  tldts-core@7.6.2: {}
 
-  tldts-experimental@7.6.0:
+  tldts-experimental@7.6.2:
     dependencies:
-      tldts-core: 7.6.0
+      tldts-core: 7.6.2
 
-  tldts@7.6.0:
+  tldts@7.6.2:
     dependencies:
-      tldts-core: 7.6.0
+      tldts-core: 7.6.2
 
   ts-api-utils@2.5.0(typescript@6.0.3):
     dependencies:
