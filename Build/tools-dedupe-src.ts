@@ -20,10 +20,12 @@ const ENFORCED_WHITELIST = [
   'samsungcloudsolution.com',
   'samsungcloudsolution.net',
   'samsungqbe.com',
-  'vocadb-analytics.fly.dev'
+  'vocadb-analytics.fly.dev',
+  'info.sec.miui.com',
+  'dns.qiyipic.iqiyi.com'
 ];
 
-const DEDUPE_LIST: string[] = ['adx-static.ksosoft.com', 'dns.iqiyi.com', 'domain.expiring-soon.xyz', 'img.catwvod.xyz', 'img.vim-cn.com', 's3-zen.mds.yandex.net'];
+const DEDUPE_LIST: string[] = ['alicoccdncnc-xn.inter.71edge.com', 'alicoccdnct-xn.inter.71edge.com', 'bdcdncmn-gd.inter.71edge.com', 'emma-414870e223.huodonghezi.com', 'inference.codeium.com', 'media.hentaifreak.org', 'mirror.netcologne.de.org', 'p.kulp.in', 'paopao1.qiyipic.com', 'paopao2.qiyipic.com', 'uks.b.prd.ags.trafficmanager.net', 'user.ground.news'];
 
 task(require.main === module, __filename)(async (span) => {
   const files = await span.traceChild('crawl thru all files', SpanCategory.FsRead).traceAsyncFn(() => new Fdir()
